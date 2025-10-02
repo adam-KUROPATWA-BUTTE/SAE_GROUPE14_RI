@@ -1,21 +1,32 @@
 <?php
 
-use Controllers\Register;
-use Controllers\Login;
+?>
 
-include __DIR__ . '/AutoLoader.php';
-
-$requestUrl = $_SERVER['REQUEST_URI'];
-
-/** @var \Controllers\Controller[] $paths **/
-$paths = [new Login(), new Register()];
-
-foreach ($paths as $path) {
-    if ($path::resolve($requestUrl)) {
-        $path->control();
-        exit();
-    }
-}
-
-echo 'NOT FOUND';
-exit();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Page avec bouton</title>
+</head>
+<body>
+    <header>
+        <div class="top-bar">
+            <img src="logo.png" alt="Logo" style="height:100px;">
+            <div class="right-buttons">
+                <button>fr</button>
+                <button onclick="window.location.href='login.php'">Se connecter</button>
+            </div>
+        </div>
+    
+        <nav class="menu">
+            <button>Accueil</button>
+            <button>Tableau de bord</button>
+            <button>Paramètrage</button>
+            <button>Dossiers</button>
+            <button>Aide</button>
+        </nav>
+    </header>
+</body>
+</html>
