@@ -13,7 +13,7 @@
 <body>
     <header>
         <div class="top-bar">
-            <img src="logo.png" alt="Logo" style="height:100px;">
+            <img src="img/logo.png" alt="Logo" style="height:100px;">
             <div class="right-buttons">
                 <button>fr</button>
                 <button onclick="window.location.href='login.php'">Se connecter</button>
