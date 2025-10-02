@@ -1,6 +1,7 @@
 <?php
 
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -11,25 +12,11 @@
 </head>
 <body>
     <div class="container">
-        <?php
-        $isLogin = true;
-        if (isset($_GET['register'])) {
-            $isLogin = false;
-        }
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if ($_POST['action'] === 'login') {
-                $email = $_POST['email'];
-                $password = $_POST['password'];
-                echo "<p>Connexion avec l'email : $email</p>";
-            } elseif ($_POST['action'] === 'register') {
-                $email = $_POST['email'];
-                $password = $_POST['password'];
-                echo "<p>Création de compte avec l'email : $email</p>";
-            }
-        }
-        ?>
+        <?php if ($message): ?>
+            <p><?= $message ?></p>
+        <?php endif; ?>
 
-        <?php if ($isLogin): ?>
+        <?php if ($isLogin && !$isReset): ?>
             <h2>Connexion</h2>
             <form method="POST">
                 <input type="hidden" name="action" value="login">
@@ -38,7 +25,18 @@
                 <button type="submit">Se connecter</button>
             </form>
             <div class="toggle">
+                <p><a href="?reset">Mot de passe oublié ?</a></p>
                 <p>Pas encore de compte ? <a href="?register">Créer un compte</a></p>
+            </div>
+        <?php elseif ($isReset): ?>
+            <h2>Mot de passe oublié</h2>
+            <form method="POST">
+                <input type="hidden" name="action" value="reset">
+                <input type="email" name="email" placeholder="Votre email" required>
+                <button type="submit">Envoyer le lien de réinitialisation</button>
+            </form>
+            <div class="toggle">
+                <p><a href="?login">Retour à la connexion</a></p>
             </div>
         <?php else: ?>
             <h2>Créer un compte</h2>

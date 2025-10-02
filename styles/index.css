@@ -40,3 +40,36 @@ button:hover {
     background-color: #0056b3;
 }
 
+
+
+main {
+    max-width: 700px;
+    margin: 2em auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 2em;
+}
+
+h1 {
+    text-align: center;
+    color: #222;
+}
+
+ul {
+    list-style: disc inside;
+    margin: 2em 0 1em 1em;
+    padding: 0;
+    color: #333;
+    font-size: 1.1em;
+}
+
+ul li {
+    margin-bottom: 0.7em;
+}
+
+p {
+    color: #444;
+    font-size: 1em;
+    margin-bottom: 1em;
+}

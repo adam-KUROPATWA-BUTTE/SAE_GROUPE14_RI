@@ -28,8 +28,8 @@
             <li><a href="index.php">Accueil</a></li>
             <li><a href="dashboard.php">Tableau de bord</a></li>
             <li><a href="settings.php">Paramètrage</a></li>
-            <li><a href="dossiers.php">Dossiers</a></li>
-            <li><a href="aide.php">Aide</a></li>
+            <li><a href="folders.php">Dossiers</a></li>
+            <li><a href="help.php">Aide</a></li>
             <li><a href="web_plan.php">Plan du site</a></li>
             <li><a href="login.php">Connexion / Inscription</a></li>
         </ul>
