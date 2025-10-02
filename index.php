@@ -8,7 +8,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles/index.css">
-    <title>Page avec bouton</title>
+    <link rel="icon" type="image/png" href="img/favicon.webp"/>
+    <title>Service des relations internationnales AMU</title>
 </head>
 <body>
     <header>
@@ -21,11 +22,12 @@
         </div>
     
         <nav class="menu">
-            <button>Accueil</button>
-            <button>Tableau de bord</button>
-            <button>Paramètrage</button>
-            <button>Dossiers</button>
-            <button>Aide</button>
+            <button onclick="window.location.href='index.php'">Accueil</button>
+            <button onclick="window.location.href='dashboard.php'">Tableau de bord</button>
+            <button onclick="window.location.href='settings.php'">Paramètrage</button>
+            <button onclick="window.location.href='folders.php'">Dossiers</button>
+            <button onclick="window.location.href='help.php'" >Aide</button>
+            <button onclick="window.location.href='web_plan.php'">Plan du site</button>
         </nav>
     </header>
 </body>
