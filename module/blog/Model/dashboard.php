@@ -2,30 +2,30 @@
 
 class Dossier
 {
-    public static function getAll()
+    public static function getDossiersIncomplets()
     {
-        // Données fictives
+        // Données fictives pour la vitrine
         return [
             [
-                'numetu' => '22004567',
                 'nom' => 'Dupont',
                 'prenom' => 'Marie',
+                'email' => 'marie.dupont@email.fr',
                 'total_pieces' => 5,
                 'pieces_fournies' => 3,
                 'date_derniere_relance' => '2025-09-25'
             ],
             [
-                'numetu' => '22007890',
                 'nom' => 'Nguyen',
                 'prenom' => 'Linh',
+                'email' => 'linh.nguyen@email.fr',
                 'total_pieces' => 4,
                 'pieces_fournies' => 2,
                 'date_derniere_relance' => '2025-09-29'
             ],
             [
-                'numetu' => '22001234',
                 'nom' => 'Bernard',
                 'prenom' => 'Sophie',
+                'email' => 'sophie.bernard@email.fr',
                 'total_pieces' => 6,
                 'pieces_fournies' => 4,
                 'date_derniere_relance' => '2025-09-20'
