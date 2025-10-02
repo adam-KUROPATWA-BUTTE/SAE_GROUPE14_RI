@@ -1,34 +1,50 @@
 <?php
+// filepath: /amuhome/n24004659/SAE_GROUPE14_RI/index.php
 
-?>
+// Affichage des erreurs pour le debug
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles/index.css">
-    <link rel="icon" type="image/png" href="img/favicon.webp"/>
-    <title>Service des relations internationnales AMU</title>
-</head>
-<body>
-    <header>
-        <div class="top-bar">
-            <img src="img/logo.png" alt="Logo" style="height:100px;">
-            <div class="right-buttons">
-                <button>fr</button>
-                <button onclick="window.location.href='login.php'">Se connecter</button>
-            </div>
-        </div>
-    
-        <nav class="menu">
-            <button onclick="window.location.href='index.php'">Accueil</button>
-            <button onclick="window.location.href='dashboard.php'">Tableau de bord</button>
-            <button onclick="window.location.href='settings.php'">Paramètrage</button>
-            <button onclick="window.location.href='folders.php'">Dossiers</button>
-            <button onclick="window.location.href='help.php'" >Aide</button>
-            <button onclick="window.location.href='web_plan.php'">Plan du site</button>
-        </nav>
-    </header>
-</body>
-</html>
+// Récupère la page demandée via l'URL, ex: index.php?page=dashboard
+$page = $_GET['page'] ?? 'home';
+
+switch ($page) {
+    case 'dashboard':
+        require_once __DIR__ . '/module/blog/Controllers/DashboardController.php';
+        $controller = new DashboardController();
+        $controller->index();
+        break;
+    case 'login':
+        require_once __DIR__ . '/module/blog/Controllers/AuthController.php';
+        $controller = new AuthController();
+        $controller->index();
+        break;
+    case 'settings':
+        require_once __DIR__ . '/module/blog/Controllers/SettingsController.php';
+        $controller = new SettingsController();
+        $controller->index();
+        break;
+    case 'folders':
+        require_once __DIR__ . '/module/blog/Controllers/FoldersController.php';
+        $controller = new FoldersController();
+        $controller->index();
+        break;
+    case 'help':
+        require_once __DIR__ . '/module/blog/Controllers/HelpController.php';
+        $controller = new HelpController();
+        $controller->index();
+        break;
+    case 'web_plan':
+        require_once __DIR__ . '/module/blog/Controllers/WebPlanController.php';
+        $controller = new WebPlanController();
+        $controller->index();
+        break;
+    case 'home':
+    default:
+        // Page d'accueil (vue simple ou via un contrôleur si tu veux)
+        require_once __DIR__ . '/module/blog/Controllers/IndexController.php';
+        $controller = new IndexController();
+        $controller->index();
+        break;
+}
