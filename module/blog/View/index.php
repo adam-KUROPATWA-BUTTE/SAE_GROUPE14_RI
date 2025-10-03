@@ -6,6 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Accueil - Service des relations internationales AMU</title>
+    <base href="http://localhost:8080/">
     <link rel="stylesheet" href="styles/index.css">
     <link rel="icon" type="image/png" href="img/favicon.webp"/>
 </head>
@@ -19,7 +20,7 @@
             </div>
         </div>
         <nav class="menu">
-            <button onclick="window.location.href='index.php'">Accueil</button>
+            <button onclick="window.location.href='index.php?page=home'">Accueil</button>
             <button onclick="window.location.href='index.php?page=dashboard'">Tableau de bord</button>
             <button onclick="window.location.href='index.php?page=settings'">Paramètrage</button>
             <button onclick="window.location.href='index.php?page=folders'">Dossiers</button>
