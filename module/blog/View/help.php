@@ -9,6 +9,7 @@
     <title>Aide - Service des Relations Internationales AMU</title>
     <link rel="stylesheet" href="styles/index.css">
     <link rel="stylesheet" href="styles/help.css">
+    <base href="http://localhost:8080/">
     <link rel="icon" type="image/png" href="img/favicon.webp"/>
 </head>
 <body>
@@ -20,13 +21,13 @@
                 <button onclick="window.location.href='login.php'">Se connecter</button>
             </div>
         </div>
-        <nav class="menu">
-            <button onclick="window.location.href='index.php'">Accueil</button>
-            <button onclick="window.location.href='dashboard.php'">Tableau de bord</button>
-            <button onclick="window.location.href='settings.php'">Paramètrage</button>
-            <button onclick="window.location.href='folders.php'">Dossiers</button>
-            <button onclick="window.location.href='help.php'">Aide</button>
-            <button onclick="window.location.href='web_plan.php'">Plan du site</button>
+         <nav class="menu">
+            <button onclick="window.location.href='index.php?page=home'">Accueil</button>
+            <button onclick="window.location.href='index.php?page=dashboard'">Tableau de bord</button>
+            <button onclick="window.location.href='index.php?page=settings'">Paramètrage</button>
+            <button onclick="window.location.href='index.php?page=folders'">Dossiers</button>
+            <button onclick="window.location.href='index.php?page=help'">Aide</button>
+            <button onclick="window.location.href='index.php?page=web_plan'">Plan du site</button>
         </nav>
     </header>
     <main>
