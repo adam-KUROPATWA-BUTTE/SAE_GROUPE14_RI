@@ -78,7 +78,18 @@
                 </div>
             </div>
         </div>
-    </div>
-</main>
+        <nav class="menu">
+            <button onclick="window.location.href='index.php?page=home'">Accueil</button>
+            <button onclick="window.location.href='index.php?page=dashboard'">Tableau de bord</button>
+            <button onclick="window.location.href='index.php?page=settings'">Paramètrage</button>
+            <button onclick="window.location.href='index.php?page=folders'">Dossiers</button>
+            <button onclick="window.location.href='index.php?page=help'">Aide</button>
+            <button onclick="window.location.href='index.php?page=web_plan'">Plan du site</button>
+        </nav>
+    </header>
+    <main>
+        <h1>Bienvenue sur le service des relations internationales AMU</h1>
+        <p>Utilisez le menu pour naviguer.</p>
+    </main>
 </body>
 </html>

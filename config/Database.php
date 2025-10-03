@@ -4,14 +4,17 @@ class Database
     private static $instance = null;
     private $conn;
 
-    private $host = 'localhost';
+    private $host = 'http://164.92.139.137';
+    private $port = '25060';
     private $dbname = 'SAE_RI';
     private $username = 'ri_user';
     private $password = 'AdminDataRI5434';
+    private $charset = 'utf8mb4';
+
 
     private function __construct()
     {
-        try {
+        try {   
             $dsn = "mysql:host={$this->host};port={$this->port};dbname={$this->dbname};charset={$this->charset}";
             
             $options = [
