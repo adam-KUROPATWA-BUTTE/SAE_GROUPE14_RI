@@ -4,28 +4,17 @@ class Database
     private static $instance = null;
     private $conn;
 
-<<<<<<< HEAD
-    private $host = 'your-cluster.db.ondigitalocean.com';
-    private $port = '25060';
-    private $dbname = 'gestion_dossiers';
-    private $username = 'doadmin';
-    private $password = 'your-password';
-=======
     private $host = 'http://164.92.139.137';
     private $port = '25060';
     private $dbname = 'SAE_RI';
     private $username = 'ri_user';
     private $password = 'AdminDataRI5434';
->>>>>>> Amine
     private $charset = 'utf8mb4';
+
 
     private function __construct()
     {
-<<<<<<< HEAD
-        try {
-=======
         try {   
->>>>>>> Amine
             $dsn = "mysql:host={$this->host};port={$this->port};dbname={$this->dbname};charset={$this->charset}";
             
             $options = [
