@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/../../config/database.php'; // Chemin corrigé
+define('ROOT_PATH', __DIR__ . '/../../../');
+require_once ROOT_PATH . 'config/Database.php';
 
 class User
 {
