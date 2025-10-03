@@ -5,12 +5,8 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-<<<<<<< HEAD
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-=======
     <title>Accueil - Service des relations internationales AMU</title>
     <base href="http://localhost:8080/">
->>>>>>> Amine
     <link rel="stylesheet" href="styles/index.css">
     <link rel="icon" type="image/png" href="img/favicon.webp"/>
     <title>Service des relations internationales AMU</title>
@@ -82,10 +78,6 @@
                 </div>
             </div>
         </div>
-<<<<<<< HEAD
-    </div>
-</main>
-=======
         <nav class="menu">
             <button onclick="window.location.href='index.php?page=home'">Accueil</button>
             <button onclick="window.location.href='index.php?page=dashboard'">Tableau de bord</button>
@@ -99,6 +91,5 @@
         <h1>Bienvenue sur le service des relations internationales AMU</h1>
         <p>Utilisez le menu pour naviguer.</p>
     </main>
->>>>>>> Amine
 </body>
 </html>
