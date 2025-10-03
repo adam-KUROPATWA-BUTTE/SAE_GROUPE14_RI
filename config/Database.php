@@ -4,8 +4,7 @@ class Database
     private static $instance = null;
     private $conn;
 
-    private $host = 'http://164.92.139.137';
-    private $port = '25060';
+    private $host = 'localhost';
     private $dbname = 'SAE_RI';
     private $username = 'ri_user';
     private $password = 'AdminDataRI5434';
