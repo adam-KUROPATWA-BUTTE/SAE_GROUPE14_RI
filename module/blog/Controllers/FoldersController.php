@@ -1,4 +1,5 @@
 <?php
+// Ne pas redémarrer la session, elle est déjà active
 require_once __DIR__ . '/../Model/Folder.php';
 
 class FoldersController
