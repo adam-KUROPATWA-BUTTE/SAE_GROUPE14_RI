@@ -28,3 +28,17 @@ th {
 tr:nth-child(even) {
     background: #f0f4ff;
 }
+nav.menu button.active {
+    background-color: #00558B; /* couleur du bouton actif */
+    color: white; /* facultatif si tu veux garder le texte blanc */
+}
+nav.menu button {
+    padding: 10px 15px;
+    background-color: #2B91BB;
+    color: white;
+    cursor: pointer;
+}
+
+nav.menu button:hover {
+    background-color: #00558B;
+}
