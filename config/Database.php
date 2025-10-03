@@ -4,12 +4,10 @@ class Database
     private static $instance = null;
     private $conn;
 
-    private $host = 'your-cluster.db.ondigitalocean.com';
-    private $port = '25060';
-    private $dbname = 'gestion_dossiers';
-    private $username = 'doadmin';
-    private $password = 'your-password';
-    private $charset = 'utf8mb4';
+    private $host = 'localhost';
+    private $dbname = 'SAE_RI';
+    private $username = 'ri_user';
+    private $password = 'AdminDataRI5434';
 
     private function __construct()
     {
