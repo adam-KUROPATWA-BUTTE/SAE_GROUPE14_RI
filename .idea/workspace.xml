@@ -4,16 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9fda9dbb-4c5d-4384-8a46-35abf536e97d" name="Changes" comment="ajout des boutons dans parametrage">
+    <list default="true" id="9fda9dbb-4c5d-4384-8a46-35abf536e97d" name="Changes" comment="changement de la taille des boutons et ajout de onactive pour les pages">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/module/blog/Model/Campagne.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/blog/Model/Campagne.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/module/blog/Model/Destination.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/blog/Model/Destination.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/module/blog/Model/Partenaire.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/blog/Model/Partenaire.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/module/blog/View/dashboard.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/blog/View/dashboard.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/module/blog/View/folders.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/blog/View/folders.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/module/blog/View/help.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/blog/View/help.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/module/blog/View/settings.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/blog/View/settings.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/styles/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/styles/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/styles/settings.css" beforeDir="false" afterPath="$PROJECT_DIR$/styles/settings.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -69,7 +64,7 @@
       <updated>1759472859935</updated>
       <workItem from="1759472861268" duration="1747000" />
       <workItem from="1759476879572" duration="291000" />
-      <workItem from="1759477172866" duration="7592000" />
+      <workItem from="1759477172866" duration="8404000" />
     </task>
     <task id="LOCAL-00001" summary="ajout des boutons dans parametrage">
       <option name="closed" value="true" />
@@ -79,7 +74,15 @@
       <option name="project" value="LOCAL" />
       <updated>1759483694669</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="changement de la taille des boutons et ajout de onactive pour les pages">
+      <option name="closed" value="true" />
+      <created>1759485613249</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1759485613249</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -135,6 +138,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="ajout des boutons dans parametrage" />
-    <option name="LAST_COMMIT_MESSAGE" value="ajout des boutons dans parametrage" />
+    <MESSAGE value="changement de la taille des boutons et ajout de onactive pour les pages" />
+    <option name="LAST_COMMIT_MESSAGE" value="changement de la taille des boutons et ajout de onactive pour les pages" />
   </component>
 </project>

@@ -234,4 +234,16 @@ nav.menu button:hover {
     background-color: #00558B;
 }
 
+footer {
+    background: #00558B;
+    color: #ffffff;
+    text-align: center;
+    padding: 2rem 1rem;
+    margin-top: 3rem;
+}
+footer p {
+    margin: 0;
+    font-size: 14px;
+    color: #ffffff;
+}
 
