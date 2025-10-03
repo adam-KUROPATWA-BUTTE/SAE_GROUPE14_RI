@@ -52,4 +52,10 @@ switch ($page) {
         $controller = new IndexController();
         $controller->index();
         break;
+
+    case 'login':
+        require_once __DIR__ . '/module/blog/Controllers/AuthController.php';
+        $controller = new AuthController();
+        $controller->index();
+        break;
 }

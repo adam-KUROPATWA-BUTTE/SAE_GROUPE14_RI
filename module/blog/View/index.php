@@ -18,7 +18,7 @@
         <img src="img/logo.png" alt="Logo AMU" style="height:100px;">
         <div class="right-buttons">
             <button>fr</button>
-            <button onclick="window.location.href='login.php'">Se connecter</button>
+            <button onclick="window.location.href='index.php?page=login'">Se connecter</button>
         </div>
     </div>
     <nav class="menu">
@@ -93,3 +93,5 @@
     </main>
 </body>
 </html>
+
+
