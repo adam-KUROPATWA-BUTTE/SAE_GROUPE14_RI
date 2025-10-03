@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paramètrage</title>
     <link rel="stylesheet" href="styles/index.css">
-    <link rel="icon" type="image/png" href="img/favicon.png">
+    <link rel="icon" type="image/png" href="img/favicon.webp"/>
     <style>
         table {
             width: 100%;
@@ -40,9 +40,9 @@
             </div>
         </div>
         <nav class="menu">
-            <button class="active" onclick="window.location.href='index.php'">Accueil</button>
+            <button onclick="window.location.href='index.php'">Accueil</button>
             <button onclick="window.location.href='dashboard.php'">Tableau de bord</button>
-            <button onclick="window.location.href='settings.php'">Paramétrage</button>
+            <button onclick="window.location.href='settings.php'">Paramètrage</button>
             <button onclick="window.location.href='folders.php'">Dossiers</button>
             <button onclick="window.location.href='help.php'">Aide</button>
             <button onclick="window.location.href='web_plan.php'">Plan du site</button>
@@ -60,31 +60,16 @@
                 </tr>
             </thead>
             <tbody>
+                <?php foreach ($universites as $u): ?>
                 <tr>
-                    <td>AMU001</td>
-                    <td>Aix-Marseille Université</td>
-                    <td>France</td>
-                    <td>Oui</td>
+                    <td><?= htmlspecialchars($u['code']) ?></td>
+                    <td><?= htmlspecialchars($u['universite']) ?></td>
+                    <td><?= htmlspecialchars($u['pays']) ?></td>
+                    <td><?= htmlspecialchars($u['partenaire']) ?></td>
                 </tr>
-                <tr>
-                    <td>OXF002</td>
-                    <td>University of Oxford</td>
-                    <td>Royaume-Uni</td>
-                    <td>Oui</td>
-                </tr>
-                <tr>
-                    <td>MIT003</td>
-                    <td>MIT</td>
-                    <td>États-Unis</td>
-                    <td>Non</td>
-                </tr>
-                <!-- Ajoute d'autres lignes ici si besoin -->
+                <?php endforeach; ?>
             </tbody>
         </table>
     </main>
 </body>
 </html>
-require_once __DIR__ . '/module/blog/Controllers/SettingsController.php';
-
-$controller = new SettingsController();
-$controller->index();
