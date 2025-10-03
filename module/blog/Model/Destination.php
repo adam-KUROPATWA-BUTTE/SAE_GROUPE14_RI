@@ -6,14 +6,16 @@ class Destination
     {
         return [
             [
-                'code' => 'D001',
-                'ville' => 'Paris',
-                'pays' => 'France'
+                'code' => '1',
+                'univsersite' => 'Salzbourg',
+                'pays' => 'Autriche',
+                'partenaire' => '5'
             ],
             [
-                'code' => 'D002',
-                'ville' => 'Tokyo',
-                'pays' => 'Japon'
+                'code' => '4',
+                'univsersite' => 'Hogeschool Gent',
+                'pays' => 'Belgique',
+                'partenaire' => '6'
             ],
         ];
     }

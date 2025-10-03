@@ -23,7 +23,7 @@
         </div>
         <nav class="menu">
             <button onclick="window.location.href='index.php'">Accueil</button>
-            <button onclick="window.location.href='dashboard.php'">Tableau de bord</button>
+            <button class="active" onclick="window.location.href='dashboard.php'">Tableau de bord</button>
             <button onclick="window.location.href='settings.php'">Paramètrage</button>
             <button onclick="window.location.href='folders.php'">Dossiers</button>
             <button onclick="window.location.href='help.php'">Aide</button>

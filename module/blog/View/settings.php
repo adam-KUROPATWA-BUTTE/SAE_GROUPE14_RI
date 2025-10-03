@@ -55,7 +55,7 @@
     <nav class="menu">
         <button onclick="window.location.href='index.php'">Accueil</button>
         <button onclick="window.location.href='dashboard.php'">Tableau de bord</button>
-        <button onclick="window.location.href='settings.php'">Paramètrage</button>
+        <button class="active" onclick="window.location.href='settings.php'">Paramètrage</button>
         <button onclick="window.location.href='folders.php'">Dossiers</button>
         <button onclick="window.location.href='help.php'">Aide</button>
         <button onclick="window.location.href='web_plan.php'">Plan du site</button>
@@ -80,9 +80,9 @@
             <?php elseif ($titre === "Campagnes"): ?>
                 <th>Code</th><th>Nom</th><th>Statut</th>
             <?php elseif ($titre === "Partenaires"): ?>
-                <th>Code</th><th>Nom</th><th>Pays</th>
+                <th>Nos partenaires</th><th>Cadre</th>
             <?php elseif ($titre === "Destinations"): ?>
-                <th>Code</th><th>Ville</th><th>Pays</th>
+                <th>Code</th><th>Université</th><th>Pays</th><th>Partenaire</th>
             <?php endif; ?>
         </tr>
         </thead>

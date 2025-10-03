@@ -29,8 +29,11 @@ nav.menu {
 }
 
 nav.menu button {
-    width: 100%;
-    border: solid #ffffff;
+    padding: 10px 15px;
+    background-color: #2B91BB;
+    color: white;
+    cursor: pointer;
+    font-size: 18px;
 }
 
 
@@ -39,6 +42,7 @@ button {
     background-color: #00558B;
     color: white;
     cursor: pointer;
+    font-size: 18px;
 }
 button:hover {
     background-color: #2B91BB;

@@ -6,14 +6,12 @@ class Partenaire
     {
         return [
             [
-                'code' => 'P001',
-                'nom' => 'Erasmus+',
-                'pays' => 'Europe'
+                'Nos partenaires' => '1',
+                'cadre' => 'Multidisciplinaire'
             ],
             [
-                'code' => 'P002',
-                'nom' => 'Fulbright',
-                'pays' => 'États-Unis'
+                'Nos partenaires' => '2',
+                'cadre' => 'CIVIS'
             ],
         ];
     }
