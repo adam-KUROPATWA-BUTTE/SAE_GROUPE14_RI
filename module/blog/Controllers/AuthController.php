@@ -6,6 +6,7 @@ class AuthController
 {
     public function index()
     {
+        // Vérifier si déjà connecté (sans middleware puisque vous n'en utilisez pas)
         if (isset($_SESSION['admin_id'])) {
             header('Location: index.php?page=dashboard');
             exit;

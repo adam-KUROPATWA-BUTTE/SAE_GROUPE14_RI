@@ -1,5 +1,8 @@
 <?php
-
+$message = $_SESSION['message'] ?? '';
+if ($message) {
+    unset($_SESSION['message']);
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -7,6 +10,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des dossiers</title>
+    <base href="http://localhost:8080/">
     <link rel="stylesheet" href="styles/index.css">
     <link rel="stylesheet" href="styles/folders.css">
     <link rel="icon" type="image/png" href="img/favicon.webp"/>
@@ -17,20 +21,32 @@
             <img src="img/logo.png" alt="Logo" style="height:100px;">
             <div class="right-buttons">
                 <button>fr</button>
-                <button onclick="window.location.href='login.php'">Se connecter</button>
+                <?php if ($isLoggedIn): ?>
+                    <button onclick="window.location.href='index.php?page=logout'">Se déconnecter</button>
+                <?php else: ?>
+                    <button onclick="window.location.href='index.php?page=login'">Se connecter</button>
+                <?php endif; ?>
             </div>
         </div>
-        <nav class="menu">
-            <button onclick="window.location.href='index.php'">Accueil</button>
-            <button onclick="window.location.href='dashboard.php'">Tableau de bord</button>
-            <button onclick="window.location.href='settings.php'">Paramètrage</button>
-            <button onclick="window.location.href='folders.php'">Dossiers</button>
-            <button onclick="window.location.href='help.php'">Aide</button>
-            <button onclick="window.location.href='web_plan.php'">Plan du site</button>
+         <nav class="menu">
+            <button onclick="window.location.href='index.php?page=home'">Accueil</button>
+            <button onclick="window.location.href='index.php?page=dashboard'">Tableau de bord</button>
+            <button onclick="window.location.href='index.php?page=settings'">Paramètrage</button>
+            <button onclick="window.location.href='index.php?page=folders'">Dossiers</button>
+            <button onclick="window.location.href='index.php?page=help'">Aide</button>
+            <button onclick="window.location.href='index.php?page=web_plan'">Plan du site</button>
         </nav>
     </header>
+
     <main>
         <h1>Gestion des dossiers</h1>
+
+        <?php if ($message): ?>
+            <div class="message success">
+                <?= htmlspecialchars($message) ?>
+            </div>
+        <?php endif; ?>
+
         <table>
             <thead>
                 <tr>
@@ -40,6 +56,9 @@
                     <th>Avancement</th>
                     <th>Pièces fournies</th>
                     <th>Dernière relance</th>
+                    <?php if ($isLoggedIn): ?>
+                        <th>Action</th>
+                    <?php endif; ?>
                 </tr>
             </thead>
             <tbody>
@@ -47,6 +66,8 @@
                     $total = (int)$dossier['total_pieces'];
                     $fournies = (int)$dossier['pieces_fournies'];
                     $pourcentage = $total > 0 ? round(($fournies / $total) * 100) : 0;
+                    $isComplet = ($fournies === $total && $total > 0);
+                    $isValide = $dossier['valide'] ?? false;
                 ?>
                 <tr>
                     <td><?= htmlspecialchars($dossier['numetu']) ?></td>
@@ -59,6 +80,23 @@
                     </td>
                     <td><?= $fournies ?> / <?= $total ?></td>
                     <td><?= htmlspecialchars($dossier['date_derniere_relance']) ?></td>
+                    <?php if ($isLoggedIn): ?>
+                        <td>
+                            <?php if ($isValide): ?>
+                                <span class="badge-valide">✓ Validé</span>
+                            <?php elseif ($isComplet): ?>
+                                <form method="POST" action="index.php?page=folders" style="display:inline;">
+                                    <input type="hidden" name="action" value="valider">
+                                    <input type="hidden" name="numetu" value="<?= htmlspecialchars($dossier['numetu']) ?>">
+                                    <button type="submit" class="btn-valider" onclick="return confirm('Voulez-vous valider ce dossier ?')">
+                                        Valider
+                                    </button>
+                                </form>
+                            <?php else: ?>
+                                <button class="btn-valider" disabled>Incomplet</button>
+                            <?php endif; ?>
+                        </td>
+                    <?php endif; ?>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

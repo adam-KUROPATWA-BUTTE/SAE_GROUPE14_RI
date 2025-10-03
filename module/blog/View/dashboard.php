@@ -8,6 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de bord</title>
+    <base href="http://localhost:8080/">
     <link rel="stylesheet" href="styles/index.css">
     <link rel="stylesheet" href="styles/folders.css">
     <link rel="icon" type="image/png" href="img/favicon.webp"/>
@@ -21,13 +22,13 @@
                 <button onclick="window.location.href='login.php'">Se connecter</button>
             </div>
         </div>
-        <nav class="menu">
-            <button onclick="window.location.href='index.php'">Accueil</button>
-            <button onclick="window.location.href='dashboard.php'">Tableau de bord</button>
-            <button onclick="window.location.href='settings.php'">Paramètrage</button>
-            <button onclick="window.location.href='folders.php'">Dossiers</button>
-            <button onclick="window.location.href='help.php'">Aide</button>
-            <button onclick="window.location.href='web_plan.php'">Plan du site</button>
+         <nav class="menu">
+            <button onclick="window.location.href='index.php?page=home'">Accueil</button>
+            <button onclick="window.location.href='index.php?page=dashboard'">Tableau de bord</button>
+            <button onclick="window.location.href='index.php?page=settings'">Paramètrage</button>
+            <button onclick="window.location.href='index.php?page=folders'">Dossiers</button>
+            <button onclick="window.location.href='index.php?page=help'">Aide</button>
+            <button onclick="window.location.href='index.php?page=web_plan'">Plan du site</button>
         </nav>
     </header>
     <main>
