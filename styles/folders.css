@@ -26,7 +26,7 @@ th, td {
 }
 
 th {
-    background: #007bff;
+    background: #00558B;
     color: #fff;
 }
 
@@ -44,7 +44,7 @@ tr:nth-child(even) {
 }
 
 .progress {
-    background: #28a745;
+    background: #008521;
     color: #fff;
     height: 100%;
     border-radius: 5px 0 0 5px;

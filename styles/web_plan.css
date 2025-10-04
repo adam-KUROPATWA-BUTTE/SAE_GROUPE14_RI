@@ -14,25 +14,25 @@ header {
 
 .top-bar {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 0 1em;
+    align-items: center;
 }
 
 .top-bar img {
-    height: 80px;
+    height: 100px;
+    margin-left: 20px;
+    margin-top: 2px;
 }
 
 .right-buttons {
     display: flex;
     gap: 10px;
+    align-items: center;
 }
 
 .right-buttons button {
-    background: #007bff;
-    color: #fff;
+    background: #00558B;
+    color: #ffffff;
     border: none;
     padding: 8px 16px;
     border-radius: 4px;
@@ -41,7 +41,7 @@ header {
 }
 
 .right-buttons button:hover {
-    background: #0056b3;
+    background: #2B91BB;
 }
 
 main {
@@ -55,7 +55,7 @@ main {
 
 h1 {
     text-align: center;
-    color: #222;
+    color: #00558B;
 }
 
 ul {
@@ -71,13 +71,42 @@ li a {
     display: block;
     padding: 1em;
     background: #f0f4ff;
-    color: #007bff;
+    color: #2B91BB;
     text-decoration: none;
     border-radius: 5px;
     font-size: 1.1em;
 }
 
 li a:hover {
-    background: #007bff;
+    background: #00558B;
     color: #fff;
+}
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+}
+
+main {
+    flex: 1;
+    max-width: 700px;
+    margin: 2em auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 2em;
+}
+
+footer {
+    background: #00558B;
+    color: #ffffff;
+    text-align: center;
+    padding: 2rem 1rem;
+}
+footer p {
+    margin: 0;
+    font-size: 14px;
 }
