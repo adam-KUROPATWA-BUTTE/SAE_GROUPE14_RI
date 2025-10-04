@@ -15,8 +15,9 @@ h1 {
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 2em;
     background: #f9f9f9;
+    margin-top: 2em;
+
 }
 
 th, td {
