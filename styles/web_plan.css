@@ -81,3 +81,30 @@ li a:hover {
     background: #007bff;
     color: #fff;
 }
+
+@media screen and (max-width: 768px) {
+    .top-bar {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .right-buttons {
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+    }
+
+    .right-buttons button {
+        width: 100%;
+        font-size: 20px;
+    }
+
+    ul {
+        padding: 0 10px;
+    }
+
+    li a {
+        font-size: 18px;
+        width: 100%;
+    }
+}

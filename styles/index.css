@@ -247,3 +247,39 @@ footer p {
     color: #ffffff;
 }
 
+@media screen and (max-width: 768px) {
+    .top-bar {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .right-buttons {
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+    }
+
+    nav.menu {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    nav.menu button,
+    .right-buttons button {
+        width: 100%;
+        font-size: 22px;
+    }
+
+    .chart-percentage {
+        font-size: 36px;
+    }
+
+    .pub-text {
+        font-size: 28px;
+    }
+
+    .legend {
+        font-size: 18px;
+    }
+}
+

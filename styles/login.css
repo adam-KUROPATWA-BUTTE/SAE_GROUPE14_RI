@@ -50,3 +50,28 @@ button:hover {
 .toggle a:hover {
     text-decoration: underline;
 }
+
+@media screen and (max-width: 768px) {
+    .container {
+        width: 90%;
+        margin: 20px;
+    }
+
+    form {
+        width: 100%;
+    }
+
+    input, button {
+        width: 100%;
+        font-size: 18px;
+        padding: 12px;
+    }
+
+    h2 {
+        font-size: 24px;
+    }
+
+    .toggle {
+        font-size: 16px;
+    }
+}

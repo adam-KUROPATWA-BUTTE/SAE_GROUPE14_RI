@@ -29,3 +29,31 @@ tr:nth-child(even) {
     background: #f0f4ff;
 }
 
+@media screen and (max-width: 768px) {
+    main {
+        margin: 1em;
+        padding: 1em;
+    }
+
+    table {
+        width: 100%;
+        display: block;
+        overflow-x: auto;
+    }
+
+    th, td {
+        font-size: 18px;
+        padding: 0.6em;
+        min-width: 120px; /* Pour éviter que le contenu soit trop compressé */
+    }
+
+    thead {
+        white-space: nowrap;
+    }
+
+    tr {
+        display: table-row;
+    }
+}
+
+
