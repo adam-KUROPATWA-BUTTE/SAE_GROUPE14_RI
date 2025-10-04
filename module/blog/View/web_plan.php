@@ -15,10 +15,9 @@
     <header>
         <div class="top-bar">
             <img src="img/logo.png" alt="Logo" style="height:100px;">
-            <div class="right-buttons">
-                <button>fr</button>
-                <button onclick="window.location.href='login.php'">Se connecter</button>
-            </div>
+            <div class="right-buttons"></div>
+
+
         </div>
     </header>
     <main style="padding:2em;">
@@ -30,4 +29,8 @@
         </ul>
     </main>
 </body>
+<!-- Footer -->
+<footer>
+    <p>&copy; 2025 - Aix-Marseille Université.</p>
+</footer>
 </html>

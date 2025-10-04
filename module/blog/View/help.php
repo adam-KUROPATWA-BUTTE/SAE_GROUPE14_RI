@@ -16,17 +16,13 @@
     <header>
         <div class="top-bar">
             <img src="img/logo.png" alt="Logo" style="height:100px;">
-            <div class="right-buttons">
-                <button>fr</button>
-                <button onclick="window.location.href='login.php'">Se connecter</button>
-            </div>
         </div>
          <nav class="menu">
             <button onclick="window.location.href='index.php?page=home'">Accueil</button>
             <button onclick="window.location.href='index.php?page=dashboard'">Tableau de bord</button>
             <button onclick="window.location.href='index.php?page=settings'">Paramètrage</button>
             <button onclick="window.location.href='index.php?page=folders'">Dossiers</button>
-            <button onclick="window.location.href='index.php?page=help'">Aide</button>
+             <button class="active" onclick="window.location.href='index.php?page=help'">Aide</button>
             <button onclick="window.location.href='index.php?page=web_plan'">Plan du site</button>
         </nav>
     </header>
@@ -55,4 +51,8 @@
         <strong>relations-internationales@amu.fr</strong></p>
     </main>
 </body>
+<!-- Footer -->
+<footer>
+    <p>&copy; 2025 - Aix-Marseille Université.</p>
+</footer>
 </html>
