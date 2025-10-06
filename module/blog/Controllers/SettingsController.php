@@ -1,12 +1,20 @@
 <?php
+namespace Controllers\Blog;
 
-require_once __DIR__ . '/../Model/Universite.php';
+use Controllers\ControllerInterface;
+use Model\Universite; // <-- important !
 
-class SettingsController
+class SettingsController implements ControllerInterface
 {
-    public function index()
+    public function control()
     {
         $universites = Universite::getAll();
-        require __DIR__ . '/../View/settings.php';
+        require ROOT_PATH . '/module/blog/View/settings.php';
     }
+
+    public static function support(string $page, string $method): bool
+{
+    return $page === 'settings';
+}
+
 }

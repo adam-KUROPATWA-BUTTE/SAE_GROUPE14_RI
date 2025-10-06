@@ -1,12 +1,23 @@
 <?php
+namespace Controllers\Blog;
 
-require_once __DIR__ . '/../Model/help.php';
+use Controllers\ControllerInterface;
 
-class HelpController
+class HelpController implements ControllerInterface
 {
-    public function index()
+    public function control()
     {
-        $faq = Help::getFaq();
-        require __DIR__ . '/../View/help.php';
+        // Récupérer un éventuel message de session
+        $message = $_SESSION['message'] ?? '';
+        if ($message) unset($_SESSION['message']);
+
+        // Charger la vue correctement
+        require ROOT_PATH . '/module/blog/View/help.php';
+    }
+
+    public static function support(string $page, string $method): bool
+    {
+        // Retourne true si l'URL correspond à /help
+        return $page === '/help' || $page === 'help';
     }
 }

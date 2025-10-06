@@ -1,4 +1,10 @@
 <?php
+namespace Config;
+
+use PDO;
+use PDOException;
+use Exception;
+
 class Database
 {
     private static $instance = null;
@@ -10,21 +16,17 @@ class Database
     private $password = 'AdminDataRI5434';
     private $charset = 'utf8mb4';
 
-
     private function __construct()
     {
-        try {   
+        try {
             $dsn = "mysql:host={$this->host};dbname={$this->dbname};charset={$this->charset}";
-            
             $options = [
-                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES   => false,
+                PDO::ATTR_EMULATE_PREPARES => false,
                 PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
             ];
-
             $this->conn = new PDO($dsn, $this->username, $this->password, $options);
-            
         } catch (PDOException $e) {
             error_log("DB Error: " . $e->getMessage());
             die("Erreur de connexion à la base de données.");
@@ -45,7 +47,6 @@ class Database
     }
 
     private function __clone() {}
-    
     public function __wakeup()
     {
         throw new Exception("Cannot unserialize singleton");

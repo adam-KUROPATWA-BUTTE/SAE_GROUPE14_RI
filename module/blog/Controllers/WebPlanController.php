@@ -1,11 +1,24 @@
 <?php
-require_once __DIR__ . '/../Model/WebPlan.php';
+namespace Controllers\Blog;
 
-class WebPlanController
+use Controllers\ControllerInterface;
+use Model\WebPlan; // Assure-toi que le modèle est bien namespace
+
+class WebPlanController implements ControllerInterface
 {
-    public function index()
+    // Méthode principale appelée par le routeur
+    public function control()
     {
         $links = WebPlan::getLinks();
-        require __DIR__ . '/../View/web_plan.php';
+        require ROOT_PATH . '/module/blog/View/web_plan.php';
     }
+
+    // Méthode obligatoire pour le routeur
+    public static function support(string $page, string $method): bool
+{
+    return $page === 'web_plan';
+}
+
+
+
 }

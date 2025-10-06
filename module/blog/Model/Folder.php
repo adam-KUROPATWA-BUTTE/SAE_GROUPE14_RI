@@ -1,9 +1,6 @@
 <?php
-require_once __DIR__ . '/../config/database.php';
-<<<<<<< HEAD
+namespace Model;
 
-=======
->>>>>>> Amine
 class Dossier
 {
     /**
