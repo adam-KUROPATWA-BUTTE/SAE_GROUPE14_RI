@@ -7,6 +7,7 @@ class Autoloader
         'Controllers\\' => 'module/blog/Controllers/',
         'Model\\' => 'module/blog/Model/',
         'Config\\' => 'module/blog/Config/',
+        'View\\' => 'module/blog/View/',
     ];
 
     public static function register(): void
