@@ -7,7 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de bord</title>
-    <base href="http://localhost:8080/">
+    <base href="http://164.92.139.137/">
     <link rel="stylesheet" href="styles/index.css">
     <link rel="stylesheet" href="styles/folders.css">
     <link rel="icon" type="image/png" href="img/favicon.webp"/>
