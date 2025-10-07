@@ -3,6 +3,8 @@ namespace Controllers\Blog;
 
 
 use Controllers\ControllerInterface;
+use Model\Dossiers;
+use View\DashBoardPage;
 
 class DashboardController implements ControllerInterface 
 
@@ -15,13 +17,12 @@ class DashboardController implements ControllerInterface
             exit;
         }
 
-        require ROOT_PATH . '/module/blog/Model/dashboard.php';
-
-
-        $dossiers = \Dossier::getDossiersIncomplets();
-        require ROOT_PATH . '/module/blog/View/dashboard.php';
-
-;
+         // Récupérer les dossiers incomplets
+        $dossiers = Dossier::getDossiersIncomplets();
+        
+        // Créer et afficher la page
+        $page = new DashboardPage($dossiers);
+        $page->render();
     }
 
     public static function support(string $page, string $method): bool
