@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Accueil - Service des relations internationales AMU</title>
-    <base href="http://localhost:8080/">
+    <base href="http://164.92.139.137/">
     <link rel="stylesheet" href="styles/index.css">
     <link rel="icon" type="image/png" href="img/favicon.webp"/>
 </head>
