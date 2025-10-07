@@ -1,7 +1,7 @@
 <?php
 namespace Model;
 
-class Dossiers
+class dossiers
 {
     public static function getDossiersIncomplets()
     {
