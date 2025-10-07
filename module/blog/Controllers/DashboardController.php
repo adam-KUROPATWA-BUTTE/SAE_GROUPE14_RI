@@ -4,7 +4,7 @@ namespace Controllers\Blog;
 
 use Controllers\ControllerInterface;
 use Model\dossiers;
-use View\DashBoardPage;
+use View\dashboard;
 
 class DashboardController implements ControllerInterface 
 
@@ -18,7 +18,7 @@ class DashboardController implements ControllerInterface
         }
 
          // Récupérer les dossiers incomplets
-        $dossiers = dossiers::getDossiersIncomplets();
+        $dossiers = Dossiers::getDossiersIncomplets();
         
         // Créer et afficher la page
         $page = new DashboardPage($dossiers);
