@@ -16,14 +16,14 @@ class AuthController implements ControllerInterface
         $isLogin = true;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            require_once ROOT_PATH . '/module/blog/Models/User.php';
+            require_once ROOT_PATH . '/module/blog/Model/User.php';
             $action = $_POST['action'] ?? '';
 
             if ($action === 'login') {
                 $email = $_POST['email'] ?? '';
                 $password = $_POST['password'] ?? '';
 
-                if (\Models\User::login($email, $password)) {
+                if (\Model\User::login($email, $password)) {
                     $_SESSION['admin_id'] = 1; // exemple
                     $_SESSION['message'] = "Connexion réussie !";
                     header('Location: /dashboard');
