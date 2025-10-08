@@ -16,7 +16,7 @@ class AuthController implements ControllerInterface
         $isLogin = true;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            require_once ROOT_PATH . '/module/blog/Model/User.php';
+            require_once DIRECTORY_SEPARATOR . 'module' . DIRECTORY_SEPARATOR . 'blog' . DIRECTORY_SEPARATOR . 'Model' . DIRECTORY_SEPARATOR . 'User.php';
             $action = $_POST['action'] ?? '';
 
             if ($action === 'login') {
@@ -34,7 +34,7 @@ class AuthController implements ControllerInterface
             }
         }
 
-        require ROOT_PATH . '/module/blog/View/login.php';
+        require DIRECTORY_SEPARATOR . 'module' . DIRECTORY_SEPARATOR . 'blog' . DIRECTORY_SEPARATOR . 'View' . DIRECTORY_SEPARATOR . 'login.php';
     }
 
     public static function support(string $page, string $method): bool
