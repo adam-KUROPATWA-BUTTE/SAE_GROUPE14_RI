@@ -4,7 +4,7 @@ namespace Controllers\Blog;
 
 use Controllers\ControllerInterface;
 use Model\dossiers;
-use View\dashboard;
+use View\DashboardPage;
 
 class DashboardController implements ControllerInterface 
 
