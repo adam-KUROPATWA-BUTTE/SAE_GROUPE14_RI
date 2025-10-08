@@ -1,8 +1,7 @@
 <?php
 namespace Model;
 
-define('ROOT_PATH', __DIR__ . '/../../../');
-require_once ROOT_PATH . 'config/Database.php';
+require_once '/' . DIRECTORY_SEPARATOR . 'modules/blog/config/Database.php';
 
 class User
 {
