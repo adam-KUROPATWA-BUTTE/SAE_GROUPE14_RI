@@ -35,8 +35,10 @@ class DashboardPage
                             <a href="#">English</a>
                         </div>
                     </div>
+                    <button onclick="if(confirm('Voulez-vous vraiment vous déconnecter ?')) { window.location.href='index.php?page=logout'; }" style="background-color: #dc3545; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
+                        Déconnexion
+                    </button>
                 </div>
-            </div>
             <nav class="menu">
                 <button onclick="window.location.href='/'">Accueil</button>
                 <button onclick="window.location.href='/dashboard'">Tableau de bord</button>
