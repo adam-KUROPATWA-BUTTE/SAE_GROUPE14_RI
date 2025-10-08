@@ -1,7 +1,7 @@
 <?php
 namespace Model;
 
-require_once DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR . 'blog' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'Database.php';
+require_once __DIR__ .DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'Database.php';
 
 class User
 {
