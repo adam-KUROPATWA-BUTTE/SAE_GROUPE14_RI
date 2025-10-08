@@ -7,7 +7,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paramètrage</title>
-    <base href="http://localhost:8080/">
     <link rel="stylesheet" href="styles/index.css">
     <link rel="icon" type="image/png" href="img/favicon.webp"/>
     <style>

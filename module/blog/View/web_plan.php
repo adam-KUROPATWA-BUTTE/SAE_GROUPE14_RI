@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="styles/web_plan.css">
     <link rel="icon" type="image/png" href="img/favicon.webp"/>
     <title>Plan du site</title>
-    <base href="http://localhost:8080/">
 </head>
 <body>
     <header>

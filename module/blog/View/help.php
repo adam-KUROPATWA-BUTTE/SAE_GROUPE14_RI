@@ -9,7 +9,6 @@
     <title>Aide - Service des Relations Internationales AMU</title>
     <link rel="stylesheet" href="styles/index.css">
     <link rel="stylesheet" href="styles/help.css">
-    <base href="http://localhost:8080/">
     <link rel="icon" type="image/png" href="img/favicon.webp"/>
 </head>
 <body>
