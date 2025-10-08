@@ -1,6 +1,20 @@
-RewriteEngine On
+server {
+    listen 80;
+    server_name 164.92.139.137;
 
-# Redirige tout vers index.php si ce n'est pas un fichier ou dossier existant
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php?page=$1 [QSA,L]
+    root /home/amine/SAE_GROUPE14_RI;
+    index index.php;
+
+    location / {
+        try_files $uri $uri/ /index.php?page=$uri&$args;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock; # adapte selon ta version
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+}
