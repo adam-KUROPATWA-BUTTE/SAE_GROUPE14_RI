@@ -33,7 +33,7 @@ class AuthController implements ControllerInterface
             }
         }
 
-        require DIRECTORY_SEPARATOR . 'module' . DIRECTORY_SEPARATOR . 'blog' . DIRECTORY_SEPARATOR . 'View' . DIRECTORY_SEPARATOR . 'login.php';
+        require __DIR__ . DIRECTORY_SEPARATOR . 'module' . DIRECTORY_SEPARATOR . 'blog' . DIRECTORY_SEPARATOR . 'View' . DIRECTORY_SEPARATOR . 'login.php';
     }
 
     public static function support(string $page, string $method): bool
