@@ -36,6 +36,7 @@ class DashboardPage
                         </div>
                     </div>
                 </div>
+            </div>
             <nav class="menu">
                 <button onclick="window.location.href='/'">Accueil</button>
                 <button onclick="window.location.href='/dashboard'">Tableau de bord</button>
