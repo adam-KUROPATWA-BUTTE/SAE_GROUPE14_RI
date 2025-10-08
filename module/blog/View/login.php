@@ -38,7 +38,7 @@
 
         <?php elseif ($isLogin && !$isReset): ?>
             <h2>Connexion</h2>
-            <form method="POST" action="index.php?page=login">
+            <form method="POST" action="/?page=login">
                 <input type="hidden" name="action" value="login">
                 <input type="email" name="email" placeholder="Email" required>
                 <input type="password" name="password" placeholder="Mot de passe" required>
