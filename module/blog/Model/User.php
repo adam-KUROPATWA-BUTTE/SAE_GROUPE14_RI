@@ -1,14 +1,14 @@
 <?php
 namespace Model;
 
-require_once __DIR__ .DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'Database.php';
+require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'Database.php';
 
 class User
 {
     public static function login($email, $password)
     {
         try {
-            $db = Database::getInstance()->getConnection();
+            $db = \Database::getInstance()->getConnection();
             
             $sql = "SELECT * FROM admins WHERE email = :email LIMIT 1";
             $stmt = $db->prepare($sql);
@@ -32,7 +32,7 @@ class User
             
             return false;
             
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             error_log("Erreur login : " . $e->getMessage());
             return false;
         }
@@ -41,7 +41,7 @@ class User
     public static function register($email, $password, $nom = '', $prenom = '')
     {
         try {
-            $db = Database::getInstance()->getConnection();
+            $db = \Database::getInstance()->getConnection();
             
             // Vérifier si l'email existe déjà
             $sql = "SELECT id FROM admins WHERE email = :email";
@@ -64,7 +64,7 @@ class User
                 'prenom' => $prenom
             ]);
             
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             error_log("Erreur register : " . $e->getMessage());
             return false;
         }
@@ -73,7 +73,7 @@ class User
     public static function resetPassword($email)
     {
         try {
-            $db = Database::getInstance()->getConnection();
+            $db = \Database::getInstance()->getConnection();
             
             $sql = "SELECT id FROM admins WHERE email = :email";
             $stmt = $db->prepare($sql);
@@ -106,7 +106,7 @@ class User
             
             return true;
             
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             error_log("Erreur resetPassword : " . $e->getMessage());
             return false;
         }
@@ -115,7 +115,7 @@ class User
     public static function updatePasswordWithToken($token, $newPassword)
     {
         try {
-            $db = Database::getInstance()->getConnection();
+            $db = \Database::getInstance()->getConnection();
             
             $sql = "SELECT admin_id FROM reset_tokens
                     WHERE token = :token AND expires_at > NOW()";
@@ -145,7 +145,7 @@ class User
             
             return false;
             
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             error_log("Erreur updatePasswordWithToken : " . $e->getMessage());
             return false;
         }
