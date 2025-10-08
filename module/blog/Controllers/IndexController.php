@@ -2,20 +2,18 @@
 namespace Controllers\Blog;
 
 use Controllers\ControllerInterface;
+use View\HomePage;
 
 class IndexController implements ControllerInterface
 {
-    // Méthode principale appelée par le routeur
-    public function control()
+    public function control(): void
     {
-        require __DIR__ . '/../View/index.php';
+        $view = new HomePage();
+        $view->render();
     }
 
-    // Méthode obligatoire pour le routeur
     public static function support(string $page, string $method): bool
-{
-    return $page === 'home';
-}
-
-
+    {
+        return $page === 'home' && $method === 'GET';
+    }
 }

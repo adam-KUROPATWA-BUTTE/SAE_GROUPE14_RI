@@ -5,18 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e4dbe818-91e3-4dc7-9532-5ab684ba46d8" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/php.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/php.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/module/blog/View/HelpPage.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/module/blog/View/HomePage.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/module/blog/View/SettingsPage.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/module/blog/View/WebPlanPage.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/img/logo.png" beforeDir="false" afterPath="$PROJECT_DIR$/img/logo.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/module/blog/View/dashboard.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/blog/View/dashboard.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/module/blog/View/help.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/blog/View/help.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/module/blog/View/index.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/blog/View/index.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/module/blog/View/web_plan.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/blog/View/web_plan.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/styles/folders.css" beforeDir="false" afterPath="$PROJECT_DIR$/styles/folders.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/styles/help.css" beforeDir="false" afterPath="$PROJECT_DIR$/styles/help.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/styles/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/styles/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/styles/web_plan.css" beforeDir="false" afterPath="$PROJECT_DIR$/styles/web_plan.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/module/blog/Controllers/HelpController.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/blog/Controllers/HelpController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/module/blog/Controllers/IndexController.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/blog/Controllers/IndexController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/module/blog/Controllers/SettingsController.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/blog/Controllers/SettingsController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/module/blog/Controllers/WebPlanController.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/blog/Controllers/WebPlanController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/module/blog/View/help.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/module/blog/View/index.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/module/blog/View/settings.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/module/blog/View/web_plan.php" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/styles/settings.css" beforeDir="false" afterPath="$PROJECT_DIR$/styles/settings.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,6 +91,9 @@
       <workItem from="1759571532190" duration="1373000" />
       <workItem from="1759572908357" duration="68000" />
       <workItem from="1759572977474" duration="6322000" />
+      <workItem from="1759946814701" duration="11000" />
+      <workItem from="1759946828555" duration="2626000" />
+      <workItem from="1759950962130" duration="3983000" />
     </task>
     <servers />
   </component>

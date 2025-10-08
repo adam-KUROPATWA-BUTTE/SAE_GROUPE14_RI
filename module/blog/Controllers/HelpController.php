@@ -2,22 +2,24 @@
 namespace Controllers\Blog;
 
 use Controllers\ControllerInterface;
+use View\HelpPage;
 
 class HelpController implements ControllerInterface
 {
-    public function control()
+    public function control(): void
     {
-        // Récupérer un éventuel message de session
-        $message = $_SESSION['message'] ?? '';
-        if ($message) unset($_SESSION['message']);
+        // Exemple de FAQ (tu peux la remplacer par un vrai modèle)
+        $faq = [
+            ['question' => 'Comment ajouter un utilisateur ?', 'answer' => 'Vous pouvez ajouter un utilisateur via le menu Paramétrage > Utilisateurs.'],
+            ['question' => 'Comment réinitialiser un mot de passe ?', 'answer' => 'Cliquez sur le bouton "Réinitialiser le mot de passe" dans le profil utilisateur.']
+        ];
 
-        // Charger la vue correctement
-        require ROOT_PATH . '/module/blog/View/help.php';
+        $view = new HelpPage($faq);
+        $view->render();
     }
 
     public static function support(string $page, string $method): bool
     {
-        // Retourne true si l'URL correspond à /help
         return $page === '/help' || $page === 'help';
     }
 }

@@ -21,10 +21,32 @@ th, td {
 }
 
 th {
-    background: #007bff;
+    background: #0056b3;
     color: #fff;
 }
 
 tr:nth-child(even) {
     background: #f0f4ff;
+}
+
+.sub-menu {
+    margin: 1em 0;
+    text-align: center;
+}
+
+.sub-menu a {
+    margin: 0 5px;
+    padding: 8px 12px;
+    background: #2B91BB;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.sub-menu a:hover {
+    background: #0056b3;
+}
+
+.sub-menu a.active {
+    background: #0056b3;
 }

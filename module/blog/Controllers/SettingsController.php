@@ -2,14 +2,15 @@
 namespace Controllers\Blog;
 
 use Controllers\ControllerInterface;
-use Model\Universite; // <-- important !
+use View\SettingsPage;
+use Model\Universite;
 use Model\Campagne;
 use Model\Destination;
 use Model\Partenaire;
 
 class SettingsController implements ControllerInterface
 {
-    public function control()
+    public function control(): void
     {
         $type = $_GET['type'] ?? 'universites';
 
@@ -31,12 +32,12 @@ class SettingsController implements ControllerInterface
                 $titre = "Paramètrage";
         }
 
-        require __DIR__ . '/../View/settings.php';
+        $view = new SettingsPage($titre, $data);
+        $view->render();
     }
 
     public static function support(string $page, string $method): bool
-{
-    return $page === 'settings';
-}
-
+    {
+        return $page === 'settings';
+    }
 }
