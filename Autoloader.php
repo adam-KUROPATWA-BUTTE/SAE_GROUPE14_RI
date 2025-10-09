@@ -26,6 +26,7 @@ class Autoloader
                     require_once $file;
                     return true;
                 } else {
+                    echo "Fichier introuvable : $file<br>";
                     error_log("Fichier introuvable : $file");
                 }
             }
