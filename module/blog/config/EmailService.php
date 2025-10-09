@@ -8,7 +8,7 @@ class EmailService
     
     public static function sendPasswordReset($toEmail, $resetToken)
     {
-        $resetLink = "https://ri-amu.app/index.php?page=reset&token=" . $resetToken;
+        $resetLink = "https://164.92.139.137/app/index.php?page=reset&token=" . $resetToken;
         
         $subject = 'Réinitialisation de votre mot de passe';
         
@@ -43,12 +43,12 @@ class EmailService
 </head>
 <body style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
     <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
-        <h2 style='color: #4CAF50;'>Réinitialisation de mot de passe</h2>
+        <h2 style='color: #24188fff;'>Réinitialisation de mot de passe</h2>
         <p>Vous avez demandé la réinitialisation de votre mot de passe.</p>
         <p>Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe :</p>
         <div style='text-align: center; margin: 30px 0;'>
             <a href='$resetLink' 
-               style='background-color: #4CAF50; 
+               style='background-color: #24188fff; 
                       color: white; 
                       padding: 12px 30px; 
                       text-decoration: none; 
@@ -64,7 +64,7 @@ class EmailService
         </p>
         <p style='color: #999; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;'>
             Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br>
-            <a href='$resetLink' style='color: #4CAF50;'>$resetLink</a>
+            <a href='$resetLink' style='color: #24188fff;'>$resetLink</a>
         </p>
     </div>
 </body>
