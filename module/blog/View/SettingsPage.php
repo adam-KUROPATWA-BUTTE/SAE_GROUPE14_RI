@@ -34,7 +34,7 @@ class SettingsPage
             <nav class="menu">
                 <button onclick="window.location.href='/'">Accueil</button>
                 <button onclick="window.location.href='/dashboard'">Tableau de bord</button>
-                <button onclick="window.location.href='/settings'">Paramétrage</button>
+                <button class="active" onclick="window.location.href='settings.php'">Paramètrage</button>
                 <button onclick="window.location.href='/folders'">Dossiers</button>
                 <button onclick="window.location.href='/help'">Aide</button>
                 <button onclick="window.location.href='/web_plan'">Plan du site</button>

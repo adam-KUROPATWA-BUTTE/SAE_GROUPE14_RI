@@ -33,7 +33,7 @@ class HelpPage
                 <button onclick="window.location.href='/dashboard'">Tableau de bord</button>
                 <button onclick="window.location.href='/settings'">Paramétrage</button>
                 <button onclick="window.location.href='/folders'">Dossiers</button>
-                <button onclick="window.location.href='/help'">Aide</button>
+                <button class="active" onclick="window.location.href='help.php'">Aide</button>
                 <button onclick="window.location.href='/web_plan'">Plan du site</button>
             </nav>
         </header>
