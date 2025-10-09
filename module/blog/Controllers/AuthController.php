@@ -95,6 +95,54 @@ class AuthController implements ControllerInterface
     }
 
     /**
+     * Gère la page de réinitialisation avec token
+     */
+
+    private function handleResetPassword(): void
+    {
+        // Vérifier si un token est présent
+        if (!isset($_GET['token'])) {
+            header('Location: /index.php?page=login');
+            exit;
+        }
+        
+        $token = $_GET['token'];
+        $error = null;
+        $success = null;
+        
+        // Si le formulaire est soumis
+        if (isset($_POST['submit_reset'])) {
+            $password = $_POST['password'] ?? '';
+            $passwordConfirm = $_POST['password_confirm'] ?? '';
+            $tokenPost = $_POST['token'] ?? '';
+            
+            // Validations
+            if (empty($password) || empty($passwordConfirm)) {
+                $error = "Tous les champs sont requis.";
+            } elseif ($password !== $passwordConfirm) {
+                $error = "Les mots de passe ne correspondent pas.";
+            } elseif (strlen($password) < 8) {
+                $error = "Le mot de passe doit contenir au moins 8 caractères.";
+            } elseif ($tokenPost !== $token) {
+                $error = "Token invalide.";
+            } else {
+                // Tenter de réinitialiser le mot de passe
+                $result = User::updatePasswordWithToken($token, $password);
+                
+                if ($result) {
+                    $success = "Votre mot de passe a été réinitialisé avec succès !";
+                } else {
+                    $error = "Le lien de réinitialisation est invalide ou expiré.";
+                }
+            }
+        }
+        
+        // Afficher la vue avec la classe
+        $page = new \View\ResetPasswordPage($token, $error, $success);
+        $page->render();
+    }
+
+    /**
      * Gère la déconnexion de l'utilisateur
      */
     private function handleLogout(): void
