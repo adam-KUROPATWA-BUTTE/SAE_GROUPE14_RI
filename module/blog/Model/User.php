@@ -79,46 +79,42 @@ class User
             $stmt = $db->prepare($sql);
             $stmt->execute(['email' => $email]);
             $admin = $stmt->fetch();
-
+        
             if (!$admin) {
-                return true; // Retourner true même si l'email n'existe pas (sécurité)
+                return true;
             }
-
+        
             $token = bin2hex(random_bytes(32));
-            $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
-
-            // D'abord supprimer les anciens tokens pour cet admin
+        
+            // Supprimer les anciens tokens
             $sql = "DELETE FROM reset_tokens WHERE admin_id = :admin_id";
             $stmt = $db->prepare($sql);
             $stmt->execute(['admin_id' => $admin['id']]);
-
-            // Ensuite insérer le nouveau token
+        
+            // Utiliser DATE_ADD avec NOW() directement dans MySQL
             $sql = "INSERT INTO reset_tokens (admin_id, token, expires_at)
-                    VALUES (:admin_id, :token, :expires_at)";
+                    VALUES (:admin_id, :token, DATE_ADD(NOW(), INTERVAL 1 HOUR))";
             $stmt = $db->prepare($sql);
-
+        
             $result = $stmt->execute([
                 'admin_id' => $admin['id'],
-                'token' => $token,
-                'expires_at' => $expires
+                'token' => $token
             ]);
-
+        
             if ($result) {
-                // Envoi de l'email via EmailService
                 require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'EmailService.php';
                 $emailSent = \Service\EmailService::sendPasswordReset($email, $token);
-
                 error_log("Email de reset envoyé à $email - Résultat: " . ($emailSent ? 'SUCCESS' : 'FAILED'));
             }
-
+        
             return true;
-
+        
         } catch (\PDOException $e) {
             error_log("Erreur resetPassword : " . $e->getMessage());
             return false;
         }
     }
-
+    
     public static function updatePasswordWithToken($token, $newPassword)
     {
         try {
