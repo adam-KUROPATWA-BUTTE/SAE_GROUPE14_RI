@@ -33,7 +33,7 @@ if ($page === '') $page = 'home';
 // --- Gestion de la déconnexion ---
 if ($page === 'logout') {
     session_destroy();
-    header('Location: index.php?page=login');
+    header('Location: /');
     exit;
 }
 

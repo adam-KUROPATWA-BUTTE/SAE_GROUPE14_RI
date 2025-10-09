@@ -21,8 +21,7 @@ if ($message) {
             <div class="right-buttons">
                 <button>fr</button>
                 <?php if ($isLoggedIn): ?>
-                    <button onclick="window.location.href='index.php?page=logout'">Se déconnecter</button>
-                <?php else: ?>
+                    
                     <button onclick="window.location.href='index.php?page=login'">Se connecter</button>
                 <?php endif; ?>
             </div>
