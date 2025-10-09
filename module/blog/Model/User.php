@@ -73,7 +73,7 @@ class User
     public static function resetPassword($email)
     {
         try {
-            $db = Database::getInstance()->getConnection();
+            $db = \Database::getInstance()->getConnection();
         
             $sql = "SELECT id FROM admins WHERE email = :email";
             $stmt = $db->prepare($sql);
@@ -104,8 +104,8 @@ class User
             ]);
 
             if ($result) {
-                // Envoi de l'email via Postfix
-                require_once ROOT_PATH . 'services/EmailService.php';
+                // Envoi de l'email via EmailService
+                require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'EmailService.php';
                 $emailSent = \Service\EmailService::sendPasswordReset($email, $token);
 
                 error_log("Email de reset envoyé à $email - Résultat: " . ($emailSent ? 'SUCCESS' : 'FAILED'));
@@ -113,7 +113,7 @@ class User
 
             return true;
 
-        } catch (PDOException $e) {
+        } catch (\PDOException $e) {
             error_log("Erreur resetPassword : " . $e->getMessage());
             return false;
         }
