@@ -11,12 +11,14 @@ class FoldersController
     }
 
     public function control(): void {
-        // On suppose que session_start() a déjà été appelé dans index.php
-        $dossiers = Dossier::getAll();
+
+        $voeux = []; 
+        
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-        $view = new FoldersPage($dossiers, $message);
+        // Le constructeur de FoldersPage attend un tableau de vœux.
+        $view = new FoldersPage($voeux, $message); 
         $view->render();
     }
 }
