@@ -1,8 +1,5 @@
 <?php
-$message = $_SESSION['message'] ?? '';
-if ($message) {
-    unset($_SESSION['message']);
-}
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -13,90 +10,213 @@ if ($message) {
     <link rel="stylesheet" href="styles/index.css">
     <link rel="stylesheet" href="styles/folders.css">
     <link rel="icon" type="image/png" href="img/favicon.webp"/>
+    <style>
+        main {
+            padding: 20px;
+        }
+
+        h1 {
+            background-color: #004080;
+            color: white;
+            padding: 10px;
+            margin: 0;
+        }
+
+        .student-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #004080;
+            padding: 10px;
+            color: white;
+        }
+
+        .student-toolbar input[type="text"] {
+            width: 250px;
+            padding: 5px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-buttons button {
+            background: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .form-section {
+            display: grid;
+            grid-template-columns: 150px 1fr 150px 1fr;
+            gap: 10px 20px;
+            margin-top: 20px;
+        }
+
+        .form-section label {
+            grid-column: span 1;
+            align-self: center;
+        }
+
+        .form-section input,
+        .form-section select {
+            grid-column: span 1;
+            padding: 5px;
+            width: 100%;
+        }
+
+        .form-section input[type="file"] {
+            grid-column: span 3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        table thead {
+            background-color: #004080;
+            color: white;
+        }
+
+        .voeux-actions {
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <div class="top-bar">
-            <img src="img/logo.png" alt="Logo" style="height:100px;">
-            <div class="right-buttons">
-                <button>fr</button>
-                <button onclick="window.location.href='index.php?page=login'">Se connecter</button>
-            </div>
+<header>
+    <div class="top-bar">
+        <img src="img/logo.png" alt="Logo" style="height:100px;">
+        <div class="right-buttons">
+            <button>fr</button>
+            <button onclick="window.location.href='login.php'">Se connecter</button>
         </div>
-         <nav class="menu">
-            <button onclick="window.location.href='/'">Accueil</button>
-            <button onclick="window.location.href='/dashboard'">Tableau de bord</button>
-            <button onclick="window.location.href='/settings'">Paramétrage</button>
-            <button onclick="window.location.href='/folders'">Dossiers</button>
-            <button onclick="window.location.href='/help'">Aide</button>
-            <button onclick="window.location.href='/web_plan'">Plan du site</button>
+    </div>
+    <nav class="menu">
+        <button onclick="window.location.href='index.php'">Accueil</button>
+        <button onclick="window.location.href='dashboard.php'">Tableau de bord</button>
+        <button onclick="window.location.href='settings.php'">Paramètrage</button>
+        <button class="active" onclick="window.location.href='folders.php'">Dossiers</button>
+        <button onclick="window.location.href='help.php'">Aide</button>
+        <button onclick="window.location.href='web_plan.php'">Plan du site</button>
+    </nav>
+    <div class="sub-menu" style="display:flex; gap:10px; margin-top:20px;">
+        <button onclick="window.location.href='folders.php'">Les étudiants</button>
+    </div>
+</header>
 
-        </nav>
-    </header>
+<main>
+    <h1>Fiche Étudiant</h1>
 
-    <main>
-        <h1>Gestion des dossiers</h1>
+    <div class="student-toolbar">
+        <!-- Recherche -->
+        <div>
+            <label for="search">Rechercher</label>
+            <input type="text" id="search" name="search">
+        </div>
 
-        <?php if ($message): ?>
-            <div class="message success">
-                <?= htmlspecialchars($message) ?>
-            </div>
+        <!-- Boutons navigation -->
+        <div class="nav-buttons">
+            <button>&laquo;</button> <!-- premier -->
+            <button>&lt;</button>   <!-- précédent -->
+            <button>&gt;</button>   <!-- suivant -->
+            <button>&raquo;</button> <!-- dernier -->
+            <span style="margin-left:10px; font-style: italic;">Enregistrer la fiche</span>
+        </div>
+    </div>
+
+    <!-- Formulaire étudiant -->
+    <form method="post" action="save_student.php" enctype="multipart/form-data">
+        <div class="form-section">
+            <label for="numetu">NumÉtu</label>
+            <input type="text" name="numetu" id="numetu" required>
+
+            <label for="nom">Nom</label>
+            <input type="text" name="nom" id="nom" required>
+
+            <label for="prenom">Prénom</label>
+            <input type="text" name="prenom" id="prenom" required>
+
+            <label for="naissance">Né(e) le</label>
+            <input type="date" name="naissance" id="naissance">
+
+            <label for="sexe">Sexe</label>
+            <select name="sexe" id="sexe">
+                <option value="M">Masculin</option>
+                <option value="F">Féminin</option>
+                <option value="Autre">Autre</option>
+            </select>
+
+            <label for="adresse">Adresse</label>
+            <input type="text" name="adresse" id="adresse" style="grid-column: span 3;">
+
+            <label for="cp">Code postal</label>
+            <input type="text" name="cp" id="cp">
+
+            <label for="ville">Ville</label>
+            <input type="text" name="ville" id="ville">
+
+            <label for="email_perso">Email Personnel</label>
+            <input type="email" name="email_perso" id="email_perso" style="grid-column: span 3;">
+
+            <label for="email_amu">Email AMU</label>
+            <input type="email" name="email_amu" id="email_amu" style="grid-column: span 3;">
+
+            <label for="telephone">Téléphone</label>
+            <input type="text" name="telephone" id="telephone">
+
+            <label for="departement">Code Département</label>
+            <input type="text" name="departement" id="departement">
+
+            <label for="photo">Photo</label>
+            <input type="file" name="photo" id="photo" accept="image/*">
+        </div>
+    </form>
+
+    <!-- Liste des vœux -->
+    <h2>Liste des vœux de l'étudiant</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>N° vœu</th>
+            <th>Code campagne</th>
+            <th>Départ</th>
+            <th>Retour</th>
+            <th>Destination</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php if (!empty($voeux)): ?>
+            <?php foreach ($voeux as $voeu): ?>
+                <tr>
+                    <td><?= htmlspecialchars($voeu['id']) ?></td>
+                    <td><?= htmlspecialchars($voeu['codecampagne']) ?></td>
+                    <td><?= htmlspecialchars($voeu['depart']) ?></td>
+                    <td><?= htmlspecialchars($voeu['retour']) ?></td>
+                    <td><?= htmlspecialchars($voeu['destination']) ?></td>
+                </tr>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <tr><td colspan="5">Aucun vœu enregistré</td></tr>
         <?php endif; ?>
+        </tbody>
+    </table>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>NumETu</th>
-                    <th>Nom étudiant</th>
-                    <th>Prénom étudiant</th>
-                    <th>Avancement</th>
-                    <th>Pièces fournies</th>
-                    <th>Dernière relance</th>
-                    <?php if ($isLoggedIn): ?>
-                        <th>Action</th>
-                    <?php endif; ?>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($dossiers as $dossier):
-                    $total = (int)$dossier['total_pieces'];
-                    $fournies = (int)$dossier['pieces_fournies'];
-                    $pourcentage = $total > 0 ? round(($fournies / $total) * 100) : 0;
-                    $isComplet = ($fournies === $total && $total > 0);
-                    $isValide = $dossier['valide'] ?? false;
-                ?>
-                <tr>
-                    <td><?= htmlspecialchars($folder['numetu'] ?? '') ?></td>
-                    <td><?= htmlspecialchars($folder['nom'] ?? '') ?></td>
-                    <td><?= htmlspecialchars($folder['prenom'] ?? '') ?></td>
-                    <td>
-                        <div class="progress-bar">
-                            <div class="progress" style="width:<?= $pourcentage ?>%"><?= $pourcentage ?>%</div>
-                        </div>
-                    </td>
-                    <td><?= $fournies ?> / <?= $total ?></td>
-                    <td><?= htmlspecialchars($dossier['date_derniere_relance']) ?></td>
-                    <?php if ($isLoggedIn): ?>
-                        <td>
-                            <?php if ($isValide): ?>
-                                <span class="badge-valide">✓ Validé</span>
-                            <?php elseif ($isComplet): ?>
-                                <form method="POST" action="index.php?page=folders" style="display:inline;">
-                                    <input type="hidden" name="action" value="valider">
-                                    <input type="hidden" name="numetu" value="<?= htmlspecialchars($dossier['numetu']) ?>">
-                                    <button type="submit" class="btn-valider" onclick="return confirm('Voulez-vous valider ce dossier ?')">
-                                        Valider
-                                    </button>
-                                </form>
-                            <?php else: ?>
-                                <button class="btn-valider" disabled>Incomplet</button>
-                            <?php endif; ?>
-                        </td>
-                    <?php endif; ?>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    </main>
+    <div class="voeux-actions">
+        <button type="button" onclick="window.location.href='new_voeu.php'">Nouveau vœu</button>
+        <button type="button" onclick="location.reload()">Actualiser la liste</button>
+    </div>
+</main>
+
 </body>
 </html>
