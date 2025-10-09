@@ -46,7 +46,7 @@
             <button>&lt;</button>   <!-- précédent -->
             <button>&gt;</button>   <!-- suivant -->
             <button>&raquo;</button> <!-- dernier -->
-            <span style="margin-left:10px; font-style: italic;">Enregistrer la fiche</span>
+            <span style="margin-left:10px; font-style: italic ; cursor: pointer;">Enregistrer la fiche</span>
         </div>
     </div>
 
