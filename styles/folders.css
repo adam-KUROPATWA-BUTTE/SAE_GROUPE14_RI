@@ -119,7 +119,6 @@ tr:nth-child(even) {
     margin-top: 10px;
 }
 
-
 /* Tablettes (max 900px) */
 @media (max-width: 900px) {
     main {
