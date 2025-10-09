@@ -1,3 +1,4 @@
+/* ====== CONTENEUR PRINCIPAL ====== */
 main {
     width: 700px;
     margin: 2em auto;
@@ -7,6 +8,7 @@ main {
     padding: 2em;
 }
 
+/* ====== TABLEAU ====== */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -29,6 +31,7 @@ tr:nth-child(even) {
     background: #f0f4ff;
 }
 
+/* ====== SOUS-MENU ====== */
 .sub-menu {
     margin: 1em 0;
     text-align: center;
@@ -41,6 +44,7 @@ tr:nth-child(even) {
     color: #fff;
     text-decoration: none;
     border-radius: 5px;
+    display: inline-block;
 }
 
 .sub-menu a:hover {
@@ -49,4 +53,107 @@ tr:nth-child(even) {
 
 .sub-menu a.active {
     background: #0056b3;
+}
+
+
+
+/* Tablettes (max 900px) */
+@media (max-width: 900px) {
+    main {
+        width: 90%;
+        padding: 1.5em;
+    }
+
+    th, td {
+        padding: 0.6em;
+        font-size: 0.95em;
+    }
+
+    .sub-menu a {
+        padding: 8px 10px;
+        font-size: 0.95em;
+    }
+}
+
+/* Mobiles (max 600px) */
+@media (max-width: 600px) {
+    main {
+        width: 95%;
+        padding: 1em;
+        margin: 1em auto;
+    }
+
+    /* Tableaux adaptatifs sur mobile */
+    table, thead, tbody, th, td, tr {
+        display: block;
+        width: 100%;
+    }
+
+    thead {
+        display: none; /* on masque les en-têtes pour le style carte */
+    }
+
+    tr {
+        margin-bottom: 1em;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 10px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    td {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5em 0;
+        border: none;
+        border-bottom: 1px solid #eee;
+    }
+
+    td:last-child {
+        border-bottom: none;
+    }
+
+    td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: #0056b3;
+        flex-basis: 50%;
+        text-align: left;
+    }
+
+    /* Sous-menu empilé */
+    .sub-menu {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sub-menu a {
+        width: 80%;
+        text-align: center;
+    }
+}
+
+/* Très petits écrans (max 400px) */
+@media (max-width: 400px) {
+    main {
+        padding: 0.8em;
+    }
+
+    td::before {
+        flex-basis: 45%;
+        font-size: 0.9em;
+    }
+
+    td {
+        font-size: 0.9em;
+    }
+
+    .sub-menu a {
+        width: 100%;
+        font-size: 0.9em;
+        padding: 6px 8px;
+    }
 }
