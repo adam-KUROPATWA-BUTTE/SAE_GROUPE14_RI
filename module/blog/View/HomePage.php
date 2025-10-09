@@ -16,16 +16,22 @@ class HomePage
         ?>
         <!DOCTYPE html>
         <html lang="fr">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <meta description="Service des relations internationales d'Aix-Marseille Université">
-            <meta keywords="Aix-Marseille Université, Relations Internationales, Étudiants, Universités Partenaires">
-            <meta author="Groupe 14 - SAE 2024">
-            <title>Accueil - Service des relations internationales AMU</title>
-            <link rel="stylesheet" href="styles/index.css">
-            <link rel="icon" type="image/png" href="img/favicon.webp"/>
-        </head>
+       <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="Service des relations internationales d'Aix-Marseille Université. Informations pour les étudiants internationaux, échanges universitaires et partenariats internationaux.">
+        <meta name="keywords" content="
+            Aix-Marseille Université, AMU, Relations Internationales, Étudiants internationaux, Échanges universitaires,
+            Partenariats internationaux, Campus international, Mobilité étudiante, Bourses, Cursus universitaire,
+            Études supérieures France, Université française, Admission AMU, Programmes internationaux, Stages internationaux,
+            Séjour étudiant, Dossiers étudiants, Assistance administrative, Orientation internationale, Vie étudiante, Recherche académique
+        ">
+        <meta name="author" content="Groupe 14 - SAE 2024">
+        <title>Accueil - Service des relations internationales AMU</title>
+        <link rel="stylesheet" href="styles/index.css">
+        <link rel="icon" type="image/png" href="img/favicon.webp"/>
+    </head>
+
         <body>
         <!-- Header -->
         <header>
