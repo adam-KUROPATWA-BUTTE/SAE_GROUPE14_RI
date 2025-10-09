@@ -1,15 +1,22 @@
 <?php
-session_start();
-
-require_once "Autoloader.php";
-Autoloader::register();
+namespace Controllers\Blog;
 
 use Model\Dossier;
 use View\FoldersPage;
 
-$dossiers = Dossier::getAll();
-$message = $_SESSION['message'] ?? '';
-unset($_SESSION['message']);
+class FoldersController
+{
+    public static function support(string $page, string $method): bool {
+        return $page === 'folders';
+    }
 
-$view = new FoldersPage($dossiers, $message);
-$view->render();
+    public function control(): void {
+        // On suppose que session_start() a déjà été appelé dans index.php
+        $dossiers = Dossier::getAll();
+        $message = $_SESSION['message'] ?? '';
+        unset($_SESSION['message']);
+
+        $view = new FoldersPage($dossiers, $message);
+        $view->render();
+    }
+}
