@@ -1,6 +1,6 @@
 <?php
 
-namespace views;
+namespace Views;
 
 abstract class AbstractView {
   public function header(): string {

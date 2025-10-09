@@ -9,7 +9,6 @@ class IndexController implements ControllerInterface
     public function control(): void
     {
         $isLoggedIn = isset($_SESSION['admin_id']);
-
         $percentage = $this->getCompletePercentage();
 
         $view = new HomePage(isLoggedIn: $isLoggedIn, completePercentage: $percentage);
@@ -18,7 +17,7 @@ class IndexController implements ControllerInterface
 
     private function getCompletePercentage(): int
     {
-        // TODO: Récupérer depuis la base de données
+        // TODO: récupérer depuis la base de données
         return 0;
     }
 
