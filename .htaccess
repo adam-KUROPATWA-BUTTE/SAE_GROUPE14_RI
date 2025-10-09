@@ -1,20 +1,16 @@
-server {
-    listen 80;
-    server_name 164.92.139.137;
+# Activer le moteur de réécriture
+RewriteEngine On
 
-    root /home/amine/SAE_GROUPE14_RI;
-    index index.php;
+# Rediriger tout vers index.php si le fichier ou dossier n'existe pas
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?page=$1 [QSA,L]
 
-    location / {
-        try_files $uri $uri/ /index.php?page=$uri&$args;
-    }
+# Bloquer l'accès aux fichiers cachés (ex: .htaccess, .env)
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
 
-    location ~ \.php$ {
-        include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock; # adapte selon ta version
-    }
+# Index par défaut
+DirectoryIndex index.php index.html index.htm
 
-    location ~ /\.ht {
-        deny all;
-    }
-}
