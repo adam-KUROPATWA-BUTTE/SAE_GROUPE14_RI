@@ -14,6 +14,9 @@ class Database
     private function __construct()
     {
         try {
+            // Définir le fuseau horaire de PHP ICI
+            date_default_timezone_set('Europe/Paris');
+            
             $dsn = "mysql:host={$this->host};port={$this->port};dbname={$this->dbname};charset={$this->charset}";
 
             $options = [
@@ -24,6 +27,9 @@ class Database
             ];
 
             $this->conn = new PDO($dsn, $this->username, $this->password, $options);
+            
+            // Définir le fuseau horaire MySQL ICI (après la connexion)
+            $this->conn->exec("SET time_zone = 'Europe/Paris'");
 
             error_log("✅ Connexion à la base de données réussie");
 
@@ -54,10 +60,4 @@ class Database
     {
         throw new Exception("Cannot unserialize singleton");
     }
-
-    // Définir le fuseau horaire de PHP
-    date_default_timezone_set('Europe/Paris');
-
-    // Et dans la connexion PDO
-    $this->conn->exec("SET time_zone = 'Europe/Paris'");
 }
