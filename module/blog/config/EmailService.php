@@ -8,7 +8,7 @@ class EmailService
     
     public static function sendPasswordReset($toEmail, $resetToken)
     {
-        $resetLink = "https://164.92.139.137/index.php?page=reset&token=" . $resetToken;
+        $resetLink = "http://164.92.139.137/index.php?page=reset&token=" . $resetToken;
         
         $subject = 'Réinitialisation de votre mot de passe';
         
