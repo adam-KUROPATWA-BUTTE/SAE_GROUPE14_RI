@@ -73,40 +73,47 @@ class User
     public static function resetPassword($email)
     {
         try {
-            $db = \Database::getInstance()->getConnection();
-            
+            $db = Database::getInstance()->getConnection();
+        
             $sql = "SELECT id FROM admins WHERE email = :email";
             $stmt = $db->prepare($sql);
             $stmt->execute(['email' => $email]);
             $admin = $stmt->fetch();
-            
+
             if (!$admin) {
                 return true; // Retourner true même si l'email n'existe pas (sécurité)
             }
-            
+
             $token = bin2hex(random_bytes(32));
             $expires = date('Y-m-d H:i:s', strtotime('+1 hour'));
-            
-            $sql = "INSERT INTO reset_tokens (admin_id, token, expires_at)
-                    VALUES (:admin_id, :token, :expires_at)
-                    ON DUPLICATE KEY UPDATE token = :token, expires_at = :expires_at";
+
+            // D'abord supprimer les anciens tokens pour cet admin
+            $sql = "DELETE FROM reset_tokens WHERE admin_id = :admin_id";
             $stmt = $db->prepare($sql);
-            
+            $stmt->execute(['admin_id' => $admin['id']]);
+
+            // Ensuite insérer le nouveau token
+            $sql = "INSERT INTO reset_tokens (admin_id, token, expires_at)
+                    VALUES (:admin_id, :token, :expires_at)";
+            $stmt = $db->prepare($sql);
+
             $result = $stmt->execute([
                 'admin_id' => $admin['id'],
                 'token' => $token,
                 'expires_at' => $expires
             ]);
-            
+
             if ($result) {
                 // Envoi de l'email via Postfix
                 require_once ROOT_PATH . 'services/EmailService.php';
-                \Service\EmailService::sendPasswordReset($email, $token);
+                $emailSent = \Service\EmailService::sendPasswordReset($email, $token);
+
+                error_log("Email de reset envoyé à $email - Résultat: " . ($emailSent ? 'SUCCESS' : 'FAILED'));
             }
-            
+
             return true;
-            
-        } catch (\PDOException $e) {
+
+        } catch (PDOException $e) {
             error_log("Erreur resetPassword : " . $e->getMessage());
             return false;
         }
