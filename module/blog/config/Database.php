@@ -54,4 +54,10 @@ class Database
     {
         throw new Exception("Cannot unserialize singleton");
     }
+
+    // Définir le fuseau horaire de PHP
+    date_default_timezone_set('Europe/Paris');
+
+    // Et dans la connexion PDO
+    $this->conn->exec("SET time_zone = 'Europe/Paris'");
 }

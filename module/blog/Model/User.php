@@ -90,10 +90,9 @@ class User
             $sql = "DELETE FROM reset_tokens WHERE admin_id = :admin_id";
             $stmt = $db->prepare($sql);
             $stmt->execute(['admin_id' => $admin['id']]);
-        
-            // Utiliser DATE_ADD avec NOW() directement dans MySQL
+
             $sql = "INSERT INTO reset_tokens (admin_id, token, expires_at)
-                    VALUES (:admin_id, :token, DATE_ADD(NOW(), INTERVAL 1 HOUR))";
+                    VALUES (:admin_id, :token, CONVERT_TZ(DATE_ADD(NOW(), INTERVAL 1 HOUR), '+00:00', '+02:00'))";
             $stmt = $db->prepare($sql);
         
             $result = $stmt->execute([
