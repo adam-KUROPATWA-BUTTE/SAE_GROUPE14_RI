@@ -1,5 +1,4 @@
-<?php
-?>
+<?php ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -9,12 +8,16 @@
     <link rel="stylesheet" href="styles/index.css">
     <link rel="stylesheet" href="styles/folders.css">
     <link rel="icon" type="image/png" href="img/favicon.webp"/>
+
 </head>
 <body>
 <header>
     <div class="top-bar">
-        <img src="img/logo.png" alt="Logo" class="logo">
-        <!-- Boutons supprimés ici -->
+        <img src="img/logo.png" alt="Logo" style="height:100px;">
+        <div class="right-buttons">
+            <button>fr</button>
+            <button onclick="window.location.href='login.php'">Se connecter</button>
+        </div>
     </div>
     <nav class="menu">
         <button onclick="window.location.href='index.php'">Accueil</button>
@@ -24,29 +27,30 @@
         <button onclick="window.location.href='help.php'">Aide</button>
         <button onclick="window.location.href='web_plan.php'">Plan du site</button>
     </nav>
-    <div class="sub-menu">
+    <div class="sub-menu" style="display:flex; gap:10px; margin-top:20px;">
         <button onclick="window.location.href='folders.php'">Les étudiants</button>
     </div>
 </header>
 
 <main>
     <h1>Fiche Étudiant</h1>
-
     <div class="student-toolbar">
-        <div class="search-group">
+        <!-- Recherche -->
+        <div>
             <label for="search">Rechercher</label>
             <input type="text" id="search" name="search">
         </div>
-
+        <!-- Boutons navigation -->
         <div class="nav-buttons">
-            <button>&laquo;</button>
-            <button>&lt;</button>
-            <button>&gt;</button>
-            <button>&raquo;</button>
-            <span class="save-label">Enregistrer la fiche</span>
+            <button>&laquo;</button> <!-- premier -->
+            <button>&lt;</button>   <!-- précédent -->
+            <button>&gt;</button>   <!-- suivant -->
+            <button>&raquo;</button> <!-- dernier -->
+            <span style="margin-left:10px; font-style: italic;">Enregistrer la fiche</span>
         </div>
     </div>
 
+    <!-- Formulaire étudiant -->
     <form method="post" action="save_student.php" enctype="multipart/form-data">
         <div class="form-section">
             <label for="numetu">NumÉtu</label>
@@ -69,7 +73,7 @@
             </select>
 
             <label for="adresse">Adresse</label>
-            <input type="text" name="adresse" id="adresse">
+            <input type="text" name="adresse" id="adresse" style="grid-column: span 1;">
 
             <label for="cp">Code postal</label>
             <input type="text" name="cp" id="cp">
@@ -78,10 +82,10 @@
             <input type="text" name="ville" id="ville">
 
             <label for="email_perso">Email Personnel</label>
-            <input type="email" name="email_perso" id="email_perso">
+            <input type="email" name="email_perso" id="email_perso" style="grid-column: span 3;">
 
             <label for="email_amu">Email AMU</label>
-            <input type="email" name="email_amu" id="email_amu">
+            <input type="email" name="email_amu" id="email_amu" style="grid-column: span 3;">
 
             <label for="telephone">Téléphone</label>
             <input type="text" name="telephone" id="telephone">
@@ -94,6 +98,7 @@
         </div>
     </form>
 
+    <!-- Liste des vœux -->
     <h2>Liste des vœux de l'étudiant</h2>
     <table>
         <thead>
@@ -127,6 +132,5 @@
         <button type="button" onclick="location.reload()">Actualiser la liste</button>
     </div>
 </main>
-
 </body>
 </html>
