@@ -17,12 +17,12 @@
 
     </div>
     <nav class="menu">
-        <button onclick="window.location.href='index.php'">Accueil</button>
+        <button onclick="window.location.href='/'">Accueil</button>
         <button onclick="window.location.href='dashboard.php'">Tableau de bord</button>
-        <button onclick="window.location.href='settings.php'">Paramètrage</button>
-        <button class="active" onclick="window.location.href='folders.php'">Dossiers</button>
-        <button onclick="window.location.href='help.php'">Aide</button>
-        <button onclick="window.location.href='web_plan.php'">Plan du site</button>
+        <button onclick="window.location.href='/settings'">Paramétrage</button>
+        <button class="active" onclick="window.location.href='/folders'">Dossiers</button>
+        <button onclick="window.location.href='/help'">Aide</button>
+        <button onclick="window.location.href='/web_plan'">Plan du site</button>
     </nav>
     <div class="sub-menu" style="display:flex; gap:10px; margin-top:20px;">
         <button onclick="window.location.href='folders.php'">Les étudiants</button>
