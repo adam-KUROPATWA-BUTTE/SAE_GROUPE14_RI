@@ -8,15 +8,22 @@ class AuthController implements ControllerInterface
 {
     public function control()
     {
+        $page = $_GET['page'] ?? 'login';
+        
+        // Gestion de la déconnexion
+        if ($page === 'logout') {
+            $this->handleLogout();
+            return;
+        }
+
         // Si déjà connecté, rediriger vers le dashboard
         if (isset($_SESSION['admin_id'])) {
-            header('Location: /dashboard');
+            header('Location: index.php?page=dashboard');
             exit;
         }
 
         $message = '';
         
-        $page = $_GET['page'] ?? 'login';
         $isLogin = ($page === 'login');
         $isReset = ($page === 'reset');
         $isTokenReset = isset($_GET['token']) && !empty($_GET['token']);
@@ -32,7 +39,7 @@ class AuthController implements ControllerInterface
                     $password = $_POST['password'] ?? '';
 
                     if (User::login($email, $password)) {
-                        header('Location: /dashboard');
+                        header('Location: index.php?page=dashboard');
                         exit();
                     } else {
                         $message = "Email ou mot de passe incorrect.";
@@ -85,6 +92,31 @@ class AuthController implements ControllerInterface
         }
 
         require __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'View' . DIRECTORY_SEPARATOR . 'login.php';
+    }
+
+    /**
+     * Gère la déconnexion de l'utilisateur
+     */
+    private function handleLogout(): void
+    {
+        // Détruire toutes les variables de session
+        $_SESSION = array();
+
+        // Si on veut détruire complètement la session, effacer aussi le cookie de session
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
+        }
+
+        // Finalement, détruire la session
+        session_destroy();
+
+        // Rediriger vers la page de connexion
+        header('Location: index.php?page=login');
+        exit;
     }
 
     public static function support(string $page, string $method): bool

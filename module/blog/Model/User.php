@@ -150,4 +150,38 @@ class User
             return false;
         }
     }
+
+    public static function logout(): bool
+    {   
+        try {
+            // Optionnel : Enregistrer la déconnexion dans les logs
+            if (isset($_SESSION['admin_id'])) {
+                $db = \Database::getInstance()->getConnection();
+                $sql = "UPDATE admins SET last_logout = NOW() WHERE id = :id";
+                $stmt = $db->prepare($sql);
+                $stmt->execute(['id' => $_SESSION['admin_id']]);
+            }
+            
+            // Nettoyer la session
+            $_SESSION = array();
+            
+            // Détruire le cookie de session si utilisé
+            if (ini_get("session.use_cookies")) {
+                $params = session_get_cookie_params();
+                setcookie(session_name(), '', time() - 42000,
+                    $params["path"], $params["domain"],
+                    $params["secure"], $params["httponly"]
+                );
+            }
+            
+            // Détruire la session
+            session_destroy();
+            
+            return true;
+            
+        } catch (\PDOException $e) {
+            error_log("Erreur logout : " . $e->getMessage());
+            return false;
+        }
+    }
 }
