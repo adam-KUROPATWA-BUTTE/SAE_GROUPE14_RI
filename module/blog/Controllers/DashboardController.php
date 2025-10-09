@@ -18,7 +18,7 @@ class DashboardController implements ControllerInterface
         }
 
          // Récupérer les dossiers incomplets
-        $dossiers = Dossiers::getDossiersIncomplets();
+        $dossiers = Dossier::getDossiersIncomplets();
         
         // Créer et afficher la page
         $page = new DashboardPage($dossiers);
