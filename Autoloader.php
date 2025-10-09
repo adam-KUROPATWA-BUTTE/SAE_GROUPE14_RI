@@ -6,7 +6,7 @@ class Autoloader
         'Controllers\\Blog\\' => 'module/blog/Controllers/',
         'Controllers\\' => 'module/blog/Controllers/',
         'Model\\' => 'module/blog/Model/',
-        'Config\\' => 'module/blog/Config/',
+        'Config\\' => 'module/blog/config/',
         'View\\' => 'module/blog/View/',
     ];
 
