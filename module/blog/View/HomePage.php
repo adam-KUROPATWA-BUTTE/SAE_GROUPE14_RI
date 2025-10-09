@@ -3,6 +3,14 @@ namespace View;
 
 class HomePage
 {
+    private bool $isLoggedIn;
+
+    // Constructeur : on passe l'état de connexion
+    public function __construct(bool $isLoggedIn = false)
+    {
+        $this->isLoggedIn = $isLoggedIn;
+    }
+
     public function render(): void
     {
         ?>
@@ -31,9 +39,9 @@ class HomePage
                     </div>
 
                     <!-- Bouton connexion / déconnexion -->
-                <?php if ($isLoggedIn): ?>
+                    <?php if ($this->isLoggedIn): ?>
                         <button onclick="window.location.href='index.php?page=logout'">Se déconnecter</button>
-                <?php else: ?>
+                    <?php else: ?>
                         <button onclick="window.location.href='index.php?page=login'">Se connecter</button>
                     <?php endif; ?>
                 </div>

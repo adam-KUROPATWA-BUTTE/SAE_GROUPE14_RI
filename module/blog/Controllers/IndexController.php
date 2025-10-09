@@ -8,7 +8,8 @@ class IndexController implements ControllerInterface
 {
     public function control(): void
     {
-        $view = new HomePage();
+        $isLoggedIn = isset($_SESSION['admin_id']);
+        $view = new HomePage($isLoggedIn);
         $view->render();
     }
 
