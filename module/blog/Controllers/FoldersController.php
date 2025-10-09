@@ -2,7 +2,7 @@
 namespace Controllers\Blog;
 
 use Controllers\ControllerInterface;
-use Models\Dossier; // <- utilise le namespace correct du model
+use Model\Dossier; // <- utilise le namespace correct du model
 
 class FoldersController implements ControllerInterface
 {
