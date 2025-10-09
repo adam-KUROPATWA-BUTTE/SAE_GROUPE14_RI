@@ -9,9 +9,18 @@ main {
 }
 
 /* Titres */
-h1, h2 {
+h1 {
+    background-color: #004080;
+    color: white;
+    padding: 10px;
+    margin: 0 0 20px 0;
+    text-align: center;
+}
+
+h2 {
     text-align: center;
     color: #222;
+    margin-top: 2em;
 }
 
 /* Student toolbar */
@@ -25,12 +34,8 @@ h1, h2 {
     margin-bottom: 20px;
 }
 
-.search-group label {
-    margin-right: 5px;
-}
-
-.search-group input[type="text"] {
-    width: 150px; /* input adresse réduit */
+.student-toolbar input[type="text"] {
+    width: 250px;
     padding: 5px;
 }
 
@@ -62,12 +67,14 @@ h1, h2 {
 
 .form-section label {
     align-self: center;
+    grid-column: span 1;
 }
 
 .form-section input,
 .form-section select {
-    padding: 5px;
     width: 100%;
+    padding: 5px;
+    grid-column: span 1;
 }
 
 .form-section input[type="file"] {
@@ -82,14 +89,15 @@ table {
     background: #f9f9f9;
 }
 
-th, td {
+table th,
+table td {
     border: 1px solid #e0e0e0;
     padding: 0.8em;
     text-align: left;
 }
 
-th {
-    background: #00558B;
+table th {
+    background-color: #00558B;
     color: #fff;
 }
 
@@ -104,6 +112,7 @@ tr:nth-child(even) {
     margin-top: 20px;
 }
 
+/* Actions voeux */
 .voeux-actions {
     margin-top: 10px;
 }
