@@ -1,5 +1,6 @@
 <?php
 session_start();
+
 define('ROOT_PATH', __DIR__);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -29,6 +30,14 @@ $controllers = [
 $page = $_GET['page'] ?? trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
 if ($page === '') $page = 'home';
 
+// --- Gestion de la déconnexion ---
+if ($page === 'logout') {
+    session_destroy();
+    header('Location: index.php?page=login');
+    exit;
+}
+
+// --- Contrôleur correspondant ---
 foreach ($controllers as $controller) {
     if ($controller::support($page, $_SERVER['REQUEST_METHOD'])) {
         $controller->control();

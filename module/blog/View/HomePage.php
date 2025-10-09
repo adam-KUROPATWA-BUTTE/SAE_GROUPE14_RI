@@ -30,8 +30,12 @@ class HomePage
                         </div>
                     </div>
 
-                    <!-- Bouton connexion -->
-                    <button onclick="window.location.href='index.php?page=login'">Se connecter</button>
+                    <!-- Bouton connexion / déconnexion -->
+                    <?php if (!empty($_SESSION['user'])): ?>
+                        <button onclick="window.location.href='index.php?page=logout'">Se déconnecter</button>
+                    <?php else: ?>
+                        <button onclick="window.location.href='index.php?page=login'">Se connecter</button>
+                    <?php endif; ?>
                 </div>
             </div>
 
