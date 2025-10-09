@@ -99,9 +99,9 @@ class User
             ]);
             
             if ($result) {
-                // TODO: Envoyer l'email avec le lien
-                // $resetLink = "http://votre-site.com/index.php?page=reset&token=$token";
-                // mail($email, "Réinitialisation mot de passe", "Cliquez ici: $resetLink");
+                // Envoi de l'email via Postfix
+                require_once ROOT_PATH . 'services/EmailService.php';
+                \Service\EmailService::sendPasswordReset($email, $token);
             }
             
             return true;
