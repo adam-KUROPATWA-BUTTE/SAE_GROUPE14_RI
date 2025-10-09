@@ -1,14 +1,11 @@
 name: Deploy RI site
-
 on:
   push:
     branches:
       - main
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Setup SSH
         run: |
@@ -16,6 +13,13 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
+      
+      - name: Configure Git safe directory
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+          "git config --global --add safe.directory ${{ secrets.WORK_DIR }}"
+      
       - name: Deploy via SSH
-        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git pull && git checkout ${{ secrets.MAIN_BRANCH }}"
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+          "cd ${{ secrets.WORK_DIR }} && git pull && git checkout ${{ secrets.MAIN_BRANCH }}"
