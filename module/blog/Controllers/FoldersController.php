@@ -9,7 +9,9 @@ class FoldersController implements ControllerInterface
     // Méthode principale appelée par le routeur
     public function control()
     {
-        session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
         // Vérification simple de connexion
         if (!isset($_SESSION['admin_id'])) {
