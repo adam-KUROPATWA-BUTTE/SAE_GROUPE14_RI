@@ -97,10 +97,7 @@
 <header>
     <div class="top-bar">
         <img src="img/logo.png" alt="Logo" style="height:100px;">
-        <div class="right-buttons">
-            <button>fr</button>
-            <button onclick="window.location.href='login.php'">Se connecter</button>
-        </div>
+
     </div>
     <nav class="menu">
         <button onclick="window.location.href='index.php'">Accueil</button>
@@ -158,7 +155,7 @@
             </select>
 
             <label for="adresse">Adresse</label>
-            <input type="text" name="adresse" id="adresse" style="grid-column: span 3;">
+            <input type="text" name="adresse" id="adresse" style="grid-column: span 1;">
 
             <label for="cp">Code postal</label>
             <input type="text" name="cp" id="cp">
