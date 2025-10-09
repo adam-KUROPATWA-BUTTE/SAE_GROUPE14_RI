@@ -1,15 +1,10 @@
-/* ====== BASE ====== */
 body {
     font-family: Arial, sans-serif;
     background: #f4f4f4;
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
 }
 
-/* ====== HEADER ====== */
 header {
     background: #EBC55E;
     color: #fff;
@@ -21,20 +16,18 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap; /* pour s’adapter sur petits écrans */
-    padding: 0 1em;
 }
 
 .top-bar img {
     height: 100px;
-    margin: 5px 0;
+    margin-left: 20px;
+    margin-top: 2px;
 }
 
 .right-buttons {
     display: flex;
     gap: 10px;
     align-items: center;
-    flex-wrap: wrap;
 }
 
 .right-buttons button {
@@ -51,9 +44,7 @@ header {
     background: #2B91BB;
 }
 
-/* ====== CONTENU ====== */
 main {
-    flex: 1;
     max-width: 700px;
     margin: 2em auto;
     background: #fff;
@@ -84,131 +75,38 @@ li a {
     text-decoration: none;
     border-radius: 5px;
     font-size: 1.1em;
-    transition: background 0.3s, color 0.3s;
 }
 
 li a:hover {
     background: #00558B;
     color: #fff;
 }
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+}
 
-/* ====== FOOTER ====== */
+main {
+    flex: 1;
+    max-width: 700px;
+    margin: 2em auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 2em;
+}
+
 footer {
     background: #00558B;
     color: #ffffff;
     text-align: center;
     padding: 2rem 1rem;
 }
-
 footer p {
     margin: 0;
     font-size: 14px;
-}
-
-/* ============================= */
-/* ====== RESPONSIVE PART ====== */
-/* ============================= */
-
-/* Tablettes (max 900px) */
-@media (max-width: 900px) {
-    .top-bar img {
-        height: 80px;
-    }
-
-    main {
-        max-width: 90%;
-        padding: 1.5em;
-    }
-
-    li a {
-        font-size: 1em;
-        padding: 0.9em;
-    }
-
-    .right-buttons button {
-        font-size: 0.95em;
-        padding: 7px 14px;
-    }
-}
-
-/* Mobiles (max 600px) */
-@media (max-width: 600px) {
-    header {
-        text-align: center;
-    }
-
-    .top-bar {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 10px;
-    }
-
-    .top-bar img {
-        height: 70px;
-        margin: 10px 0;
-    }
-
-    .right-buttons {
-        justify-content: center;
-    }
-
-    main {
-        width: 90%;
-        margin: 1.5em auto;
-        padding: 1.2em;
-    }
-
-    h1 {
-        font-size: 1.5em;
-    }
-
-    ul {
-        gap: 0.8em;
-    }
-
-    li a {
-        font-size: 1em;
-        padding: 0.8em;
-    }
-
-    footer {
-        padding: 1.5rem 1rem;
-    }
-
-    footer p {
-        font-size: 13px;
-    }
-}
-
-/* Très petits écrans (max 400px) */
-@media (max-width: 400px) {
-    .top-bar img {
-        height: 60px;
-    }
-
-    .right-buttons {
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .right-buttons button {
-        width: 100%;
-        font-size: 0.9em;
-        padding: 8px;
-    }
-
-    main {
-        padding: 1em;
-        width: 95%;
-    }
-
-    li a {
-        font-size: 0.95em;
-        padding: 0.7em;
-    }
-
-    footer p {
-        font-size: 12px;
-    }
 }

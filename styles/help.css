@@ -1,27 +1,22 @@
-/* --- Structure principale --- */
 main {
     max-width: 700px;
     margin: 2em auto;
     background: #fff;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 8px rgb(0, 0, 0);
     padding: 2em;
 }
 
-/* --- Titres --- */
 h1 {
     text-align: center;
     color: #00558B;
-    font-size: 2em;
 }
 
 h2 {
     color: #00558B;
     margin-top: 2em;
-    font-size: 1.5em;
 }
 
-/* --- Listes et paragraphes --- */
 ul {
     margin: 1em 0 1em 1.5em;
     color: #333;
@@ -36,71 +31,4 @@ p {
     color: #444;
     font-size: 1em;
     margin-bottom: 1em;
-    line-height: 1.6;
-}
-
-
-/* Tablettes (max 900px) */
-@media (max-width: 900px) {
-    main {
-        max-width: 90%;
-        padding: 1.5em;
-    }
-
-    h1 {
-        font-size: 1.8em;
-    }
-
-    h2 {
-        font-size: 1.3em;
-    }
-
-    ul {
-        font-size: 1em;
-    }
-}
-
-/* Mobiles (max 600px) */
-@media (max-width: 600px) {
-    main {
-        max-width: 95%;
-        padding: 1em;
-        margin: 1em auto;
-    }
-
-    h1 {
-        font-size: 1.5em;
-    }
-
-    h2 {
-        font-size: 1.2em;
-    }
-
-    ul {
-        margin-left: 1em;
-        font-size: 0.95em;
-    }
-
-    p {
-        font-size: 0.95em;
-    }
-}
-
-/* Très petits écrans (max 400px) */
-@media (max-width: 400px) {
-    main {
-        padding: 0.8em;
-    }
-
-    h1 {
-        font-size: 1.3em;
-    }
-
-    h2 {
-        font-size: 1.1em;
-    }
-
-    p, ul {
-        font-size: 0.9em;
-    }
 }

@@ -32,20 +32,17 @@ h2 {
     padding: 10px;
     color: white;
     margin-bottom: 20px;
-    flex-wrap: wrap; /* pour s’adapter sur petits écrans */
 }
 
 .student-toolbar input[type="text"] {
     width: 250px;
     padding: 5px;
-    max-width: 100%;
 }
 
 .nav-buttons {
     display: flex;
     align-items: center;
     gap: 10px;
-    flex-wrap: wrap;
 }
 
 .nav-buttons button {
@@ -70,12 +67,14 @@ h2 {
 
 .form-section label {
     align-self: center;
+    grid-column: span 1;
 }
 
 .form-section input,
 .form-section select {
     width: 100%;
     padding: 5px;
+    grid-column: span 1;
 }
 
 .form-section input[type="file"] {
@@ -111,125 +110,9 @@ tr:nth-child(even) {
     display: flex;
     gap: 10px;
     margin-top: 20px;
-    flex-wrap: wrap;
 }
 
 /* Actions voeux */
 .voeux-actions {
     margin-top: 10px;
-}
-
-/* Tablettes (max 900px) */
-@media (max-width: 900px) {
-    main {
-        padding: 1.5em;
-    }
-
-    .form-section {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .form-section input[type="file"] {
-        grid-column: span 2;
-    }
-
-    .student-toolbar {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .student-toolbar input[type="text"] {
-        width: 100%;
-        margin-top: 10px;
-    }
-
-    .nav-buttons {
-        justify-content: center;
-        margin-top: 10px;
-    }
-}
-
-/* Mobiles (max 600px) */
-@media (max-width: 600px) {
-    main {
-        margin: 1em;
-        padding: 1em;
-    }
-
-    .form-section {
-        grid-template-columns: 1fr;
-    }
-
-    .form-section label {
-        margin-top: 10px;
-    }
-
-    .student-toolbar {
-        text-align: center;
-    }
-
-    .nav-buttons {
-        flex-direction: column;
-        gap: 5px;
-    }
-
-    h1 {
-        font-size: 1.5em;
-    }
-
-    h2 {
-        font-size: 1.2em;
-    }
-
-    table,
-    thead,
-    tbody,
-    th,
-    td,
-    tr {
-        display: block;
-        width: 100%;
-    }
-
-    thead {
-        display: none;
-    }
-
-    tr {
-        margin-bottom: 1em;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        padding: 10px;
-    }
-
-    td {
-        display: flex;
-        justify-content: space-between;
-        padding: 0.5em 0;
-    }
-
-    td::before {
-        content: attr(data-label);
-        font-weight: bold;
-    }
-}
-
-/* Très petits écrans (max 400px) */
-@media (max-width: 400px) {
-    h1 {
-        font-size: 1.2em;
-    }
-
-    .student-toolbar {
-        padding: 8px;
-    }
-
-    .nav-buttons button {
-        padding: 4px 8px;
-        font-size: 0.9em;
-    }
-
-    main {
-        padding: 0.8em;
-    }
 }

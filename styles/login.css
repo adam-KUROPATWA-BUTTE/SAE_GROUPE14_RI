@@ -1,40 +1,78 @@
-/* ====== HEADER ====== */
 header {
     background-color: #EBC55E;
     border-bottom: 1px solid #ddd;
     padding: 10px 20px;
 }
 
+
 .top-bar {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap; /* permet de passer sur plusieurs lignes si manque d’espace */
+    justify-content: space-between;     align-items: center;
 }
+
 
 .right-buttons {
     display: flex;
     gap: 10px;
-    flex-wrap: wrap;
 }
 
-/* ====== MENU ====== */
+
 nav.menu {
     display: flex;
-    justify-content: center;
+    justify-content: center; 
     gap: 5px;
     margin-top: 15px;
-    flex-wrap: wrap;
 }
 
 nav.menu button {
-    width: 100%;
+    width: 100%;   
     border: solid #ffffff;
 }
 
-/* ====== BOUTONS GÉNÉRAUX ====== */
+
 button {
     padding: 10px 15px;
+    background-color: #007BFF;
+    color: white;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #0056b3;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f4f4;
+}
+.container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    width: 300px;
+}
+h2 {
+    text-align: center;
+}
+form {
+    display: flex;
+    flex-direction: column;
+}
+input {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+button {
+    padding: 10px;
     background-color: #007BFF;
     color: white;
     border: none;
@@ -44,46 +82,6 @@ button {
 button:hover {
     background-color: #0056b3;
 }
-
-/* ====== STRUCTURE DE BASE ====== */
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh; /* meilleure compatibilité mobile */
-    background-color: #f4f4f4;
-}
-
-/* ====== CONTENEUR FORMULAIRE ====== */
-.container {
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    width: 320px;
-    max-width: 90%; /* pour s’adapter aux petits écrans */
-}
-
-h2 {
-    text-align: center;
-}
-
-form {
-    display: flex;
-    flex-direction: column;
-}
-
-input {
-    margin-bottom: 15px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-/* ====== LIEN D’ALTERNANCE ====== */
 .toggle {
     text-align: center;
     margin-top: 10px;
@@ -94,82 +92,4 @@ input {
 }
 .toggle a:hover {
     text-decoration: underline;
-}
-
-
-/* Tablettes (max 900px) */
-@media (max-width: 900px) {
-    header {
-        padding: 10px;
-    }
-
-    .top-bar {
-        flex-direction: column;
-        gap: 10px;
-        align-items: flex-start;
-    }
-
-    .right-buttons {
-        justify-content: center;
-        width: 100%;
-    }
-
-    nav.menu {
-        flex-direction: row;
-        gap: 10px;
-    }
-
-    .container {
-        width: 400px;
-        max-width: 95%;
-    }
-}
-
-/* Mobiles (max 600px) */
-@media (max-width: 600px) {
-    header {
-        text-align: center;
-    }
-
-    .top-bar {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    nav.menu {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .container {
-        width: 90%;
-        padding: 15px;
-    }
-
-    h2 {
-        font-size: 1.3em;
-    }
-
-    button {
-        font-size: 1em;
-        padding: 10px;
-    }
-}
-
-/* Très petits écrans (max 400px) */
-@media (max-width: 400px) {
-    .container {
-        width: 95%;
-        padding: 10px;
-    }
-
-    input {
-        font-size: 0.9em;
-        padding: 8px;
-    }
-
-    button {
-        font-size: 0.9em;
-        padding: 8px;
-    }
 }
