@@ -1,5 +1,4 @@
 <?php
-
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -10,97 +9,12 @@
     <link rel="stylesheet" href="styles/index.css">
     <link rel="stylesheet" href="styles/folders.css">
     <link rel="icon" type="image/png" href="img/favicon.webp"/>
-    <style>
-        main {
-            padding: 20px;
-        }
-
-        h1 {
-            background-color: #004080;
-            color: white;
-            padding: 10px;
-            margin: 0;
-        }
-
-        .student-toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #004080;
-            padding: 10px;
-            color: white;
-        }
-
-        .student-toolbar input[type="text"] {
-            width: 250px;
-            padding: 5px;
-        }
-
-        .nav-buttons {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .nav-buttons button {
-            background: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-        }
-
-        .form-section {
-            display: grid;
-            grid-template-columns: 150px 1fr 150px 1fr;
-            gap: 10px 20px;
-            margin-top: 20px;
-        }
-
-        .form-section label {
-            grid-column: span 1;
-            align-self: center;
-        }
-
-        .form-section input,
-        .form-section select {
-            grid-column: span 1;
-            padding: 5px;
-            width: 100%;
-        }
-
-        .form-section input[type="file"] {
-            grid-column: span 3;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        table th, table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-        }
-
-        table thead {
-            background-color: #004080;
-            color: white;
-        }
-
-        .voeux-actions {
-            margin-top: 10px;
-        }
-    </style>
 </head>
 <body>
 <header>
     <div class="top-bar">
-        <img src="img/logo.png" alt="Logo" style="height:100px;">
-        <div class="right-buttons">
-            <button>fr</button>
-            <button onclick="window.location.href='login.php'">Se connecter</button>
-        </div>
+        <img src="img/logo.png" alt="Logo" class="logo">
+        <!-- Boutons supprimés ici -->
     </div>
     <nav class="menu">
         <button onclick="window.location.href='index.php'">Accueil</button>
@@ -110,7 +24,7 @@
         <button onclick="window.location.href='help.php'">Aide</button>
         <button onclick="window.location.href='web_plan.php'">Plan du site</button>
     </nav>
-    <div class="sub-menu" style="display:flex; gap:10px; margin-top:20px;">
+    <div class="sub-menu">
         <button onclick="window.location.href='folders.php'">Les étudiants</button>
     </div>
 </header>
@@ -119,23 +33,20 @@
     <h1>Fiche Étudiant</h1>
 
     <div class="student-toolbar">
-        <!-- Recherche -->
-        <div>
+        <div class="search-group">
             <label for="search">Rechercher</label>
             <input type="text" id="search" name="search">
         </div>
 
-        <!-- Boutons navigation -->
         <div class="nav-buttons">
-            <button>&laquo;</button> <!-- premier -->
-            <button>&lt;</button>   <!-- précédent -->
-            <button>&gt;</button>   <!-- suivant -->
-            <button>&raquo;</button> <!-- dernier -->
-            <span style="margin-left:10px; font-style: italic;">Enregistrer la fiche</span>
+            <button>&laquo;</button>
+            <button>&lt;</button>
+            <button>&gt;</button>
+            <button>&raquo;</button>
+            <span class="save-label">Enregistrer la fiche</span>
         </div>
     </div>
 
-    <!-- Formulaire étudiant -->
     <form method="post" action="save_student.php" enctype="multipart/form-data">
         <div class="form-section">
             <label for="numetu">NumÉtu</label>
@@ -158,7 +69,7 @@
             </select>
 
             <label for="adresse">Adresse</label>
-            <input type="text" name="adresse" id="adresse" style="grid-column: span 3;">
+            <input type="text" name="adresse" id="adresse">
 
             <label for="cp">Code postal</label>
             <input type="text" name="cp" id="cp">
@@ -167,10 +78,10 @@
             <input type="text" name="ville" id="ville">
 
             <label for="email_perso">Email Personnel</label>
-            <input type="email" name="email_perso" id="email_perso" style="grid-column: span 3;">
+            <input type="email" name="email_perso" id="email_perso">
 
             <label for="email_amu">Email AMU</label>
-            <input type="email" name="email_amu" id="email_amu" style="grid-column: span 3;">
+            <input type="email" name="email_amu" id="email_amu">
 
             <label for="telephone">Téléphone</label>
             <input type="text" name="telephone" id="telephone">
@@ -183,7 +94,6 @@
         </div>
     </form>
 
-    <!-- Liste des vœux -->
     <h2>Liste des vœux de l'étudiant</h2>
     <table>
         <thead>
