@@ -2,7 +2,7 @@
 namespace Controllers\Blog;
 
 use Controllers\ControllerInterface;
-use Model\Dossiers; // <- utilise le namespace correct du model
+use Model\Dossier; // <- utilise le namespace correct du model
 
 class FoldersController implements ControllerInterface
 {
@@ -87,7 +87,7 @@ class FoldersController implements ControllerInterface
         }
 
         // Récupération des données
-        $dossiers = Dossiers::getAll();
+        $dossiers = Dossier::getAll();
         $message = $_SESSION['message'] ?? '';
         if ($message) {
             unset($_SESSION['message']);
