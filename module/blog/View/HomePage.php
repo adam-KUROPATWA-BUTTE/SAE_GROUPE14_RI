@@ -31,7 +31,7 @@ class HomePage
                     </div>
 
                     <!-- Bouton connexion / déconnexion -->
-                    <?php if (!empty($_SESSION['user'])): ?>
+                <?php if ($isLoggedIn): ?>
                         <button onclick="window.location.href='index.php?page=logout'">Se déconnecter</button>
                 <?php else: ?>
                         <button onclick="window.location.href='index.php?page=login'">Se connecter</button>

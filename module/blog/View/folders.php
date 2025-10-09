@@ -20,10 +20,7 @@ if ($message) {
             <img src="img/logo.png" alt="Logo" style="height:100px;">
             <div class="right-buttons">
                 <button>fr</button>
-                <?php if ($isLoggedIn): ?>
-                    
-                    <button onclick="window.location.href='index.php?page=login'">Se connecter</button>
-                <?php endif; ?>
+                <button onclick="window.location.href='index.php?page=login'">Se connecter</button>
             </div>
         </div>
          <nav class="menu">
