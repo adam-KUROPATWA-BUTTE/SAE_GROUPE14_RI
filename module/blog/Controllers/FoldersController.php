@@ -87,7 +87,7 @@ class FoldersController implements ControllerInterface
         }
 
         // Récupération des données
-        $dossiers = Dossier::getAll();
+        $dossiers = Dossiers::getAll();
         $message = $_SESSION['message'] ?? '';
         if ($message) {
             unset($_SESSION['message']);
