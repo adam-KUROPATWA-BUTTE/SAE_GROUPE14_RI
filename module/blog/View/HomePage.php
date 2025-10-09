@@ -18,6 +18,10 @@ class HomePage
         <html lang="fr">
         <head>
             <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta description="Service des relations internationales d'Aix-Marseille Université">
+            <meta keywords="Aix-Marseille Université, Relations Internationales, Étudiants, Universités Partenaires">
+            <meta author="Groupe 14 - SAE 2024">
             <title>Accueil - Service des relations internationales AMU</title>
             <link rel="stylesheet" href="styles/index.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
