@@ -18,7 +18,7 @@
     </div>
     <nav class="menu">
         <button onclick="window.location.href='/'">Accueil</button>
-        <button onclick="window.location.href='dashboard.php'">Tableau de bord</button>
+        <button onclick="window.location.href='DashboardPage.php'">Tableau de bord</button>
         <button onclick="window.location.href='/settings'">Paramétrage</button>
         <button class="active" onclick="window.location.href='/folders'">Dossiers</button>
         <button onclick="window.location.href='/help'">Aide</button>
