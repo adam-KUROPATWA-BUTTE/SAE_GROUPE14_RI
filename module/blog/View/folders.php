@@ -66,9 +66,9 @@ if ($message) {
                     $isValide = $dossier['valide'] ?? false;
                 ?>
                 <tr>
-                    <td><?= htmlspecialchars($dossier['numetu']) ?></td>
-                    <td><?= htmlspecialchars($dossier['nom']) ?></td>
-                    <td><?= htmlspecialchars($dossier['prenom']) ?></td>
+                    <td><?= htmlspecialchars($folder['numetu'] ?? '') ?></td>
+                    <td><?= htmlspecialchars($folder['nom'] ?? '') ?></td>
+                    <td><?= htmlspecialchars($folder['prenom'] ?? '') ?></td>
                     <td>
                         <div class="progress-bar">
                             <div class="progress" style="width:<?= $pourcentage ?>%"><?= $pourcentage ?>%</div>
