@@ -14,10 +14,7 @@
 <header>
     <div class="top-bar">
         <img src="img/logo.png" alt="Logo" style="height:100px;">
-        <div class="right-buttons">
-            <button>fr</button>
-            <button onclick="window.location.href='login.php'">Se connecter</button>
-        </div>
+
     </div>
     <nav class="menu">
         <button onclick="window.location.href='index.php'">Accueil</button>
