@@ -8,6 +8,13 @@ error_reporting(E_ALL);
 
 require "Autoloader.php";
 
+$class = 'Controllers\Blog\IndexController';
+if (class_exists($class)) {
+    echo "Classe $class chargée ✅<br>";
+} else {
+    echo "Classe $class NON trouvée ❌<br>";
+}
+
 use Controllers\Blog\AuthController;
 use Controllers\Blog\DashboardController;
 use Controllers\Blog\FoldersController;
