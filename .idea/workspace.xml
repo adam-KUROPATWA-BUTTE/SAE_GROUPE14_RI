@@ -5,9 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e4dbe818-91e3-4dc7-9532-5ab684ba46d8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/module/blog/View/foldersPage.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Autoloader.php" beforeDir="false" afterPath="$PROJECT_DIR$/Autoloader.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/module/blog/Controllers/FoldersController.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/blog/Controllers/FoldersController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/module/blog/View/foldersPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/blog/View/foldersPage.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,7 +42,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "DossierV5",
+    "git-widget-placeholder": "DossierV6",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "/Users/mariampoghossian/PhpstormProjects/SAE_GROUPE14_RI",
     "node.js.detected.package.eslint": "true",

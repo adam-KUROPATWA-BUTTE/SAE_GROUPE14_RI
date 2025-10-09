@@ -6,3 +6,5 @@ unset($_SESSION['message']);
 
 $view = new FoldersPage($dossiers, $message);
 $view->render();
+
+
