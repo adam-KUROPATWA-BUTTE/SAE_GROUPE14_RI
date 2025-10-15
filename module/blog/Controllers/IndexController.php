@@ -9,7 +9,10 @@ class IndexController implements ControllerInterface
     public function control(): void
     {
         $isLoggedIn = isset($_SESSION['admin_id']);
-        $view = new HomePage($isLoggedIn);
+        $lang = $_GET['lang'] ?? 'fr';  // récupère la langue ou défaut 'fr'
+
+        // Passe la langue au constructeur de la vue
+        $view = new HomePage($isLoggedIn, $lang);
         $view->render();
     }
 

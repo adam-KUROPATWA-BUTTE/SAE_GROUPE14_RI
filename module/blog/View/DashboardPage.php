@@ -4,17 +4,25 @@ namespace View;
 class DashboardPage
 {
     private array $dossiers;
+    private string $lang;
 
-    public function __construct(array $dossiers = [])
+    public function __construct(array $dossiers = [], string $lang = 'fr')
     {
         $this->dossiers = $dossiers;
+        $this->lang = $lang;
+    }
+
+    // Méthode helper pour construire les URLs avec param lang
+    private function buildUrl(string $path): string
+    {
+        return $path . '?lang=' . urlencode($this->lang);
     }
 
     public function render(): void
     {
         ?>
         <!DOCTYPE html>
-        <html lang="fr">
+        <html lang="<?= htmlspecialchars($this->lang) ?>">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,34 +37,45 @@ class DashboardPage
                 <img src="img/logo.png" alt="Logo" style="height:100px;">
                 <div class="right-buttons">
                     <div class="lang-dropdown">
-                        <button class="dropbtn">fr</button>
+                        <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
                         <div class="dropdown-content">
-                            <a href="#">Français</a>
-                            <a href="#">English</a>
+                            <a href="#" onclick="changeLang('fr'); return false;">Français</a>
+                            <a href="#" onclick="changeLang('en'); return false;">English</a>
                         </div>
                     </div>
                 </div>
             </div>
             <nav class="menu">
-                <button onclick="window.location.href='/'">Accueil</button>
-                <button class="active" onclick="window.location.href='/dashboard'">Tableau de bord</button>
-                <button onclick="window.location.href='/settings'">Paramétrage</button>
-                <button onclick="window.location.href='/folders'">Dossiers</button>
-                <button onclick="window.location.href='/web_plan'">Plan du site</button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'">
+                    <?= $this->lang === 'en' ? 'Home' : 'Accueil' ?>
+                </button>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/dashboard') ?>'">
+                    <?= $this->lang === 'en' ? 'Dashboard' : 'Tableau de bord' ?>
+                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/settings') ?>'">
+                    <?= $this->lang === 'en' ? 'Settings' : 'Paramétrage' ?>
+                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/folders') ?>'">
+                    <?= $this->lang === 'en' ? 'Folders' : 'Dossiers' ?>
+                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'">
+                    <?= $this->lang === 'en' ? 'Site Map' : 'Plan du site' ?>
+                </button>
             </nav>
+
         </header>
 
         <main>
-            <h1>Dossiers étudiants incomplets</h1>
+            <h1><?= $this->lang === 'en' ? 'Incomplete Student Files' : 'Dossiers étudiants incomplets' ?></h1>
             <table>
                 <thead>
                 <tr>
                     <th>NumETu</th>
-                    <th>Nom étudiant</th>
-                    <th>Prénom étudiant</th>
-                    <th>Avancement</th>
-                    <th>Pièces fournies</th>
-                    <th>Dernière relance</th>
+                    <th><?= $this->lang === 'en' ? 'Last Name' : 'Nom étudiant' ?></th>
+                    <th><?= $this->lang === 'en' ? 'First Name' : 'Prénom étudiant' ?></th>
+                    <th><?= $this->lang === 'en' ? 'Progress' : 'Avancement' ?></th>
+                    <th><?= $this->lang === 'en' ? 'Documents Submitted' : 'Pièces fournies' ?></th>
+                    <th><?= $this->lang === 'en' ? 'Last Reminder' : 'Dernière relance' ?></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -88,13 +107,13 @@ class DashboardPage
         <!-- Contenu du popup d'aide -->
         <div id="help-popup">
             <div class="help-popup-header">
-                <span>Aide</span>
+                <span><?= $this->lang === 'en' ? 'Help' : 'Aide' ?></span>
                 <button onclick="toggleHelpPopup()">✖</button>
             </div>
             <div class="help-popup-body">
-                <p>Bienvenue ! Comment pouvons-nous vous aider ?</p>
+                <p><?= $this->lang === 'en' ? 'Welcome! How can we help you?' : 'Bienvenue ! Comment pouvons-nous vous aider ?' ?></p>
                 <ul>
-                    <li><a href="index.php?page=help" target="_blank">Page d’aide complète</a></li>
+                    <li><a href="index.php?page=help" target="_blank"><?= $this->lang === 'en' ? 'Full help page' : 'Page d’aide complète' ?></a></li>
                 </ul>
             </div>
         </div>
@@ -104,11 +123,18 @@ class DashboardPage
                 const popup = document.getElementById('help-popup');
                 popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
             }
+
+            function changeLang(lang) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('lang', lang);
+                window.location.href = url.toString();
+            }
         </script>
+
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
         </footer>
-        </body>        
+        </body>
         </html>
         <?php
     }

@@ -1,15 +1,13 @@
 <?php
 namespace Controllers\Blog;
 
-
 use Controllers\ControllerInterface;
 use Model\Dossier;
 use View\DashboardPage;
 
-class DashboardController implements ControllerInterface 
-
+class DashboardController implements ControllerInterface
 {
-    public function control()
+    public function control(): void
     {
         // Vérifier si l'utilisateur est connecté
         if (!isset($_SESSION['admin_id'])) {
@@ -17,19 +15,19 @@ class DashboardController implements ControllerInterface
             exit;
         }
 
-         // Récupérer les dossiers incomplets
+        // Récupérer la langue depuis l'URL ou défaut 'fr'
+        $lang = $_GET['lang'] ?? 'fr';
+
+        // Récupérer les dossiers incomplets
         $dossiers = Dossier::getDossiersIncomplets();
-        
-        // Créer et afficher la page
-        $page = new DashboardPage($dossiers);
+
+        // Créer et afficher la page avec la langue
+        $page = new DashboardPage($dossiers, $lang);
         $page->render();
     }
 
     public static function support(string $page, string $method): bool
-{
-    return $page === 'dashboard';
-}
-
-
-
+    {
+        return $page === 'dashboard' && $method === 'GET';
+    }
 }
