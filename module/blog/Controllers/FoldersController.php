@@ -17,8 +17,9 @@ class FoldersController
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-        // Le constructeur de FoldersPage attend un tableau de vœux.
-        $view = new FoldersPage($voeux, $message); 
+        $lang = $_GET['lang'] ?? 'fr';
+
+        $view = new FoldersPage($voeux, $message, $lang); 
         $view->render();
     }
 }

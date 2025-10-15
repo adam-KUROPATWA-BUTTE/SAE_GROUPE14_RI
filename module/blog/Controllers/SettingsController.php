@@ -13,26 +13,27 @@ class SettingsController implements ControllerInterface
     public function control(): void
     {
         $type = $_GET['type'] ?? 'universites';
+        $lang = $_GET['lang'] ?? 'fr';
 
         switch ($type) {
             case 'campagnes':
                 $data = Campagne::getAll();
-                $titre = "Campagnes";
+                $titre = $lang === 'en' ? 'Campaigns' : 'Campagnes';
                 break;
             case 'partenaires':
                 $data = Partenaire::getAll();
-                $titre = "Partenaires";
+                $titre = $lang === 'en' ? 'Partners' : 'Partenaires';
                 break;
             case 'destinations':
                 $data = Destination::getAll();
-                $titre = "Destinations";
+                $titre = $lang === 'en' ? 'Destinations' : 'Destinations';
                 break;
             default:
                 $data = Universite::getAll();
-                $titre = "Paramètrage";
+                $titre = $lang === 'en' ? 'Settings' : 'Paramétrage';
         }
 
-        $view = new SettingsPage($titre, $data);
+        $view = new SettingsPage($titre, $data, $lang);
         $view->render();
     }
 

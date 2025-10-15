@@ -5,38 +5,67 @@ class SettingsPage
 {
     private string $titre;
     private array $data;
+    private string $lang;
 
-    public function __construct(string $titre, array $data)
+    public function __construct(string $titre, array $data, string $lang = 'fr')
     {
         $this->titre = $titre;
         $this->data = $data;
+        $this->lang = $lang;
+    }
+
+    private function buildUrl(string $path, array $params = []): string
+    {
+        $params['lang'] = $this->lang;
+        return $path . '?' . http_build_query($params);
+    }
+
+    private function t(array $frEn): string
+    {
+        return $this->lang === 'en' ? $frEn['en'] : $frEn['fr'];
     }
 
     public function render(): void
     {
         ?>
         <!DOCTYPE html>
-        <html lang="fr">
+        <html lang="<?= htmlspecialchars($this->lang) ?>">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title><?= htmlspecialchars($this->titre) ?></title>
             <link rel="stylesheet" href="styles/index.css">
-            <link rel="stylesheet" href="styles/settings.css"> <!-- fichier CSS dédié -->
+            <link rel="stylesheet" href="styles/settings.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
         <body>
         <header>
             <div class="top-bar">
                 <img src="img/logo.png" alt="Logo" style="height:100px;">
-
+                <div class="lang-dropdown" style="float:right; margin-top: 30px; margin-right: 20px;">
+                    <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
+                    <div class="dropdown-content">
+                        <a href="#" onclick="changeLang('fr'); return false;">Français</a>
+                        <a href="#" onclick="changeLang('en'); return false;">English</a>
+                    </div>
+                </div>
             </div>
             <nav class="menu">
-                <button onclick="window.location.href='/'">Accueil</button>
-                <button onclick="window.location.href='/dashboard'">Tableau de bord</button>
-                <button class="active" onclick="window.location.href='/settings'">Paramètrage</button>
-                <button onclick="window.location.href='/folders'">Dossiers</button>
-                <button onclick="window.location.href='/web_plan'">Plan du site</button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'">
+                    <?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?>
+                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/dashboard') ?>'">
+                    <?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?>
+                </button>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/settings') ?>'">
+                    <?= $this->t(['fr'=>'Paramétrage','en'=>'Settings']) ?>
+                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/folders') ?>'">
+                    <?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?>
+                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'">
+                    <?= $this->t(['fr'=>'Plan du site','en'=>'Site Map']) ?>
+                </button>
             </nav>
         </header>
 
@@ -44,23 +73,31 @@ class SettingsPage
             <h1><?= htmlspecialchars($this->titre) ?></h1>
 
             <div class="sub-menu">
-                <a href="index.php?page=settings&type=universites">Universités</a>
-                <a href="index.php?page=settings&type=campagnes">Campagnes</a>
-                <a href="index.php?page=settings&type=partenaires">Partenaires</a>
-                <a href="index.php?page=settings&type=destinations">Destinations</a>
+                <a href="<?= $this->buildUrl('index.php', ['page'=>'settings', 'type'=>'universites']) ?>">
+                    <?= $this->t(['fr'=>'Universités','en'=>'Universities']) ?>
+                </a>
+                <a href="<?= $this->buildUrl('index.php', ['page'=>'settings', 'type'=>'campagnes']) ?>">
+                    <?= $this->t(['fr'=>'Campagnes','en'=>'Campaigns']) ?>
+                </a>
+                <a href="<?= $this->buildUrl('index.php', ['page'=>'settings', 'type'=>'partenaires']) ?>">
+                    <?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?>
+                </a>
+                <a href="<?= $this->buildUrl('index.php', ['page'=>'settings', 'type'=>'destinations']) ?>">
+                    <?= $this->t(['fr'=>'Destinations','en'=>'Destinations']) ?>
+                </a>
             </div>
 
             <table>
                 <thead>
                 <tr>
-                    <?php if ($this->titre === "Paramètrage"): ?>
-                        <th>Code</th><th>Université</th><th>Pays</th><th>Partenaire</th>
-                    <?php elseif ($this->titre === "Campagnes"): ?>
-                        <th>Code</th><th>Nom</th><th>Statut</th>
-                    <?php elseif ($this->titre === "Partenaires"): ?>
-                        <th>Nos partenaires</th><th>Cadre</th>
-                    <?php elseif ($this->titre === "Destinations"): ?>
-                        <th>Code</th><th>Université</th><th>Pays</th><th>Partenaire</th>
+                    <?php if ($this->titre === $this->t(['fr'=>'Paramétrage','en'=>'Settings'])): ?>
+                        <th>Code</th><th><?= $this->t(['fr'=>'Université','en'=>'University']) ?></th><th><?= $this->t(['fr'=>'Pays','en'=>'Country']) ?></th><th><?= $this->t(['fr'=>'Partenaire','en'=>'Partner']) ?></th>
+                    <?php elseif ($this->titre === $this->t(['fr'=>'Campagnes','en'=>'Campaigns'])): ?>
+                        <th>Code</th><th><?= $this->t(['fr'=>'Nom','en'=>'Name']) ?></th><th><?= $this->t(['fr'=>'Statut','en'=>'Status']) ?></th>
+                    <?php elseif ($this->titre === $this->t(['fr'=>'Partenaires','en'=>'Partners'])): ?>
+                        <th><?= $this->t(['fr'=>'Nos partenaires','en'=>'Our Partners']) ?></th><th><?= $this->t(['fr'=>'Cadre','en'=>'Framework']) ?></th>
+                    <?php elseif ($this->titre === $this->t(['fr'=>'Destinations','en'=>'Destinations'])): ?>
+                        <th>Code</th><th><?= $this->t(['fr'=>'Université','en'=>'University']) ?></th><th><?= $this->t(['fr'=>'Pays','en'=>'Country']) ?></th><th><?= $this->t(['fr'=>'Partenaire','en'=>'Partner']) ?></th>
                     <?php endif; ?>
                 </tr>
                 </thead>
@@ -76,20 +113,19 @@ class SettingsPage
             </table>
         </main>
 
-        
         <!-- Bulle d'aide en bas à droite -->
         <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
 
         <!-- Contenu du popup d'aide -->
         <div id="help-popup">
             <div class="help-popup-header">
-                <span>Aide</span>
+                <span><?= $this->t(['fr'=>'Aide','en'=>'Help']) ?></span>
                 <button onclick="toggleHelpPopup()">✖</button>
             </div>
             <div class="help-popup-body">
-                <p>Bienvenue ! Comment pouvons-nous vous aider ?</p>
+                <p><?= $this->t(['fr'=>'Bienvenue ! Comment pouvons-nous vous aider ?','en'=>'Welcome! How can we help you?']) ?></p>
                 <ul>
-                    <li><a href="index.php?page=help" target="_blank">Page d’aide complète</a></li>
+                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr'=>'Page d’aide complète','en'=>'Full help page']) ?></a></li>
                 </ul>
             </div>
         </div>
@@ -99,7 +135,13 @@ class SettingsPage
                 const popup = document.getElementById('help-popup');
                 popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
             }
+            function changeLang(lang) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('lang', lang);
+                window.location.href = url.toString();
+            }
         </script>
+
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
         </footer>

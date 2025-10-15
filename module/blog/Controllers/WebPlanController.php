@@ -9,10 +9,12 @@ class WebPlanController implements ControllerInterface
 {
     public function control(): void
     {
+        $lang = $_GET['lang'] ?? 'fr';
+
         // Récupère les liens depuis le modèle WebPlan
         $links = WebPlan::getLinks();
 
-        $view = new WebPlanPage($links);
+        $view = new WebPlanPage($links, $lang);
         $view->render();
     }
 
