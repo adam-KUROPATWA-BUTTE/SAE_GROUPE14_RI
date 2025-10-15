@@ -39,10 +39,34 @@ class WebPlanPage
             </ul>
         </main>
 
+        
+        <!-- Bulle d'aide en bas à droite -->
+        <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
+
+        <!-- Contenu du popup d'aide -->
+        <div id="help-popup">
+            <div class="help-popup-header">
+                <span>Aide</span>
+                <button onclick="toggleHelpPopup()">✖</button>
+            </div>
+            <div class="help-popup-body">
+                <p>Bienvenue ! Comment pouvons-nous vous aider ?</p>
+                <ul>
+                    <li><a href="index.php?page=help" target="_blank">Page d’aide complète</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <script>
+            function toggleHelpPopup() {
+                const popup = document.getElementById('help-popup');
+                popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
+            }
+        </script>
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
         </footer>
-        </body>
+        </body>        
         </html>
         <?php
     }

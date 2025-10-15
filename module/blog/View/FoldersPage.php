@@ -35,7 +35,6 @@ class FoldersPage
                 <button onclick="window.location.href='/dashboard'">Tableau de bord</button>
                 <button onclick="window.location.href='/settings'">Paramétrage</button>
                 <button class="active" onclick="window.location.href='/folders'">Dossiers</button>
-                <button onclick="window.location.href='/help'">Aide</button>
                 <button onclick="window.location.href='/web_plan'">Plan du site</button>
             </nav>
             <div class="sub-menu" style="display:flex; gap:10px; margin-top:20px;">
@@ -150,10 +149,34 @@ class FoldersPage
                 <button type="button" onclick="location.reload()">Actualiser la liste</button>
             </div>
         </main>
+       
+        <!-- Bulle d'aide en bas à droite -->
+        <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
+
+        <!-- Contenu du popup d'aide -->
+        <div id="help-popup">
+            <div class="help-popup-header">
+                <span>Aide</span>
+                <button onclick="toggleHelpPopup()">✖</button>
+            </div>
+            <div class="help-popup-body">
+                <p>Bienvenue ! Comment pouvons-nous vous aider ?</p>
+                <ul>
+                    <li><a href="index.php?page=help" target="_blank">Page d’aide complète</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <script>
+            function toggleHelpPopup() {
+                const popup = document.getElementById('help-popup');
+                popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
+            }
+        </script>
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
         </footer>
-        </body>
+        </body>        
         </html>
         <?php
     }
