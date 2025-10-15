@@ -38,7 +38,7 @@ class FoldersPage
                 <button onclick="window.location.href='/web_plan'">Plan du site</button>
             </nav>
             <div class="sub-menu" style="display:flex; gap:10px; margin-top:20px;">
-                <button onclick="window.location.href='folders.php'">Les étudiants</button>
+                <button onclick="window.location.href='/folders'">Les étudiants</button>
             </div>
         </header>
 

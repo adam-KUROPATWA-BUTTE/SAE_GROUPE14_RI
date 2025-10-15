@@ -39,7 +39,7 @@ class DashboardPage
             </div>
             <nav class="menu">
                 <button onclick="window.location.href='/'">Accueil</button>
-                <button class="active" onclick="window.location.href='dashboard.php'">Tableau de bord</button>
+                <button class="active" onclick="window.location.href='/dashboard'">Tableau de bord</button>
                 <button onclick="window.location.href='/settings'">Paramétrage</button>
                 <button onclick="window.location.href='/folders'">Dossiers</button>
                 <button onclick="window.location.href='/web_plan'">Plan du site</button>
