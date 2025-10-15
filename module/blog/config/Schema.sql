@@ -62,3 +62,6 @@ CREATE TABLE IF NOT EXISTS relances (
     FOREIGN KEY (envoye_par) REFERENCES admins(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+ALTER TABLE etudiants
+ADD COLUMN last_connexion TIMESTAMP NULL AFTER created_at,
+ADD COLUMN type_etudiant ENUM('entrant', 'sortant') NULL AFTER prenom;
