@@ -16,18 +16,23 @@ class AuthController implements ControllerInterface
             return;
         }
 
-        // Si déjà connecté, rediriger vers le dashboard
-        if (isset($_SESSION['admin_id'])) {
-            header('Location: index.php?page=dashboard');
+        // Si déjà connecté, rediriger selon le rôle
+        if (isset($_SESSION['user_role'])) {
+            if ($_SESSION['user_role'] === 'admin') {
+                header('Location: index.php?page=dashboard');
+            } else {
+                header('Location: index.php?page=dashboard_etudiant');
+            }
             exit;
         }
 
         $message = '';
-        
         $isLogin = ($page === 'login');
         $isReset = ($page === 'reset');
         $isTokenReset = isset($_GET['token']) && !empty($_GET['token']);
         $token = $_GET['token'] ?? '';
+        $isRegisterEtudiant = ($page === 'register_etudiant');
+        $isRegisterAdmin = ($page === 'register_admin');
 
         // Traitement des formulaires POST
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -38,26 +43,84 @@ class AuthController implements ControllerInterface
                     $email = $_POST['email'] ?? '';
                     $password = $_POST['password'] ?? '';
 
-                    if (User::login($email, $password)) {
-                        header('Location: index.php?page=dashboard');
+                    $result = User::login($email, $password);
+                    
+                    if ($result['success']) {
+                        // Rediriger selon le rôle
+                        if ($result['role'] === 'admin') {
+                            header('Location: index.php?page=dashboard');
+                        } else {
+                            header('Location: index.php?page=dashboard_etudiant');
+                        }
                         exit();
                     } else {
                         $message = "Email ou mot de passe incorrect.";
                     }
                     break;
 
-                case 'register':
+                case 'register_etudiant':
+                    $nom = $_POST['nom'] ?? '';
+                    $prenom = $_POST['prenom'] ?? '';
+                    $email = $_POST['email'] ?? '';
+                    $password = $_POST['password'] ?? '';
+                    $typeEtudiant = $_POST['type_etudiant'] ?? '';
+
+                    // Validations
+                    if (empty($nom) || empty($prenom) || empty($email) || empty($password) || empty($typeEtudiant)) {
+                        $message = "Tous les champs sont obligatoires.";
+                        break;
+                    }
+
+                    if (!in_array($typeEtudiant, ['entrant', 'sortant'])) {
+                        $message = "Type d'étudiant invalide.";
+                        break;
+                    }
+
+                    if (strlen($password) < 8) {
+                        $message = "Le mot de passe doit contenir au moins 8 caractères.";
+                        break;
+                    }
+
+                    if (User::registerEtudiant($email, $password, $nom, $prenom, $typeEtudiant)) {
+                        $message = "Compte étudiant créé avec succès ! Un dossier a été créé pour vous. Vous pouvez vous connecter.";
+                        $isLogin = true;
+                        $isRegisterEtudiant = false;
+                        $page = 'login';
+                    } else {
+                        $message = "Erreur lors de la création du compte. L'email existe peut-être déjà.";
+                    }
+                    break;
+
+                case 'register_admin':
+                    // Vérifier que l'utilisateur est bien admin
+                    if (!User::isAdmin()) {
+                        $message = "Accès non autorisé.";
+                        header('Location: index.php?page=login');
+                        exit;
+                    }
+
                     $nom = $_POST['nom'] ?? '';
                     $prenom = $_POST['prenom'] ?? '';
                     $email = $_POST['email'] ?? '';
                     $password = $_POST['password'] ?? '';
 
-                    if (User::register($email, $password, $nom, $prenom)) {
-                        $message = "Compte créé avec succès ! Vous pouvez vous connecter.";
-                        $isLogin = true;
-                        $page = 'login';
+                    // Validations
+                    if (empty($nom) || empty($prenom) || empty($email) || empty($password)) {
+                        $message = "Tous les champs sont obligatoires.";
+                        break;
+                    }
+
+                    if (strlen($password) < 8) {
+                        $message = "Le mot de passe doit contenir au moins 8 caractères.";
+                        break;
+                    }
+
+                    $requestingAdminId = $_SESSION['admin_id'];
+                    
+                    if (User::registerAdmin($email, $password, $nom, $prenom, $requestingAdminId)) {
+                        $message = "Nouvel administrateur créé avec succès !";
                     } else {
-                        $message = "Erreur lors de la création du compte. L'email existe peut-être déjà.";
+                        $message = "Erreur lors de la création de l'administrateur. L'email existe peut-être déjà.";
                     }
                     break;
 
@@ -75,6 +138,11 @@ class AuthController implements ControllerInterface
                     $token = $_POST['token'] ?? '';
                     $newPassword = $_POST['new_password'] ?? '';
                     
+                    if (strlen($newPassword) < 8) {
+                        $message = "Le mot de passe doit contenir au moins 8 caractères.";
+                        break;
+                    }
+
                     if (User::updatePasswordWithToken($token, $newPassword)) {
                         $message = "Mot de passe modifié avec succès ! Vous pouvez vous connecter.";
                         $isLogin = true;
@@ -91,55 +159,18 @@ class AuthController implements ControllerInterface
             }
         }
 
-        require __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'View' . DIRECTORY_SEPARATOR . 'login.php';
-    }
-
-    /**
-     * Gère la page de réinitialisation avec token
-     */
-
-    private function handleResetPassword(): void
-    {
-        // Vérifier si un token est présent
-        if (!isset($_GET['token'])) {
-            header('Location: /index.php?page=login');
-            exit;
-        }
-        
-        $token = $_GET['token'];
-        $error = null;
-        $success = null;
-        
-        // Si le formulaire est soumis
-        if (isset($_POST['submit_reset'])) {
-            $password = $_POST['password'] ?? '';
-            $passwordConfirm = $_POST['password_confirm'] ?? '';
-            $tokenPost = $_POST['token'] ?? '';
-            
-            // Validations
-            if (empty($password) || empty($passwordConfirm)) {
-                $error = "Tous les champs sont requis.";
-            } elseif ($password !== $passwordConfirm) {
-                $error = "Les mots de passe ne correspondent pas.";
-            } elseif (strlen($password) < 8) {
-                $error = "Le mot de passe doit contenir au moins 8 caractères.";
-            } elseif ($tokenPost !== $token) {
-                $error = "Token invalide.";
-            } else {
-                // Tenter de réinitialiser le mot de passe
-                $result = User::updatePasswordWithToken($token, $password);
-                
-                if ($result) {
-                    $success = "Votre mot de passe a été réinitialisé avec succès !";
-                } else {
-                    $error = "Le lien de réinitialisation est invalide ou expiré.";
-                }
+        // Charger la vue appropriée
+        if ($isRegisterAdmin) {
+            // Vue pour créer un admin (accessible uniquement aux admins connectés)
+            if (!User::isAdmin()) {
+                header('Location: index.php?page=login');
+                exit;
             }
+            require __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'View' . DIRECTORY_SEPARATOR . 'register_admin.php';
+        } else {
+            // Vue de login/register étudiant/reset
+            require __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'View' . DIRECTORY_SEPARATOR . 'login.php';
         }
-        
-        // Afficher la vue avec la classe
-        $page = new \View\ResetPasswordPage($token, $error, $success);
-        $page->render();
     }
 
     /**
@@ -147,28 +178,13 @@ class AuthController implements ControllerInterface
      */
     private function handleLogout(): void
     {
-        // Détruire toutes les variables de session
-        $_SESSION = array();
-
-        // Si on veut détruire complètement la session, effacer aussi le cookie de session
-        if (ini_get("session.use_cookies")) {
-            $params = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 42000,
-                $params["path"], $params["domain"],
-                $params["secure"], $params["httponly"]
-            );
-        }
-
-        // Finalement, détruire la session
-        session_destroy();
-
-        // Rediriger vers la page de connexion
+        User::logout();
         header('Location: index.php?page=login');
         exit;
     }
 
     public static function support(string $page, string $method): bool
     {
-        return in_array($page, ['login', 'register', 'reset', 'logout']);
+        return in_array($page, ['login', 'register_etudiant', 'register_admin', 'reset', 'logout']);
     }
 }
