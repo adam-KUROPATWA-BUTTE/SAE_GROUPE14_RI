@@ -1,7 +1,7 @@
 <?php
 namespace Model;
 
-class Partenaire
+class Partner
 {
     public static function getAll()
     {

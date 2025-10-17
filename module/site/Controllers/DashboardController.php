@@ -1,8 +1,8 @@
 <?php
-namespace Controllers\Blog;
+namespace Controllers\site;
 
 use Controllers\ControllerInterface;
-use Model\Dossier;
+use Model\Folder;
 use View\DashboardPage;
 
 class DashboardController implements ControllerInterface
@@ -19,7 +19,7 @@ class DashboardController implements ControllerInterface
         $lang = $_GET['lang'] ?? 'fr';
 
         // Récupérer les dossiers incomplets
-        $dossiers = Dossier::getDossiersIncomplets();
+        $dossiers = Folder::getDossiersIncomplets();
 
         // Créer et afficher la page avec la langue
         $page = new DashboardPage($dossiers, $lang);

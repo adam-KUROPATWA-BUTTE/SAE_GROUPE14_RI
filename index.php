@@ -8,13 +8,13 @@ error_reporting(E_ALL);
 
 require "Autoloader.php";
 
-use Controllers\Blog\AuthController;
-use Controllers\Blog\DashboardController;
-use Controllers\Blog\FoldersController;
-use Controllers\Blog\HelpController;
-use Controllers\Blog\IndexController;
-use Controllers\Blog\SettingsController;
-use Controllers\Blog\WebPlanController;
+use Controllers\site\AuthController;
+use Controllers\site\DashboardController;
+use Controllers\site\FoldersController;
+use Controllers\site\HelpController;
+use Controllers\site\IndexController;
+use Controllers\site\SettingsController;
+use Controllers\site\WebPlanController;
 
 $controllers = [
     new AuthController(),
