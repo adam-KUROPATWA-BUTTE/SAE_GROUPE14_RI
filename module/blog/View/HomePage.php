@@ -75,7 +75,6 @@ class HomePage
                 <button onclick="window.location.href='<?= $this->buildUrl('/dashboard') ?>'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/settings') ?>'"><?= $this->t(['fr'=>'Paramétrage','en'=>'Settings']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/folders') ?>'"><?= $this->t(['fr'=>'Dossiers','en'=>'Files']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/help') ?>'"><?= $this->t(['fr'=>'Aide','en'=>'Help']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Sitemap']) ?></button>
             </nav>
         </header>
