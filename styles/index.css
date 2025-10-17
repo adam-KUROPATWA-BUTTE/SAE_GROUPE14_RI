@@ -5,6 +5,9 @@ header {
     padding: 10px 20px;
 }
 
+#logo_amu{
+    height:100px;
+}
 
 .top-bar {
     display: flex;
@@ -100,6 +103,7 @@ main {
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     padding: 2em;
+    min-height: 600px;
 }
 
 h1 {
@@ -205,11 +209,10 @@ p {
 }
 
 .donut-chart {
-    position: relative;
     width: 300px;
     height: 300px;
-    overflow: visible;
-    margin: 50px;
+    margin: 0 auto;
+    position: relative;
 }
 
 .donut-chart svg {
@@ -296,6 +299,14 @@ main {
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
+.dashboard-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+}
+
 /* 3️⃣ Footer */
 footer {
     background: #00558B;
@@ -371,4 +382,205 @@ footer p {
 
 .help-popup-body li {
     margin-bottom: 10px;
+}
+
+
+.menu-toggle {
+    display: none;
+}
+
+
+@media (max-width: 810px) {
+
+    /* Ajustement du header */
+    header {
+        padding: 10px;
+    }
+
+    #logo_amu{
+        height:80px;
+        width: 200px;
+    }
+
+    .top-bar {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Bouton hamburger visible */
+    .menu-toggle {
+        display: block;
+        font-size: 28px;
+        color: #00558B;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    /* On cache le menu de base */
+    nav.menu {
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        margin-top: 10px;
+        background-color: #2B91BB;
+        border-radius: 6px;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+
+    /* Quand on active le menu, il s’affiche */
+    nav.menu.active {
+        display: flex;
+    }
+
+    /* Les boutons prennent toute la largeur */
+    nav.menu button {
+        border: none;
+        background-color: #2B91BB;
+        color: white;
+        padding: 12px;
+        text-align: center;
+        width: 100%;
+        border-bottom: 1px solid rgba(255,255,255,0.3);
+    }
+
+    nav.menu button:last-child {
+        border-bottom: none;
+    }
+
+    nav.menu button:hover {
+        background-color: #00558B;
+    }
+
+    /* Ajustement du logo et du bloc langue + bouton menu */
+    .right-buttons {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .lang-dropdown {
+        position: relative;
+    }
+
+
+    /* Le contenu principal prend un peu moins de marge */
+    main {
+        margin: 1em;
+        padding: 1.5em;
+    }
+
+    /* Section pub et texte plus lisibles sur mobile */
+    .pub-text {
+        font-size: 22px;
+        bottom: 20px;
+        left: 15px;
+    }
+
+    .hero-section h1 {
+        font-size: 24px;
+    }
+
+
+}
+
+
+@media (max-width: 500px) {
+
+    /* Ajustement du header */
+    header {
+        padding: 5px;
+    }
+
+    #logo_amu{
+        height:60px;
+        width: 150px;
+    }
+
+    .top-bar {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* Bouton hamburger visible */
+    .menu-toggle {
+        display: block;
+        font-size: 28px;
+        color: #00558B;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    /* On cache le menu de base */
+    nav.menu {
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        margin-top: 10px;
+        background-color: #2B91BB;
+        border-radius: 6px;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+
+    /* Quand on active le menu, il s’affiche */
+    nav.menu.active {
+        display: flex;
+    }
+
+    /* Les boutons prennent toute la largeur */
+    nav.menu button {
+        border: none;
+        background-color: #2B91BB;
+        color: white;
+        padding: 12px;
+        text-align: center;
+        width: 100%;
+        border-bottom: 1px solid rgba(255,255,255,0.3);
+    }
+
+    nav.menu button:last-child {
+        border-bottom: none;
+    }
+
+    nav.menu button:hover {
+        background-color: #00558B;
+    }
+
+    /* Ajustement du logo et du bloc langue + bouton menu */
+    .right-buttons {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .lang-dropdown {
+        position: relative;
+    }
+
+
+
+    /* Le contenu principal prend un peu moins de marge */
+    main {
+        margin: 1em;
+        padding: 1.5em;
+
+    }
+
+    /* Section pub et texte plus lisibles sur mobile */
+    .pub-text {
+        font-size: 22px;
+        bottom: 20px;
+        left: 15px;
+    }
+
+    .hero-section h1 {
+        font-size: 24px;
+    }
 }
