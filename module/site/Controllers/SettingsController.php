@@ -1,12 +1,12 @@
 <?php
-namespace Controllers\Blog;
+namespace Controllers\site;
 
 use Controllers\ControllerInterface;
 use View\SettingsPage;
-use Model\Universite;
-use Model\Campagne;
+use Model\University;
+use Model\Campaign;
 use Model\Destination;
-use Model\Partenaire;
+use Model\Partner;
 
 class SettingsController implements ControllerInterface
 {
@@ -17,11 +17,11 @@ class SettingsController implements ControllerInterface
 
         switch ($type) {
             case 'campagnes':
-                $data = Campagne::getAll();
+                $data = Campaign::getAll();
                 $titre = $lang === 'en' ? 'Campaigns' : 'Campagnes';
                 break;
             case 'partenaires':
-                $data = Partenaire::getAll();
+                $data = Partner::getAll();
                 $titre = $lang === 'en' ? 'Partners' : 'Partenaires';
                 break;
             case 'destinations':
@@ -29,7 +29,7 @@ class SettingsController implements ControllerInterface
                 $titre = $lang === 'en' ? 'Destinations' : 'Destinations';
                 break;
             default:
-                $data = Universite::getAll();
+                $data = University::getAll();
                 $titre = $lang === 'en' ? 'Settings' : 'Paramétrage';
         }
 

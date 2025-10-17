@@ -1,7 +1,7 @@
 <?php
-namespace Controllers\Blog;
+namespace Controllers\site;
 
-use Model\Dossier;
+use Model\Folder;
 use View\FoldersPage;
 
 class FoldersController
