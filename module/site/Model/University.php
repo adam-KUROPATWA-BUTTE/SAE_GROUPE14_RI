@@ -1,7 +1,7 @@
 <?php
 namespace Model;
 
-class Universite
+class University
 {
     public static function getAll()
     {
