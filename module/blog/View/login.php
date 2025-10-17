@@ -1,7 +1,7 @@
 <?php
 namespace View;
 
-class HomePage
+class LoginPage
 {
     
     public function render(): void
