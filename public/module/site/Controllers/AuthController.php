@@ -1,5 +1,5 @@
 <?php
-namespace Controllers\Blog;
+namespace Controllers\site;
 
 use Controllers\ControllerInterface;
 use Model\User;
@@ -18,7 +18,7 @@ class AuthController implements ControllerInterface
 
         // Si déjà connecté, rediriger vers le dashboard
         if (isset($_SESSION['admin_id'])) {
-            header('Location: index.php?page=dashboard');
+            header('Location: /dashboard');
             exit;
         }
 
@@ -39,7 +39,7 @@ class AuthController implements ControllerInterface
                     $password = $_POST['password'] ?? '';
 
                     if (User::login($email, $password)) {
-                        header('Location: index.php?page=dashboard');
+                        header('Location: /dashboard');
                         exit();
                     } else {
                         $message = "Email ou mot de passe incorrect.";
@@ -80,7 +80,7 @@ class AuthController implements ControllerInterface
                         $isLogin = true;
                         $isReset = false;
                         $isTokenReset = false;
-                        $page = 'login';
+                        $page = 'Login';
                     } else {
                         $message = "Erreur : token invalide ou expiré.";
                     }
@@ -91,7 +91,7 @@ class AuthController implements ControllerInterface
             }
         }
 
-        require __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'View' . DIRECTORY_SEPARATOR . 'login.php';
+        require __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'View' . DIRECTORY_SEPARATOR . 'Login.php';
     }
 
     /**
@@ -102,7 +102,7 @@ class AuthController implements ControllerInterface
     {
         // Vérifier si un token est présent
         if (!isset($_GET['token'])) {
-            header('Location: /index.php?page=login');
+            header('Location: /login');
             exit;
         }
         

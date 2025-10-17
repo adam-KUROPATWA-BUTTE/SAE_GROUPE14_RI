@@ -4,19 +4,27 @@ class Database
     private static $instance = null;
     private $conn;
 
-    private $host = 'db-sae-ri-do-user-18319910-0.f.db.ondigitalocean.com';
-    private $port = '25060';
-    private $dbname = 'defaultdb';
-    private $username = 'doadmin';
-    private $password = 'AVNS_GRx9GzxHWjKfJkBwcQY';
-    private $charset = 'utf8mb4';
+    private $host;
+    private $port;
+    private $dbname;
+    private $username;
+    private $password;
+    private $charset;
 
     private function __construct()
     {
         try {
-            // Définir le fuseau horaire de PHP ICI
+            // Charger les variables d'environnement
+            $this->host     = $_ENV['DB_HOST'];
+            $this->port     = $_ENV['DB_PORT'];
+            $this->dbname   = $_ENV['DB_NAME'];
+            $this->username = $_ENV['DB_USER'];
+            $this->password = $_ENV['DB_PASSWORD'];
+            $this->charset  = $_ENV['DB_CHARSET'];
+
+            // Définir le fuseau horaire de PHP
             date_default_timezone_set('Europe/Paris');
-            
+
             $dsn = "mysql:host={$this->host};port={$this->port};dbname={$this->dbname};charset={$this->charset}";
 
             $options = [
@@ -28,16 +36,14 @@ class Database
 
             $this->conn = new PDO($dsn, $this->username, $this->password, $options);
             
-            // Définir le fuseau horaire MySQL ICI (après la connexion)
+            // Définir le fuseau horaire MySQL
             $this->conn->exec("SET time_zone = 'Europe/Paris'");
 
             error_log("✅ Connexion à la base de données réussie");
 
         } catch (PDOException $e) {
             error_log("❌ DB Error: " . $e->getMessage());
-            error_log("DSN utilisé: mysql:host={$this->host};port={$this->port};dbname={$this->dbname}");
-
-            die("Erreur de connexion à la base de données: " . $e->getMessage());
+            die("Erreur de connexion à la base de données. Veuillez réessayer plus tard.");
         }
     }
 

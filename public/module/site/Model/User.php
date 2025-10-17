@@ -1,7 +1,7 @@
 <?php
 namespace Model;
 
-require_once __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'Database.php';
+require_once ROOT_PATH . '/Database.php';
 
 class User
 {

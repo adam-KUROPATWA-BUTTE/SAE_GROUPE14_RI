@@ -1,5 +1,5 @@
 <?php
-namespace Controllers\Blog;
+namespace Controllers\site;
 
 use Controllers\ControllerInterface;
 use View\HelpPage;

@@ -41,14 +41,15 @@ class HomePage
                 'fr' => 'Accueil - Service des relations internationales AMU',
                 'en' => 'Home - International Relations Service AMU'
             ]) ?></title>
-            <link rel="stylesheet" href="styles/index.css">
-            <link rel="icon" type="image/png" href="img/favicon.webp"/>
+            <link rel="stylesheet" href="/styles/index.css">
+            <link rel="icon" type="image/png" href="/img/favicon.webp"/>
+
         </head>
 
         <body>
         <header>
             <div class="top-bar">
-                <img src="img/logo.png" alt="Logo AMU" style="height:100px;">
+                <img src="/img/logo.png" alt="Logo AMU" style="height:100px;">
                 <div class="right-buttons">
                     <div class="lang-dropdown">
                         <button class="dropbtn"><?= htmlspecialchars($this->lang) ?></button>
@@ -80,11 +81,11 @@ class HomePage
         </header>
 
         <section class="hero-section">
-            <img src="img/amu.png" alt="Logo AMU" style="height:80px; position:absolute; top:20px; left:20px;">
+            <img src="/img/amu.png" alt="Logo AMU" style="height:80px; position:absolute; top:20px; left:20px;">
         </section>
 
         <section class="pub-section">
-            <img src="img/pub.jpg" alt="Publicité AMU">
+            <img src="/img/pub.jpg" alt="Publicité AMU">
             <div class="pub-text"><?= $this->t([
                 'fr' => '« Aix-Marseille Université, une université ouverte sur le monde »',
                 'en' => '“Aix-Marseille University, a university open to the world”'
