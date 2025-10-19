@@ -93,3 +93,46 @@ button:hover {
 .toggle a:hover {
     text-decoration: underline;
 }
+
+@media (max-width: 500px) {
+    body {
+        flex-direction: column;
+        height: auto;
+        padding: 20px;
+    }
+
+    header {
+        padding: 10px;
+        text-align: center;
+    }
+
+    .top-bar {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .right-buttons {
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+    }
+
+    nav.menu {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    nav.menu button {
+        width: 90%;
+    }
+
+    .container {
+        width: 90%;
+        padding: 15px;
+    }
+
+    input, button {
+        font-size: 16px;
+    }
+}
