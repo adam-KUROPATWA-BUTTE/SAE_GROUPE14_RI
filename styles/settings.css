@@ -53,14 +53,14 @@ tr:nth-child(even) {
 
 @media (max-width: 810px) {
     main {
-        width: 95%; /* prend presque toute la largeur */
+        width: 95%;
         margin: 1em auto;
         padding: 1.5em;
     }
 
     table {
-        width: 100%; /* prend toute la largeur */
-        table-layout: fixed; /* répartit les colonnes également */
+        width: 100%;
+        table-layout: fixed;
         border-collapse: collapse;
         overflow-x: auto;
         display: block;
@@ -70,7 +70,7 @@ tr:nth-child(even) {
     th, td {
         padding: 0.6em;
         font-size: 0.9em;
-        word-wrap: break-word; /* casse les mots si nécessaire */
+        word-wrap: break-word;
     }
 
     .sub-menu {
@@ -96,7 +96,7 @@ tr:nth-child(even) {
     }
 
     table {
-        width: 100%; /* prend toute la largeur */
+        width: 100%;
         table-layout: fixed;
         display: block;
     }
@@ -106,6 +106,7 @@ tr:nth-child(even) {
         font-size: 0.85em;
         word-wrap: break-word;
     }
+
 
     .sub-menu a {
         flex: 1 1 100%;
