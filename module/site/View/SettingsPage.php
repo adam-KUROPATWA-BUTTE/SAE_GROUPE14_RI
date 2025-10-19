@@ -41,12 +41,14 @@ class SettingsPage
         <body>
         <header>
             <div class="top-bar">
-                <img src="img/logo.png" alt="Logo" style="height:100px;">
-                <div class="lang-dropdown" style="float:right; margin-top: 30px; margin-right: 20px;">
-                    <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
-                    <div class="dropdown-content">
-                        <a href="#" onclick="changeLang('fr'); return false;">Français</a>
-                        <a href="#" onclick="changeLang('en'); return false;">English</a>
+                <img id="logo_amu" src="img/logo.png" alt="Logo" style="height:100px;">
+                <div class="right-buttons">
+                    <div class="lang-dropdown" style="float:right; margin-top: 30px; margin-right: 20px;">
+                        <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
+                        <div class="dropdown-content">
+                            <a href="#" onclick="changeLang('fr'); return false;">Français</a>
+                            <a href="#" onclick="changeLang('en'); return false;">English</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -131,6 +133,17 @@ class SettingsPage
         </div>
 
         <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const menuToggle = document.createElement('button');
+                menuToggle.classList.add('menu-toggle');
+                menuToggle.innerHTML = '☰';
+                document.querySelector('.right-buttons').appendChild(menuToggle);
+
+                const navMenu = document.querySelector('nav.menu');
+                menuToggle.addEventListener('click', () => {
+                    navMenu.classList.toggle('active');
+                });
+            });
             function toggleHelpPopup() {
                 const popup = document.getElementById('help-popup');
                 popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';

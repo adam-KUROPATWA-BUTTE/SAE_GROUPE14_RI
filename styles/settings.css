@@ -50,3 +50,67 @@ tr:nth-child(even) {
 .sub-menu a.active {
     background: #0056b3;
 }
+
+@media (max-width: 810px) {
+    main {
+        width: 95%;
+        margin: 1em auto;
+        padding: 1.5em;
+    }
+
+    table {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+        overflow-x: auto;
+        display: block;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    th, td {
+        padding: 0.6em;
+        font-size: 0.9em;
+        word-wrap: break-word;
+    }
+
+    .sub-menu {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .sub-menu a {
+        flex: 1 1 auto;
+        padding: 6px 10px;
+        font-size: 0.9em;
+    }
+}
+
+
+@media (max-width: 500px) {
+    main {
+        width: 98%;
+        margin: 0.8em auto;
+        padding: 1em;
+    }
+
+    table {
+        width: 100%;
+        table-layout: fixed;
+        display: block;
+    }
+
+    th, td {
+        padding: 0.5em;
+        font-size: 0.85em;
+        word-wrap: break-word;
+    }
+
+
+    .sub-menu a {
+        flex: 1 1 100%;
+        padding: 5px 8px;
+        font-size: 0.85em;
+    }
+}
