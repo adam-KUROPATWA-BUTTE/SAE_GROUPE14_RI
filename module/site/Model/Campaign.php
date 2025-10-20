@@ -1,7 +1,7 @@
 <?php
 namespace Model;
 
-class Campagne{
+class Campaign{
     public static function getAll(){
         return [
             ['code' => 1, 'date_ouverture' => '22/03/2023', 'date_fermeture' => '22/06/2023'],

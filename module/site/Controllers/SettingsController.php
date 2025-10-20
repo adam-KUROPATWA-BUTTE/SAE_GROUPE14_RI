@@ -1,38 +1,39 @@
 <?php
-namespace Controllers\Blog;
+namespace Controllers\site;
 
 use Controllers\ControllerInterface;
 use View\SettingsPage;
-use Model\Universite;
-use Model\Campagne;
+use Model\University;
+use Model\Campaign;
 use Model\Destination;
-use Model\Partenaire;
+use Model\Partner;
 
 class SettingsController implements ControllerInterface
 {
     public function control(): void
     {
         $type = $_GET['type'] ?? 'universites';
+        $lang = $_GET['lang'] ?? 'fr';
 
         switch ($type) {
             case 'campagnes':
-                $data = Campagne::getAll();
-                $titre = "Campagnes";
+                $data = Campaign::getAll();
+                $titre = $lang === 'en' ? 'Campaigns' : 'Campagnes';
                 break;
             case 'partenaires':
-                $data = Partenaire::getAll();
-                $titre = "Partenaires";
+                $data = Partner::getAll();
+                $titre = $lang === 'en' ? 'Partners' : 'Partenaires';
                 break;
             case 'destinations':
                 $data = Destination::getAll();
-                $titre = "Destinations";
+                $titre = $lang === 'en' ? 'Destinations' : 'Destinations';
                 break;
             default:
-                $data = Universite::getAll();
-                $titre = "Paramètrage";
+                $data = University::getAll();
+                $titre = $lang === 'en' ? 'Settings' : 'Paramétrage';
         }
 
-        $view = new SettingsPage($titre, $data);
+        $view = new SettingsPage($titre, $data, $lang);
         $view->render();
     }
 

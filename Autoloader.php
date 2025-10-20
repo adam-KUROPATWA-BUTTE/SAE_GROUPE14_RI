@@ -3,11 +3,11 @@
 class Autoloader
 {
     private static array $prefixes = [
-        'Controllers\\Blog\\' => 'module/blog/Controllers/',
-        'Controllers\\' => 'module/blog/Controllers/',
-        'Model\\' => 'module/blog/Model/',
-        'Config\\' => 'module/blog/config/',
-        'View\\' => 'module/blog/View/',
+        'Controllers\\site\\' => 'module/site/Controllers/',
+        'Controllers\\' => 'module/site/Controllers/',
+        'Model\\' => 'module/site/Model/',
+        'Config\\' => 'module/site/config/',
+        'View\\' => 'module/site/View/',
     ];
 
     public static function register(): void

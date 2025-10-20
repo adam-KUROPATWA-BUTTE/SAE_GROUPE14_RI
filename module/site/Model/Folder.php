@@ -1,7 +1,7 @@
 <?php
 namespace Model;
 
-class Dossier
+class Folder
 {
     public static function getAll()
     {

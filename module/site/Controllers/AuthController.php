@@ -1,5 +1,5 @@
 <?php
-namespace Controllers\Blog;
+namespace Controllers\site;
 
 use Controllers\ControllerInterface;
 use Model\User;
@@ -15,8 +15,7 @@ class AuthController implements ControllerInterface
             $this->handleLogout();
             return;
         }
-
-        // Si déjà connecté, rediriger selon le rôle
+        
         if (isset($_SESSION['user_role'])) {
             if ($_SESSION['user_role'] === 'admin') {
                 header('Location: index.php?page=dashboard');
@@ -158,18 +157,16 @@ class AuthController implements ControllerInterface
                     $message = "Action non reconnue.";
             }
         }
-
+        
         // Charger la vue appropriée
         if ($isRegisterAdmin) {
-            // Vue pour créer un admin (accessible uniquement aux admins connectés)
             if (!User::isAdmin()) {
                 header('Location: index.php?page=login');
                 exit;
             }
             require __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'View' . DIRECTORY_SEPARATOR . 'register_admin.php';
         } else {
-            // Vue de login/register étudiant/reset
-            require __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'View' . DIRECTORY_SEPARATOR . 'login.php';
+            require __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'View' . DIRECTORY_SEPARATOR . 'Login.php';
         }
     }
 
