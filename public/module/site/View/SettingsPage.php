@@ -4,13 +4,11 @@ namespace View;
 class SettingsPage
 {
     private string $titre;
-    private array $data;
     private string $lang;
 
-    public function __construct(string $titre, array $data, string $lang = 'fr')
+    public function __construct(string $titre, string $lang = 'fr')
     {
         $this->titre = $titre;
-        $this->data = $data;
         $this->lang = $lang;
     }
 
@@ -74,90 +72,30 @@ class SettingsPage
         <main>
             <h1><?= htmlspecialchars($this->titre) ?></h1>
 
-            <div class="sub-menu">
-                <a href="<?= $this->buildUrl('index.php', ['page'=>'settings', 'type'=>'universites']) ?>">
-                    <?= $this->t(['fr'=>'Universités','en'=>'Universities']) ?>
+            <p>
+                <?= $this->t([
+                    'fr' => 'Veuillez trouver la liste des partenaires d’AMU en cliquant sur ce lien :',
+                    'en' => 'Please find the list of AMU\'s partners by clicking on this link:'
+                ]) ?>
+            </p>
+            <p>
+                <a href="https://www.univ-amu.fr/fr/public/universites-et-reseaux-partenaires" target="_blank">
+                    Universites-et-reseaux-partenaires
                 </a>
-                <a href="<?= $this->buildUrl('index.php', ['page'=>'settings', 'type'=>'campagnes']) ?>">
-                    <?= $this->t(['fr'=>'Campagnes','en'=>'Campaigns']) ?>
-                </a>
-                <a href="<?= $this->buildUrl('index.php', ['page'=>'settings', 'type'=>'partenaires']) ?>">
-                    <?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?>
-                </a>
-                <a href="<?= $this->buildUrl('index.php', ['page'=>'settings', 'type'=>'destinations']) ?>">
-                    <?= $this->t(['fr'=>'Destinations','en'=>'Destinations']) ?>
-                </a>
-            </div>
-
-            <table>
-                <thead>
-                <tr>
-                    <?php if ($this->titre === $this->t(['fr'=>'Paramétrage','en'=>'Settings'])): ?>
-                        <th>Code</th><th><?= $this->t(['fr'=>'Université','en'=>'University']) ?></th><th><?= $this->t(['fr'=>'Pays','en'=>'Country']) ?></th><th><?= $this->t(['fr'=>'Partenaire','en'=>'Partner']) ?></th>
-                    <?php elseif ($this->titre === $this->t(['fr'=>'Campagnes','en'=>'Campaigns'])): ?>
-                        <th>Code</th><th><?= $this->t(['fr'=>'Nom','en'=>'Name']) ?></th><th><?= $this->t(['fr'=>'Statut','en'=>'Status']) ?></th>
-                    <?php elseif ($this->titre === $this->t(['fr'=>'Partenaires','en'=>'Partners'])): ?>
-                        <th><?= $this->t(['fr'=>'Nos partenaires','en'=>'Our Partners']) ?></th><th><?= $this->t(['fr'=>'Cadre','en'=>'Framework']) ?></th>
-                    <?php elseif ($this->titre === $this->t(['fr'=>'Destinations','en'=>'Destinations'])): ?>
-                        <th>Code</th><th><?= $this->t(['fr'=>'Université','en'=>'University']) ?></th><th><?= $this->t(['fr'=>'Pays','en'=>'Country']) ?></th><th><?= $this->t(['fr'=>'Partenaire','en'=>'Partner']) ?></th>
-                    <?php endif; ?>
-                </tr>
-                </thead>
-                <tbody>
-                <?php foreach ($this->data as $row): ?>
-                    <tr>
-                        <?php foreach ($row as $value): ?>
-                            <td><?= htmlspecialchars($value) ?></td>
-                        <?php endforeach; ?>
-                    </tr>
-                <?php endforeach; ?>
-                </tbody>
-            </table>
+            </p>
         </main>
 
-        <!-- Bulle d'aide en bas à droite -->
-        <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
-
-        <!-- Contenu du popup d'aide -->
-        <div id="help-popup">
-            <div class="help-popup-header">
-                <span><?= $this->t(['fr'=>'Aide','en'=>'Help']) ?></span>
-                <button onclick="toggleHelpPopup()">✖</button>
-            </div>
-            <div class="help-popup-body">
-                <p><?= $this->t(['fr'=>'Bienvenue ! Comment pouvons-nous vous aider ?','en'=>'Welcome! How can we help you?']) ?></p>
-                <ul>
-                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr'=>'Page d’aide complète','en'=>'Full help page']) ?></a></li>
-                </ul>
-            </div>
-        </div>
+        <footer>
+            <p>&copy; 2025 - Aix-Marseille Université.</p>
+        </footer>
 
         <script>
-            document.addEventListener("DOMContentLoaded", () => {
-                const menuToggle = document.createElement('button');
-                menuToggle.classList.add('menu-toggle');
-                menuToggle.innerHTML = '☰';
-                document.querySelector('.right-buttons').appendChild(menuToggle);
-
-                const navMenu = document.querySelector('nav.menu');
-                menuToggle.addEventListener('click', () => {
-                    navMenu.classList.toggle('active');
-                });
-            });
-            function toggleHelpPopup() {
-                const popup = document.getElementById('help-popup');
-                popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
-            }
             function changeLang(lang) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('lang', lang);
                 window.location.href = url.toString();
             }
         </script>
-
-        <footer>
-            <p>&copy; 2025 - Aix-Marseille Université.</p>
-        </footer>
         </body>
         </html>
         <?php
