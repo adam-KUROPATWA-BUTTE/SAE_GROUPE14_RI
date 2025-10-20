@@ -420,8 +420,8 @@ footer p {
     }
 
     #logo_amu{
-        height:80px;
         width: 200px;
+        height:auto;
     }
 
     .top-bar {
@@ -555,8 +555,8 @@ footer p {
     }
 
     #logo_amu{
-        height:60px;
         width: 150px;
+        height:auto;
     }
 
     .top-bar {
