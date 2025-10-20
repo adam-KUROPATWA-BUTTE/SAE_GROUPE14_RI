@@ -8,54 +8,94 @@ class User
     /**
      * Connexion universelle (admin ou étudiant (type 1 et 2))
      */
-    public static function login($email, $password)
+    public static function login($identifier, $password)
+{
+    try {
+        $db = \Database::getInstance()->getConnection();
+
+        // Vérifier dans les admins
+        $sqlAdmin = "SELECT id, email, password, nom, prenom, 'admin' AS user_type FROM admins WHERE email = :identifier";
+        $stmt = $db->prepare($sqlAdmin);
+        $stmt->execute(['identifier' => $identifier]);
+        $user = $stmt->fetch();
+
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['user_role'] = 'admin';
+            $_SESSION['admin_id'] = $user['id'];
+            $_SESSION['admin_nom'] = $user['nom'];
+            $_SESSION['admin_prenom'] = $user['prenom'];
+            return ['success' => true, 'role' => 'admin'];
+        }
+
+        // Vérifier dans les étudiants (numéro étudiant)
+        $sqlEtudiant = "SELECT id, numetu, nom, prenom, password, type_etudiant, 'etudiant' AS user_type 
+                        FROM etudiants WHERE numetu = :identifier";
+        $stmt = $db->prepare($sqlEtudiant);
+        $stmt->execute(['identifier' => $identifier]);
+        $user = $stmt->fetch();
+
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['user_role'] = 'etudiant';
+            $_SESSION['etudiant_id'] = $user['id'];
+            $_SESSION['etudiant_nom'] = $user['nom'];
+            $_SESSION['etudiant_prenom'] = $user['prenom'];
+            $_SESSION['numetu'] = $user['numetu'];
+            $_SESSION['type_etudiant'] = $user['type_etudiant'];
+
+            // Mettre à jour la date de dernière connexion
+            $db->prepare("UPDATE etudiants SET last_connexion = NOW() WHERE id = :id")
+               ->execute(['id' => $user['id']]);
+
+            return ['success' => true, 'role' => 'etudiant'];
+        }
+
+        return ['success' => false];
+
+    } catch (\PDOException $e) {
+        error_log("Erreur login : " . $e->getMessage());
+        return ['success' => false];
+    }
+}
+
+
+    /**
+     * Vérifier si un étudiant a un dossier
+     */
+    public static function checkDossierExists($etudiantId)
     {
         try {
             $db = \Database::getInstance()->getConnection();
             
-            // Chercher d'abord dans les admins
-            $sql = "SELECT *, 'admin' as user_type FROM admins WHERE email = :email 
-                    UNION 
-                    SELECT id, email, password, nom, prenom, created_at, last_login, 'etudiant' as user_type 
-                    FROM etudiants WHERE email = :email 
-                    LIMIT 1";
+            $sql = "SELECT COUNT(*) as count FROM dossiers_etudiants WHERE etudiant_id = :etudiant_id";
             $stmt = $db->prepare($sql);
-            $stmt->execute(['email' => $email]);
-            $user = $stmt->fetch();
+            $stmt->execute(['etudiant_id' => $etudiantId]);
+            $result = $stmt->fetch();
             
-            if ($user && password_verify($password, $user['password'])) {
-                $table = ($user['user_type'] === 'admin') ? 'admins' : 'etudiants';
-                
-                // Mise à jour du dernier login
-                $updateSql = "UPDATE $table SET last_login = NOW() WHERE id = :id";
-                $updateStmt = $db->prepare($updateSql);
-                $updateStmt->execute(['id' => $user['id']]);
-                
-                // Stocker en session selon le type
-                if ($user['user_type'] === 'admin') {
-                    $_SESSION['admin_id'] = $user['id'];
-                    $_SESSION['admin_email'] = $user['email'];
-                    $_SESSION['admin_nom'] = $user['nom'] ?? '';
-                    $_SESSION['admin_prenom'] = $user['prenom'] ?? '';
-                    $_SESSION['user_role'] = 'admin';
-                    $_SESSION['is_super_admin'] = $user['is_super_admin'] ?? false;
-                } else {
-                    $_SESSION['etudiant_id'] = $user['id'];
-                    $_SESSION['etudiant_email'] = $user['email'];
-                    $_SESSION['etudiant_nom'] = $user['nom'];
-                    $_SESSION['etudiant_prenom'] = $user['prenom'];
-                    $_SESSION['etudiant_type'] = $user['type_etudiant'];
-                    $_SESSION['user_role'] = 'etudiant';
-                }
-                
-                return ['success' => true, 'role' => $user['user_type']];
-            }
-            
-            return ['success' => false];
+            return $result['count'] > 0;
             
         } catch (\PDOException $e) {
-            error_log("Erreur login : " . $e->getMessage());
-            return ['success' => false];
+            error_log("Erreur checkDossierExists : " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Récupérer le dossier d'un étudiant
+     */
+    public static function getDossier($etudiantId)
+    {
+        try {
+            $db = \Database::getInstance()->getConnection();
+            
+            $sql = "SELECT * FROM dossiers_etudiants WHERE etudiant_id = :etudiant_id LIMIT 1";
+            $stmt = $db->prepare($sql);
+            $stmt->execute(['etudiant_id' => $etudiantId]);
+            
+            return $stmt->fetch();
+            
+        } catch (\PDOException $e) {
+            error_log("Erreur getDossier : " . $e->getMessage());
+            return false;
         }
     }
 
@@ -97,11 +137,8 @@ class User
                 'type_etudiant' => $typeEtudiant
             ]);
             
-            // Créer automatiquement un dossier pour l'étudiant
-            if ($result) {
-                $etudiantId = $db->lastInsertId();
-                self::createDossier($etudiantId);
-            }
+            // NE PAS créer automatiquement le dossier
+            // L'étudiant devra le créer après connexion
             
             return $result;
             
@@ -160,15 +197,20 @@ class User
     }
 
     /**
-     * Créer un dossier pour un étudiant
+     * Créer un dossier pour un étudiant (appelé manuellement après connexion)
      */
-    private static function createDossier($etudiantId)
+    public static function createDossier($etudiantId)
     {
         try {
             $db = \Database::getInstance()->getConnection();
             
-            $sql = "INSERT INTO dossiers_etudiants (etudiant_id, statut) 
-                    VALUES (:etudiant_id, 'en_cours')";
+            // Vérifier que le dossier n'existe pas déjà
+            if (self::checkDossierExists($etudiantId)) {
+                return false;
+            }
+            
+            $sql = "INSERT INTO dossiers_etudiants (etudiant_id, statut, created_at) 
+                    VALUES (:etudiant_id, 'en_cours', NOW())";
             $stmt = $db->prepare($sql);
             
             return $stmt->execute(['etudiant_id' => $etudiantId]);

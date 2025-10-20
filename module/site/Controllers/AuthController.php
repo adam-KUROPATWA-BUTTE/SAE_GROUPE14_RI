@@ -16,11 +16,18 @@ class AuthController implements ControllerInterface
             return;
         }
         
+        // Si déjà connecté, rediriger
         if (isset($_SESSION['user_role'])) {
             if ($_SESSION['user_role'] === 'admin') {
                 header('Location: index.php?page=dashboard');
             } else {
-                header('Location: index.php?page=dashboard_etudiant');
+                // Vérifier si l'étudiant a un dossier
+                $hasDossier = User::checkDossierExists($_SESSION['etudiant_id']);
+                if ($hasDossier) {
+                    header('Location: index.php?page=dashboard_etudiant');
+                } else {
+                    header('Location: index.php?page=create_dossier');
+                }
             }
             exit;
         }
@@ -39,21 +46,26 @@ class AuthController implements ControllerInterface
         
             switch ($action) {
                 case 'login':
-                    $email = $_POST['email'] ?? '';
-                    $password = $_POST['password'] ?? '';
+                        $identifier = $_POST['identifier'] ?? '';
+                        $password = $_POST['password'] ?? '';
 
-                    $result = User::login($email, $password);
+                        $result = User::login($identifier, $password);
+
                     
                     if ($result['success']) {
-                        // Rediriger selon le rôle
+                        // Rediriger selon le rôle et la présence du dossier
                         if ($result['role'] === 'admin') {
                             header('Location: index.php?page=dashboard');
                         } else {
-                            header('Location: index.php?page=dashboard_etudiant');
+                            if ($result['has_dossier']) {
+                                header('Location: index.php?page=dashboard_etudiant');
+                            } else {
+                                header('Location: index.php?page=create_dossier');
+                            }
                         }
                         exit();
                     } else {
-                        $message = "Email ou mot de passe incorrect.";
+                        $message = "Identifiant ou mot de passe incorrect.";
                     }
                     break;
 
@@ -81,7 +93,7 @@ class AuthController implements ControllerInterface
                     }
 
                     if (User::registerEtudiant($email, $password, $nom, $prenom, $typeEtudiant)) {
-                        $message = "Compte étudiant créé avec succès ! Un dossier a été créé pour vous. Vous pouvez vous connecter.";
+                        $message = "Compte créé avec succès ! Vous pouvez maintenant vous connecter. Vous devrez créer votre dossier après connexion.";
                         $isLogin = true;
                         $isRegisterEtudiant = false;
                         $page = 'login';
