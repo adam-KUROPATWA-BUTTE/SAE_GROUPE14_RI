@@ -5,11 +5,13 @@ class HomePage
 {
     private bool $isLoggedIn;
     private string $lang;
+    private float $completionPercentage;
 
-    public function __construct(bool $isLoggedIn = false, string $lang = 'fr')
+    public function __construct(bool $isLoggedIn = false, string $lang = 'fr', float $completionPercentage = 0)
     {
         $this->isLoggedIn = $isLoggedIn;
         $this->lang = $lang;
+        $this->completionPercentage = $completionPercentage;
     }
 
     private function t(array $frEn): string
@@ -25,6 +27,9 @@ class HomePage
 
     public function render(): void
     {
+        $radius = 130;
+        $circumference = 2 * pi() * $radius;
+        $dashArray = ($this->completionPercentage / 100) * $circumference;
         ?>
         <!DOCTYPE html>
         <html lang="<?= htmlspecialchars($this->lang) ?>">
@@ -38,18 +43,18 @@ class HomePage
             <meta name="keywords" content="AMU, international, étudiant, mobilité, Aix-Marseille, université, relations internationales">
             <meta name="author" content="Groupe 14 - SAE 2024">
             <title><?= $this->t([
-                'fr' => 'Accueil - Service des relations internationales AMU',
-                'en' => 'Home - International Relations Service AMU'
-            ]) ?></title>
-            <link rel="stylesheet" href="/styles/index.css">
-            <link rel="icon" type="image/png" href="/img/favicon.webp"/>
-
+                    'fr' => 'Accueil - Service des relations internationales AMU',
+                    'en' => 'Home - International Relations Service AMU'
+                ]) ?></title>
+            <link rel="stylesheet" href="styles/index.css">
+            <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
 
         <body>
+        <!-- HEADER -->
         <header>
             <div class="top-bar">
-                <img src="/img/logo.png" alt="Logo AMU" style="height:100px;">
+                <img id="logo_amu" src="img/logo.png" alt="Logo AMU">
                 <div class="right-buttons">
                     <div class="lang-dropdown">
                         <button class="dropbtn"><?= htmlspecialchars($this->lang) ?></button>
@@ -80,18 +85,21 @@ class HomePage
             </nav>
         </header>
 
+        <!-- HERO SECTION -->
         <section class="hero-section">
-            <img src="/img/amu.png" alt="Logo AMU" style="height:80px; position:absolute; top:20px; left:20px;">
+            <img src="img/amu.png" alt="Logo AMU" style="height:80px; position:absolute; top:20px; left:20px;">
         </section>
 
+        <!-- PUBLICITÉ -->
         <section class="pub-section">
-            <img src="/img/pub.jpg" alt="Publicité AMU">
+            <img id="pub_amu" src="img/pub.jpg" alt="Publicité AMU">
             <div class="pub-text"><?= $this->t([
-                'fr' => '« Aix-Marseille Université, une université ouverte sur le monde »',
-                'en' => '“Aix-Marseille University, a university open to the world”'
-            ]) ?></div>
+                    'fr' => '« Aix-Marseille Université, une université ouverte sur le monde »',
+                    'en' => '“Aix-Marseille University, a university open to the world”'
+                ]) ?></div>
         </section>
 
+        <!-- MAIN -->
         <main>
             <div class="dashboard-container">
                 <div class="card">
@@ -109,12 +117,13 @@ class HomePage
                     <div class="chart-container">
                         <div class="donut-chart">
                             <svg width="300" height="300">
-                                <circle r="130" cx="150" cy="150" fill="transparent" stroke="#EBC55E" stroke-width="40"></circle>
-                                <circle r="130" cx="150" cy="150" fill="transparent" stroke="#2B91BB" stroke-width="40"
-                                        stroke-dasharray="0 880" stroke-linecap="round"></circle>
+                                <circle r="<?= $radius ?>" cx="150" cy="150" fill="transparent" stroke="#EBC55E" stroke-width="40"></circle>
+                                <circle r="<?= $radius ?>" cx="150" cy="150" fill="transparent" stroke="#2B91BB" stroke-width="40"
+                                        stroke-dasharray="<?= $dashArray ?> <?= $circumference ?>"
+                                        stroke-linecap="round"></circle>
                             </svg>
                             <div class="chart-center">
-                                <div class="chart-percentage">0%</div>
+                                <div class="chart-percentage"><?= round($this->completionPercentage) ?>%</div>
                                 <div class="chart-label"><?= $this->t(['fr'=>'Complet','en'=>'Complete']) ?></div>
                             </div>
                         </div>
@@ -123,9 +132,9 @@ class HomePage
             </div>
         </main>
 
+        <!-- BULLE D’AIDE -->
         <div id="help-bubble" onclick="toggleHelpPopup()" style="position:fixed; bottom:20px; right:20px; cursor:pointer; font-size:2em; z-index:1000;">❓</div>
-
-        <div id="help-popup" style="display:none; position:fixed; bottom:60px; right:20px; width:300px; background:#fff; border:1px solid #ccc; padding:10px; box-shadow: 0 0 10px rgba(0,0,0,0.3); z-index:1001;">
+        <div id="help-popup" style="display:none; position:fixed; bottom:60px; right:20px; width:300px; background:#fff; border:1px solid #ccc; padding:10px; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:1001;">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #ddd; padding-bottom:5px; margin-bottom:10px;">
                 <span><?= $this->t(['fr'=>'Aide','en'=>'Help']) ?></span>
                 <button onclick="toggleHelpPopup()" style="background:none; border:none; font-size:1.2em; cursor:pointer;">✖</button>
@@ -138,15 +147,28 @@ class HomePage
             </div>
         </div>
 
+        <!-- FOOTER -->
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
         </footer>
 
         <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const menuToggle = document.createElement('button');
+                menuToggle.classList.add('menu-toggle');
+                menuToggle.innerHTML = '☰';
+                document.querySelector('.right-buttons').appendChild(menuToggle);
+
+                const navMenu = document.querySelector('nav.menu');
+                menuToggle.addEventListener('click', () => {
+                    navMenu.classList.toggle('active');
+                });
+            });
             function toggleHelpPopup() {
                 const popup = document.getElementById('help-popup');
                 popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
             }
+
             function changeLang(lang) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('lang', lang);

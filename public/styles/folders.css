@@ -37,6 +37,7 @@ h2 {
 .student-toolbar input[type="text"] {
     width: 250px;
     padding: 5px;
+    box-sizing: border-box;
 }
 
 .nav-buttons {
@@ -60,21 +61,21 @@ h2 {
 /* Formulaire étudiant */
 .form-section {
     display: grid;
-    grid-template-columns: 150px 1fr 150px 1fr;
+    grid-template-columns: 250px 1fr 150px 1fr;
     gap: 10px 20px;
     margin-top: 20px;
 }
 
 .form-section label {
     align-self: center;
-    grid-column: span 1;
+    /* grid-column: span 1;  inutile car c’est le comportement par défaut */
 }
 
 .form-section input,
 .form-section select {
     width: 100%;
     padding: 5px;
-    grid-column: span 1;
+    /* grid-column: span 1; idem */
 }
 
 .form-section input[type="file"] {
@@ -115,4 +116,151 @@ tr:nth-child(even) {
 /* Actions voeux */
 .voeux-actions {
     margin-top: 10px;
+}
+
+/* --- MEDIA QUERIES --- */
+
+/* Entre 801px et 900px - ajustements légers */
+@media (max-width: 900px) and (min-width: 801px) {
+    main {
+        padding: 1.5em;
+        margin: 1.5em auto;
+    }
+
+    .student-toolbar input[type="text"] {
+        width: 220px;
+    }
+
+    .form-section {
+        grid-template-columns: 220px 1fr 130px 1fr;
+        gap: 8px 15px;
+    }
+
+    table {
+        font-size: 0.95rem;
+    }
+}
+
+/* Entre 601px et 800px - grille 2 colonnes */
+@media (max-width: 800px) and (min-width: 601px) {
+    .form-section {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px 15px;
+    }
+
+    .form-section input[type="file"] {
+        grid-column: span 2;
+    }
+}
+
+/* Moins de 600px - une colonne, toolbar verticale */
+@media (max-width: 600px) {
+    main {
+        padding: 1em;
+        margin: 1em;
+    }
+
+    h1, h2 {
+        font-size: 1.5rem;
+    }
+
+    .student-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .student-toolbar input[type="text"] {
+        width: 100%;
+    }
+
+    .nav-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .form-section {
+        grid-template-columns: 1fr;
+        gap: 10px 10px;
+    }
+
+    .form-section input[type="file"] {
+        grid-column: auto;
+        width: 100%;
+    }
+
+    table {
+        font-size: 0.85rem;
+        overflow-x: auto;
+        display: block;
+    }
+
+    .sub-menu {
+        flex-direction: column;
+    }
+}
+
+/* Très petits écrans (moins de 400px) */
+@media (max-width: 400px) {
+    h1, h2 {
+        font-size: 1.2rem;
+    }
+
+    .nav-buttons button {
+        padding: 5px 8px;
+        font-size: 0.85rem;
+    }
+
+    .student-toolbar input[type="text"] {
+        font-size: 0.9rem;
+    }
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+
+.pagination button {
+    background: #004080;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    transition: background 0.3s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+    background: #00558B;
+}
+
+.pagination button.active {
+    background: #00558B;
+    font-weight: bold;
+}
+
+.pagination button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Responsive pagination */
+@media (max-width: 600px) {
+    .pagination {
+        gap: 5px;
+    }
+
+    .pagination button {
+        padding: 6px 10px;
+        font-size: 0.85rem;
+    }
 }

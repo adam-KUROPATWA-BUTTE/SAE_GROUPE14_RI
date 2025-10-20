@@ -32,3 +32,42 @@ p {
     font-size: 1em;
     margin-bottom: 1em;
 }
+
+@media (max-width: 810px) {
+    main {
+        margin: 1em;
+        padding: 1.5em;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    h2 {
+        font-size: 20px;
+    }
+
+    ul {
+        font-size: 1em;
+    }
+}
+
+
+@media (max-width: 500px) {
+    main {
+        margin: 0.8em;
+        padding: 1em;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    h2 {
+        font-size: 18px;
+    }
+
+    ul {
+        font-size: 0.95em;
+    }
+}
