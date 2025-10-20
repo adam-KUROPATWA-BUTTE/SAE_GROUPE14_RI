@@ -34,7 +34,7 @@ class DashboardPage
         <body>
         <header>
             <div class="top-bar">
-                <img src="img/logo.png" alt="Logo" style="height:100px;">
+                <img id="logo_amu" src="img/logo.png" alt="Logo" style="height:100px;">
                 <div class="right-buttons">
                     <div class="lang-dropdown">
                         <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
@@ -119,6 +119,17 @@ class DashboardPage
         </div>
 
         <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const menuToggle = document.createElement('button');
+                menuToggle.classList.add('menu-toggle');
+                menuToggle.innerHTML = '☰';
+                document.querySelector('.right-buttons').appendChild(menuToggle);
+
+                const navMenu = document.querySelector('nav.menu');
+                menuToggle.addEventListener('click', () => {
+                    navMenu.classList.toggle('active');
+                });
+            });
             function toggleHelpPopup() {
                 const popup = document.getElementById('help-popup');
                 popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
