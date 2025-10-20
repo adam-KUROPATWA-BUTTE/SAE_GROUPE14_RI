@@ -19,15 +19,19 @@ class IndexController implements ControllerInterface
         $completionPercentage = 0;
 
         // Connexion DB
-        $host = "db-sae-ri-do-user-18319910-0.f.db.ondigitalocean.com";
-        $port = 25060;
-        $dbname = "defaultdb";
-        $charset = "utf8";
+      
+        $host  = $_ENV['DB_HOST'];
+        $port  = $_ENV['DB_PORT'];;
+        $dbname = $_ENV['DB_NAME'];;
+        $charset  = $_ENV['DB_CHARSET'];;
+        $username = $_ENV['DB_USER'];
+        $password = $_ENV['DB_PASSWORD'];
+
 
         $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=$charset";
 
         try {
-            $pdo = new \PDO($dsn, "doadmin", "AVNS_GRx9GzxHWjKfJkBwcQY");
+            $pdo = new \PDO($dsn, $username, $password);
             $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
             $stmt = $pdo->query("SELECT COUNT(*) as total, SUM(is_complete) as completed FROM dossiers");
