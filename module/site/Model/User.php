@@ -66,7 +66,7 @@ class User
         try {
             $db = \Database::getInstance()->getConnection();
             
-            $sql = "SELECT COUNT(*) as count FROM dossiers_etudiants WHERE etudiant_id = :etudiant_id";
+            $sql = "SELECT COUNT(*) as count FROM dossiers WHERE etudiant_id = :etudiant_id";
             $stmt = $db->prepare($sql);
             $stmt->execute(['etudiant_id' => $etudiantId]);
             $result = $stmt->fetch();
@@ -87,7 +87,7 @@ class User
         try {
             $db = \Database::getInstance()->getConnection();
             
-            $sql = "SELECT * FROM dossiers_etudiants WHERE etudiant_id = :etudiant_id LIMIT 1";
+            $sql = "SELECT COUNT(*) as count FROM dossiers WHERE etudiant_id = :etudiant_id";
             $stmt = $db->prepare($sql);
             $stmt->execute(['etudiant_id' => $etudiantId]);
             
@@ -209,7 +209,7 @@ class User
                 return false;
             }
             
-            $sql = "INSERT INTO dossiers_etudiants (etudiant_id, statut, created_at) 
+            $sql = "INSERT INTO dossiers (etudiant_id, statut, date_creation) 
                     VALUES (:etudiant_id, 'en_cours', NOW())";
             $stmt = $db->prepare($sql);
             
