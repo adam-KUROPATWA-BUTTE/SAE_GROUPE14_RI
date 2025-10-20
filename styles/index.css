@@ -467,12 +467,28 @@ footer p {
     }
 
 
+
     /* Le contenu principal prend un peu moins de marge */
     main {
         margin: 1em;
         padding: 1.5em;
     }
 
+    table {
+        font-size: 0.85em;
+    }
+
+    th, td {
+        padding: 8px 6px;
+    }
+
+    .progress-bar {
+        height: 14px;
+    }
+
+    .progress {
+        font-size: 0.7em;
+    }
     /* Section pub et texte plus lisibles sur mobile */
     .pub-text {
         font-size: 22px;
@@ -482,6 +498,10 @@ footer p {
 
     .hero-section h1 {
         font-size: 24px;
+    }
+
+    footer{
+        width: 100%;
     }
 
 
@@ -573,6 +593,22 @@ footer p {
 
     }
 
+    table {
+        font-size: 0.85em;
+    }
+
+    th, td {
+        padding: 8px 6px;
+    }
+
+    .progress-bar {
+        height: 14px;
+    }
+
+    .progress {
+        font-size: 0.7em;
+    }
+
     /* Section pub et texte plus lisibles sur mobile */
     .pub-text {
         font-size: 22px;
@@ -583,4 +619,9 @@ footer p {
     .hero-section h1 {
         font-size: 24px;
     }
+
+    footer{
+        width: 100%;
+    }
+
 }
