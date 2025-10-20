@@ -467,7 +467,6 @@ footer p {
     }
 
 
-
     /* Le contenu principal prend un peu moins de marge */
     main {
         margin: 1em;
@@ -489,15 +488,33 @@ footer p {
     .progress {
         font-size: 0.7em;
     }
-    /* Section pub et texte plus lisibles sur mobile */
+
+    .pub-section {
+        width: 100vw;
+        height: 175px; /* définit directement la hauteur de la section */
+        position: relative;
+        overflow: hidden;
+    }
+
+    .pub-section img {
+        width: 100%;
+        height: 100%; /* l’image remplit toute la section */
+        object-fit: cover;
+    }
+
+
     .pub-text {
         font-size: 22px;
-        bottom: 20px;
+        bottom: 5px;
         left: 15px;
     }
 
     .hero-section h1 {
         font-size: 24px;
+    }
+
+    .card h2 {
+        margin-top: 60px;
     }
 
     footer{
@@ -586,6 +603,7 @@ footer p {
 
 
 
+
     /* Le contenu principal prend un peu moins de marge */
     main {
         margin: 1em;
@@ -609,15 +627,31 @@ footer p {
         font-size: 0.7em;
     }
 
-    /* Section pub et texte plus lisibles sur mobile */
-    .pub-text {
-        font-size: 22px;
-        bottom: 20px;
-        left: 15px;
+    .pub-section {
+        width: 100vw;
+        height: 175px; /* définit directement la hauteur de la section */
+        position: relative;
+        overflow: hidden;
     }
 
+    .pub-section img {
+        width: 100%;
+        height: 100%; /* l’image remplit toute la section */
+        object-fit: cover;
+    }
+
+
+    .pub-text {
+        font-size: 22px;
+        bottom: 5px;
+        left: 15px;
+    }
     .hero-section h1 {
         font-size: 24px;
+    }
+
+    .card h2 {
+        margin-top: 60px;
     }
 
     footer{
