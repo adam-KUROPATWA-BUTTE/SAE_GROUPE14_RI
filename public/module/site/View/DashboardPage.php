@@ -132,6 +132,7 @@ class DashboardPage
         </script>
 
         <footer>
+            
             <p>&copy; 2025 - Aix-Marseille Université.</p>
         </footer>
         </body>
