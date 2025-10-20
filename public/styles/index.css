@@ -331,12 +331,13 @@ footer p {
     width: 60px;
     height: 60px;
     text-align: center;
-    font-size: 30px;
+    font-size: 2em;
     line-height: 60px;
     cursor: pointer;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    z-index: 999;
+    z-index: 1000;
 }
+
 
 #help-popup {
     position: fixed;
@@ -349,6 +350,12 @@ footer p {
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     display: none;
     z-index: 999;
+}
+
+#help-popup ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
 }
 
 .help-popup-header {
@@ -382,6 +389,21 @@ footer p {
 
 .help-popup-body li {
     margin-bottom: 10px;
+}
+
+#page_complete{
+    display: block;
+    padding: 1em;
+    background: #f0f4ff;
+    color: #2B91BB;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+}
+
+#page_complete:hover{
+    background: #00558B;
+    color: #fff;
 }
 
 

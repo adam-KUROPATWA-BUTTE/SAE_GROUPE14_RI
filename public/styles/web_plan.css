@@ -81,6 +81,7 @@ li a:hover {
     background: #00558B;
     color: #fff;
 }
+
 body {
     display: flex;
     flex-direction: column;
@@ -121,11 +122,11 @@ footer p {
     width: 60px;
     height: 60px;
     text-align: center;
-    font-size: 30px;
+    font-size: 2em;
     line-height: 60px;
     cursor: pointer;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    z-index: 999;
+    z-index: 1000;
 }
 
 #help-popup {
@@ -174,6 +175,7 @@ footer p {
     margin-bottom: 10px;
 }
 
+
 .right-buttons {
     position: relative;
     display: inline-block;
@@ -218,4 +220,3 @@ footer p {
     display: block;
 }
 
-/* Fin du fichier web_plan.css */

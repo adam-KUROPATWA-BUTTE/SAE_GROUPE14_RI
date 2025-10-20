@@ -132,17 +132,19 @@ class HomePage
             </div>
         </main>
 
-        <!-- BULLE D’AIDE -->
-        <div id="help-bubble" onclick="toggleHelpPopup()" style="position:fixed; bottom:20px; right:20px; cursor:pointer; font-size:2em; z-index:1000;">❓</div>
-        <div id="help-popup" style="display:none; position:fixed; bottom:60px; right:20px; width:300px; background:#fff; border:1px solid #ccc; padding:10px; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:1001;">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #ddd; padding-bottom:5px; margin-bottom:10px;">
-                <span><?= $this->t(['fr'=>'Aide','en'=>'Help']) ?></span>
-                <button onclick="toggleHelpPopup()" style="background:none; border:none; font-size:1.2em; cursor:pointer;">✖</button>
+        <!-- Bulle d'aide en bas à droite -->
+        <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
+
+        <!-- Contenu du popup d'aide -->
+        <div id="help-popup">
+            <div class="help-popup-header">
+                <span><?= $this->t(['fr'=>'Aide', 'en'=>'Help']) ?></span>
+                <button onclick="toggleHelpPopup()">✖</button>
             </div>
-            <div>
-                <p><?= $this->t(['fr'=>'Bienvenue ! Comment pouvons-nous vous aider ?','en'=>'Welcome! How can we help you?']) ?></p>
+            <div class="help-popup-body">
+                <p><?= $this->t(['fr'=>'Bienvenue ! Comment pouvons-nous vous aider ?', 'en'=>'Welcome! How can we help you?']) ?></p>
                 <ul>
-                    <li><a href="<?= $this->buildUrl('index.php', ['page'=>'help']) ?>" target="_blank"><?= $this->t(['fr'=>'Page d’aide complète','en'=>'Full help page']) ?></a></li>
+                    <li><a id="page_complete" href="index.php?page=help" target="_blank"><?= $this->t(['fr'=>'Page d’aide complète', 'en'=>'Full help page']) ?></a></li>
                 </ul>
             </div>
         </div>
