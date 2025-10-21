@@ -201,70 +201,7 @@ class Folder
                 'pieces_fournies' => 5,
                 'date_derniere_relance' => '2025-10-15'
             ],
-            [
-                'numetu' => 'E012',
-                'nom' => 'Zimmermann',
-                'prenom' => 'Paul',
-                'email' => 'paul.zimmermann@email.fr',
-                'telephone' => '0633445566',
-                'type' => 'sortant',
-                'zone' => 'europe',
-                'stage' => 'stage_plus2mois',
-                'etude' => 'etude_1an',
-                'photo' => null,
-                'cv' => 'paul_cv.pdf',
-                'total_pieces' => 7,
-                'pieces_fournies' => 5,
-                'date_derniere_relance' => '2025-10-15'
-            ],
-            [
-                'numetu' => 'E012',
-                'nom' => 'Zimmermann',
-                'prenom' => 'Paul',
-                'email' => 'paul.zimmermann@email.fr',
-                'telephone' => '0633445566',
-                'type' => 'sortant',
-                'zone' => 'europe',
-                'stage' => 'stage_plus2mois',
-                'etude' => 'etude_1an',
-                'photo' => null,
-                'cv' => 'paul_cv.pdf',
-                'total_pieces' => 7,
-                'pieces_fournies' => 5,
-                'date_derniere_relance' => '2025-10-15'
-            ],
-            [
-                'numetu' => 'E012',
-                'nom' => 'Zimmermann',
-                'prenom' => 'Paul',
-                'email' => 'paul.zimmermann@email.fr',
-                'telephone' => '0633445566',
-                'type' => 'sortant',
-                'zone' => 'europe',
-                'stage' => 'stage_plus2mois',
-                'etude' => 'etude_1an',
-                'photo' => null,
-                'cv' => 'paul_cv.pdf',
-                'total_pieces' => 7,
-                'pieces_fournies' => 5,
-                'date_derniere_relance' => '2025-10-15'
-            ],
-            [
-                'numetu' => 'E012',
-                'nom' => 'Zimmermann',
-                'prenom' => 'Paul',
-                'email' => 'paul.zimmermann@email.fr',
-                'telephone' => '0633445566',
-                'type' => 'sortant',
-                'zone' => 'europe',
-                'stage' => 'stage_plus2mois',
-                'etude' => 'etude_1an',
-                'photo' => null,
-                'cv' => 'paul_cv.pdf',
-                'total_pieces' => 7,
-                'pieces_fournies' => 5,
-                'date_derniere_relance' => '2025-10-15'
-            ],
+
         ];
     }
 

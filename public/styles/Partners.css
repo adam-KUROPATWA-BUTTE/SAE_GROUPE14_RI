@@ -51,6 +51,33 @@ tr:nth-child(even) {
     background: #0056b3;
 }
 
+h2 {
+    font-size: 2em;
+    margin-bottom: 25px;
+    color: #222;
+
+}
+
+p.lien {
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+a {
+    color: #006694;
+    text-decoration: none;
+}
+
+#Université_partenaires {
+    max-width: 600px;
+    width: 100%;
+    display: block;
+    margin-top: 80px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
 @media (max-width: 810px) {
     main {
         width: 95%;
@@ -86,7 +113,6 @@ tr:nth-child(even) {
         font-size: 0.9em;
     }
 }
-
 
 @media (max-width: 500px) {
     main {
