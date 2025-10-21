@@ -57,7 +57,7 @@ class HomePage
                 <img id="logo_amu" src="img/logo.png" alt="Logo AMU">
                 <div class="right-buttons">
                     <div class="lang-dropdown">
-                        <button class="dropbtn"><?= htmlspecialchars($this->lang) ?></button>
+                        <button class="dropbouton"><?= htmlspecialchars($this->lang) ?></button>
                         <div class="dropdown-content">
                             <a href="#" onclick="changeLang('fr'); return false;">Français</a>
                             <a href="#" onclick="changeLang('en'); return false;">English</a>
@@ -87,7 +87,7 @@ class HomePage
 
         <!-- HERO SECTION -->
         <section class="hero-section">
-            <img src="img/amu.png" alt="Logo AMU" style="height:80px; position:absolute; top:20px; left:20px;">
+            <img id="hero-img" src="img/amu.png" alt="Logo AMU" >
         </section>
 
         <!-- PUBLICITÉ -->
@@ -155,6 +155,37 @@ class HomePage
         </footer>
 
         <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const rightButtons = document.querySelector('.right-buttons');
+                const navMenu = document.querySelector('nav.menu');
+                const menuToggle = document.querySelector('.menu-toggle');
+
+                document.addEventListener("DOMContentLoaded", () => {
+                    const rightButtons = document.querySelector('.right-buttons');
+                    const navMenu = document.querySelector('nav.menu');
+                    const menuToggle = document.querySelector('.menu-toggle');
+
+                    function cloneButtonsForMobile() {
+                        const existingClone = navMenu.querySelector('.menu-right-buttons');
+                        if (existingClone) existingClone.remove();
+
+                        if (window.innerWidth <= 810) {
+                            const clonedButtons = rightButtons.cloneNode(true);
+                            clonedButtons.classList.add('menu-right-buttons');
+                            navMenu.insertBefore(clonedButtons, navMenu.firstChild);
+                        }
+                    }
+
+                    cloneButtonsForMobile();
+                    window.addEventListener('resize', cloneButtonsForMobile);
+
+                    menuToggle.addEventListener('click', () => {
+                        navMenu.classList.toggle('active');
+                    });
+                });
+
+
+
             document.addEventListener("DOMContentLoaded", () => {
                 const menuToggle = document.createElement('button');
                 menuToggle.classList.add('menu-toggle');

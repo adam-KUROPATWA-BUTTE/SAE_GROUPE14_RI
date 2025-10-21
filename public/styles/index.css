@@ -3,6 +3,7 @@ header {
     background-color: #EBC55E;
     border-bottom: 1px solid #ddd;
     padding: 10px 20px;
+    position: relative;
 }
 
 #logo_amu{
@@ -20,13 +21,16 @@ body {
     font-family: sans-serif;
 
 }
+
 .right-buttons {
     display: flex;
     gap: 10px;
     align-items: center;
+    position: absolute;
+    margin-top: 5px;
+    right: 15px;
 }
 
-/* Style du bouton principal */
 .dropbtn {
     background-color: #00558B;
     color: white;
@@ -35,6 +39,17 @@ body {
     border: none;
     cursor: pointer;
 }
+
+/* Style du bouton principal */
+.dropbouton {
+    background-color: #00558B;
+    color: white;
+    padding: 10px 15px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+}
+
 
 /* Conteneur du menu déroulant */
 .lang-dropdown {
@@ -139,14 +154,16 @@ p {
     box-sizing: border-box;
 }
 
-.hero-content {
-    position: relative;
-    z-index: 1;
-}
-
 .hero-section h1 {
     font-size: 36px;
     margin: 0;
+}
+
+#hero-img {
+    height:80px;
+    position:absolute;
+    top:20px;
+    left:20px;"
 }
 
 /* ======== Dashboard ======== */
@@ -421,7 +438,7 @@ footer p {
 
     #logo_amu{
         width: 200px;
-        height:auto;
+        height:100px;
     }
 
     .top-bar {
@@ -479,13 +496,14 @@ footer p {
 
     /* Ajustement du logo et du bloc langue + bouton menu */
     .right-buttons {
-        display: flex;
-        align-items: center;
-        gap: 10px;
+        display: none;
     }
 
-    .lang-dropdown {
-        position: relative;
+    .menu-right-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
     }
 
 
@@ -531,9 +549,6 @@ footer p {
         left: 15px;
     }
 
-    .hero-section h1 {
-        font-size: 24px;
-    }
 
     .card h2 {
         margin-top: 60px;
@@ -614,16 +629,15 @@ footer p {
 
     /* Ajustement du logo et du bloc langue + bouton menu */
     .right-buttons {
+        display: none;
+    }
+
+    .menu-right-buttons {
         display: flex;
-        align-items: center;
+        flex-direction: column;
         gap: 10px;
+        padding: 10px;
     }
-
-    .lang-dropdown {
-        position: relative;
-    }
-
-
 
 
     /* Le contenu principal prend un peu moins de marge */
@@ -668,9 +682,7 @@ footer p {
         bottom: 5px;
         left: 15px;
     }
-    .hero-section h1 {
-        font-size: 24px;
-    }
+
 
     .card h2 {
         margin-top: 60px;

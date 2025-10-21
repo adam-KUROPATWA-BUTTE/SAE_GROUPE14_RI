@@ -26,7 +26,7 @@ class HelpPage
         <body>
         <header>
             <div class="top-bar">
-                <img id="logo_amu" src="img/logo.png" alt="Logo" style="height:100px;">
+                <img id="logo_amu" src="img/logo.png" alt="Logo">
                 <div class="right-buttons"></div>
             </div>
             <nav class="menu">
