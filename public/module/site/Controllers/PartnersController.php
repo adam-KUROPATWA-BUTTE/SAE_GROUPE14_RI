@@ -2,21 +2,21 @@
 namespace Controllers\site;
 
 use Controllers\ControllerInterface;
-use View\SettingsPage;
+use View\PartnersPage;
 
-class SettingsController implements ControllerInterface
+class PartnersController implements ControllerInterface
 {
     public function control(): void
     {
         $lang = $_GET['lang'] ?? 'fr';
-        $titre = $lang === 'en' ? 'Universities Partner' : 'Universités Partenaire';
+        $titre = $lang === 'en' ? 'Partner Universities' : 'Universités Partenaires';
 
-        $view = new SettingsPage($titre, $lang);
+        $view = new PartnersPage($titre, $lang);
         $view->render();
     }
 
     public static function support(string $page, string $method): bool
     {
-        return $page === 'settings';
+        return $page === 'partners';
     }
 }

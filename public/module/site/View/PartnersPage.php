@@ -1,7 +1,7 @@
 <?php
 namespace View;
 
-class SettingsPage
+class PartnersPage
 {
     private string $titre;
     private string $lang;
@@ -33,7 +33,7 @@ class SettingsPage
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title><?= htmlspecialchars($this->titre) ?></title>
             <link rel="stylesheet" href="styles/index.css">
-            <link rel="stylesheet" href="styles/settings.css">
+            <link rel="stylesheet" href="styles/Partners.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
         <body>
@@ -57,8 +57,8 @@ class SettingsPage
                 <button onclick="window.location.href='<?= $this->buildUrl('/dashboard') ?>'">
                     <?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?>
                 </button>
-                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/settings') ?>'">
-                    <?= $this->t(['fr'=>'Paramétrage','en'=>'Settings']) ?>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/partners') ?>'">
+                    <?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?>
                 </button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/folders') ?>'">
                     <?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?>
@@ -78,11 +78,14 @@ class SettingsPage
                     'en' => 'Please find the list of AMU\'s partners by clicking on this link:'
                 ]) ?>
             </p>
-            <p>
+            <p class="lien">
                 <a href="https://www.univ-amu.fr/fr/public/universites-et-reseaux-partenaires" target="_blank">
                     Universites-et-reseaux-partenaires
                 </a>
             </p>
+
+            <img id="Université_partenaires" src="img/University.png" alt="Université partenaires">
+
         </main>
 
         <footer>

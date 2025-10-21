@@ -24,16 +24,16 @@ use Controllers\site\DashboardController;
 use Controllers\site\FoldersController;
 use Controllers\site\HelpController;
 use Controllers\site\IndexController;
-use Controllers\site\SettingsController;
+use Controllers\site\PartnersController;
 use Controllers\site\WebPlanController;
 
-// Liste des contrôleurs
+// Liste des contrôleurss
 $controllers = [
     new AuthController(),
     new DashboardController(),
     new FoldersController(),
     new HelpController(),
-    new SettingsController(),
+    new PartnersController(),
     new WebPlanController(),
     new IndexController()
 ];

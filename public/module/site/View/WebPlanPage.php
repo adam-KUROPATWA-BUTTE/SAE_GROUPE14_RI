@@ -119,7 +119,7 @@ class WebPlanPage
         $map = [
             'Accueil' => 'Home',
             'Tableau de bord' => 'Dashboard',
-            'Paramétrage' => 'Settings',
+            'Partenaires' => 'Partners',
             'Dossiers' => 'Folders',
             'Plan du site' => 'Site Map',
             'Connexion / Inscription' => 'Login / Register',
