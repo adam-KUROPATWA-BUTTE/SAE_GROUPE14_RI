@@ -84,7 +84,9 @@ class HelpPage
         </div>
 
         <script>
-            document.addEventListener("DOMContentLoaded", () => {
+            document.addEventL<footer>
+            <p>&copy; <?= date('Y') ?> - Aix-Marseille Université.</p>
+        </footer>istener("DOMContentLoaded", () => {
                 const menuToggle = document.createElement('button');
                 menuToggle.classList.add('menu-toggle');
                 menuToggle.innerHTML = '☰';
@@ -103,6 +105,9 @@ class HelpPage
 
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
+            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
+                <img src="img/instagram.png" alt="Instagram" style="height:32px;">
+            </a>
         </footer>
         </body>
         </html>
