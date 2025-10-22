@@ -90,9 +90,45 @@ class PartnersPage
 
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
+            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
+                <img src="img/instagram.png" alt="Instagram" style="height:32px;">
+            </a>
         </footer>
 
+        <!-- Bulle d'aide en bas à droite -->
+        <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
+
+        <!-- Contenu du popup d'aide -->
+        <div id="help-popup">
+            <div class="help-popup-header">
+                <span><?= $this->t(['fr'=>'Aide', 'en'=>'Help']) ?></span>
+                <button onclick="toggleHelpPopup()">✖</button>
+            </div>
+            <div class="help-popup-body">
+                <p><?= $this->t(['fr'=>'Bienvenue ! Comment pouvons-nous vous aider ?', 'en'=>'Welcome! How can we help you?']) ?></p>
+                <ul>
+                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr'=>'Page d’aide complète', 'en'=>'Full help page']) ?></a></li>
+                </ul>
+            </div>
+        </div>
+
         <script>
+            document.getElementById('current-lang').addEventListener('click', function(event) {
+                event.stopPropagation(); // empêcher la propagation au document
+                const rightButtons = document.querySelector('.right-buttons');
+                rightButtons.classList.toggle('show');
+            });
+
+            // Fermer le dropdown si clic ailleurs sur la page
+            document.addEventListener('click', function() {
+                const rightButtons = document.querySelector('.right-buttons');
+                rightButtons.classList.remove('show');
+            });
+
+            function toggleHelpPopup() {
+                const popup = document.getElementById('help-popup');
+                popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
+            }
             function changeLang(lang) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('lang', lang);

@@ -62,7 +62,10 @@ class WebPlanPage
                         ])) 
                     ?></a></li>
                 <?php endforeach; ?>
-            </ul>
+            </ul>iv
+
+
+
         </main>
 
         <!-- Bulle d'aide en bas à droite -->
@@ -107,9 +110,15 @@ class WebPlanPage
         </script>
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
+            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
+                <img src="img/instagram.png" alt="Instagram" style="height:32px;">
+            </a>
         </footer>
         </body>        
-        </html>
+        </html>iv
+
+
+
         <?php
     }
 
