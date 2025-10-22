@@ -136,7 +136,7 @@ class PartnersPage
             }
         </script>
         </body>
-        </html>
+    </html>
         <?php
     }
 }

@@ -5,12 +5,6 @@ body {
     padding: 0;
 }
 
-header {
-    background: #EBC55E;
-    color: #fff;
-    padding: 0.5em 0;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-}
 
 .top-bar {
     display: flex;
@@ -24,25 +18,7 @@ header {
     margin-top: 2px;
 }
 
-.right-buttons {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
 
-.right-buttons button {
-    background: #00558B;
-    color: #ffffff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1em;
-}
-
-.right-buttons button:hover {
-    background: #2B91BB;
-}
 
 main {
     max-width: 700px;
@@ -81,6 +57,7 @@ li a:hover {
     background: #00558B;
     color: #fff;
 }
+
 body {
     display: flex;
     flex-direction: column;
@@ -121,11 +98,11 @@ footer p {
     width: 60px;
     height: 60px;
     text-align: center;
-    font-size: 30px;
+    font-size: 2em;
     line-height: 60px;
     cursor: pointer;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    z-index: 999;
+    z-index: 1000;
 }
 
 #help-popup {
@@ -174,48 +151,6 @@ footer p {
     margin-bottom: 10px;
 }
 
-.right-buttons {
-    position: relative;
-    display: inline-block;
-}
 
-.dropbtn {
-    background-color: #0073e6;
-    color: white;
-    padding: 8px 12px;
-    font-size: 14px;
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
-}
 
-.dropdown-content {
-    display: none; /* caché par défaut */
-    position: absolute;
-    right: 0;
-    background-color: white;
-    min-width: 120px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    z-index: 100;
-    border-radius: 4px;
-    overflow: hidden;
-}
 
-.dropdown-content a {
-    color: black;
-    padding: 8px 12px;
-    text-decoration: none;
-    display: block;
-    font-size: 14px;
-}
-
-.dropdown-content a:hover {
-    background-color: #f0f0f0;
-}
-
-/* classe pour afficher le dropdown */
-.right-buttons.show .dropdown-content {
-    display: block;
-}
-
-/* Fin du fichier web_plan.css */

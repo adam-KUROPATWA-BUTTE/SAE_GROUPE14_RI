@@ -26,7 +26,7 @@ class HelpPage
         <body>
         <header>
             <div class="top-bar">
-                <img id="logo_amu" src="img/logo.png" alt="Logo" style="height:100px;">
+                <img id="logo_amu" src="img/logo.png" alt="Logo">
                 <div class="right-buttons"></div>
             </div>
             <nav class="menu">
@@ -78,7 +78,7 @@ class HelpPage
             <div class="help-popup-body">
                 <p>Bienvenue ! Comment pouvons-nous vous aider ?</p>
                 <ul>
-                    <li><a href="index.php?page=help" target="_blank">Page d’aide complète</a></li>
+                    <li><a id="page_complete" href="index.php?page=help" target="_blank">Page d’aide complète</a></li>
                 </ul>
             </div>
         </div>

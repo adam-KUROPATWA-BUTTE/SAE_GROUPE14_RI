@@ -40,12 +40,14 @@ class WebPlanPage
         <body>
         <header>
             <div class="top-bar">
-                <img src="img/logo.png" alt="Logo" style="height:100px;">
-                <div class="right-buttons" style="float:right; margin-top: 30px; margin-right: 20px;">
-                    <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
-                    <div class="dropdown-content" style="position:absolute; background:#fff; border:1px solid #ccc;">
-                        <a href="#" onclick="changeLang('fr'); return false;">Français</a>
-                        <a href="#" onclick="changeLang('en'); return false;">English</a>
+                <img src="img/logo.png" alt="Logo">
+                <div class="right-buttons">
+                    <div class="lang-dropdown">
+                        <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
+                        <div class="dropdown-content">
+                            <a href="#" onclick="changeLang('fr'); return false;">Français</a>
+                            <a href="#" onclick="changeLang('en'); return false;">English</a>
+                        </div>
                     </div>
                 </div>
             </div>
