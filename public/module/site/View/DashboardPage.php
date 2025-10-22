@@ -94,7 +94,7 @@ class DashboardPage
                             </div>
                         </td>
                         <td><?= $fournies ?> / <?= $total ?></td>
-                        <td><?= htmlspecialchars($dossier['date_derniere_relance']) ?></td>
+                        <td><?= htmlspecialchars($dossier['date_derniere_relance'] ?? '') ?></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>

@@ -3,236 +3,308 @@ namespace Model;
 
 class Folder
 {
+    private static function getConnection(): \PDO
+    {
+        // ✅ Utiliser la classe Database au lieu de créer une connexion directe
+        return \Database::getInstance()->getConnection();
+    }
+
     public static function getAll()
     {
-        // TODO: Remplacer par une vraie requête SQL
-        // SELECT * FROM etudiants ORDER BY nom, prenom
+        $pdo = self::getConnection();
 
-        return [
-            [
-                'numetu' => 'E001',
-                'nom' => 'Dupont',
-                'prenom' => 'Marie',
-                'email' => 'marie.dupont@email.fr',
-                'telephone' => '0612345678',
-                'type' => 'entrant',
-                'zone' => 'europe',
-                'stage' => 'stage_moins2mois',
-                'etude' => 'etude_6mois',
-                'photo' => null,
-                'cv' => null,
-                'total_pieces' => 5,
-                'pieces_fournies' => 3,
-                'date_derniere_relance' => '2025-09-25'
-            ],
-            [
-                'numetu' => 'E002',
-                'nom' => 'Nguyen',
-                'prenom' => 'Linh',
-                'email' => 'linh.nguyen@email.fr',
-                'telephone' => '0623456789',
-                'type' => 'sortant',
-                'zone' => 'hors_europe',
-                'stage' => 'stage_plus2mois',
-                'etude' => 'etude_1an',
-                'photo' => 'linh.jpg',
-                'cv' => 'linh_cv.pdf',
-                'total_pieces' => 4,
-                'pieces_fournies' => 2,
-                'date_derniere_relance' => '2025-09-29'
-            ],
-            [
-                'numetu' => 'E003',
-                'nom' => 'Bernard',
-                'prenom' => 'Sophie',
-                'email' => 'sophie.bernard@email.fr',
-                'telephone' => '0634567890',
-                'type' => 'entrant',
-                'zone' => 'europe',
-                'stage' => 'stage_moins2mois',
-                'etude' => 'etude_6mois',
-                'photo' => 'sophie.jpg',
-                'cv' => null,
-                'total_pieces' => 6,
-                'pieces_fournies' => 4,
-                'date_derniere_relance' => '2025-09-20'
-            ],
-            [
-                'numetu' => 'E004',
-                'nom' => 'Martin',
-                'prenom' => 'Lucas',
-                'email' => 'lucas.martin@email.fr',
-                'telephone' => '0645678901',
-                'type' => 'sortant',
-                'zone' => 'europe',
-                'stage' => 'stage_plus2mois',
-                'etude' => 'etude_1an',
-                'photo' => null,
-                'cv' => 'lucas_cv.pdf',
-                'total_pieces' => 6,
-                'pieces_fournies' => 6,
-                'date_derniere_relance' => '2025-09-18'
-            ],
-            [
-                'numetu' => 'E005',
-                'nom' => 'Kone',
-                'prenom' => 'Awa',
-                'email' => 'awa.kone@email.fr',
-                'telephone' => '0656789012',
-                'type' => 'entrant',
-                'zone' => 'hors_europe',
-                'stage' => 'stage_moins2mois',
-                'etude' => 'etude_6mois',
-                'photo' => 'awa.jpg',
-                'cv' => null,
-                'total_pieces' => 5,
-                'pieces_fournies' => 2,
-                'date_derniere_relance' => '2025-09-22'
-            ],
-            [
-                'numetu' => 'E006',
-                'nom' => 'Garcia',
-                'prenom' => 'Carlos',
-                'email' => 'carlos.garcia@email.fr',
-                'telephone' => '0667890123',
-                'type' => 'entrant',
-                'zone' => 'europe',
-                'stage' => 'stage_plus2mois',
-                'etude' => 'etude_1an',
-                'photo' => null,
-                'cv' => 'carlos_cv.pdf',
-                'total_pieces' => 7,
-                'pieces_fournies' => 5,
-                'date_derniere_relance' => '2025-10-01'
-            ],
-            [
-                'numetu' => 'E007',
-                'nom' => 'Rossi',
-                'prenom' => 'Giulia',
-                'email' => 'giulia.rossi@email.fr',
-                'telephone' => '0678901234',
-                'type' => 'sortant',
-                'zone' => 'europe',
-                'stage' => 'stage_moins2mois',
-                'etude' => 'etude_6mois',
-                'photo' => 'giulia.jpg',
-                'cv' => 'giulia_cv.pdf',
-                'total_pieces' => 5,
-                'pieces_fournies' => 3,
-                'date_derniere_relance' => '2025-10-03'
-            ],
-            [
-                'numetu' => 'E008',
-                'nom' => 'Ali',
-                'prenom' => 'Youssef',
-                'email' => 'youssef.ali@email.fr',
-                'telephone' => '0689012345',
-                'type' => 'entrant',
-                'zone' => 'hors_europe',
-                'stage' => 'stage_plus2mois',
-                'etude' => 'etude_1an',
-                'photo' => null,
-                'cv' => null,
-                'total_pieces' => 6,
-                'pieces_fournies' => 4,
-                'date_derniere_relance' => '2025-10-05'
-            ],
-            [
-                'numetu' => 'E009',
-                'nom' => 'Durand',
-                'prenom' => 'Clément',
-                'email' => 'clement.durand@email.fr',
-                'telephone' => '0690123456',
-                'type' => 'sortant',
-                'zone' => 'europe',
-                'stage' => 'stage_moins2mois',
-                'etude' => 'etude_6mois',
-                'photo' => 'clement.jpg',
-                'cv' => 'clement_cv.pdf',
-                'total_pieces' => 4,
-                'pieces_fournies' => 4,
-                'date_derniere_relance' => '2025-10-07'
-            ],
-            [
-                'numetu' => 'E010',
-                'nom' => 'Leblanc',
-                'prenom' => 'Camille',
-                'email' => 'camille.leblanc@email.fr',
-                'telephone' => '0611223344',
-                'type' => 'entrant',
-                'zone' => 'europe',
-                'stage' => 'stage_plus2mois',
-                'etude' => 'etude_1an',
-                'photo' => null,
-                'cv' => null,
-                'total_pieces' => 6,
-                'pieces_fournies' => 2,
-                'date_derniere_relance' => '2025-10-10'
-            ],
-            [
-                'numetu' => 'E011',
-                'nom' => 'Boukari',
-                'prenom' => 'Fatou',
-                'email' => 'fatou.boukari@email.fr',
-                'telephone' => '0622334455',
-                'type' => 'entrant',
-                'zone' => 'hors_europe',
-                'stage' => 'stage_moins2mois',
-                'etude' => 'etude_6mois',
-                'photo' => 'fatou.jpg',
-                'cv' => null,
-                'total_pieces' => 4,
-                'pieces_fournies' => 3,
-                'date_derniere_relance' => '2025-10-12'
-            ],
-            [
-                'numetu' => 'E012',
-                'nom' => 'Zimmermann',
-                'prenom' => 'Paul',
-                'email' => 'paul.zimmermann@email.fr',
-                'telephone' => '0633445566',
-                'type' => 'sortant',
-                'zone' => 'europe',
-                'stage' => 'stage_plus2mois',
-                'etude' => 'etude_1an',
-                'photo' => null,
-                'cv' => 'paul_cv.pdf',
-                'total_pieces' => 7,
-                'pieces_fournies' => 5,
-                'date_derniere_relance' => '2025-10-15'
-            ],
+        try {
+            $stmt = $pdo->query("
+                SELECT 
+                    numetu,
+                    nom,
+                    prenom,
+                    email,
+                    telephone,
+                    type_etudiant as type,
+                    'europe' as zone,
+                    NULL as stage,
+                    NULL as etude,
+                    NULL as photo,
+                    NULL as cv,
+                    0 as total_pieces,
+                    0 as pieces_fournies,
+                    0 as date_derniere_relance
+                FROM etudiants 
+                ORDER BY nom, prenom
+            ");
 
-        ];
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            error_log("Erreur récupération étudiants : " . $e->getMessage());
+            return [];
+        }
     }
 
     public static function getDossiersIncomplets()
     {
-        $all = self::getAll();
-        return array_filter($all, function($etudiant) {
-            return $etudiant['pieces_fournies'] < $etudiant['total_pieces'];
-        });
+        $pdo = self::getConnection();
+
+        try {
+            $stmt = $pdo->query("
+                SELECT 
+                    numetu,
+                    nom,
+                    prenom,
+                    email,
+                    telephone,
+                    type_etudiant as type,
+                    'europe' as zone,
+                    NULL as stage,
+                    NULL as etude,
+                    NULL as photo,
+                    NULL as cv,
+                    0 as total_pieces,
+                    0 as pieces_fournies,
+                    NULL as date_derniere_relance
+                FROM etudiants 
+                ORDER BY nom, prenom
+            ");
+
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            error_log("Erreur récupération dossiers incomplets : " . $e->getMessage());
+            return [];
+        }
     }
 
     public static function creerDossier($data)
     {
-        // TODO: INSERT INTO etudiants ...
+        $pdo = self::getConnection();
+
+        try {
+            $stmt = $pdo->prepare("
+                INSERT INTO etudiants (
+                    numetu, nom, prenom, email, telephone, 
+                    type_etudiant, password
+                ) VALUES (
+                    :numetu, :nom, :prenom, :email, :telephone,
+                    :type_etudiant, :password
+                )
+            ");
+
+            return $stmt->execute([
+                ':numetu' => $data['numetu'],
+                ':nom' => $data['nom'],
+                ':prenom' => $data['prenom'],
+                ':email' => $data['email'],
+                ':telephone' => $data['telephone'],
+                ':type_etudiant' => $data['type'] ?? null,
+                ':password' => password_hash($data['password'] ?? 'default123', PASSWORD_DEFAULT)
+            ]);
+        } catch (\PDOException $e) {
+            error_log("Erreur création dossier : " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public static function getByEmail(string $email)
+    {
+        $pdo = self::getConnection();
+
+        try {
+            $stmt = $pdo->prepare("
+                SELECT 
+                    numetu,
+                    nom,
+                    prenom,
+                    email,
+                    telephone,
+                    type_etudiant as type
+                FROM etudiants 
+                WHERE email = :email 
+                LIMIT 1
+            ");
+            $stmt->execute([':email' => $email]);
+            return $stmt->fetch(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            error_log("Erreur récupération étudiant : " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public static function getByNumetu(string $numetu)
+    {
+        $pdo = self::getConnection();
+
+        try {
+            $stmt = $pdo->prepare("
+                SELECT 
+                    numetu,
+                    nom,
+                    prenom,
+                    email,
+                    telephone,
+                    type_etudiant as type
+                FROM etudiants 
+                WHERE numetu = :numetu 
+                LIMIT 1
+            ");
+            $stmt->execute([':numetu' => $numetu]);
+            return $stmt->fetch(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            error_log("Erreur récupération étudiant : " . $e->getMessage());
+            return null;
+        }
+    }
+
+    // ✅ NOUVELLE MÉTHODE - Récupérer un étudiant complet pour affichage
+    public static function getStudentDetails(string $numetu)
+    {
+        $pdo = self::getConnection();
+
+        try {
+            $stmt = $pdo->prepare("
+                SELECT 
+                    numetu,
+                    nom,
+                    prenom,
+                    email,
+                    telephone,
+                    type_etudiant as type,
+                    'europe' as zone,
+                    NULL as naissance,
+                    NULL as sexe,
+                    NULL as adresse,
+                    NULL as cp,
+                    NULL as ville,
+                    email as email_perso,
+                    NULL as email_amu,
+                    NULL as departement,
+                    NULL as mobilite_type,
+                    NULL as photo,
+                    NULL as cv
+                FROM etudiants 
+                WHERE numetu = :numetu 
+                LIMIT 1
+            ");
+            $stmt->execute([':numetu' => $numetu]);
+            return $stmt->fetch(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            error_log("Erreur récupération détails étudiant : " . $e->getMessage());
+            return null;
+        }
+    }
+
+    // ✅ NOUVELLE MÉTHODE - Mettre à jour un étudiant
+    public static function updateStudent($data)
+    {
+        $pdo = self::getConnection();
+
+        try {
+            $stmt = $pdo->prepare("
+                UPDATE etudiants 
+                SET 
+                    nom = :nom,
+                    prenom = :prenom,
+                    email = :email,
+                    telephone = :telephone,
+                    type_etudiant = :type_etudiant
+                WHERE numetu = :numetu
+            ");
+
+            return $stmt->execute([
+                ':numetu' => $data['numetu'],
+                ':nom' => $data['nom'],
+                ':prenom' => $data['prenom'],
+                ':email' => $data['email'],
+                ':telephone' => $data['telephone'],
+                ':type_etudiant' => $data['type'] ?? null
+            ]);
+        } catch (\PDOException $e) {
+            error_log("Erreur mise à jour étudiant : " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public static function valider($numetu, $adminId)
+    {
+        $pdo = self::getConnection();
+
+        try {
+            $stmt = $pdo->prepare("
+                UPDATE etudiants 
+                SET last_connexion = NOW()
+                WHERE numetu = :numetu
+            ");
+            return $stmt->execute([':numetu' => $numetu]);
+        } catch (\PDOException $e) {
+            error_log("Erreur validation dossier : " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public static function ajouterRelance($dossierId, $message, $adminId)
+    {
         return true;
     }
 
-    public static function valider($numetu, $adminId) { return true; }
-    public static function ajouterRelance($dossierId, $message, $adminId) { return true; }
-    public static function ajouterEtudiant($numetu, $nom, $prenom, $email, $telephone) { return true; }
-    public static function supprimerDossier($numetu) { return true; }
+    public static function ajouterEtudiant($numetu, $nom, $prenom, $email, $telephone)
+    {
+        $pdo = self::getConnection();
+
+        try {
+            $stmt = $pdo->prepare("
+                INSERT INTO etudiants (numetu, nom, prenom, email, telephone, password)
+                VALUES (:numetu, :nom, :prenom, :email, :telephone, :password)
+            ");
+
+            return $stmt->execute([
+                ':numetu' => $numetu,
+                ':nom' => $nom,
+                ':prenom' => $prenom,
+                ':email' => $email,
+                ':telephone' => $telephone,
+                ':password' => password_hash('default123', PASSWORD_DEFAULT)
+            ]);
+        } catch (\PDOException $e) {
+            error_log("Erreur ajout étudiant : " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public static function supprimerDossier($numetu)
+    {
+        $pdo = self::getConnection();
+
+        try {
+            $stmt = $pdo->prepare("DELETE FROM etudiants WHERE numetu = :numetu");
+            return $stmt->execute([':numetu' => $numetu]);
+        } catch (\PDOException $e) {
+            error_log("Erreur suppression dossier : " . $e->getMessage());
+            return false;
+        }
+    }
 
     public static function uploadPhoto($numetu, $file)
     {
-        // TODO: Gérer l'upload de photo
         return true;
     }
 
     public static function uploadCV($numetu, $file)
     {
-        // TODO: Gérer l'upload de CV
         return true;
+    }
+
+    public static function updateLastConnexion($numetu)
+    {
+        $pdo = self::getConnection();
+
+        try {
+            $stmt = $pdo->prepare("
+                UPDATE etudiants 
+                SET last_connexion = NOW()
+                WHERE numetu = :numetu
+            ");
+            return $stmt->execute([':numetu' => $numetu]);
+        } catch (\PDOException $e) {
+            error_log("Erreur mise à jour connexion : " . $e->getMessage());
+            return false;
+        }
     }
 }

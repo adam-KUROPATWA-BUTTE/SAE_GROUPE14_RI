@@ -11,6 +11,7 @@ error_reporting(E_ALL);
 // Chargement des dépendances
 require_once ROOT_PATH . '/vendor/autoload.php';
 require_once ROOT_PATH . '/Autoloader.php';
+require_once ROOT_PATH . '/Database.php';
 
 // Chargement des variables d'environnement
 $dotenv = Dotenv\Dotenv::createImmutable(ROOT_PATH);
@@ -24,10 +25,11 @@ use Controllers\site\DashboardController;
 use Controllers\site\FoldersController;
 use Controllers\site\HelpController;
 use Controllers\site\IndexController;
+use Controllers\site\SaveStudentController;
 use Controllers\site\PartnersController;
 use Controllers\site\WebPlanController;
 
-// Liste des contrôleurss
+// Liste des contrôleurs
 $controllers = [
     new AuthController(),
     new DashboardController(),
@@ -35,7 +37,8 @@ $controllers = [
     new HelpController(),
     new PartnersController(),
     new WebPlanController(),
-    new IndexController()
+    new IndexController(),
+    new SaveStudentController(),
 ];
 
 // Récupération de la page demandée

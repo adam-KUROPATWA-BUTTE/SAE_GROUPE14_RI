@@ -64,7 +64,7 @@ class WebPlanPage
                         ])) 
                     ?></a></li>
                 <?php endforeach; ?>
-            </ul>iv
+            </ul>
 
 
 
@@ -117,7 +117,7 @@ class WebPlanPage
             </a>
         </footer>
         </body>        
-        </html>iv
+        </html>
 
 
 
