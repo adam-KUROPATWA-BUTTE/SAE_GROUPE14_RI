@@ -10,8 +10,9 @@ class FoldersPage
     private int $perPage;
     private string $message;
     private string $lang;
+    private ?array $studentData;
 
-    public function __construct(string $action, array $filters, int $page, int $perPage, string $message, string $lang)
+    public function __construct(string $action, array $filters, int $page, int $perPage, string $message, string $lang, ?array $studentData = null)
     {
         $this->action = $action;
         $this->filters = $filters;
@@ -19,6 +20,7 @@ class FoldersPage
         $this->perPage = $perPage;
         $this->message = $message;
         $this->lang = $lang;
+        $this->studentData = $studentData;
     }
 
     private function t(array $frEn): string
@@ -36,7 +38,7 @@ class FoldersPage
     {
         ?>
         <!DOCTYPE html>
-        <html lang="<?= htmlspecialchars($this->lang) ?>">
+    <html lang="<?= htmlspecialchars($this->lang) ?>">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -45,7 +47,7 @@ class FoldersPage
             <link rel="stylesheet" href="styles/folders.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
-        <body>
+    <body>
         <header>
             <div class="top-bar">
                 <img src="img/logo.png" alt="Logo" style="height:100px;">
@@ -68,21 +70,25 @@ class FoldersPage
         <main>
             <?php if ($this->action === 'create'): ?>
                 <?php $this->renderCreateForm(); ?>
+            <?php elseif ($this->action === 'view'): ?>
+                <?php $this->renderViewForm(); ?>
             <?php else: ?>
                 <?php $this->renderStudentsList(); ?>
             <?php endif; ?>
         </main>
-        <!-- Aide -->
+        <!-- Bulle d'aide en bas à droite -->
         <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
+
+        <!-- Contenu du popup d'aide -->
         <div id="help-popup">
             <div class="help-popup-header">
-                <span><?= $this->t(['fr'=>'Aide','en'=>'Help']) ?></span>
+                <span><?= $this->t(['fr'=>'Aide', 'en'=>'Help']) ?></span>
                 <button onclick="toggleHelpPopup()">✖</button>
             </div>
             <div class="help-popup-body">
-                <p><?= $this->t(['fr'=>'Bienvenue ! Comment pouvons-nous vous aider ?','en'=>'Welcome! How can we help you?']) ?></p>
+                <p><?= $this->t(['fr'=>'Bienvenue ! Comment pouvons-nous vous aider ?', 'en'=>'Welcome! How can we help you?']) ?></p>
                 <ul>
-                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr'=>'Page daide complète','en'=>'Full help page']) ?></a></li>
+                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr'=>'Page d’aide complète', 'en'=>'Full help page']) ?></a></li>
                 </ul>
             </div>
         </div>
@@ -97,10 +103,11 @@ class FoldersPage
                 url.searchParams.set('lang', lang);
                 window.location.href = url.toString();
             }
-            function ouvrirFicheEtudiant(email) {
+            // ✅ MODIFIÉ - Utiliser numetu au lieu de email
+            function ouvrirFicheEtudiant(numetu) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('action', 'view');
-                url.searchParams.set('email', email);
+                url.searchParams.set('numetu', numetu);
                 window.location.href = url.toString();
             }
             function filtrerEtudiants() {
@@ -120,12 +127,31 @@ class FoldersPage
                     document.getElementById('lettre_motivation').style.display = 'grid';
                 }
             }
+            // ✅ NOUVEAU - Activer le mode édition
+            function activerModification() {
+                // Activer tous les champs
+                document.querySelectorAll('.creation-form input, .creation-form select').forEach(field => {
+                    field.disabled = false;
+                    field.style.backgroundColor = 'white';
+                    field.style.color = 'black';
+                });
+
+                // Changer le bouton
+                const btnModifier = document.getElementById('btn-modifier');
+                btnModifier.style.display = 'none';
+
+                const btnEnregistrer = document.getElementById('btn-enregistrer');
+                btnEnregistrer.style.display = 'inline-block';
+
+                const btnAnnuler = document.getElementById('btn-annuler');
+                btnAnnuler.style.display = 'inline-block';
+            }
+
             window.addEventListener('DOMContentLoaded', (event) => {
                 const sel = document.getElementById('mobilite_type');
                 if (sel) {
                     changerTypeMobilite(sel.value);
                 }
-                // Filtres avec checkboxes
                 document.querySelectorAll('.filters input[type="checkbox"]').forEach(checkbox => {
                     checkbox.addEventListener('change', function() {
                         appliquerFiltres();
@@ -134,7 +160,6 @@ class FoldersPage
             });
             function appliquerFiltres() {
                 const url = new URL(window.location.href);
-                // Type (entrant/sortant)
                 const typesChecked = Array.from(document.querySelectorAll('input[name="entrant_sortant"]:checked'))
                     .map(cb => cb.value);
                 if (typesChecked.length === 1) {
@@ -142,7 +167,6 @@ class FoldersPage
                 } else {
                     url.searchParams.delete('type');
                 }
-                // Zone (europe/hors_europe)
                 const zonesChecked = Array.from(document.querySelectorAll('input[name="zone"]:checked'))
                     .map(cb => cb.value);
                 if (zonesChecked.length === 1) {
@@ -174,46 +198,42 @@ class FoldersPage
         <?php if (!empty($this->message)): ?>
         <div class="message"><?= htmlspecialchars($this->message) ?></div>
     <?php endif; ?>
-        <!-- Barre d'outils -->
         <div class="student-toolbar">
             <div class="search-container-toolbar">
                 <label for="search" class="search-label"><?= $this->t(['fr'=>'Rechercher','en'=>'Search']) ?></label>
                 <input type="text" id="search" name="search" placeholder="Nom, prénom, email..." value="<?= htmlspecialchars($this->filters['search']) ?>" onkeyup="filtrerEtudiants()">
             </div>
             <div>
-                <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders', 'action' => 'create']) ?>'" class="btn-primary">
-                    <?= $this->t(['fr'=>'+ Créer un dossier','en'=>'+ Create Folder']) ?>
-                </button>
+                <button id="btn-creer-dossier" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders', 'action' => 'create']) ?>'" class="btn-primary">
+                            <?= $this->t(['fr'=>'+ Créer un dossier','en'=>'+ Create Folder']) ?>
+                            </button>
             </div>
         </div>
-        <!-- Filtres -->
-        <div class="filters">
-            <label>
-                <input type="checkbox" name="entrant_sortant" value="entrant" <?= $this->filters['type'] === 'entrant' ? 'checked' : '' ?>>
-                <?= $this->t(['fr'=>'Entrant','en'=>'Incoming']) ?>
-            </label>
-            <label>
-                <input type="checkbox" name="entrant_sortant" value="sortant" <?= $this->filters['type'] === 'sortant' ? 'checked' : '' ?>>
-                <?= $this->t(['fr'=>'Sortant','en'=>'Outgoing']) ?>
-            </label>
-            <label>
-                <input type="checkbox" name="zone" value="europe" <?= $this->filters['zone'] === 'europe' ? 'checked' : '' ?>>
-                <?= $this->t(['fr'=>'Europe','en'=>'Europe']) ?>
-            </label>
-            <label>
-                <input type="checkbox" name="zone" value="hors_europe" <?= $this->filters['zone'] === 'hors_europe' ? 'checked' : '' ?>>
-                <?= $this->t(['fr'=>'Hors-Europe','en'=>'Non-Europe']) ?>
-            </label>
-            <?php if ($this->hasActiveFilters()): ?>
-                <a href="<?= $this->buildUrl('index.php', ['page' => 'folders']) ?>" class="btn-reset">
-                    <?= $this->t(['fr'=>'Réinitialiser','en'=>'Reset']) ?>
-                </a>
-            <?php endif; ?>
-        </div>
-        <!-- Résultats -->
+    <div class="filters">
+        <label>
+            <input type="checkbox" name="entrant_sortant" value="entrant" <?= $this->filters['type'] === 'entrant' ? 'checked' : '' ?>>
+            <?= $this->t(['fr'=>'Entrant','en'=>'Incoming']) ?>
+        </label>
+        <label>
+            <input type="checkbox" name="entrant_sortant" value="sortant" <?= $this->filters['type'] === 'sortant' ? 'checked' : '' ?>>
+            <?= $this->t(['fr'=>'Sortant','en'=>'Outgoing']) ?>
+        </label>
+        <label>
+            <input type="checkbox" name="zone" value="europe" <?= $this->filters['zone'] === 'europe' ? 'checked' : '' ?>>
+            <?= $this->t(['fr'=>'Europe','en'=>'Europe']) ?>
+        </label>
+        <label>
+            <input type="checkbox" name="zone" value="hors_europe" <?= $this->filters['zone'] === 'hors_europe' ? 'checked' : '' ?>>
+            <?= $this->t(['fr'=>'Hors-Europe','en'=>'Non-Europe']) ?>
+        </label>
+        <?php if ($this->hasActiveFilters()): ?>
+    <a href="<?= $this->buildUrl('index.php', ['page' => 'folders']) ?>" class="btn-reset">
+        <?= $this->t(['fr'=>'Réinitialiser','en'=>'Reset']) ?>
+    </a>
+        <?php endif; ?>
+    </div>
         <p class="results-count"><?= $total ?> <?= $this->t(['fr'=>'étudiant(s) trouvé(s)','en'=>'student(s) found']) ?></p>
 
-        <!-- Tableau des étudiants -->
         <table id="table-etudiants">
             <thead>
             <tr>
@@ -228,7 +248,8 @@ class FoldersPage
             </thead>
             <tbody>
             <?php foreach ($paginated as $etudiant): ?>
-                <tr onclick="ouvrirFicheEtudiant('<?= htmlspecialchars($etudiant['email'] ?? '') ?>')" style="cursor: pointer;">
+                <!-- ✅ MODIFIÉ - Utiliser numetu au lieu de email -->
+                <tr onclick="ouvrirFicheEtudiant('<?= htmlspecialchars($etudiant['numetu'] ?? '') ?>')" style="cursor: pointer;">
                     <td><?= htmlspecialchars($etudiant['nom']) ?></td>
                     <td><?= htmlspecialchars($etudiant['prenom']) ?></td>
                     <td><?= htmlspecialchars($etudiant['email'] ?? '') ?></td>
@@ -240,7 +261,6 @@ class FoldersPage
             <?php endforeach; ?>
             </tbody>
         </table>
-        <!-- Pagination -->
         <?php if ($totalPages > 0): ?>
         <div class="pagination">
             <?php if ($this->page > 1): ?>
@@ -278,7 +298,7 @@ class FoldersPage
                 ← <?= $this->t(['fr'=>'Retour à la liste','en'=>'Back to List']) ?>
             </button>
         </div>
-        <form method="post" action="save_student.php" enctype="multipart/form-data" class="creation-form">
+        <form method="post" action="index.php?page=save_student&lang=<?= htmlspecialchars($this->lang) ?>" enctype="multipart/form-data" class="creation-form">
             <div class="form-section">
                 <label for="numetu"><?= $this->t(['fr'=>'NumÉtu *','en'=>'Student ID *']) ?></label>
                 <input type="text" name="numetu" id="numetu" required>
@@ -340,9 +360,125 @@ class FoldersPage
                 <input type="file" name="lettre_motivation" accept=".pdf,.doc,.docx">
             </div>
             <div class="form-actions">
-                <button type="submit" class="btn-primary"><?= $this->t(['fr'=>'Enregistrer','en'=>'Save']) ?></button>
+                <button type="submit" class="btn-secondary"><?= $this->t(['fr'=>'Enregistrer','en'=>'Save']) ?></button>
                 <button type="button" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders']) ?>'">
                     <?= $this->t(['fr'=>'Annuler','en'=>'Cancel']) ?>
+                </button>
+            </div>
+        </form>
+        <?php
+    }
+
+    // ✅ NOUVELLE MÉTHODE - Afficher le formulaire de visualisation/modification
+    private function renderViewForm(): void
+    {
+        if (!$this->studentData) {
+            echo '<p>' . $this->t(['fr'=>'Étudiant non trouvé','en'=>'Student not found']) . '</p>';
+            return;
+        }
+        ?>
+        <h1><?= $this->t(['fr'=>'Dossier étudiant','en'=>'Student Folder']) ?></h1>
+        <div class="form-back-button">
+            <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders']) ?>'" class="btn-secondary">
+                ← <?= $this->t(['fr'=>'Retour à la liste','en'=>'Back to List']) ?>
+            </button>
+        </div>
+        <form method="post" action="index.php?page=update_student&lang=<?= htmlspecialchars($this->lang) ?>" enctype="multipart/form-data" class="creation-form">
+            <div class="form-section">
+                <label for="numetu"><?= $this->t(['fr'=>'NumÉtu *','en'=>'Student ID *']) ?></label>
+                <input type="text" name="numetu" id="numetu" value="<?= htmlspecialchars($this->studentData['numetu'] ?? '') ?>" disabled style="background-color: #e0e0e0; color: #666;">
+
+                <label for="nom"><?= $this->t(['fr'=>'Nom *','en'=>'Last Name *']) ?></label>
+                <input type="text" name="nom" id="nom" value="<?= htmlspecialchars($this->studentData['nom'] ?? '') ?>" disabled style="background-color: #e0e0e0; color: #666;" required>
+
+                <label for="prenom"><?= $this->t(['fr'=>'Prénom *','en'=>'First Name *']) ?></label>
+                <input type="text" name="prenom" id="prenom" value="<?= htmlspecialchars($this->studentData['prenom'] ?? '') ?>" disabled style="background-color: #e0e0e0; color: #666;" required>
+
+                <label for="naissance"><?= $this->t(['fr'=>'Né(e) le','en'=>'Date of Birth']) ?></label>
+                <input type="date" name="naissance" id="naissance" value="<?= htmlspecialchars($this->studentData['naissance'] ?? '') ?>" disabled style="background-color: #e0e0e0; color: #666;">
+
+                <label for="sexe"><?= $this->t(['fr'=>'Sexe','en'=>'Gender']) ?></label>
+                <select name="sexe" id="sexe" disabled style="background-color: #e0e0e0; color: #666;">
+                    <option value="M" <?= ($this->studentData['sexe'] ?? '') === 'M' ? 'selected' : '' ?>><?= $this->t(['fr'=>'Masculin','en'=>'Male']) ?></option>
+                    <option value="F" <?= ($this->studentData['sexe'] ?? '') === 'F' ? 'selected' : '' ?>><?= $this->t(['fr'=>'Féminin','en'=>'Female']) ?></option>
+                    <option value="Autre" <?= ($this->studentData['sexe'] ?? '') === 'Autre' ? 'selected' : '' ?>><?= $this->t(['fr'=>'Autre','en'=>'Other']) ?></option>
+                </select>
+
+                <label for="adresse"><?= $this->t(['fr'=>'Adresse','en'=>'Address']) ?></label>
+                <input type="text" name="adresse" id="adresse" value="<?= htmlspecialchars($this->studentData['adresse'] ?? '') ?>" disabled style="background-color: #e0e0e0; color: #666;">
+
+                <label for="cp"><?= $this->t(['fr'=>'Code postal','en'=>'Postal Code']) ?></label>
+                <input type="text" name="cp" id="cp" value="<?= htmlspecialchars($this->studentData['cp'] ?? '') ?>" disabled style="background-color: #e0e0e0; color: #666;">
+
+                <label for="ville"><?= $this->t(['fr'=>'Ville','en'=>'City']) ?></label>
+                <input type="text" name="ville" id="ville" value="<?= htmlspecialchars($this->studentData['ville'] ?? '') ?>" disabled style="background-color: #e0e0e0; color: #666;">
+
+                <label for="email_perso"><?= $this->t(['fr'=>'Email Personnel *','en'=>'Personal Email *']) ?></label>
+                <input type="email" name="email_perso" id="email_perso" value="<?= htmlspecialchars($this->studentData['email_perso'] ?? $this->studentData['email'] ?? '') ?>" disabled style="background-color: #e0e0e0; color: #666;" required>
+
+                <label for="email_amu"><?= $this->t(['fr'=>'Email AMU','en'=>'AMU Email']) ?></label>
+                <input type="email" name="email_amu" id="email_amu" value="<?= htmlspecialchars($this->studentData['email_amu'] ?? '') ?>" disabled style="background-color: #e0e0e0; color: #666;">
+
+                <label for="telephone"><?= $this->t(['fr'=>'Téléphone *','en'=>'Phone *']) ?></label>
+                <input type="text" name="telephone" id="telephone" value="<?= htmlspecialchars($this->studentData['telephone'] ?? '') ?>" disabled style="background-color: #e0e0e0; color: #666;" required>
+
+                <label for="departement"><?= $this->t(['fr'=>'Code Département','en'=>'Department Code']) ?></label>
+                <input type="text" name="departement" id="departement" value="<?= htmlspecialchars($this->studentData['departement'] ?? '') ?>" disabled style="background-color: #e0e0e0; color: #666;">
+
+                <label for="type"><?= $this->t(['fr'=>'Type *','en'=>'Type *']) ?></label>
+                <select name="type" id="type" disabled style="background-color: #e0e0e0; color: #666;" required>
+                    <option value=""><?= $this->t(['fr'=>'-- Choisir --','en'=>'-- Choose --']) ?></option>
+                    <option value="entrant" <?= ($this->studentData['type'] ?? '') === 'entrant' ? 'selected' : '' ?>><?= $this->t(['fr'=>'Entrant','en'=>'Incoming']) ?></option>
+                    <option value="sortant" <?= ($this->studentData['type'] ?? '') === 'sortant' ? 'selected' : '' ?>><?= $this->t(['fr'=>'Sortant','en'=>'Outgoing']) ?></option>
+                </select>
+
+                <label for="zone"><?= $this->t(['fr'=>'Zone *','en'=>'Zone *']) ?></label>
+                <select name="zone" id="zone" disabled style="background-color: #e0e0e0; color: #666;" required>
+                    <option value=""><?= $this->t(['fr'=>'-- Choisir --','en'=>'-- Choose --']) ?></option>
+                    <option value="europe" <?= ($this->studentData['zone'] ?? '') === 'europe' ? 'selected' : '' ?>><?= $this->t(['fr'=>'Europe','en'=>'Europe']) ?></option>
+                    <option value="hors_europe" <?= ($this->studentData['zone'] ?? '') === 'hors_europe' ? 'selected' : '' ?>><?= $this->t(['fr'=>'Hors Europe','en'=>'Non-Europe']) ?></option>
+                </select>
+
+                <label for="photo"><?= $this->t(['fr'=>'Photo','en'=>'Photo']) ?></label>
+                <input type="file" name="photo" id="photo" accept="image/*" disabled style="background-color: #e0e0e0; color: #666;">
+
+                <label for="cv"><?= $this->t(['fr'=>'CV','en'=>'CV']) ?></label>
+                <input type="file" name="cv" id="cv" accept=".pdf,.doc,.docx" disabled style="background-color: #e0e0e0; color: #666;">
+
+                <label for="mobilite_type"><?= $this->t(['fr'=>'Type de mobilité','en'=>'Mobility Type']) ?></label>
+                <select name="mobilite_type" id="mobilite_type" onchange="changerTypeMobilite(this.value)" disabled style="background-color: #e0e0e0; color: #666;">
+                    <option value=""><?= $this->t(['fr'=>'-- Choisir --','en'=>'-- Choose --']) ?></option>
+                    <option value="stage" <?= ($this->studentData['mobilite_type'] ?? '') === 'stage' ? 'selected' : '' ?>><?= $this->t(['fr'=>'Stage','en'=>'Internship']) ?></option>
+                    <option value="etudes" <?= ($this->studentData['mobilite_type'] ?? '') === 'etudes' ? 'selected' : '' ?>><?= $this->t(['fr'=>'Études','en'=>'Studies']) ?></option>
+                </select>
+            </div>
+            <div class="fichier-obligatoire" id="justificatif_convention" style="display: none;">
+                <label><?= $this->t(['fr'=>'Convention de stage','en'=>'Internship Agreement']) ?></label>
+                <input type="file" name="convention" accept=".pdf,.doc,.docx" disabled style="background-color: #e0e0e0; color: #666;">
+            </div>
+            <div class="fichier-obligatoire" id="lettre_motivation" style="display: none;">
+                <label><?= $this->t(['fr'=>'Lettre de motivation','en'=>'Motivation Letter']) ?></label>
+                <input type="file" name="lettre_motivation" accept=".pdf,.doc,.docx" disabled style="background-color: #e0e0e0; color: #666;">
+            </div>
+            <div class="form-actions">
+                <!-- ✅ Bouton Modifier (rouge, affiché par défaut) -->
+                <button type="button" id="btn-modifier" class="btn-danger" onclick="activerModification()">
+                    <?= $this->t(['fr'=>'Modifier','en'=>'Edit']) ?>
+                </button>
+
+                <!-- ✅ Bouton Enregistrer (caché par défaut) -->
+                <button type="submit" id="btn-enregistrer" class="btn-secondary" style="display: none;">
+                    <?= $this->t(['fr'=>'Enregistrer','en'=>'Save']) ?>
+                </button>
+
+                <!-- ✅ Bouton Annuler -->
+                <button type="button" id="btn-annuler" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders']) ?>'" style="display: none;">
+                    <?= $this->t(['fr'=>'Annuler','en'=>'Cancel']) ?>
+                </button>
+
+                <!-- ✅ Bouton Retour (affiché par défaut) -->
+                <button type="button" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders']) ?>'">
+                    <?= $this->t(['fr'=>'Retour','en'=>'Back']) ?>
                 </button>
             </div>
         </form>
@@ -385,3 +521,4 @@ class FoldersPage
                 || !empty($this->filters['search']);
     }
 }
+
