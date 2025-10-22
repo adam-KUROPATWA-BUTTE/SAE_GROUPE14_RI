@@ -52,8 +52,8 @@ class DashboardPage
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('/dashboard') ?>'">
                     <?= $this->lang === 'en' ? 'Dashboard' : 'Tableau de bord' ?>
                 </button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/settings') ?>'">
-                    <?= $this->lang === 'en' ? 'Settings' : 'Paramétrage' ?>
+                <button onclick="window.location.href='<?= $this->buildUrl('/partners') ?>'">
+                    <?= $this->lang === 'en' ? 'Partners' : 'Partenaires' ?>
                 </button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/folders') ?>'">
                     <?= $this->lang === 'en' ? 'Folders' : 'Dossiers' ?>
