@@ -1,25 +1,25 @@
 <?php
-namespace Controllers\site;
+namespace Controllers\site\FolderController;
 
-use Model\Folder;
-use View\FoldersPage;
+use Controllers\ControllerInterface;
+use Controllers\Auth_Guard;
+use Model\Folder\FolderAdmin;
+use View\Folder\FoldersPageAdmin;
 
-class FoldersController
+class FoldersControllerAdmin implements ControllerInterface
 {
-    public static function support(string $page, string $method): bool
-    {
-        return $page === 'folders';
-    }
-
     public function control(): void
     {
-        // Récupérer l'action (si l'utilisateur clique sur "créer un dossier")
+        // Vérifier que c'est un admin
+        Auth_Guard::requireAdmin();
+
+        // Récupérer l'action
         $action = $_GET['action'] ?? 'list';
 
         // Récupérer les filtres depuis l'URL
         $filters = [
-            'type' => $_GET['type'] ?? 'all', // all, entrant, sortant
-            'zone' => $_GET['zone'] ?? 'all', // all, europe, hors_europe
+            'type' => $_GET['type'] ?? 'all',
+            'zone' => $_GET['zone'] ?? 'all',
             'stage' => $_GET['stage'] ?? 'all',
             'etude' => $_GET['etude'] ?? 'all',
             'search' => $_GET['search'] ?? ''
@@ -34,7 +34,12 @@ class FoldersController
 
         $lang = $_GET['lang'] ?? 'fr';
 
-        $view = new FoldersPage($action, $filters, $page, $perPage, $message, $lang);
+        $view = new FoldersPageAdmin($action, $filters, $page, $perPage, $message, $lang);
         $view->render();
+    }
+
+    public static function support(string $page, string $method): bool
+    {
+        return $page === 'folders-admin' && in_array($method, ['GET', 'POST']);
     }
 }

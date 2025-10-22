@@ -65,11 +65,11 @@ class HomePage
                     </div>
 
                     <?php if ($this->isLoggedIn): ?>
-                        <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page'=>'logout']) ?>'">
+                        <button onclick="window.location.href='<?= $this->buildUrl('/logout') ?>'">
                             <?= $this->t(['fr'=>'Se déconnecter','en'=>'Log out']) ?>
                         </button>
                     <?php else: ?>
-                        <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page'=>'login']) ?>'">
+                        <button onclick="window.location.href='<?= $this->buildUrl('/login') ?>'">
                             <?= $this->t(['fr'=>'Se connecter','en'=>'Log in']) ?>
                         </button>
                     <?php endif; ?>

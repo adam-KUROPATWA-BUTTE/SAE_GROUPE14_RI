@@ -14,6 +14,7 @@ error_reporting(E_ALL);
 // Chargement des dépendances
 require_once ROOT_PATH . '/vendor/autoload.php';
 require_once ROOT_PATH . '/Autoloader.php';
+require_once ROOT_PATH . '/Database.php';
 
 // Chargement des variables d'environnement
 $dotenv = Dotenv\Dotenv::createImmutable(ROOT_PATH);
@@ -22,19 +23,23 @@ $dotenv->load();
 // Enregistrement de l'autoloader personnalisé
 Autoloader::register();
 
-use Controllers\site\AuthController;
+use Controllers\site\AuthController\AuthControllerAdmin;
+use Controllers\site\AuthController\AuthControllerStudent;
 use Controllers\site\DashboardController;
-use Controllers\site\FoldersController;
+use Controllers\site\FolderController\FoldersControllerAdmin;
+use Controllers\site\FolderController\FoldersControllerStudent;
 use Controllers\site\HelpController;
 use Controllers\site\IndexController;
 use Controllers\site\SettingsController;
 use Controllers\site\WebPlanController;
 
-// Liste des contrôleurs
+// Liste des contrôleurs - IMPORTANT: ordre de priorité
 $controllers = [
-    new AuthController(),
+    new AuthControllerAdmin(),
+    new AuthControllerStudent(),
+    new FoldersControllerAdmin(),
+    new FoldersControllerStudent(),
     new DashboardController(),
-    new FoldersController(),
     new HelpController(),
     new SettingsController(),
     new WebPlanController(),
