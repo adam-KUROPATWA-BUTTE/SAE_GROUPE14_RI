@@ -693,3 +693,56 @@ footer p {
     }
 
 }
+
+
+/* Variables de couleurs */
+:root {
+    --primary-color: #00558B; /* couleur principale normale */
+    --secondary-color: #EBC55E; /* couleur secondaire normale */
+    --text-color: #ffffff;
+    --background-color: #EBC55E;
+    --accent-color: #2B91BB; /* pour chart et légende */
+    --hero-bg-color: #00558B;
+}
+
+/* Thème tritanopie */
+body.tritanopie {
+    --primary-color: #D55E00;
+    --secondary-color: #999933;
+    --text-color: #ffffff;
+    --background-color: #999933;
+    --accent-color: #E69F00;
+    --hero-bg-color: #D55E00;
+}
+
+/* Application des variables */
+header {
+    background-color: var(--background-color);
+}
+button {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+}
+button:hover {
+    background-color: var(--secondary-color);
+}
+nav.menu button {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+}
+nav.menu button:hover {
+    background-color: var(--secondary-color);
+}
+footer {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+}
+.hero-section {
+    background-color: var(--hero-bg-color);
+}
+.legend-color.complet {
+    background-color: var(--accent-color);
+}
+.chart-percentage {
+    color: var(--accent-color);
+}

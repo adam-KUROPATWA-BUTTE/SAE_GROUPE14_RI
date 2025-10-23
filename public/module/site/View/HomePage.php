@@ -63,6 +63,7 @@ class HomePage
                             <a href="#" onclick="changeLang('en'); return false;">English</a>
                         </div>
                     </div>
+                    <button id="theme-toggle"><?= $this->t(['fr'=>'Mode tritanopie','en'=>'Tritanopia Mode']) ?></button>
 
                     <?php if ($this->isLoggedIn): ?>
                         <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page'=>'logout']) ?>'">
@@ -178,6 +179,15 @@ class HomePage
                 url.searchParams.set('lang', lang);
                 window.location.href = url.toString();
             }
+
+            document.getElementById('theme-toggle').addEventListener('click', function() {
+                document.body.classList.toggle('tritanopie');
+                if (document.body.classList.contains('tritanopie')) {
+                    this.textContent = '<?= $this->t(['fr'=>'Thème normal','en'=>'Normal Mode']) ?>';
+                } else {
+                    this.textContent = '<?= $this->t(['fr'=>'Mode tritanopie','en'=>'Tritanopia Mode']) ?>';
+                }
+            });
         </script>
         </body>
         </html>
