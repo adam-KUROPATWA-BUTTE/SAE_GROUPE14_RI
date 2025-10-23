@@ -23,8 +23,8 @@ $dotenv->load();
 // Enregistrement de l'autoloader personnalisé
 Autoloader::register();
 
-use Controllers\site\AuthController\AuthControllerAdmin;
-use Controllers\site\AuthController\AuthControllerStudent;
+
+use Controllers\site\AuthController;
 use Controllers\site\DashboardController;
 use Controllers\site\FolderController\FoldersControllerAdmin;
 use Controllers\site\FolderController\FoldersControllerStudent;
@@ -35,8 +35,7 @@ use Controllers\site\WebPlanController;
 
 // Liste des contrôleurs - IMPORTANT: ordre de priorité
 $controllers = [
-    new AuthControllerAdmin(),
-    new AuthControllerStudent(),
+    new AuthController(),
     new FoldersControllerAdmin(),
     new FoldersControllerStudent(),
     new DashboardController(),
