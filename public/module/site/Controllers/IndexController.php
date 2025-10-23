@@ -34,7 +34,7 @@ class IndexController implements ControllerInterface
             $pdo = new \PDO($dsn, $username, $password);
             $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-            $stmt = $pdo->query("SELECT COUNT(*) as total, SUM(is_complete) as completed FROM dossiers");
+            $stmt = $pdo->query("SELECT COUNT(*) as total, SUM(IsComplete) as completed FROM dossiers");
             $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
             if ($row['total'] > 0) {
