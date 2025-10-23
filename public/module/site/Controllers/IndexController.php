@@ -20,10 +20,9 @@ class IndexController implements ControllerInterface
         $completionPercentage = 0;
 
         try {
-            // Utiliser la classe Database au lieu de créer une connexion directe
             $pdo = Database::getInstance()->getConnection();
 
-            $stmt = $pdo->query("SELECT COUNT(*) as total, SUM(is_complete) as completed FROM dossiers");
+            $stmt = $pdo->query("SELECT COUNT(*) as total, SUM(IsComplete) as completed FROM dossiers");
             $row = $stmt->fetch(\PDO::FETCH_ASSOC);
 
             if ($row['total'] > 0) {

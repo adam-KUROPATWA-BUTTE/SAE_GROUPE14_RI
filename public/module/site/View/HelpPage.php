@@ -26,13 +26,13 @@ class HelpPage
         <body>
         <header>
             <div class="top-bar">
-                <img id="logo_amu" src="img/logo.png" alt="Logo" style="height:100px;">
+                <img id="logo_amu" src="img/logo.png" alt="Logo">
                 <div class="right-buttons"></div>
             </div>
             <nav class="menu">
                 <button onclick="window.location.href='/'">Accueil</button>
                 <button onclick="window.location.href='/dashboard'">Tableau de bord</button>
-                <button onclick="window.location.href='/settings'">Paramétrage</button>
+                <button onclick="window.location.href='/partners'">Partenaires</button>
                 <button onclick="window.location.href='/folders'">Dossiers</button>
                 <button onclick="window.location.href='/web_plan'">Plan du site</button>
             </nav>
@@ -78,13 +78,15 @@ class HelpPage
             <div class="help-popup-body">
                 <p>Bienvenue ! Comment pouvons-nous vous aider ?</p>
                 <ul>
-                    <li><a href="index.php?page=help" target="_blank">Page d’aide complète</a></li>
+                    <li><a id="page_complete" href="index.php?page=help" target="_blank">Page d’aide complète</a></li>
                 </ul>
             </div>
         </div>
 
         <script>
-            document.addEventListener("DOMContentLoaded", () => {
+            document.addEventL<footer>
+            <p>&copy; <?= date('Y') ?> - Aix-Marseille Université.</p>
+        </footer>istener("DOMContentLoaded", () => {
                 const menuToggle = document.createElement('button');
                 menuToggle.classList.add('menu-toggle');
                 menuToggle.innerHTML = '☰';
@@ -103,6 +105,9 @@ class HelpPage
 
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
+            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
+                <img src="img/instagram.png" alt="Instagram" style="height:32px;">
+            </a>
         </footer>
         </body>
         </html>

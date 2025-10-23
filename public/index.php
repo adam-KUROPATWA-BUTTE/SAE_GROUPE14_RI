@@ -30,7 +30,8 @@ use Controllers\site\FolderController\FoldersControllerAdmin;
 use Controllers\site\FolderController\FoldersControllerStudent;
 use Controllers\site\HelpController;
 use Controllers\site\IndexController;
-use Controllers\site\SettingsController;
+use Controllers\site\SaveStudentController;
+use Controllers\site\PartnersController;
 use Controllers\site\WebPlanController;
 
 // Liste des contrôleurs - IMPORTANT: ordre de priorité
@@ -40,9 +41,10 @@ $controllers = [
     new FoldersControllerStudent(),
     new DashboardController(),
     new HelpController(),
-    new SettingsController(),
+    new PartnersController(),
     new WebPlanController(),
-    new IndexController()
+    new IndexController(),
+    new SaveStudentController(),
 ];
 
 // Récupération de la page demandée

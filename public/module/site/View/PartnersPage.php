@@ -1,27 +1,26 @@
 <?php
 namespace View;
 
-class WebPlanPage
+class PartnersPage
 {
-    private array $links;
+    private string $titre;
     private string $lang;
 
-    public function __construct(array $links = [], string $lang = 'fr')
+    public function __construct(string $titre, string $lang = 'fr')
     {
-        $this->links = $links;
+        $this->titre = $titre;
         $this->lang = $lang;
+    }
+
+    private function buildUrl(string $path, array $params = []): string
+    {
+        $params['lang'] = $this->lang;
+        return $path . '?' . http_build_query($params);
     }
 
     private function t(array $frEn): string
     {
         return $this->lang === 'en' ? $frEn['en'] : $frEn['fr'];
-    }
-
-    private function buildUrl(string $url): string
-    {
-        // On ajoute lang au paramètre d'URL existant
-        $sep = (strpos($url, '?') === false) ? '?' : '&';
-        return $url . $sep . 'lang=' . urlencode($this->lang);
     }
 
     public function render(): void
@@ -32,17 +31,17 @@ class WebPlanPage
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title><?= htmlspecialchars($this->titre) ?></title>
             <link rel="stylesheet" href="styles/index.css">
-            <link rel="stylesheet" href="styles/web_plan.css">
+            <link rel="stylesheet" href="styles/Partners.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
-            <title><?= $this->t(['fr'=>'Plan du site', 'en'=>'Site Map']) ?></title>
         </head>
         <body>
         <header>
             <div class="top-bar">
-                <img src="img/logo.png" alt="Logo">
+                <img id="logo_amu" src="img/logo.png" alt="Logo" style="height:100px;">
                 <div class="right-buttons">
-                    <div class="lang-dropdown">
+                    <div class="lang-dropdown" style="float:right; margin-top: 30px; margin-right: 20px;">
                         <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
                         <div class="dropdown-content">
                             <a href="#" onclick="changeLang('fr'); return false;">Français</a>
@@ -51,24 +50,50 @@ class WebPlanPage
                     </div>
                 </div>
             </div>
+            <nav class="menu">
+                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'">
+                    <?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?>
+                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/dashboard') ?>'">
+                    <?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?>
+                </button>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/partners') ?>'">
+                    <?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?>
+                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/folders') ?>'">
+                    <?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?>
+                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'">
+                    <?= $this->t(['fr'=>'Plan du site','en'=>'Site Map']) ?>
+                </button>
+            </nav>
         </header>
 
-        <main style="padding:2em;">
-            <h1><?= $this->t(['fr'=>'Plan du site', 'en'=>'Site Map']) ?></h1>
-            <ul>
-                <?php foreach ($this->links as $link): ?>
-                    <li><a href="<?= htmlspecialchars($this->buildUrl($link['url'])) ?>"><?= 
-                        htmlspecialchars($this->t([
-                            'fr' => $link['label'], // labels en dur en fr dans Model, on peut compléter en dur ici si besoin
-                            'en' => $this->translateLabel($link['label'])
-                        ])) 
-                    ?></a></li>
-                <?php endforeach; ?>
-            </ul>
+        <main>
+            <h1><?= htmlspecialchars($this->titre) ?></h1>
 
+            <p>
+                <?= $this->t([
+                    'fr' => 'Veuillez trouver la liste des partenaires d’AMU en cliquant sur ce lien :',
+                    'en' => 'Please find the list of AMU\'s partners by clicking on this link:'
+                ]) ?>
+            </p>
+            <p class="lien">
+                <a href="https://www.univ-amu.fr/fr/public/universites-et-reseaux-partenaires" target="_blank">
+                    Universites-et-reseaux-partenaires
+                </a>
+            </p>
 
+            <img id="Université_partenaires" src="img/University.png" alt="Université partenaires">
 
         </main>
+
+        <footer>
+            <p>&copy; 2025 - Aix-Marseille Université.</p>
+            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
+                <img src="img/instagram.png" alt="Instagram" style="height:32px;">
+            </a>
+        </footer>
 
         <!-- Bulle d'aide en bas à droite -->
         <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
@@ -110,32 +135,8 @@ class WebPlanPage
                 window.location.href = url.toString();
             }
         </script>
-        <footer>
-            <p>&copy; 2025 - Aix-Marseille Université.</p>
-            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
-                <img src="img/instagram.png" alt="Instagram" style="height:32px;">
-            </a>
-        </footer>
-        </body>        
-        </html>
-
-
-
+        </body>
+    </html>
         <?php
-    }
-
-    private function translateLabel(string $label): string
-    {
-        // Mappage simple FR -> EN
-        $map = [
-            'Accueil' => 'Home',
-            'Tableau de bord' => 'Dashboard',
-            'Partenaires' => 'Partners',
-            'Dossiers' => 'Folders',
-            'Plan du site' => 'Site Map',
-            'Connexion / Inscription' => 'Login / Register',
-        ];
-
-        return $map[$label] ?? $label; // fallback si label inconnu
     }
 }

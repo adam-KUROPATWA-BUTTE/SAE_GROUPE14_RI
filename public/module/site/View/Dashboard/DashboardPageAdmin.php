@@ -34,7 +34,7 @@ class DashboardPage
         <body>
         <header>
             <div class="top-bar">
-                <img id="logo_amu" src="img/logo.png" alt="Logo" style="height:100px;">
+                <img id="logo_amu" src="img/logo.png" alt="Logo">
                 <div class="right-buttons">
                     <div class="lang-dropdown">
                         <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
@@ -52,8 +52,8 @@ class DashboardPage
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('/dashboard') ?>'">
                     <?= $this->lang === 'en' ? 'Dashboard' : 'Tableau de bord' ?>
                 </button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/settings') ?>'">
-                    <?= $this->lang === 'en' ? 'Settings' : 'Paramétrage' ?>
+                <button onclick="window.location.href='<?= $this->buildUrl('/partners') ?>'">
+                    <?= $this->lang === 'en' ? 'Partners' : 'Partenaires' ?>
                 </button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/folders') ?>'">
                     <?= $this->lang === 'en' ? 'Folders' : 'Dossiers' ?>
@@ -94,7 +94,7 @@ class DashboardPage
                             </div>
                         </td>
                         <td><?= $fournies ?> / <?= $total ?></td>
-                        <td><?= htmlspecialchars($dossier['date_derniere_relance']) ?></td>
+                        <td><?= htmlspecialchars($dossier['date_derniere_relance'] ?? '') ?></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>
@@ -113,7 +113,7 @@ class DashboardPage
             <div class="help-popup-body">
                 <p><?= $this->lang === 'en' ? 'Welcome! How can we help you?' : 'Bienvenue ! Comment pouvons-nous vous aider ?' ?></p>
                 <ul>
-                    <li><a href="index.php?page=help" target="_blank"><?= $this->lang === 'en' ? 'Full help page' : 'Page d’aide complète' ?></a></li>
+                    <li><a id="page_complete" href="index.php?page=help" target="_blank"><?= $this->lang === 'en' ? 'Full help page' : 'Page d’aide complète' ?></a></li>
                 </ul>
             </div>
         </div>
@@ -143,8 +143,10 @@ class DashboardPage
         </script>
 
         <footer>
-            
             <p>&copy; 2025 - Aix-Marseille Université.</p>
+            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
+                <img src="img/instagram.png" alt="Instagram" style="height:32px;">
+            </a>
         </footer>
         </body>
         </html>

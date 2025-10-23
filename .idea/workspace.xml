@@ -4,30 +4,37 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e4dbe818-91e3-4dc7-9532-5ab684ba46d8" name="Changes" comment="Merge branch 'responsive' into test_responsive&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml&#10;#&#9;styles/index.css">
+    <list default="true" id="e4dbe818-91e3-4dc7-9532-5ab684ba46d8" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/module/site/Controllers/FoldersController.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/site/Controllers/FoldersController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/module/site/Model/Folder.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/site/Model/Folder.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/module/site/View/FoldersPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/module/site/View/FoldersPage.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/styles/folders.css" beforeDir="false" afterPath="$PROJECT_DIR$/styles/folders.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ComposerSettings">
+  <component name="ComposerSettings" synchronizationState="SYNCHRONIZE">
+    <pharConfigPath>$PROJECT_DIR$/composer.json</pharConfigPath>
     <execution />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="test_fichierdossiermain" />
+        <entry key="$PROJECT_DIR$" value="main" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/opt/homebrew/Cellar/php/8.4.12/bin/php" />
+  <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/bin/php">
+    <include_path>
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-php80" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-mbstring" />
+      <path value="$PROJECT_DIR$/vendor/composer" />
+      <path value="$PROJECT_DIR$/vendor/vlucas/phpdotenv" />
+      <path value="$PROJECT_DIR$/vendor/phpoption/phpoption" />
+      <path value="$PROJECT_DIR$/vendor/symfony/polyfill-ctype" />
+      <path value="$PROJECT_DIR$/vendor/graham-campbell/result-type" />
+    </include_path>
+  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 5
@@ -37,26 +44,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "/Users/mariampoghossian/PhpstormProjects/SAE_GROUPE14_RI",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "to.speed.mode.migration.done": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/amuhome/a24029395/SAE_GROUPE14_RI&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/img" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -66,8 +74,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-b598e85cdad2-JavaScript-PS-252.25557.128" />
-        <option value="bundled-php-predefined-a98d8de5180a-ce40d0652d34-com.jetbrains.php.sharedIndexes-PS-252.25557.128" />
+        <option value="bundled-js-predefined-d6986cc7102b-b26f3e71634d-JavaScript-PS-251.26094.133" />
+        <option value="bundled-php-predefined-a98d8de5180a-c5828cf854d9-com.jetbrains.php.sharedIndexes-PS-251.26094.133" />
       </set>
     </attachedChunks>
   </component>
@@ -91,20 +99,13 @@
       <workItem from="1759955243182" duration="269000" />
       <workItem from="1760041896335" duration="45000" />
       <workItem from="1760712098861" duration="199000" />
-      <workItem from="1760712299469" duration="1819000" />
-      <workItem from="1760895645069" duration="161000" />
-      <workItem from="1760948262406" duration="1185000" />
-      <workItem from="1760964059236" duration="481000" />
+      <workItem from="1760712299469" duration="2304000" />
+      <workItem from="1760891057845" duration="14000" />
+      <workItem from="1760961762657" duration="1706000" />
+      <workItem from="1760967229253" duration="5538000" />
+      <workItem from="1761222621960" duration="10000" />
+      <workItem from="1761222634572" duration="1249000" />
     </task>
-    <task id="LOCAL-00001" summary="Merge branch 'responsive' into test_responsive&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml&#10;#&#9;styles/index.css">
-      <option name="closed" value="true" />
-      <created>1760894699299</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1760894699299</updated>
-    </task>
-    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
