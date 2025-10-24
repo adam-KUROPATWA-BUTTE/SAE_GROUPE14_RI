@@ -179,6 +179,24 @@ class FoldersPageAdmin
                 }
                 window.location.href = url.toString();
             }
+            // Afficher un message temporaire après marquage
+            window.addEventListener('DOMContentLoaded', function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const message = document.querySelector('.message');
+                
+                if (message && message.textContent.includes('complet')) {
+                    // Animation pour le message
+                    message.style.animation = 'slideIn 0.5s ease-out';
+                    
+                    // Masquer après 5 secondes
+                    setTimeout(() => {
+                        message.style.animation = 'slideOut 0.5s ease-out';
+                        setTimeout(() => {
+                            message.style.display = 'none';
+                        }, 500);
+                    }, 5000);
+                }
+            });
         </script>
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
@@ -544,14 +562,43 @@ class FoldersPageAdmin
                 </div>
                 <?php endif; ?>
 
-                <!-- Statut du dossier -->
+                <!-- Statut du dossier avec bouton -->
                 <div style="margin-top: 20px; padding: 15px; background-color: <?= ($student['IsComplete'] ?? 0) ? '#d4edda' : '#fff3cd' ?>; border-radius: 5px;">
-                    <strong><?= $this->t(['fr'=>'Statut du dossier :','en'=>'Folder status:']) ?></strong>
-                    <?= ($student['IsComplete'] ?? 0) 
-                        ? $this->t(['fr'=>'✅ Complet','en'=>'✅ Complete']) 
-                        : $this->t(['fr'=>'⚠️ Incomplet','en'=>'⚠️ Incomplete']) ?>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong><?= $this->t(['fr'=>'Statut du dossier :','en'=>'Folder status:']) ?></strong>
+                        <?= ($student['IsComplete'] ?? 0) 
+                            ? $this->t(['fr'=>'✅ Complet','en'=>'✅ Complete']) 
+                            : $this->t(['fr'=>'⚠️ Incomplet','en'=>'⚠️ Incomplete']) ?>
+                    </div>
+
+                    <?php if (!($student['IsComplete'] ?? 0)): ?>
+                        <!-- ✅ Bouton "Marquer comme complet" -->
+                        <button type="submit"
+                            formaction="index.php?page=mark_complete&lang=<?= htmlspecialchars($this->lang) ?>"
+                            formmethod="post"
+                            name="NumEtu"
+                            value="<?= htmlspecialchars($student['NumEtu']) ?>"
+                            class="btn-success"
+                            onclick="return confirm('<?= $this->t(['fr'=>'Êtes-vous sûr de vouloir marquer ce dossier comme complet ?','en'=>'Are you sure you want to mark this folder as complete?']) ?>')">
+                            <?= $this->t(['fr'=>'✓ Marquer comme complet','en'=>'✓ Mark as complete']) ?>
+                        </button>
+                    <?php else: ?>
+                        <!-- 🔄 Bouton "Remettre en incomplet" -->
+                        <button type="submit"
+                            formaction="index.php?page=mark_incomplete&lang=<?= htmlspecialchars($this->lang) ?>"
+                            formmethod="post"
+                            name="NumEtu"
+                            value="<?= htmlspecialchars($student['NumEtu']) ?>"
+                            class="btn-warning"
+                            onclick="return confirm('<?= $this->t(['fr'=>'Voulez-vous vraiment remettre ce dossier en incomplet ?','en'=>'Do you really want to mark this folder as incomplete?']) ?>')">
+                            <?= $this->t(['fr'=>'↺ Remettre en incomplet','en'=>'↺ Mark as incomplete']) ?>
+                        </button>
+                    <?php endif; ?>
                 </div>
             </div>
+
+
 
             <div class="form-actions">
                 <!-- Bouton Modifier -->

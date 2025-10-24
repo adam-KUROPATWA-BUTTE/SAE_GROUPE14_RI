@@ -40,10 +40,10 @@ class WebPlanPage
         <body>
         <header>
             <div class="top-bar">
-                <img src="img/logo.png" alt="Logo">
+                <img id="logo_amu" src="img/logo.png" alt="Logo AMU">
                 <div class="right-buttons">
                     <div class="lang-dropdown">
-                        <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
+                        <button class="dropbtn"><?= htmlspecialchars($this->lang) ?></button>
                         <div class="dropdown-content">
                             <a href="#" onclick="changeLang('fr'); return false;">Français</a>
                             <a href="#" onclick="changeLang('en'); return false;">English</a>
@@ -116,7 +116,7 @@ class WebPlanPage
                 <img src="img/instagram.png" alt="Instagram" style="height:32px;">
             </a>
         </footer>
-        </body>        
+        </body>
         </html>
 
 
