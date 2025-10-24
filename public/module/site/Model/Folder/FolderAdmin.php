@@ -1,11 +1,10 @@
 <?php
 namespace Model;
 
-class Folder
+class FolderAdmin
 {
     private static function getConnection(): \PDO
     {
-        // Utiliser la classe Database pour la connexion
         return \Database::getInstance()->getConnection();
     }
 

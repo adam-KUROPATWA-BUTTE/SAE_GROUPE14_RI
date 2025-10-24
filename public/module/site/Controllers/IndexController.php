@@ -3,6 +3,7 @@ namespace Controllers\site;
 
 use Controllers\ControllerInterface;
 use View\HomePage;
+use Database; // Ajoutez cet import
 
 class IndexController implements ControllerInterface
 {
@@ -18,21 +19,8 @@ class IndexController implements ControllerInterface
 
         $completionPercentage = 0;
 
-        // Connexion DB
-      
-        $host  = $_ENV['DB_HOST'];
-        $port  = $_ENV['DB_PORT'];;
-        $dbname = $_ENV['DB_NAME'];;
-        $charset  = $_ENV['DB_CHARSET'];;
-        $username = $_ENV['DB_USER'];
-        $password = $_ENV['DB_PASSWORD'];
-
-
-        $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=$charset";
-
         try {
-            $pdo = new \PDO($dsn, $username, $password);
-            $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $pdo = Database::getInstance()->getConnection();
 
             $stmt = $pdo->query("SELECT COUNT(*) as total, SUM(IsComplete) as completed FROM dossiers");
             $row = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -42,7 +30,9 @@ class IndexController implements ControllerInterface
             }
 
         } catch (\PDOException $e) {
-            die("Erreur connexion DB : " . $e->getMessage());
+            error_log("Erreur lors de la récupération des statistiques : " . $e->getMessage());
+            // Ne pas exposer le message d'erreur à l'utilisateur
+            $completionPercentage = 0;
         }
 
         $view = new HomePage($isLoggedIn, $lang, $completionPercentage);

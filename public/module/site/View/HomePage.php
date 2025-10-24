@@ -65,11 +65,11 @@ class HomePage
                     </div>
 
                     <?php if ($this->isLoggedIn): ?>
-                        <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page'=>'logout']) ?>'">
+                        <button onclick="window.location.href='<?= $this->buildUrl('/logout') ?>'">
                             <?= $this->t(['fr'=>'Se déconnecter','en'=>'Log out']) ?>
                         </button>
                     <?php else: ?>
-                        <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page'=>'login']) ?>'">
+                        <button onclick="window.location.href='<?= $this->buildUrl('/login') ?>'">
                             <?= $this->t(['fr'=>'Se connecter','en'=>'Log in']) ?>
                         </button>
                     <?php endif; ?>
@@ -78,9 +78,9 @@ class HomePage
 
             <nav class="menu">
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/dashboard') ?>'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/partners') ?>'"><?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/folders') ?>'"><?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'"><?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Sitemap']) ?></button>
             </nav>
         </header>

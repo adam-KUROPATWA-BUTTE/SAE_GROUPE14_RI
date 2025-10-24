@@ -1,174 +1,302 @@
 <?php
 namespace Controllers\site;
 
+require_once ROOT_PATH . '/public/module/site/Model/User/UserAdmin.php';
+require_once ROOT_PATH . '/public/module/site/Model/User/UserStudent.php';
+
 use Controllers\ControllerInterface;
-use Model\User;
+use Model\UserAdmin;
+use Model\UserStudent;
 
 class AuthController implements ControllerInterface
 {
-    public function control()
+    /**
+     * Méthode qui vérifie si ce contrôleur gère la page demandée
+     */
+    public static function support(string $page, string $method): bool
     {
-        $page = $_GET['page'] ?? 'login';
+        $authPages = [
+            'login',
+            'register',
+            'register-admin',
+            'logout',
+            'forgot-password',
+            'reset-password'
+        ];
         
-        // Gestion de la déconnexion
-        if ($page === 'logout') {
-            $this->handleLogout();
+        return in_array($page, $authPages);
+    }
+
+    /**
+     * Méthode principale qui route vers la bonne action
+     */
+    public function control(): void
+    {
+        // Récupérer la page actuelle
+        $page = $_GET['page'] ?? trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
+        
+        switch ($page) {
+            case 'login':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    self::login();
+                } else {
+                    self::showLoginPage();
+                }
+                break;
+                
+            case 'register':
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    self::registerStudent();
+                } else {
+                    self::showRegisterPage();
+                }
+                break;
+                
+            case 'register-admin':
+                self::registerAdmin();
+                break;
+                
+            case 'logout':
+                self::logout();
+                break;
+        }
+    }
+
+    /**
+     * Connexion universelle - détecte automatiquement le type d'utilisateur
+     */
+    public static function login()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /login');
+            exit();
+        }
+
+        $identifier = trim($_POST['identifier'] ?? '');
+        $password = $_POST['password'] ?? '';
+
+        if (empty($identifier) || empty($password)) {
+            $_SESSION['error'] = 'Veuillez remplir tous les champs';
+            header('Location: /login');
+            exit();
+        }
+
+        // Déterminer si c'est un email (admin) ou un numéro étudiant
+        $isEmail = filter_var($identifier, FILTER_VALIDATE_EMAIL);
+
+        if ($isEmail) {
+            // Tentative de connexion Admin
+            $result = UserAdmin::login($identifier, $password);
+        } else {
+            // Tentative de connexion Étudiant (par numéro)
+            $result = UserStudent::login($identifier, $password);
+        }
+
+        if ($result['success']) {
+            // Redirection selon le rôle
+            if ($result['role'] === 'admin') {
+                header('Location: /dashboard-admin');
+            } else {
+                header('Location: /dashboard-student');
+            }
+            exit();
+        } else {
+            $_SESSION['error'] = 'Identifiant ou mot de passe incorrect';
+            header('Location: /login');
+            exit();
+        }
+    }
+
+    /**
+     * Inscription étudiant (publique)
+     */
+    public static function registerStudent()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /register');
+            exit();
+        }
+
+        $email = trim($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
+        $passwordConfirm = $_POST['password_confirm'] ?? '';
+        $nom = trim($_POST['nom'] ?? '');
+        $prenom = trim($_POST['prenom'] ?? '');
+        $typeEtudiant = $_POST['type_etudiant'] ?? '';
+
+        // Validation
+        if (empty($email) || empty($password) || empty($nom) || empty($prenom) || empty($typeEtudiant)) {
+            $_SESSION['error'] = 'Veuillez remplir tous les champs';
+            header('Location: /register');
+            exit();
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['error'] = 'Email invalide';
+            header('Location: /register');
+            exit();
+        }
+
+        if ($password !== $passwordConfirm) {
+            $_SESSION['error'] = 'Les mots de passe ne correspondent pas';
+            header('Location: /register');
+            exit();
+        }
+
+        if (strlen($password) < 8) {
+            $_SESSION['error'] = 'Le mot de passe doit contenir au moins 8 caractères';
+            header('Location: /register');
+            exit();
+        }
+
+        $result = UserStudent::register($email, $password, $nom, $prenom, $typeEtudiant);
+
+        if ($result) {
+            $_SESSION['success'] = 'Inscription réussie ! Vous pouvez maintenant vous connecter.';
+            header('Location: /login');
+        } else {
+            $_SESSION['error'] = 'Une erreur est survenue lors de l\'inscription. L\'email est peut-être déjà utilisé.';
+            header('Location: /register');
+        }
+        exit();
+    }
+
+    /**
+     * Inscription admin (réservé aux admins connectés)
+     */
+    public static function registerAdmin()
+    {
+        // Vérifier que l'utilisateur est admin
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+            header('Location: /login');
+            exit();
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            // Afficher le formulaire
+            require_once ROOT_PATH . '/public/module/site/View/register_admin.php';
             return;
         }
 
-        // Si déjà connecté, rediriger vers le dashboard
-        if (isset($_SESSION['admin_id'])) {
-            header('Location: /dashboard');
-            exit;
+        $email = trim($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
+        $passwordConfirm = $_POST['password_confirm'] ?? '';
+        $nom = trim($_POST['nom'] ?? '');
+        $prenom = trim($_POST['prenom'] ?? '');
+
+        // Validation
+        if (empty($email) || empty($password) || empty($nom) || empty($prenom)) {
+            $_SESSION['error'] = 'Veuillez remplir tous les champs';
+            header('Location: /register-admin');
+            exit();
         }
 
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['error'] = 'Email invalide';
+            header('Location: /register-admin');
+            exit();
+        }
+
+        if ($password !== $passwordConfirm) {
+            $_SESSION['error'] = 'Les mots de passe ne correspondent pas';
+            header('Location: /register-admin');
+            exit();
+        }
+
+        if (strlen($password) < 8) {
+            $_SESSION['error'] = 'Le mot de passe doit contenir au moins 8 caractères';
+            header('Location: /register-admin');
+            exit();
+        }
+
+        $result = UserAdmin::register($email, $password, $nom, $prenom, $_SESSION['admin_id']);
+
+        if ($result) {
+            $_SESSION['success'] = 'Admin créé avec succès !';
+            header('Location: /dashboard-admin');
+        } else {
+            $_SESSION['error'] = 'Une erreur est survenue. L\'email est peut-être déjà utilisé.';
+            header('Location: /register-admin');
+        }
+        exit();
+    }
+
+    /**
+     * Demande de réinitialisation de mot de passe
+     */
+    public static function requestPasswordReset()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /forgot-password');
+            exit();
+        }
+
+        $email = trim($_POST['email'] ?? '');
+
+        if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $_SESSION['error'] = 'Veuillez entrer une adresse email valide';
+            header('Location: /forgot-password');
+            exit();
+        }
+
+        // Tenter les deux (admin et étudiant)
+        UserAdmin::resetPassword($email);
+        UserStudent::resetPassword($email);
+
+        // Message générique pour ne pas révéler si l'email existe
+        $_SESSION['success'] = 'Si cette adresse email existe, vous recevrez un lien de réinitialisation.';
+        header('Location: /login');
+        exit();
+    }
+
+    /**
+     * Déconnexion universelle
+     */
+    public static function logout()
+    {
+        $isAdmin = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
+        
+        if ($isAdmin) {
+            UserAdmin::logout();
+        } else {
+            UserStudent::logout();
+        }
+        
+        header('Location: /login');
+        exit();
+    }
+
+    /**
+     * Afficher la page de connexion
+     */
+    public static function showLoginPage()
+    {
+        // Récupérer les messages de session
         $message = '';
-        
-        $isLogin = ($page === 'login');
-        $isReset = ($page === 'reset');
-        $isTokenReset = isset($_GET['token']) && !empty($_GET['token']);
-        $token = $_GET['token'] ?? '';
-
-        // Traitement des formulaires POST
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $action = $_POST['action'] ?? '';
-        
-            switch ($action) {
-                case 'login':
-                    $email = $_POST['email'] ?? '';
-                    $password = $_POST['password'] ?? '';
-
-                    if (User::login($email, $password)) {
-                        header('Location: /dashboard');
-                        exit();
-                    } else {
-                        $message = "Email ou mot de passe incorrect.";
-                    }
-                    break;
-
-                case 'register':
-                    $nom = $_POST['nom'] ?? '';
-                    $prenom = $_POST['prenom'] ?? '';
-                    $email = $_POST['email'] ?? '';
-                    $password = $_POST['password'] ?? '';
-
-                    if (User::register($email, $password, $nom, $prenom)) {
-                        $message = "Compte créé avec succès ! Vous pouvez vous connecter.";
-                        $isLogin = true;
-                        $page = 'login';
-                    } else {
-                        $message = "Erreur lors de la création du compte. L'email existe peut-être déjà.";
-                    }
-                    break;
-
-                case 'reset':
-                    $email = $_POST['email'] ?? '';
-                    
-                    if (User::resetPassword($email)) {
-                        $message = "Si cet email existe, un lien de réinitialisation a été envoyé.";
-                    } else {
-                        $message = "Erreur lors de l'envoi du lien.";
-                    }
-                    break;
-
-                case 'token_reset':
-                    $token = $_POST['token'] ?? '';
-                    $newPassword = $_POST['new_password'] ?? '';
-                    
-                    if (User::updatePasswordWithToken($token, $newPassword)) {
-                        $message = "Mot de passe modifié avec succès ! Vous pouvez vous connecter.";
-                        $isLogin = true;
-                        $isReset = false;
-                        $isTokenReset = false;
-                        $page = 'Login';
-                    } else {
-                        $message = "Erreur : token invalide ou expiré.";
-                    }
-                    break;
-
-                default:
-                    $message = "Action non reconnue.";
-            }
+        if (isset($_SESSION['error'])) {
+            $message = $_SESSION['error'];
+            unset($_SESSION['error']);
+        } elseif (isset($_SESSION['success'])) {
+            $message = $_SESSION['success'];
+            unset($_SESSION['success']);
         }
-
-        require __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'View' . DIRECTORY_SEPARATOR . 'Login.php';
+        
+        // Utiliser le fichier Login.php qui instancie LoginPage
+        $isTokenReset = false;
+        $isLogin = true;
+        $isReset = false;
+        $token = '';
+        
+        require_once ROOT_PATH . '/public/module/site/View/Login.php';
     }
 
     /**
-     * Gère la page de réinitialisation avec token
+     * Afficher la page d'inscription étudiant
      */
-
-    private function handleResetPassword(): void
+    public static function showRegisterPage()
     {
-        // Vérifier si un token est présent
-        if (!isset($_GET['token'])) {
-            header('Location: /login');
-            exit;
-        }
-        
-        $token = $_GET['token'];
-        $error = null;
-        $success = null;
-        
-        // Si le formulaire est soumis
-        if (isset($_POST['submit_reset'])) {
-            $password = $_POST['password'] ?? '';
-            $passwordConfirm = $_POST['password_confirm'] ?? '';
-            $tokenPost = $_POST['token'] ?? '';
-            
-            // Validations
-            if (empty($password) || empty($passwordConfirm)) {
-                $error = "Tous les champs sont requis.";
-            } elseif ($password !== $passwordConfirm) {
-                $error = "Les mots de passe ne correspondent pas.";
-            } elseif (strlen($password) < 8) {
-                $error = "Le mot de passe doit contenir au moins 8 caractères.";
-            } elseif ($tokenPost !== $token) {
-                $error = "Token invalide.";
-            } else {
-                // Tenter de réinitialiser le mot de passe
-                $result = User::updatePasswordWithToken($token, $password);
-                
-                if ($result) {
-                    $success = "Votre mot de passe a été réinitialisé avec succès !";
-                } else {
-                    $error = "Le lien de réinitialisation est invalide ou expiré.";
-                }
-            }
-        }
-        
-        // Afficher la vue avec la classe
-        $page = new \View\ResetPasswordPage($token, $error, $success);
-        $page->render();
+        // TODO: Créer RegisterPage.php si nécessaire
+        echo "Page d'inscription étudiant - À implémenter";
     }
 
-    /**
-     * Gère la déconnexion de l'utilisateur
-     */
-    private function handleLogout(): void
-    {
-        // Détruire toutes les variables de session
-        $_SESSION = array();
-
-        // Si on veut détruire complètement la session, effacer aussi le cookie de session
-        if (ini_get("session.use_cookies")) {
-            $params = session_get_cookie_params();
-            setcookie(session_name(), '', time() - 42000,
-                $params["path"], $params["domain"],
-                $params["secure"], $params["httponly"]
-            );
-        }
-
-        // Finalement, détruire la session
-        session_destroy();
-
-        // Rediriger vers la page de connexion
-        header('Location: index.php?page=login');
-        exit;
-    }
-
-    public static function support(string $page, string $method): bool
-    {
-        return in_array($page, ['login', 'register', 'reset', 'logout']);
-    }
 }

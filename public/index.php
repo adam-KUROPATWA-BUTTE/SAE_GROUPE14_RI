@@ -1,4 +1,7 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
 session_start();
 
 define('ROOT_PATH', dirname(__DIR__));
@@ -20,20 +23,23 @@ $dotenv->load();
 // Enregistrement de l'autoloader personnalisé
 Autoloader::register();
 
+
 use Controllers\site\AuthController;
 use Controllers\site\DashboardController;
-use Controllers\site\FoldersController;
+use Controllers\site\FolderController\FoldersControllerAdmin;
+use Controllers\site\FolderController\FoldersControllerStudent;
 use Controllers\site\HelpController;
 use Controllers\site\IndexController;
 use Controllers\site\SaveStudentController;
 use Controllers\site\PartnersController;
 use Controllers\site\WebPlanController;
 
-// Liste des contrôleurs
+// Liste des contrôleurs - IMPORTANT: ordre de priorité
 $controllers = [
     new AuthController(),
+    new FoldersControllerAdmin(),
+    new FoldersControllerStudent(),
     new DashboardController(),
-    new FoldersController(),
     new HelpController(),
     new PartnersController(),
     new WebPlanController(),
