@@ -1,9 +1,7 @@
 <?php
-namespace Controllers\site\FolderController;
+namespace Controllers\FolderController;
 
-use Controllers\ControllerInterface;
-use Controllers\Auth_Guard;
-use Model\FolderAdmin;
+use Model\Folder\FolderAdmin as Folder;
 use View\Folder\FoldersPageAdmin;
 
 class FoldersControllerAdmin
@@ -15,10 +13,9 @@ class FoldersControllerAdmin
 
     public function control(): void
     {
-        // Vérifier que l'utilisateur est admin
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            header('Location: /login');
-            exit();
+        // Démarrer la session si nécessaire
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
         }
 
         // Si c'est une soumission de formulaire de création
@@ -33,26 +30,13 @@ class FoldersControllerAdmin
             return;
         }
 
-        // ✅ NOUVEAU - Si c'est une demande de marquage comme complet
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_GET['page'] ?? '') === 'mark_complete') {
-            $this->markAsComplete();
-            return;
-        }
-
-        //  NOUVEAU - Si c'est une demande de marquage comme incomplet
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_GET['page'] ?? '') === 'mark_incomplete') {
-            $this->markAsIncomplete();
-            return;
-        }
-
-
         // Récupérer l'action
         $action = $_GET['action'] ?? 'list';
 
         // Récupérer les données de l'étudiant si on visualise/édite
         $studentData = null;
-        if ($action === 'view' && !empty($_GET['numetu'])) {
-            $studentData = FolderAdmin::getStudentDetails($_GET['numetu']);
+        if ($action === 'view' && !empty($_GET['numetu'])) {  // ✅ Changé de NumEtu à numetu
+            $studentData = Folder::getStudentDetails($_GET['numetu']);
         }
 
         // Récupérer les filtres depuis l'URL
@@ -75,73 +59,9 @@ class FoldersControllerAdmin
         // Langue
         $lang = $_GET['lang'] ?? 'fr';
 
-        // Récupérer tous les dossiers
-        $dossiers = FolderAdmin::getAll();
-
-        require_once ROOT_PATH . '/public/module/site/View/Folder/FoldersPageAdmin.php';
-        $view = new \View\FoldersPageAdmin($action, $filters, $page, $perPage, $message, $lang, $dossiers, $studentData);
-        $view->render();       
-    }
-
-    // ✅ NOUVELLE MÉTHODE - Marquer un dossier comme complet
-    private function markAsComplete(): void
-    {
-        $lang = $_GET['lang'] ?? 'fr';
-        $numetu = $_POST['NumEtu'] ?? $_POST['numetu'] ?? '';
-
-        if (empty($numetu)) {
-            $_SESSION['message'] = $lang === 'fr'
-                ? 'Erreur : Numéro étudiant manquant'
-                : 'Error: Student ID missing';
-            header('Location: index.php?page=folders&lang=' . $lang);
-            exit;
-        }
-
-        // Marquer comme complet
-        $success = Folder::markAsComplete($numetu);
-
-        if ($success) {
-            $_SESSION['message'] = $lang === 'fr'
-                ? '✅ Dossier marqué comme complet'
-                : '✅ Folder marked as complete';
-        } else {
-            $_SESSION['message'] = $lang === 'fr'
-                ? '❌ Erreur lors du marquage du dossier'
-                : '❌ Error marking folder as complete';
-        }
-
-        header('Location: index.php?page=folders&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
-        exit;
-    }
-
-    private function markAsIncomplete(): void
-    {
-        $lang = $_GET['lang'] ?? 'fr';
-        $numetu = $_POST['NumEtu'] ?? $_POST['numetu'] ?? '';
-
-        if (empty($numetu)) {
-            $_SESSION['message'] = $lang === 'fr'
-                ? 'Erreur : Numéro étudiant manquant'
-                : 'Error: Student ID missing';
-            header('Location: index.php?page=folders&lang=' . $lang);
-            exit;
-        }
-
-        // Appeler le modèle
-        $success = Folder::markAsIncomplete($numetu);
-
-        if ($success) {
-            $_SESSION['message'] = $lang === 'fr'
-                ? '↺ Dossier remis en incomplet'
-                : '↺ Folder marked as incomplete';
-        } else {
-            $_SESSION['message'] = $lang === 'fr'
-                ? '❌ Erreur lors de la mise à jour du dossier'
-                : '❌ Error updating folder';
-        }
-
-        header('Location: index.php?page=folders&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
-        exit;
+        // Créer la vue et l'afficher
+        $view = new FoldersPageAdmin($action, $filters, $page, $perPage, $message, $lang, $studentData);
+        $view->render();
     }
 
     private function saveStudent(): void
@@ -195,30 +115,30 @@ class FoldersControllerAdmin
         if (!empty($errors)) {
             error_log("❌ VALIDATION ÉCHOUÉE - Redirection vers formulaire");
             $_SESSION['message'] = implode(', ', $errors);
-            header('Location: index.php?page=folders-admin&action=create&lang=' . $lang);
+            header('Location: index.php?page=folders&action=create&lang=' . $lang);
             exit;
         }
 
         error_log("✅ Validation OK - Vérification unicité...");
 
         // Vérifier si l'étudiant existe déjà
-        $existing = FolderAdmin::getByNumetu($data['numetu']);
+        $existing = Folder::getByNumetu($data['NumEtu']);
         if ($existing) {
             error_log("❌ NumEtu déjà existant - Redirection");
             $_SESSION['message'] = $lang === 'fr'
                 ? 'Un étudiant avec ce numéro existe déjà'
                 : 'A student with this ID already exists';
-            header('Location: index.php?page=folders-admin&action=create&lang=' . $lang);
+            header('Location: index.php?page=folders&action=create&lang=' . $lang);
             exit;
         }
 
-        $existingEmail = FolderAdmin::getByEmail($data['email']);
+        $existingEmail = Folder::getByEmail($data['EmailPersonnel']);
         if ($existingEmail) {
             error_log("❌ Email déjà existant - Redirection");
             $_SESSION['message'] = $lang === 'fr'
                 ? 'Un étudiant avec cet email existe déjà'
                 : 'A student with this email already exists';
-            header('Location: index.php?page=folders-admin&action=create&lang=' . $lang);
+            header('Location: index.php?page=folders&action=create&lang=' . $lang);
             exit;
         }
 
@@ -234,17 +154,9 @@ class FoldersControllerAdmin
         }
 
         // Créer le dossier
-        $success = FolderAdmin::creerDossier($data);
+        $success = Folder::creerDossier($data, $photoData, $cvData);
 
         if ($success) {
-            if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-                FolderAdmin::uploadPhoto($data['numetu'], $_FILES['photo']);
-            }
-
-            if (isset($_FILES['cv']) && $_FILES['cv']['error'] === UPLOAD_ERR_OK) {
-                FolderAdmin::uploadCV($data['numetu'], $_FILES['cv']);
-            }
-
             $_SESSION['message'] = $lang === 'fr'
                 ? 'Dossier créé avec succès'
                 : 'Folder created successfully';
@@ -257,7 +169,8 @@ class FoldersControllerAdmin
                 : 'Error creating folder';
         }
 
-        header('Location: index.php?page=folders-admin&lang=' . $lang);
+        error_log("Redirection finale vers: index.php?page=folders&lang=" . $lang);
+        header('Location: index.php?page=folders&lang=' . $lang);
         exit;
     }
 
@@ -304,7 +217,7 @@ class FoldersControllerAdmin
 
         if (!empty($errors)) {
             $_SESSION['message'] = implode(', ', $errors);
-            header('Location: index.php?page=folders-admin&action=view&numetu=' . urlencode($data['numetu']) . '&lang=' . $lang);
+            header('Location: index.php?page=folders&action=view&NumEtu=' . urlencode($data['NumEtu']) . '&lang=' . $lang);
             exit;
         }
 
@@ -320,17 +233,9 @@ class FoldersControllerAdmin
         }
 
         // Mettre à jour le dossier
-        $success = FolderAdmin::updateStudent($data);
+        $success = Folder::updateDossier($data, $photoData, $cvData);
 
         if ($success) {
-            if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-                FolderAdmin::uploadPhoto($data['numetu'], $_FILES['photo']);
-            }
-
-            if (isset($_FILES['cv']) && $_FILES['cv']['error'] === UPLOAD_ERR_OK) {
-                FolderAdmin::uploadCV($data['numetu'], $_FILES['cv']);
-            }
-
             $_SESSION['message'] = $lang === 'fr'
                 ? 'Dossier modifié avec succès'
                 : 'Folder updated successfully';
@@ -340,7 +245,7 @@ class FoldersControllerAdmin
                 : 'Error updating folder';
         }
 
-        header('Location: index.php?page=folders-admin&lang=' . $lang);
+        header('Location: index.php?page=folders&lang=' . $lang);
         exit;
     }
 }

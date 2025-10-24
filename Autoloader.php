@@ -8,6 +8,9 @@ class Autoloader
         'Model\\' => __DIR__ . '/public/module/site/Model/',
         'Config\\' => __DIR__ . '/public/module/site/config/',
         'View\\' => __DIR__ . '/public/module/site/View/',
+        'Model\\Folder\\' => __DIR__ . '/public/module/site/Model/Folder/',
+        'View\\Folder\\' => __DIR__ . '/public/module/site/View/Folder/',
+        'Controllers\\FolderController\\' => __DIR__ . '/public/module/site/Controllers/FolderController/',
     ];
 
     public static function register(): void

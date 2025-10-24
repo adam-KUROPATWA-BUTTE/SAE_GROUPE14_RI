@@ -1,10 +1,13 @@
 <?php
-namespace Model;
+namespace Model\Folder;
+
+use Model\Folder\FolderAdmin;
 
 class FolderAdmin
 {
     private static function getConnection(): \PDO
     {
+        // Utiliser la classe Database pour la connexion
         return \Database::getInstance()->getConnection();
     }
 
@@ -412,50 +415,6 @@ class FolderAdmin
             ]);
         } catch (\PDOException $e) {
             error_log("Erreur mise à jour pièce justificative ($type) : " . $e->getMessage());
-            return false;
-        }
-    }
-    // Marquer un dossier comme complet (IsComplete = 1)
-    public static function markAsComplete(string $numetu): bool
-    {
-        $pdo = self::getConnection();
-
-        // Vérifier si l'étudiant existe
-        $existing = self::getByNumetu($numetu);
-        if (!$existing) {
-            error_log("Étudiant non trouvé pour NumEtu: $numetu");
-            return false; // ou lever une exception
-        }
-
-        try {
-            $stmt = $pdo->prepare("
-                UPDATE dossiers 
-                SET IsComplete = 1
-                WHERE NumEtu = :numetu
-            ");
-            return $stmt->execute([':numetu' => $numetu]);
-        } catch (\PDOException $e) {
-            error_log("Erreur marquage dossier complet : " . $e->getMessage());
-            return false;
-        }
-    }
-
-
-
-    // ✅ BONUS - Marquer un dossier comme incomplet (si besoin de revenir en arrière)
-    public static function markAsIncomplete(string $numetu): bool
-    {
-        $pdo = self::getConnection();
-
-        try {
-            $stmt = $pdo->prepare("
-                UPDATE dossiers 
-                SET IsComplete = 0
-                WHERE NumEtu = :numetu
-            ");
-            return $stmt->execute([':numetu' => $numetu]);
-        } catch (\PDOException $e) {
-            error_log("Erreur marquage dossier incomplet : " . $e->getMessage());
             return false;
         }
     }
