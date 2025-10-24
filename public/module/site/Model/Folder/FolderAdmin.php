@@ -1,7 +1,7 @@
 <?php
 namespace Model;
 
-class Folder
+class FolderAdmin
 {
     private static function getConnection(): \PDO
     {
@@ -302,7 +302,7 @@ class Folder
                 WHERE numetu = :numetu
             ");
             return $stmt->execute([':numetu' => $numetu]);
-        } catch (\PDOException $e) {
+        } catch (\PDOException $e) { 
             error_log("Erreur mise à jour connexion : " . $e->getMessage());
             return false;
         }

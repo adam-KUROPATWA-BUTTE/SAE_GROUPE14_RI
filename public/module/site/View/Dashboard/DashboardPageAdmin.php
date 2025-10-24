@@ -1,7 +1,7 @@
 <?php
 namespace View;
 
-class DashboardPage
+class DashboardPageAdmin
 {
     private array $dossiers;
     private string $lang;

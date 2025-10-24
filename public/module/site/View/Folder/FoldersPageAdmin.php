@@ -2,7 +2,7 @@
 namespace View;
 use Model\Folder;
 
-class FoldersPage
+class FoldersPageAdmin
 {
     private string $action;
     private array $filters;
@@ -524,4 +524,3 @@ class FoldersPage
                 || !empty($this->filters['search']);
     }
 }
-

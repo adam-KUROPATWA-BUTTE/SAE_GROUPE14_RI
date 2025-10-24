@@ -59,18 +59,6 @@ class AuthController implements ControllerInterface
             case 'logout':
                 self::logout();
                 break;
-                
-            case 'forgot-password':
-                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                    self::requestPasswordReset();
-                } else {
-                    self::showForgotPasswordPage();
-                }
-                break;
-                
-            case 'reset-password':
-                self::resetPassword();
-                break;
         }
     }
 
@@ -262,61 +250,6 @@ class AuthController implements ControllerInterface
     }
 
     /**
-     * Réinitialisation du mot de passe avec token
-     */
-    public static function resetPassword()
-    {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            // Afficher le formulaire
-            $token = $_GET['token'] ?? '';
-            if (empty($token)) {
-                header('Location: /login');
-                exit();
-            }
-            require_once ROOT_PATH . '/public/module/site/View/ResetPasswordPage.php';
-            return;
-        }
-
-        $token = $_POST['token'] ?? '';
-        $password = $_POST['password'] ?? '';
-        $passwordConfirm = $_POST['password_confirm'] ?? '';
-
-        if (empty($token) || empty($password)) {
-            $_SESSION['error'] = 'Données manquantes';
-            header('Location: /login');
-            exit();
-        }
-
-        if ($password !== $passwordConfirm) {
-            $_SESSION['error'] = 'Les mots de passe ne correspondent pas';
-            header('Location: /reset-password?token=' . urlencode($token));
-            exit();
-        }
-
-        if (strlen($password) < 8) {
-            $_SESSION['error'] = 'Le mot de passe doit contenir au moins 8 caractères';
-            header('Location: /reset-password?token=' . urlencode($token));
-            exit();
-        }
-
-        // Tenter admin puis étudiant
-        $result = UserAdmin::updatePasswordWithToken($token, $password);
-        
-        if (!$result) {
-            $result = UserStudent::updatePasswordWithToken($token, $password);
-        }
-
-        if ($result) {
-            $_SESSION['success'] = 'Mot de passe réinitialisé avec succès !';
-            header('Location: /login');
-        } else {
-            $_SESSION['error'] = 'Le lien de réinitialisation est invalide ou a expiré';
-            header('Location: /login');
-        }
-        exit();
-    }
-
-    /**
      * Déconnexion universelle
      */
     public static function logout()
@@ -366,12 +299,4 @@ class AuthController implements ControllerInterface
         echo "Page d'inscription étudiant - À implémenter";
     }
 
-    /**
-     * Afficher la page de demande de réinitialisation
-     */
-    public static function showForgotPasswordPage()
-    {
-        // TODO: Créer ForgotPasswordPage.php si nécessaire
-        echo "Page mot de passe oublié - À implémenter";
-    }
 }
