@@ -496,12 +496,12 @@ class FoldersPageAdmin
                 </button>
 
                 <!-- Bouton Annuler -->
-                <button type="button" id="btn-annuler" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders']) ?>'" style="display: none;">
+                <button type="button" id="btn-annuler" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'" style="display: none;">
                     <?= $this->t(['fr'=>'Annuler','en'=>'Cancel']) ?>
                 </button>
 
                 <!-- Bouton Retour -->
-                <button type="button" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders']) ?>'">
+                <button type="button" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'">
                     <?= $this->t(['fr'=>'Retour','en'=>'Back']) ?>
                 </button>
             </div>
