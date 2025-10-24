@@ -1,9 +1,11 @@
 <?php
 namespace Controllers\site;
 
+use Controllers\ControllerInterface;
 use Model\Folder\FolderAdmin;
 use Model\Folder\FolderStudent;
-use Controllers\ControllerInterface;
+use View\Dashboard\DashboardPageAdmin;
+use View\Dashboard\DashboardPageStudent;
 
 class DashboardController implements ControllerInterface
 {
@@ -14,60 +16,55 @@ class DashboardController implements ControllerInterface
 
     public function control(): void
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         $page = $_GET['page'] ?? trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
-        
+
         if ($page === 'dashboard-admin') {
             $this->showAdminDashboard();
         } elseif ($page === 'dashboard-student') {
             $this->showStudentDashboard();
+        } else {
+            http_response_code(404);
+            echo "Page not found";
         }
     }
 
     private function showAdminDashboard(): void
     {
-        // Vérifier que l'utilisateur est admin
+        // ✅ Vérifie la session admin
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
             header('Location: /login');
-            exit();
+            exit;
         }
 
-        if (!isset($_SESSION['admin_id'])) {
-            header('Location: /login');
-            exit();
-        }
-
-        // Récupérer la langue
         $lang = $_GET['lang'] ?? 'fr';
 
-        $dossiers = FolderAdmin::getDossiersIncomplets() ?? [];
+        // ✅ Récupération des dossiers incomplets
+        $dossiers = FolderAdmin::getDossiersIncomplets();
 
-        // Charger et afficher la vue
-        require_once ROOT_PATH . '/public/module/site/View/Dashboard/DashboardPageAdmin.php';
-        $dashboardPage = new \View\DashboardPageAdmin($dossiers, $lang);
-        $dashboardPage->render();
+        // ✅ Affiche la vue admin
+        $page = new DashboardPageAdmin($dossiers, $lang);
+        $page->render();
     }
 
     private function showStudentDashboard(): void
     {
-        // Vérifier que l'utilisateur est étudiant
+        // ✅ Vérifie la session étudiant
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'etudiant') {
             header('Location: /login');
-            exit();
-        }
-
-        if (!isset($_SESSION['etudiant_id'])) {
-            header('Location: /login');
-            exit();
+            exit;
         }
 
         $lang = $_GET['lang'] ?? 'fr';
 
-        // Utiliser le nom de classe complet avec namespace
-        $dossier = FolderStudent::getDossierByEtudiantId($_SESSION['etudiant_id']);
+        // ✅ Récupération du dossier étudiant
+        $dossier = FolderStudent::getDossierByEtudiantId($_SESSION['etudiant_id'] ?? 0);
 
-        // Charger et afficher la vue
-        require_once ROOT_PATH . '/public/module/site/View/Dashboard/DashboardPageStudent.php';
-        $dashboardPage = new \View\DashboardPageStudent($dossier, $lang);
-        $dashboardPage->render();
+        // ✅ Affiche la vue étudiant
+        $page = new DashboardPageStudent($dossier, $lang);
+        $page->render();
     }
 }
