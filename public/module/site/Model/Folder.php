@@ -5,9 +5,11 @@ class Folder
 {
     private static function getConnection(): \PDO
     {
+        // Utiliser la classe Database pour la connexion
         return \Database::getInstance()->getConnection();
     }
 
+    // Récupérer tous les dossiers (équivalent de getAll)
     public static function getAll()
     {
         $pdo = self::getConnection();
@@ -15,31 +17,34 @@ class Folder
         try {
             $stmt = $pdo->query("
                 SELECT 
-                    NumEtu as numetu,
-                    Nom as nom,
-                    Prenom as prenom,
+                    NumEtu,
+                    Nom,
+                    Prenom,
                     EmailPersonnel as email,
-                    Telephone as telephone,
-                    Type as type,
-                    Zone as zone,
-                    NULL as stage,
-                    NULL as etude,
-                    NULL as photo,
-                    NULL as cv,
-                    0 as total_pieces,
-                    0 as pieces_fournies,
-                    0 as date_derniere_relance
-                FROM dossiers 
+                    Telephone,
+                    Type,
+                    Zone,
+                    DateNaissance,
+                    Sexe,
+                    Adresse,
+                    CodePostal,
+                    Ville,
+                    EmailAMU,
+                    CodeDepartement,
+                    IsComplete,
+                    PiecesJustificatives
+                FROM dossiers
                 ORDER BY Nom, Prenom
             ");
 
             return $stmt->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
-            error_log("Erreur récupération étudiants : " . $e->getMessage());
+            error_log("Erreur récupération dossiers : " . $e->getMessage());
             return [];
         }
     }
 
+    // Récupérer dossiers incomplets (IsComplete = 0 ou NULL)
     public static function getDossiersIncomplets()
     {
         $pdo = self::getConnection();
@@ -47,22 +52,24 @@ class Folder
         try {
             $stmt = $pdo->query("
                 SELECT 
-                    NumEtu as numetu,
-                    Nom as nom,
-                    Prenom as prenom,
+                    NumEtu,
+                    Nom,
+                    Prenom,
                     EmailPersonnel as email,
-                    Telephone as telephone,
-                    Type as type,
-                    Zone as zone,
-                    NULL as stage,
-                    NULL as etude,
-                    NULL as photo,
-                    NULL as cv,
-                    0 as total_pieces,
-                    0 as pieces_fournies,
-                    NULL as date_derniere_relance
-                FROM dossiers 
-                WHERE IsComplete = 0
+                    Telephone,
+                    Type,
+                    Zone,
+                    DateNaissance,
+                    Sexe,
+                    Adresse,
+                    CodePostal,
+                    Ville,
+                    EmailAMU,
+                    CodeDepartement,
+                    IsComplete,
+                    PiecesJustificatives
+                FROM dossiers
+                WHERE IsComplete = 0 OR IsComplete IS NULL
                 ORDER BY Nom, Prenom
             ");
 
@@ -73,7 +80,8 @@ class Folder
         }
     }
 
-    public static function creerDossier($data)
+    // Créer un nouveau dossier dans la table dossiers
+    public static function creerDossier($data, $photoData = null, $cvData = null)
     {
         $pdo = self::getConnection();
 
@@ -95,38 +103,52 @@ class Folder
 
             $stmt = $pdo->prepare("
                 INSERT INTO dossiers (
-                    NumEtu, Nom, Prenom, EmailPersonnel, Telephone, 
-                    Type, Zone, IsComplete, DateNaissance, Sexe, 
-                    Adresse, CodePostal, Ville, EmailAMU, CodeDepartement
+                    NumEtu, Nom, Prenom, DateNaissance, Sexe, Adresse, CodePostal, Ville,
+                    EmailPersonnel, EmailAMU, Telephone, CodeDepartement, Type, Zone,
+                    IsComplete, PiecesJustificatives
                 ) VALUES (
-                    :numetu, :nom, :prenom, :email, :telephone,
-                    :type, :zone, 0, :naissance, :sexe,
-                    :adresse, :cp, :ville, :email_amu, :departement
+                    :NumEtu, :Nom, :Prenom, :DateNaissance, :Sexe, :Adresse, :CodePostal, :Ville,
+                    :EmailPersonnel, :EmailAMU, :Telephone, :CodeDepartement, :Type, :Zone,
+                    0, :PiecesJustificatives
                 )
             ");
 
-            return $stmt->execute([
-                ':numetu' => $data['numetu'],
-                ':nom' => $data['nom'],
-                ':prenom' => $data['prenom'],
-                ':email' => $data['email'],
-                ':telephone' => $data['telephone'],
-                ':type' => $data['type'],
-                ':zone' => $data['zone'],
-                ':naissance' => $data['naissance'],
-                ':sexe' => $data['sexe'],
-                ':adresse' => $data['adresse'],
-                ':cp' => $data['cp'],
-                ':ville' => $data['ville'],
-                ':email_amu' => $data['email_amu'],
-                ':departement' => $data['departement']
+            // Préparer les pièces justificatives en JSON
+            $pieces = [];
+            if ($photoData !== null) {
+                $pieces['photo'] = base64_encode($photoData);
+            }
+            if ($cvData !== null) {
+                $pieces['cv'] = base64_encode($cvData);
+            }
+            $piecesJson = json_encode($pieces);
+
+            $result = $stmt->execute([
+                ':NumEtu' => $data['NumEtu'],
+                ':Nom' => $data['Nom'],
+                ':Prenom' => $data['Prenom'],
+                ':DateNaissance' => $data['DateNaissance'],
+                ':Sexe' => $data['Sexe'],
+                ':Adresse' => $data['Adresse'],
+                ':CodePostal' => $data['CodePostal'],
+                ':Ville' => $data['Ville'],
+                ':EmailPersonnel' => $data['EmailPersonnel'],
+                ':EmailAMU' => $data['EmailAMU'],
+                ':Telephone' => $data['Telephone'],
+                ':CodeDepartement' => $data['CodeDepartement'],
+                ':Type' => $data['Type'],
+                ':Zone' => $data['Zone'],
+                ':PiecesJustificatives' => $piecesJson
             ]);
+
+            return $result;
         } catch (\PDOException $e) {
             error_log("Erreur création dossier : " . $e->getMessage());
             return false;
         }
     }
 
+    // Récupérer un dossier par email
     public static function getByEmail(string $email)
     {
         $pdo = self::getConnection();
@@ -134,12 +156,22 @@ class Folder
         try {
             $stmt = $pdo->prepare("
                 SELECT 
-                    NumEtu as numetu,
-                    Nom as nom,
-                    Prenom as prenom,
+                    NumEtu,
+                    Nom,
+                    Prenom,
                     EmailPersonnel as email,
-                    Telephone as telephone,
-                    Type as type
+                    Telephone,
+                    Type,
+                    Zone,
+                    DateNaissance,
+                    Sexe,
+                    Adresse,
+                    CodePostal,
+                    Ville,
+                    EmailAMU,
+                    CodeDepartement,
+                    IsComplete,
+                    PiecesJustificatives
                 FROM dossiers 
                 WHERE EmailPersonnel = :email 
                 LIMIT 1
@@ -147,11 +179,12 @@ class Folder
             $stmt->execute([':email' => $email]);
             return $stmt->fetch(\PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
-            error_log("Erreur récupération étudiant : " . $e->getMessage());
+            error_log("Erreur récupération dossier par email : " . $e->getMessage());
             return null;
         }
     }
 
+    // Récupérer un dossier par NumEtu
     public static function getByNumetu(string $numetu)
     {
         $pdo = self::getConnection();
@@ -159,12 +192,22 @@ class Folder
         try {
             $stmt = $pdo->prepare("
                 SELECT 
-                    NumEtu as numetu,
-                    Nom as nom,
-                    Prenom as prenom,
+                    NumEtu,
+                    Nom,
+                    Prenom,
                     EmailPersonnel as email,
-                    Telephone as telephone,
-                    Type as type
+                    Telephone,
+                    Type,
+                    Zone,
+                    DateNaissance,
+                    Sexe,
+                    Adresse,
+                    CodePostal,
+                    Ville,
+                    EmailAMU,
+                    CodeDepartement,
+                    IsComplete,
+                    PiecesJustificatives
                 FROM dossiers 
                 WHERE NumEtu = :numetu 
                 LIMIT 1
@@ -172,11 +215,12 @@ class Folder
             $stmt->execute([':numetu' => $numetu]);
             return $stmt->fetch(\PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
-            error_log("Erreur récupération étudiant : " . $e->getMessage());
+            error_log("Erreur récupération dossier par NumEtu : " . $e->getMessage());
             return null;
         }
     }
 
+    // Récupérer les détails complets d'un étudiant avec décodage des pièces
     public static function getStudentDetails(string $numetu)
     {
         $pdo = self::getConnection();
@@ -184,98 +228,130 @@ class Folder
         try {
             $stmt = $pdo->prepare("
                 SELECT 
-                    NumEtu as numetu,
-                    Nom as nom,
-                    Prenom as prenom,
-                    EmailPersonnel as email,
-                    Telephone as telephone,
-                    Type as type,
-                    Zone as zone,
-                    DateNaissance as naissance,
-                    Sexe as sexe,
-                    Adresse as adresse,
-                    CodePostal as cp,
-                    Ville as ville,
-                    EmailPersonnel as email_perso,
-                    EmailAMU as email_amu,
-                    CodeDepartement as departement,
-                    NULL as mobilite_type,
-                    NULL as photo,
-                    NULL as cv
+                    NumEtu,
+                    Nom,
+                    Prenom,
+                    DateNaissance,
+                    Sexe,
+                    Adresse,
+                    CodePostal,
+                    Ville,
+                    EmailPersonnel,
+                    EmailAMU,
+                    Telephone,
+                    CodeDepartement,
+                    Type,
+                    Zone,
+                    IsComplete,
+                    PiecesJustificatives
                 FROM dossiers 
                 WHERE NumEtu = :numetu 
                 LIMIT 1
             ");
             $stmt->execute([':numetu' => $numetu]);
-            return $stmt->fetch(\PDO::FETCH_ASSOC);
+            $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            if ($result) {
+                // Décoder les pièces justificatives JSON
+                if (!empty($result['PiecesJustificatives'])) {
+                    $result['pieces'] = json_decode($result['PiecesJustificatives'], true) ?? [];
+                } else {
+                    $result['pieces'] = [];
+                }
+            }
+            
+            return $result;
         } catch (\PDOException $e) {
             error_log("Erreur récupération détails étudiant : " . $e->getMessage());
             return null;
         }
     }
-
-    public static function updateStudent($data)
+    // Mettre à jour un dossier
+    public static function updateDossier($data, $photoData = null, $cvData = null)
     {
         $pdo = self::getConnection();
 
         try {
-            // Convertir les chaînes vides en NULL
-            foreach ($data as $key => $value) {
-                if ($value === '') {
-                    $data[$key] = null;
-                }
+            // Récupérer l'ancien PiecesJustificatives
+            $existing = self::getByNumetu($data['NumEtu']);
+            $oldPieces = [];
+            if ($existing && !empty($existing['PiecesJustificatives'])) {
+                $oldPieces = json_decode($existing['PiecesJustificatives'], true) ?? [];
             }
 
-            // Gérer spécifiquement DateNaissance qui doit être NULL ou DATE valide
-            if (!empty($data['naissance'])) {
-                $date = \DateTime::createFromFormat('Y-m-d', $data['naissance']);
-                if (!$date || $date->format('Y-m-d') !== $data['naissance']) {
-                    $data['naissance'] = null;
-                }
+            if ($photoData !== null) {
+                $oldPieces['photo'] = base64_encode($photoData);
             }
+            if ($cvData !== null) {
+                $oldPieces['cv'] = base64_encode($cvData);
+            }
+            $piecesJson = json_encode($oldPieces);
 
             $stmt = $pdo->prepare("
-                UPDATE dossiers 
+                UPDATE dossiers
                 SET 
-                    Nom = :nom,
-                    Prenom = :prenom,
-                    EmailPersonnel = :email,
-                    Telephone = :telephone,
-                    Type = :type,
-                    Zone = :zone,
-                    DateNaissance = :naissance,
-                    Sexe = :sexe,
-                    Adresse = :adresse,
-                    CodePostal = :cp,
-                    Ville = :ville,
-                    EmailAMU = :email_amu,
-                    CodeDepartement = :departement
-                WHERE NumEtu = :numetu
+                    Nom = :Nom,
+                    Prenom = :Prenom,
+                    DateNaissance = :DateNaissance,
+                    Sexe = :Sexe,
+                    Adresse = :Adresse,
+                    CodePostal = :CodePostal,
+                    Ville = :Ville,
+                    EmailPersonnel = :EmailPersonnel,
+                    EmailAMU = :EmailAMU,
+                    Telephone = :Telephone,
+                    CodeDepartement = :CodeDepartement,
+                    Type = :Type,
+                    Zone = :Zone,
+                    PiecesJustificatives = :PiecesJustificatives
+                WHERE NumEtu = :NumEtu
             ");
 
             return $stmt->execute([
-                ':numetu' => $data['numetu'],
-                ':nom' => $data['nom'],
-                ':prenom' => $data['prenom'],
-                ':email' => $data['email'],
-                ':telephone' => $data['telephone'],
-                ':type' => $data['type'],
-                ':zone' => $data['zone'],
-                ':naissance' => $data['naissance'],
-                ':sexe' => $data['sexe'],
-                ':adresse' => $data['adresse'],
-                ':cp' => $data['cp'],
-                ':ville' => $data['ville'],
-                ':email_amu' => $data['email_amu'],
-                ':departement' => $data['departement']
+                ':NumEtu' => $data['NumEtu'],
+                ':Nom' => $data['Nom'],
+                ':Prenom' => $data['Prenom'],
+                ':DateNaissance' => $data['DateNaissance'],
+                ':Sexe' => $data['Sexe'],
+                ':Adresse' => $data['Adresse'],
+                ':CodePostal' => $data['CodePostal'],
+                ':Ville' => $data['Ville'],
+                ':EmailPersonnel' => $data['EmailPersonnel'],
+                ':EmailAMU' => $data['EmailAMU'],
+                ':Telephone' => $data['Telephone'],
+                ':CodeDepartement' => $data['CodeDepartement'],
+                ':Type' => $data['Type'],
+                ':Zone' => $data['Zone'],
+                ':PiecesJustificatives' => $piecesJson
             ]);
         } catch (\PDOException $e) {
-            error_log("Erreur mise à jour étudiant : " . $e->getMessage());
+            error_log("Erreur mise à jour dossier : " . $e->getMessage());
             return false;
         }
     }
 
-    public static function valider($numetu, $adminId)
+    // Supprimer un dossier par NumEtu
+    public static function supprimerDossier($numetu)
+    {
+        $pdo = self::getConnection();
+
+        try {
+            $stmt = $pdo->prepare("DELETE FROM dossiers WHERE NumEtu = :numetu");
+            return $stmt->execute([':numetu' => $numetu]);
+        } catch (\PDOException $e) {
+            error_log("Erreur suppression dossier : " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // Ajouter une relance (vide ici, à compléter selon besoin)
+    public static function ajouterRelance($dossierId, $message, $adminId)
+    {
+        return true;
+    }
+
+    // Valider un dossier (par exemple changer IsComplete à 1)
+    public static function valider($numetu, $adminId = null)
     {
         $pdo = self::getConnection();
 
@@ -292,58 +368,52 @@ class Folder
         }
     }
 
-    public static function ajouterRelance($dossierId, $message, $adminId)
-    {
-        return true;
-    }
-
-    public static function ajouterEtudiant($numetu, $nom, $prenom, $email, $telephone)
-    {
-        $pdo = self::getConnection();
-
-        try {
-            $stmt = $pdo->prepare("
-                INSERT INTO dossiers (NumEtu, Nom, Prenom, EmailPersonnel, Telephone)
-                VALUES (:numetu, :nom, :prenom, :email, :telephone)
-            ");
-
-            return $stmt->execute([
-                ':numetu' => $numetu,
-                ':nom' => $nom,
-                ':prenom' => $prenom,
-                ':email' => $email,
-                ':telephone' => $telephone
-            ]);
-        } catch (\PDOException $e) {
-            error_log("Erreur ajout étudiant : " . $e->getMessage());
-            return false;
-        }
-    }
-
-    public static function supprimerDossier($numetu)
-    {
-        $pdo = self::getConnection();
-
-        try {
-            $stmt = $pdo->prepare("DELETE FROM dossiers WHERE NumEtu = :numetu");
-            return $stmt->execute([':numetu' => $numetu]);
-        } catch (\PDOException $e) {
-            error_log("Erreur suppression dossier : " . $e->getMessage());
-            return false;
-        }
-    }
-
+    // Upload photo (met à jour PiecesJustificatives)
     public static function uploadPhoto($numetu, $file)
     {
-        // À implémenter selon vos besoins
-        return true;
+        if (!file_exists($file['tmp_name'])) {
+            return false;
+        }
+        $photoData = file_get_contents($file['tmp_name']);
+        return self::updatePieceJustificative($numetu, 'photo', $photoData);
     }
 
+    // Upload CV (met à jour PiecesJustificatives)
     public static function uploadCV($numetu, $file)
     {
-        // À implémenter selon vos besoins
-        return true;
+        if (!file_exists($file['tmp_name'])) {
+            return false;
+        }
+        $cvData = file_get_contents($file['tmp_name']);
+        return self::updatePieceJustificative($numetu, 'cv', $cvData);
     }
 
+    // Méthode privée pour mettre à jour une pièce justificative dans PiecesJustificatives JSON
+    private static function updatePieceJustificative(string $numetu, string $type, string $data)
+    {
+        $pdo = self::getConnection();
 
+        try {
+            $existing = self::getByNumetu($numetu);
+            $pieces = [];
+            if ($existing && !empty($existing['PiecesJustificatives'])) {
+                $pieces = json_decode($existing['PiecesJustificatives'], true) ?? [];
+            }
+            $pieces[$type] = base64_encode($data);
+            $piecesJson = json_encode($pieces);
+
+            $stmt = $pdo->prepare("
+                UPDATE dossiers
+                SET PiecesJustificatives = :pieces
+                WHERE NumEtu = :numetu
+            ");
+            return $stmt->execute([
+                ':pieces' => $piecesJson,
+                ':numetu' => $numetu
+            ]);
+        } catch (\PDOException $e) {
+            error_log("Erreur mise à jour pièce justificative ($type) : " . $e->getMessage());
+            return false;
+        }
+    }
 }
