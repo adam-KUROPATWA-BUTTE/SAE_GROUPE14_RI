@@ -319,7 +319,7 @@ class FoldersPageAdmin
             </div>
             <div class="form-actions">
                 <button type="submit" class="btn-secondary"><?= $this->t(['fr'=>'Enregistrer','en'=>'Save']) ?></button>
-                <button type="button" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders']) ?>'">
+                <button type="button" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'">
                     <?= $this->t(['fr'=>'Annuler','en'=>'Cancel']) ?>
                 </button>
             </div>
@@ -339,7 +339,7 @@ class FoldersPageAdmin
         ?>
         <h1><?= $this->t(['fr'=>'Dossier étudiant','en'=>'Student Folder']) ?></h1>
         <div class="form-back-button">
-            <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders']) ?>'" class="btn-secondary">
+            <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'" class="btn-secondary">
                 ← <?= $this->t(['fr'=>'Retour à la liste','en'=>'Back to List']) ?>
             </button>
         </div>
