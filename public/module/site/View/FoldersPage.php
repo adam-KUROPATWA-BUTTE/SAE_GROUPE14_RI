@@ -372,7 +372,7 @@ class FoldersPage
         <?php
     }
 
-    // ✅ NOUVELLE MÉTHODE - Afficher le formulaire de visualisation/modification
+// ✅ MÉTHODE CORRIGÉE - Afficher le formulaire de visualisation/modification
     private function renderViewForm(): void
     {
         if (!$this->studentData) {
@@ -389,7 +389,9 @@ class FoldersPage
         <form method="post" action="index.php?page=update_student&lang=<?= htmlspecialchars($this->lang) ?>" enctype="multipart/form-data" class="creation-form">
             <div class="form-section">
                 <label for="numetu"><?= $this->t(['fr'=>'NumÉtu *','en'=>'Student ID *']) ?></label>
-                <input type="text" name="numetu" id="numetu" value="<?= htmlspecialchars($this->studentData['numetu'] ?? '') ?>" disabled style="background-color: #e0e0e0; color: #666;">
+                <!-- ✅ CORRECTION : Utiliser readonly au lieu de disabled + champ caché -->
+                <input type="text" id="numetu_display" value="<?= htmlspecialchars($this->studentData['numetu'] ?? '') ?>" readonly style="background-color: #e0e0e0; color: #666;">
+                <input type="hidden" name="numetu" value="<?= htmlspecialchars($this->studentData['numetu'] ?? '') ?>">
 
                 <label for="nom"><?= $this->t(['fr'=>'Nom *','en'=>'Last Name *']) ?></label>
                 <input type="text" name="nom" id="nom" value="<?= htmlspecialchars($this->studentData['nom'] ?? '') ?>" disabled style="background-color: #e0e0e0; color: #666;" required>
@@ -464,22 +466,18 @@ class FoldersPage
                 <input type="file" name="lettre_motivation" accept=".pdf,.doc,.docx" disabled style="background-color: #e0e0e0; color: #666;">
             </div>
             <div class="form-actions">
-                <!-- ✅ Bouton Modifier (rouge, affiché par défaut) -->
                 <button type="button" id="btn-modifier" class="btn-danger" onclick="activerModification()">
                     <?= $this->t(['fr'=>'Modifier','en'=>'Edit']) ?>
                 </button>
 
-                <!-- ✅ Bouton Enregistrer (caché par défaut) -->
                 <button type="submit" id="btn-enregistrer" class="btn-secondary" style="display: none;">
                     <?= $this->t(['fr'=>'Enregistrer','en'=>'Save']) ?>
                 </button>
 
-                <!-- ✅ Bouton Annuler -->
                 <button type="button" id="btn-annuler" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders']) ?>'" style="display: none;">
                     <?= $this->t(['fr'=>'Annuler','en'=>'Cancel']) ?>
                 </button>
 
-                <!-- ✅ Bouton Retour (affiché par défaut) -->
                 <button type="button" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders']) ?>'">
                     <?= $this->t(['fr'=>'Retour','en'=>'Back']) ?>
                 </button>

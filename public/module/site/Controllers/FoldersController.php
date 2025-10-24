@@ -68,6 +68,11 @@ class FoldersController
     {
         $lang = $_GET['lang'] ?? 'fr';
 
+        // ✅ DEBUG TEMPORAIRE
+        error_log("=== DÉBUT CRÉATION ÉTUDIANT ===");
+        error_log("POST reçu: " . print_r($_POST, true));
+        error_log("FILES reçu: " . print_r($_FILES, true));
+
         // Préparer les données de l'étudiant
         $data = [
             'numetu' => $_POST['numetu'] ?? '',
@@ -75,9 +80,18 @@ class FoldersController
             'prenom' => $_POST['prenom'] ?? '',
             'email' => $_POST['email_perso'] ?? '',
             'telephone' => $_POST['telephone'] ?? '',
-            'type' => $_POST['type'] ?? null,
-            'password' => 'default123'
+            'type' => !empty($_POST['type']) ? $_POST['type'] : null,
+            'zone' => !empty($_POST['zone']) ? $_POST['zone'] : null,
+            'naissance' => !empty($_POST['naissance']) ? $_POST['naissance'] : null,
+            'sexe' => !empty($_POST['sexe']) ? $_POST['sexe'] : null,
+            'adresse' => !empty($_POST['adresse']) ? $_POST['adresse'] : null,
+            'cp' => !empty($_POST['cp']) ? $_POST['cp'] : null,
+            'ville' => !empty($_POST['ville']) ? $_POST['ville'] : null,
+            'email_amu' => !empty($_POST['email_amu']) ? $_POST['email_amu'] : null,
+            'departement' => !empty($_POST['departement']) ? $_POST['departement'] : null
         ];
+
+        error_log("Données préparées: " . print_r($data, true));
 
         // Validation basique
         $errors = [];
@@ -96,16 +110,30 @@ class FoldersController
         if (empty($data['telephone'])) {
             $errors[] = $lang === 'fr' ? 'Le téléphone est requis' : 'Phone is required';
         }
+        if (empty($data['type'])) {
+            $errors[] = $lang === 'fr' ? 'Le type est requis' : 'Type is required';
+        }
+        if (empty($data['zone'])) {
+            $errors[] = $lang === 'fr' ? 'La zone est requise' : 'Zone is required';
+        }
+
+        error_log("Erreurs de validation: " . print_r($errors, true));
 
         if (!empty($errors)) {
+            error_log("❌ VALIDATION ÉCHOUÉE - Redirection vers formulaire");
             $_SESSION['message'] = implode(', ', $errors);
             header('Location: index.php?page=folders&action=create&lang=' . $lang);
             exit;
         }
 
+        error_log("✅ Validation OK - Vérification unicité...");
+
         // Vérifier si l'étudiant existe déjà
         $existing = Folder::getByNumetu($data['numetu']);
+        error_log("Étudiant existant (numetu): " . ($existing ? "OUI" : "NON"));
+
         if ($existing) {
+            error_log("❌ NumEtu déjà existant - Redirection");
             $_SESSION['message'] = $lang === 'fr'
                 ? 'Un étudiant avec ce numéro existe déjà'
                 : 'A student with this ID already exists';
@@ -114,7 +142,10 @@ class FoldersController
         }
 
         $existingEmail = Folder::getByEmail($data['email']);
+        error_log("Étudiant existant (email): " . ($existingEmail ? "OUI" : "NON"));
+
         if ($existingEmail) {
+            error_log("❌ Email déjà existant - Redirection");
             $_SESSION['message'] = $lang === 'fr'
                 ? 'Un étudiant avec cet email existe déjà'
                 : 'A student with this email already exists';
@@ -122,27 +153,39 @@ class FoldersController
             exit;
         }
 
+        error_log("✅ Unicité OK - Création du dossier...");
+
         // Créer le dossier
         $success = Folder::creerDossier($data);
 
+        error_log("Résultat création: " . ($success ? "SUCCÈS" : "ÉCHEC"));
+
         if ($success) {
+            error_log("✅ Dossier créé - Gestion des fichiers...");
+
             if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+                error_log("Upload photo...");
                 Folder::uploadPhoto($data['numetu'], $_FILES['photo']);
             }
 
             if (isset($_FILES['cv']) && $_FILES['cv']['error'] === UPLOAD_ERR_OK) {
+                error_log("Upload CV...");
                 Folder::uploadCV($data['numetu'], $_FILES['cv']);
             }
 
             $_SESSION['message'] = $lang === 'fr'
                 ? 'Dossier créé avec succès'
                 : 'Folder created successfully';
+
+            error_log("✅ FIN CRÉATION - Redirection vers liste");
         } else {
+            error_log("❌ ÉCHEC CRÉATION - Message d'erreur");
             $_SESSION['message'] = $lang === 'fr'
                 ? 'Erreur lors de la création du dossier'
                 : 'Error creating folder';
         }
 
+        error_log("Redirection finale vers: index.php?page=folders&lang=" . $lang);
         header('Location: index.php?page=folders&lang=' . $lang);
         exit;
     }
@@ -158,7 +201,15 @@ class FoldersController
             'prenom' => $_POST['prenom'] ?? '',
             'email' => $_POST['email_perso'] ?? '',
             'telephone' => $_POST['telephone'] ?? '',
-            'type' => $_POST['type'] ?? null
+            'type' => !empty($_POST['type']) ? $_POST['type'] : null,
+            'zone' => !empty($_POST['zone']) ? $_POST['zone'] : null,
+            'naissance' => !empty($_POST['naissance']) ? $_POST['naissance'] : null,
+            'sexe' => !empty($_POST['sexe']) ? $_POST['sexe'] : null,
+            'adresse' => !empty($_POST['adresse']) ? $_POST['adresse'] : null,
+            'cp' => !empty($_POST['cp']) ? $_POST['cp'] : null,
+            'ville' => !empty($_POST['ville']) ? $_POST['ville'] : null,
+            'email_amu' => !empty($_POST['email_amu']) ? $_POST['email_amu'] : null,
+            'departement' => !empty($_POST['departement']) ? $_POST['departement'] : null
         ];
 
         // Validation basique

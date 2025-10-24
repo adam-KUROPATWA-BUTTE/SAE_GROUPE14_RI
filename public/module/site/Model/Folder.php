@@ -5,7 +5,6 @@ class Folder
 {
     private static function getConnection(): \PDO
     {
-        // ✅ Utiliser la classe Database au lieu de créer une connexion directe
         return \Database::getInstance()->getConnection();
     }
 
@@ -16,13 +15,13 @@ class Folder
         try {
             $stmt = $pdo->query("
                 SELECT 
-                    numetu,
-                    nom,
-                    prenom,
-                    email,
-                    telephone,
-                    type_etudiant as type,
-                    'europe' as zone,
+                    NumEtu as numetu,
+                    Nom as nom,
+                    Prenom as prenom,
+                    EmailPersonnel as email,
+                    Telephone as telephone,
+                    Type as type,
+                    Zone as zone,
                     NULL as stage,
                     NULL as etude,
                     NULL as photo,
@@ -30,8 +29,8 @@ class Folder
                     0 as total_pieces,
                     0 as pieces_fournies,
                     0 as date_derniere_relance
-                FROM etudiants 
-                ORDER BY nom, prenom
+                FROM dossiers 
+                ORDER BY Nom, Prenom
             ");
 
             return $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -48,13 +47,13 @@ class Folder
         try {
             $stmt = $pdo->query("
                 SELECT 
-                    numetu,
-                    nom,
-                    prenom,
-                    email,
-                    telephone,
-                    type_etudiant as type,
-                    'europe' as zone,
+                    NumEtu as numetu,
+                    Nom as nom,
+                    Prenom as prenom,
+                    EmailPersonnel as email,
+                    Telephone as telephone,
+                    Type as type,
+                    Zone as zone,
                     NULL as stage,
                     NULL as etude,
                     NULL as photo,
@@ -62,8 +61,9 @@ class Folder
                     0 as total_pieces,
                     0 as pieces_fournies,
                     NULL as date_derniere_relance
-                FROM etudiants 
-                ORDER BY nom, prenom
+                FROM dossiers 
+                WHERE IsComplete = 0
+                ORDER BY Nom, Prenom
             ");
 
             return $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -78,13 +78,30 @@ class Folder
         $pdo = self::getConnection();
 
         try {
+            // ✅ Convertir les chaînes vides en NULL
+            foreach ($data as $key => $value) {
+                if ($value === '') {
+                    $data[$key] = null;
+                }
+            }
+
+            // ✅ Gérer spécifiquement DateNaissance qui doit être NULL ou DATE valide
+            if (!empty($data['naissance'])) {
+                $date = \DateTime::createFromFormat('Y-m-d', $data['naissance']);
+                if (!$date || $date->format('Y-m-d') !== $data['naissance']) {
+                    $data['naissance'] = null;
+                }
+            }
+
             $stmt = $pdo->prepare("
-                INSERT INTO etudiants (
-                    numetu, nom, prenom, email, telephone, 
-                    type_etudiant, password
+                INSERT INTO dossiers (
+                    NumEtu, Nom, Prenom, EmailPersonnel, Telephone, 
+                    Type, Zone, IsComplete, DateNaissance, Sexe, 
+                    Adresse, CodePostal, Ville, EmailAMU, CodeDepartement
                 ) VALUES (
                     :numetu, :nom, :prenom, :email, :telephone,
-                    :type_etudiant, :password
+                    :type, :zone, 0, :naissance, :sexe,
+                    :adresse, :cp, :ville, :email_amu, :departement
                 )
             ");
 
@@ -94,8 +111,15 @@ class Folder
                 ':prenom' => $data['prenom'],
                 ':email' => $data['email'],
                 ':telephone' => $data['telephone'],
-                ':type_etudiant' => $data['type'] ?? null,
-                ':password' => password_hash($data['password'] ?? 'default123', PASSWORD_DEFAULT)
+                ':type' => $data['type'],
+                ':zone' => $data['zone'],
+                ':naissance' => $data['naissance'],
+                ':sexe' => $data['sexe'],
+                ':adresse' => $data['adresse'],
+                ':cp' => $data['cp'],
+                ':ville' => $data['ville'],
+                ':email_amu' => $data['email_amu'],
+                ':departement' => $data['departement']
             ]);
         } catch (\PDOException $e) {
             error_log("Erreur création dossier : " . $e->getMessage());
@@ -110,14 +134,14 @@ class Folder
         try {
             $stmt = $pdo->prepare("
                 SELECT 
-                    numetu,
-                    nom,
-                    prenom,
-                    email,
-                    telephone,
-                    type_etudiant as type
-                FROM etudiants 
-                WHERE email = :email 
+                    NumEtu as numetu,
+                    Nom as nom,
+                    Prenom as prenom,
+                    EmailPersonnel as email,
+                    Telephone as telephone,
+                    Type as type
+                FROM dossiers 
+                WHERE EmailPersonnel = :email 
                 LIMIT 1
             ");
             $stmt->execute([':email' => $email]);
@@ -135,14 +159,14 @@ class Folder
         try {
             $stmt = $pdo->prepare("
                 SELECT 
-                    numetu,
-                    nom,
-                    prenom,
-                    email,
-                    telephone,
-                    type_etudiant as type
-                FROM etudiants 
-                WHERE numetu = :numetu 
+                    NumEtu as numetu,
+                    Nom as nom,
+                    Prenom as prenom,
+                    EmailPersonnel as email,
+                    Telephone as telephone,
+                    Type as type
+                FROM dossiers 
+                WHERE NumEtu = :numetu 
                 LIMIT 1
             ");
             $stmt->execute([':numetu' => $numetu]);
@@ -153,7 +177,6 @@ class Folder
         }
     }
 
-    // ✅ NOUVELLE MÉTHODE - Récupérer un étudiant complet pour affichage
     public static function getStudentDetails(string $numetu)
     {
         $pdo = self::getConnection();
@@ -161,26 +184,26 @@ class Folder
         try {
             $stmt = $pdo->prepare("
                 SELECT 
-                    numetu,
-                    nom,
-                    prenom,
-                    email,
-                    telephone,
-                    type_etudiant as type,
-                    'europe' as zone,
-                    NULL as naissance,
-                    NULL as sexe,
-                    NULL as adresse,
-                    NULL as cp,
-                    NULL as ville,
-                    email as email_perso,
-                    NULL as email_amu,
-                    NULL as departement,
+                    NumEtu as numetu,
+                    Nom as nom,
+                    Prenom as prenom,
+                    EmailPersonnel as email,
+                    Telephone as telephone,
+                    Type as type,
+                    Zone as zone,
+                    DateNaissance as naissance,
+                    Sexe as sexe,
+                    Adresse as adresse,
+                    CodePostal as cp,
+                    Ville as ville,
+                    EmailPersonnel as email_perso,
+                    EmailAMU as email_amu,
+                    CodeDepartement as departement,
                     NULL as mobilite_type,
                     NULL as photo,
                     NULL as cv
-                FROM etudiants 
-                WHERE numetu = :numetu 
+                FROM dossiers 
+                WHERE NumEtu = :numetu 
                 LIMIT 1
             ");
             $stmt->execute([':numetu' => $numetu]);
@@ -191,21 +214,43 @@ class Folder
         }
     }
 
-    // ✅ NOUVELLE MÉTHODE - Mettre à jour un étudiant
     public static function updateStudent($data)
     {
         $pdo = self::getConnection();
 
         try {
+            // Convertir les chaînes vides en NULL
+            foreach ($data as $key => $value) {
+                if ($value === '') {
+                    $data[$key] = null;
+                }
+            }
+
+            // Gérer spécifiquement DateNaissance qui doit être NULL ou DATE valide
+            if (!empty($data['naissance'])) {
+                $date = \DateTime::createFromFormat('Y-m-d', $data['naissance']);
+                if (!$date || $date->format('Y-m-d') !== $data['naissance']) {
+                    $data['naissance'] = null;
+                }
+            }
+
             $stmt = $pdo->prepare("
-                UPDATE etudiants 
+                UPDATE dossiers 
                 SET 
-                    nom = :nom,
-                    prenom = :prenom,
-                    email = :email,
-                    telephone = :telephone,
-                    type_etudiant = :type_etudiant
-                WHERE numetu = :numetu
+                    Nom = :nom,
+                    Prenom = :prenom,
+                    EmailPersonnel = :email,
+                    Telephone = :telephone,
+                    Type = :type,
+                    Zone = :zone,
+                    DateNaissance = :naissance,
+                    Sexe = :sexe,
+                    Adresse = :adresse,
+                    CodePostal = :cp,
+                    Ville = :ville,
+                    EmailAMU = :email_amu,
+                    CodeDepartement = :departement
+                WHERE NumEtu = :numetu
             ");
 
             return $stmt->execute([
@@ -214,7 +259,15 @@ class Folder
                 ':prenom' => $data['prenom'],
                 ':email' => $data['email'],
                 ':telephone' => $data['telephone'],
-                ':type_etudiant' => $data['type'] ?? null
+                ':type' => $data['type'],
+                ':zone' => $data['zone'],
+                ':naissance' => $data['naissance'],
+                ':sexe' => $data['sexe'],
+                ':adresse' => $data['adresse'],
+                ':cp' => $data['cp'],
+                ':ville' => $data['ville'],
+                ':email_amu' => $data['email_amu'],
+                ':departement' => $data['departement']
             ]);
         } catch (\PDOException $e) {
             error_log("Erreur mise à jour étudiant : " . $e->getMessage());
@@ -228,9 +281,9 @@ class Folder
 
         try {
             $stmt = $pdo->prepare("
-                UPDATE etudiants 
-                SET last_connexion = NOW()
-                WHERE numetu = :numetu
+                UPDATE dossiers 
+                SET IsComplete = 1
+                WHERE NumEtu = :numetu
             ");
             return $stmt->execute([':numetu' => $numetu]);
         } catch (\PDOException $e) {
@@ -250,8 +303,8 @@ class Folder
 
         try {
             $stmt = $pdo->prepare("
-                INSERT INTO etudiants (numetu, nom, prenom, email, telephone, password)
-                VALUES (:numetu, :nom, :prenom, :email, :telephone, :password)
+                INSERT INTO dossiers (NumEtu, Nom, Prenom, EmailPersonnel, Telephone)
+                VALUES (:numetu, :nom, :prenom, :email, :telephone)
             ");
 
             return $stmt->execute([
@@ -259,8 +312,7 @@ class Folder
                 ':nom' => $nom,
                 ':prenom' => $prenom,
                 ':email' => $email,
-                ':telephone' => $telephone,
-                ':password' => password_hash('default123', PASSWORD_DEFAULT)
+                ':telephone' => $telephone
             ]);
         } catch (\PDOException $e) {
             error_log("Erreur ajout étudiant : " . $e->getMessage());
@@ -273,7 +325,7 @@ class Folder
         $pdo = self::getConnection();
 
         try {
-            $stmt = $pdo->prepare("DELETE FROM etudiants WHERE numetu = :numetu");
+            $stmt = $pdo->prepare("DELETE FROM dossiers WHERE NumEtu = :numetu");
             return $stmt->execute([':numetu' => $numetu]);
         } catch (\PDOException $e) {
             error_log("Erreur suppression dossier : " . $e->getMessage());
@@ -283,28 +335,15 @@ class Folder
 
     public static function uploadPhoto($numetu, $file)
     {
+        // À implémenter selon vos besoins
         return true;
     }
 
     public static function uploadCV($numetu, $file)
     {
+        // À implémenter selon vos besoins
         return true;
     }
 
-    public static function updateLastConnexion($numetu)
-    {
-        $pdo = self::getConnection();
 
-        try {
-            $stmt = $pdo->prepare("
-                UPDATE etudiants 
-                SET last_connexion = NOW()
-                WHERE numetu = :numetu
-            ");
-            return $stmt->execute([':numetu' => $numetu]);
-        } catch (\PDOException $e) {
-            error_log("Erreur mise à jour connexion : " . $e->getMessage());
-            return false;
-        }
-    }
 }
