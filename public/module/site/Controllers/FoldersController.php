@@ -103,16 +103,28 @@ class FoldersController
         if (empty($data['Telephone'])) {
             $errors[] = $lang === 'fr' ? 'Le téléphone est requis' : 'Phone is required';
         }
+        if (empty($data['type'])) {
+            $errors[] = $lang === 'fr' ? 'Le type est requis' : 'Type is required';
+        }
+        if (empty($data['zone'])) {
+            $errors[] = $lang === 'fr' ? 'La zone est requise' : 'Zone is required';
+        }
+
+        error_log("Erreurs de validation: " . print_r($errors, true));
 
         if (!empty($errors)) {
+            error_log("❌ VALIDATION ÉCHOUÉE - Redirection vers formulaire");
             $_SESSION['message'] = implode(', ', $errors);
             header('Location: index.php?page=folders&action=create&lang=' . $lang);
             exit;
         }
 
+        error_log("✅ Validation OK - Vérification unicité...");
+
         // Vérifier si l'étudiant existe déjà
         $existing = Folder::getByNumetu($data['NumEtu']);
         if ($existing) {
+            error_log("❌ NumEtu déjà existant - Redirection");
             $_SESSION['message'] = $lang === 'fr'
                 ? 'Un étudiant avec ce numéro existe déjà'
                 : 'A student with this ID already exists';
@@ -122,6 +134,7 @@ class FoldersController
 
         $existingEmail = Folder::getByEmail($data['EmailPersonnel']);
         if ($existingEmail) {
+            error_log("❌ Email déjà existant - Redirection");
             $_SESSION['message'] = $lang === 'fr'
                 ? 'Un étudiant avec cet email existe déjà'
                 : 'A student with this email already exists';
@@ -147,12 +160,16 @@ class FoldersController
             $_SESSION['message'] = $lang === 'fr'
                 ? 'Dossier créé avec succès'
                 : 'Folder created successfully';
+
+            error_log("✅ FIN CRÉATION - Redirection vers liste");
         } else {
+            error_log("❌ ÉCHEC CRÉATION - Message d'erreur");
             $_SESSION['message'] = $lang === 'fr'
                 ? 'Erreur lors de la création du dossier'
                 : 'Error creating folder';
         }
 
+        error_log("Redirection finale vers: index.php?page=folders&lang=" . $lang);
         header('Location: index.php?page=folders&lang=' . $lang);
         exit;
     }

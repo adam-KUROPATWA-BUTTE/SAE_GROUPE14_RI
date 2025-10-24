@@ -178,7 +178,10 @@ class FoldersPage
             }
         </script>
         <footer>
-            <p>&copy; <?= date('Y') ?> - Aix-Marseille Université.</p>
+            <p>&copy; 2025 - Aix-Marseille Université.</p>
+            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
+                <img src="img/instagram.png" alt="Instagram" style="height:32px;">
+            </a>
         </footer>
         </body>
         </html>
@@ -369,7 +372,7 @@ class FoldersPage
         <?php
     }
 
-    // ✅ NOUVELLE MÉTHODE - Afficher le formulaire de visualisation/modification
+// ✅ MÉTHODE CORRIGÉE - Afficher le formulaire de visualisation/modification
     private function renderViewForm(): void
     {
         if (!$this->studentData) {

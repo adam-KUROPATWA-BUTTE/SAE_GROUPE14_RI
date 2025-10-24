@@ -86,6 +86,21 @@ class Folder
         $pdo = self::getConnection();
 
         try {
+            // ✅ Convertir les chaînes vides en NULL
+            foreach ($data as $key => $value) {
+                if ($value === '') {
+                    $data[$key] = null;
+                }
+            }
+
+            // ✅ Gérer spécifiquement DateNaissance qui doit être NULL ou DATE valide
+            if (!empty($data['naissance'])) {
+                $date = \DateTime::createFromFormat('Y-m-d', $data['naissance']);
+                if (!$date || $date->format('Y-m-d') !== $data['naissance']) {
+                    $data['naissance'] = null;
+                }
+            }
+
             $stmt = $pdo->prepare("
                 INSERT INTO dossiers (
                     NumEtu, Nom, Prenom, DateNaissance, Sexe, Adresse, CodePostal, Ville,
