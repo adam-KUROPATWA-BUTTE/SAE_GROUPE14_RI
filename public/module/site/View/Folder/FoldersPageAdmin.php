@@ -1,6 +1,6 @@
 <?php
 namespace View\Folder;
-use Model\FolderAdmin as Folder;
+use Model\Folder\FolderAdmin as Folder;
 
 class FoldersPageAdmin
 {
@@ -532,11 +532,12 @@ class FoldersPageAdmin
     private function buildPaginationUrl(int $page): string
     {
         $params = array_merge($this->filters, [
-                'p' => $page,
-                'page' => 'folders'
+            'p' => $page,
+            'page' => 'folders-admin'
         ]);
         return 'index.php?' . http_build_query($params);
     }
+
 
     private function hasActiveFilters(): bool
     {

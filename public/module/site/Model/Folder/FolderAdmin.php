@@ -1,9 +1,9 @@
 <?php
-namespace View\Folders;
+namespace Model\Folder;
 
 use Model\Folder\FolderAdmin;
 
-class FoldersPageAdmin
+class FolderAdmin
 {
     private static function getConnection(): \PDO
     {

@@ -2,7 +2,7 @@
 namespace Controllers\FolderController;
 
 use Model\Folder\FolderAdmin as Folder;
-use View\FoldersPageAdmin;
+use View\Folder\FoldersPageAdmin;
 
 class FoldersControllerAdmin
 {
