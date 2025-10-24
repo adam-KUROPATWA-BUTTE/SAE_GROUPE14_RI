@@ -252,7 +252,7 @@ class FoldersPageAdmin
         ?>
         <h1><?= $this->t(['fr'=>'Créer un nouveau dossier étudiant','en'=>'Create New Student Folder']) ?></h1>
         <div class="form-back-button">
-            <button onclick="window.location.href='<?= $this->buildUrl('/folders') ?>'" class="btn-secondary">
+            <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'" class="btn-secondary">
                 ← <?= $this->t(['fr'=>'Retour à la liste','en'=>'Back to List']) ?>
             </button>
         </div>
