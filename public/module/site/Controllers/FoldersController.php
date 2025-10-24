@@ -8,7 +8,7 @@ class FoldersController
 {
     public static function support(string $page, string $method): bool
     {
-        return $page === 'folders' || $page === 'save_student' || $page === 'update_student';
+        return $page === 'folders' || $page === 'save_student' || $page === 'update_student' || $page === 'mark_complete' || $page === 'mark_incomplete';
     }
 
     public function control(): void
@@ -30,12 +30,25 @@ class FoldersController
             return;
         }
 
+        // ✅ NOUVEAU - Si c'est une demande de marquage comme complet
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_GET['page'] ?? '') === 'mark_complete') {
+            $this->markAsComplete();
+            return;
+        }
+
+        //  NOUVEAU - Si c'est une demande de marquage comme incomplet
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_GET['page'] ?? '') === 'mark_incomplete') {
+            $this->markAsIncomplete();
+            return;
+        }
+
+
         // Récupérer l'action
         $action = $_GET['action'] ?? 'list';
 
         // Récupérer les données de l'étudiant si on visualise/édite
         $studentData = null;
-        if ($action === 'view' && !empty($_GET['numetu'])) {  // ✅ Changé de NumEtu à numetu
+        if ($action === 'view' && !empty($_GET['numetu'])) {
             $studentData = Folder::getStudentDetails($_GET['numetu']);
         }
 
@@ -62,6 +75,67 @@ class FoldersController
         // Créer la vue et l'afficher
         $view = new FoldersPage($action, $filters, $page, $perPage, $message, $lang, $studentData);
         $view->render();
+    }
+
+    // ✅ NOUVELLE MÉTHODE - Marquer un dossier comme complet
+    private function markAsComplete(): void
+    {
+        $lang = $_GET['lang'] ?? 'fr';
+        $numetu = $_POST['NumEtu'] ?? $_POST['numetu'] ?? '';
+
+        if (empty($numetu)) {
+            $_SESSION['message'] = $lang === 'fr'
+                ? 'Erreur : Numéro étudiant manquant'
+                : 'Error: Student ID missing';
+            header('Location: index.php?page=folders&lang=' . $lang);
+            exit;
+        }
+
+        // Marquer comme complet
+        $success = Folder::markAsComplete($numetu);
+
+        if ($success) {
+            $_SESSION['message'] = $lang === 'fr'
+                ? '✅ Dossier marqué comme complet'
+                : '✅ Folder marked as complete';
+        } else {
+            $_SESSION['message'] = $lang === 'fr'
+                ? '❌ Erreur lors du marquage du dossier'
+                : '❌ Error marking folder as complete';
+        }
+
+        header('Location: index.php?page=folders&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
+        exit;
+    }
+
+    private function markAsIncomplete(): void
+    {
+        $lang = $_GET['lang'] ?? 'fr';
+        $numetu = $_POST['NumEtu'] ?? $_POST['numetu'] ?? '';
+
+        if (empty($numetu)) {
+            $_SESSION['message'] = $lang === 'fr'
+                ? 'Erreur : Numéro étudiant manquant'
+                : 'Error: Student ID missing';
+            header('Location: index.php?page=folders&lang=' . $lang);
+            exit;
+        }
+
+        // Appeler le modèle
+        $success = Folder::markAsIncomplete($numetu);
+
+        if ($success) {
+            $_SESSION['message'] = $lang === 'fr'
+                ? '↺ Dossier remis en incomplet'
+                : '↺ Folder marked as incomplete';
+        } else {
+            $_SESSION['message'] = $lang === 'fr'
+                ? '❌ Erreur lors de la mise à jour du dossier'
+                : '❌ Error updating folder';
+        }
+
+        header('Location: index.php?page=folders&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
+        exit;
     }
 
     private function saveStudent(): void
