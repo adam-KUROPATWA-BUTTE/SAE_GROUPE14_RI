@@ -65,7 +65,7 @@ class FoldersPageAdmin
             </div>
             <nav class="menu">
                 <button onclick="window.location.href='/'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
-                <button onclick="window.location.href='/dashboard'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
+                <button onclick="window.location.href='/dashboard-admin'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
                 <button onclick="window.location.href='/partners'"><?= $this->t(['fr'=>'Partenaire','en'=>'Partners']) ?></button>
                 <button class="active" onclick="window.location.href='/folders-admin'"><?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?></button>
                 <button onclick="window.location.href='/web_plan'"><?= $this->t(['fr'=>'Plan du site','en'=>'Site Map']) ?></button>
