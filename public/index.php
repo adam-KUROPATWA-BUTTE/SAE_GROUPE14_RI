@@ -26,7 +26,7 @@ Autoloader::register();
 
 use Controllers\site\AuthController;
 use Controllers\site\DashboardController;
-use Controllers\site\FolderController\FoldersControllerAdmin;
+use Controllers\FolderController\FoldersControllerAdmin;
 use Controllers\site\FolderController\FoldersControllerStudent;
 use Controllers\site\HelpController;
 use Controllers\site\IndexController;

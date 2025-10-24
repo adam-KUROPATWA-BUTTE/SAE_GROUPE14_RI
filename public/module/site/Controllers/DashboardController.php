@@ -1,9 +1,8 @@
 <?php
 namespace Controllers\site;
 
-require_once ROOT_PATH . '/public/module/site/Model/Folder/FolderAdmin.php';
-require_once ROOT_PATH . '/public/module/site/Model/Folder/FolderStudent.php';
-
+use Model\Folder\FolderAdmin;
+use Model\Folder\FolderStudent;
 use Controllers\ControllerInterface;
 
 class DashboardController implements ControllerInterface
@@ -40,7 +39,7 @@ class DashboardController implements ControllerInterface
         // Récupérer la langue
         $lang = $_GET['lang'] ?? 'fr';
 
-        $dossiers = \Model\FolderAdmin::getDossiersIncomplets() ?? [];
+        $dossiers = FolderAdmin::getDossiersIncomplets() ?? [];
 
         // Charger et afficher la vue
         require_once ROOT_PATH . '/public/module/site/View/Dashboard/DashboardPageAdmin.php';
@@ -64,7 +63,7 @@ class DashboardController implements ControllerInterface
         $lang = $_GET['lang'] ?? 'fr';
 
         // Utiliser le nom de classe complet avec namespace
-        $dossier = \Model\FolderStudent::getDossierByEtudiantId($_SESSION['etudiant_id']);
+        $dossier = FolderStudent::getDossierByEtudiantId($_SESSION['etudiant_id']);
 
         // Charger et afficher la vue
         require_once ROOT_PATH . '/public/module/site/View/Dashboard/DashboardPageStudent.php';
