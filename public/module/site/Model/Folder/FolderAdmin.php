@@ -5,7 +5,6 @@ class FolderAdmin
 {
     private static function getConnection(): \PDO
     {
-        // ✅ Utiliser la classe Database au lieu de créer une connexion directe
         return \Database::getInstance()->getConnection();
     }
 

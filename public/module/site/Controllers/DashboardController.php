@@ -40,8 +40,7 @@ class DashboardController implements ControllerInterface
         // Récupérer la langue
         $lang = $_GET['lang'] ?? 'fr';
 
-        // Utiliser le nom de classe complet avec namespace
-        $dossiers = \Model\Folder\FolderAdmin::getDossiersIncomplets() ?? [];
+        $dossiers = \Model\FolderAdmin::getDossiersIncomplets() ?? [];
 
         // Charger et afficher la vue
         require_once ROOT_PATH . '/public/module/site/View/Dashboard/DashboardPageAdmin.php';
