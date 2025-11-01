@@ -20,6 +20,9 @@ class DashboardPage
 
     public function render(): void
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         ?>
         <!DOCTYPE html>
         <html lang="<?= htmlspecialchars($this->lang) ?>">
@@ -31,7 +34,7 @@ class DashboardPage
             <link rel="stylesheet" href="styles/folders.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
-        <body>
+        <body class="<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'tritanopie' : '' ?>">
         <header>
             <div class="top-bar">
                 <img id="logo_amu" src="img/logo.png" alt="Logo">

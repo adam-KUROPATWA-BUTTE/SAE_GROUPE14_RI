@@ -1,6 +1,7 @@
 <?php
 namespace View;
 
+
 class PartnersPage
 {
     private string $titre;
@@ -25,7 +26,11 @@ class PartnersPage
 
     public function render(): void
     {
+        if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
         ?>
+
         <!DOCTYPE html>
         <html lang="<?= htmlspecialchars($this->lang) ?>">
         <head>
@@ -36,7 +41,7 @@ class PartnersPage
             <link rel="stylesheet" href="styles/Partners.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
-        <body>
+        <body class="<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'tritanopie' : '' ?>">
         <header>
             <div class="top-bar">
                 <img id="logo_amu" src="img/logo.png" alt="Logo" style="height:100px;">

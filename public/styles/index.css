@@ -1,13 +1,30 @@
+:root {
+    --primary-color: #00558B;
+    --secondary-color: #EBC55E;
+    --text-color: #ffffff;
+    --background-color: #EBC55E;
+    --accent-color: #2B91BB;
+    --hero-bg-color: #00558B;
+}
+
+body.tritanopie {
+    --primary-color: #005C45;
+    --secondary-color: #FF9100;
+    --text-color: #ffffff;
+    --background-color: #FF9100;
+    --accent-color: #009b73;
+    --hero-bg-color: #005C45;
+}
 
 header {
-    background-color: #EBC55E;
+    background-color: var(--background-color);
     border-bottom: 1px solid #ddd;
     padding: 10px 20px;
     position: relative;
 }
 
-#logo_amu{
-    height:100px;
+#logo_amu {
+    height: 100px;
 }
 
 .top-bar {
@@ -15,11 +32,14 @@ header {
     justify-content: space-between;
     align-items: center;
 }
+
 body {
-    background-color: #EBC55E;
+    background-color: var(--background-color);
     margin: 0;
     font-family: sans-serif;
-
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 .right-buttons {
@@ -32,45 +52,40 @@ body {
 }
 
 .dropbtn {
-    background-color: #00558B;
-    color: white;
+    background-color: var(--primary-color);
+    color: var(--text-color);
     padding: 10px 15px;
     font-size: 14px;
     border: none;
     cursor: pointer;
 }
 
-/* Style du bouton principal */
 .dropbouton {
-    background-color: #00558B;
-    color: white;
+    background-color: var(--primary-color);
+    color: var(--text-color);
     padding: 10px 15px;
     font-size: 14px;
     border: none;
     cursor: pointer;
 }
 
-
-/* Conteneur du menu déroulant */
 .lang-dropdown {
     position: relative;
     display: inline-block;
 }
 
-/* Contenu du menu (caché par défaut) */
 .dropdown-content {
     display: none;
     position: absolute;
-    right: 0; /* pour que ça s’aligne bien avec le bouton */
+    right: 0;
     background-color: white;
     min-width: 120px;
     box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
     z-index: 1;
 }
 
-/* Liens dans le menu */
 .dropdown-content a {
-    color: #00558B;
+    color: var(--primary-color);
     padding: 10px 12px;
     text-decoration: none;
     display: block;
@@ -80,11 +95,9 @@ body {
     background-color: #eee;
 }
 
-/* Affichage du menu quand on survole */
 .lang-dropdown:hover .dropdown-content {
     display: block;
 }
-
 
 nav.menu {
     display: flex;
@@ -96,29 +109,40 @@ nav.menu {
 nav.menu button {
     width: 100%;
     border: solid #ffffff;
+    padding: 10px 15px;
+    background-color: var(--accent-color);
+    color: var(--text-color);
+    cursor: pointer;
 }
 
+nav.menu button:hover {
+    background-color: var(--primary-color);
+}
+
+nav.menu button.active {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+}
 
 button {
     padding: 10px 15px;
-    background-color: #00558B;
-    color: white;
+    background-color: var(--primary-color);
+    color: var(--text-color);
     cursor: pointer;
 }
+
 button:hover {
-    background-color: #2B91BB;
+    background-color: var(--secondary-color);
 }
 
-
-
 main {
-    max-width: 700px;
+    flex: 1;
+    max-width: 1000px;
     margin: 2em auto;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     padding: 2em;
-    min-height: 600px;
 }
 
 h1 {
@@ -145,8 +169,8 @@ p {
 }
 
 .hero-section {
-    width: 100%; /* prend toute la largeur */
-    background: #00558B;
+    width: 100%;
+    background: var(--hero-bg-color);
     padding: 60px 30px;
     text-align: center;
     color: white;
@@ -160,21 +184,24 @@ p {
 }
 
 #hero-img {
-    height:80px;
-    position:absolute;
-    top:20px;
-    left:20px;"
+    height: 80px;
+    position: absolute;
+    top: 20px;
+    left: 20px;
 }
 
-/* ======== Dashboard ======== */
 .dashboard-container {
     max-width: 1000px;
     margin: -50px auto 50px;
     position: relative;
     z-index: 2;
     padding: 0 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
 }
-
 
 .card h2 {
     color: #333;
@@ -183,7 +210,6 @@ p {
     text-align: center;
 }
 
-/* ======== Légende ======== */
 .legend {
     display: flex;
     justify-content: center;
@@ -205,14 +231,13 @@ p {
 }
 
 .legend-color.complet {
-    background-color: #2B91BB;
+    background-color: var(--accent-color);
 }
 
 .legend-color.incomplet {
-    background-color: #EBC55E;
+    background-color: var(--secondary-color);
 }
 
-/* ======== Donut Chart ======== */
 * {
     box-sizing: border-box;
 }
@@ -222,7 +247,6 @@ p {
     justify-content: center;
     align-items: center;
     padding: 20px;
-
 }
 
 .donut-chart {
@@ -250,7 +274,7 @@ p {
 .chart-percentage {
     font-size: 48px;
     font-weight: bold;
-    color: #2B91BB;
+    color: var(--accent-color);
     line-height: 1;
 }
 
@@ -259,7 +283,7 @@ p {
     color: #666;
     margin-top: 5px;
 }
-/* ======== PUB IMAGE ======== */
+
 .pub-section {
     position: relative;
     width: 100%;
@@ -282,61 +306,19 @@ p {
     font-size: 40px;
     font-weight: bold;
 }
-nav.menu button.active {
-    background-color: #00558B; /* couleur du bouton actif */
-    color: white; /* facultatif si tu veux garder le texte blanc */
-}
-nav.menu button {
-    padding: 10px 15px;
-    background-color: #2B91BB;
-    color: white;
-    cursor: pointer;
-}
 
-nav.menu button:hover {
-    background-color: #00558B;
-}
-/* 1️⃣ Body en flex vertical */
-body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh; /* occupe tout l’écran */
-    margin: 0;
-    font-family: sans-serif;
-}
-
-/* 2️⃣ Main prend tout l’espace restant */
-main {
-    flex: 1;
-    max-width: 1000px;
-    margin: 2em auto;
-    background: #fff;
-    border-radius: 8px;
-    padding: 2em;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-.dashboard-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    width: 100%;
-}
-
-/* 3️⃣ Footer */
 footer {
-    background: #00558B;
-    color: #ffffff;
+    background: var(--primary-color);
+    color: var(--text-color);
     text-align: center;
     padding: 2rem 1rem;
 }
+
 footer p {
     margin: 0;
     color: #f0f4ff;
     font-size: 14px;
 }
-
 
 #help-bubble {
     position: fixed;
@@ -354,7 +336,6 @@ footer p {
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     z-index: 1000;
 }
-
 
 #help-popup {
     position: fixed;
@@ -376,7 +357,7 @@ footer p {
 }
 
 .help-popup-header {
-    background-color: #2B91BB;
+    background-color: var(--accent-color);
     color: white;
     padding: 10px;
     font-weight: bold;
@@ -408,37 +389,33 @@ footer p {
     margin-bottom: 10px;
 }
 
-#page_complete{
+#page_complete {
     display: block;
     padding: 1em;
     background: #f0f4ff;
-    color: #2B91BB;
+    color: var(--accent-color);
     text-decoration: none;
     border-radius: 5px;
     font-size: 1.1em;
 }
 
-#page_complete:hover{
-    background: #00558B;
+#page_complete:hover {
+    background: var(--primary-color);
     color: #fff;
 }
-
 
 .menu-toggle {
     display: none;
 }
 
-
 @media (max-width: 810px) {
-
-    /* Ajustement du header */
     header {
         padding: 10px;
     }
 
-    #logo_amu{
+    #logo_amu {
         width: 200px;
-        height:100px;
+        height: 100px;
     }
 
     .top-bar {
@@ -447,39 +424,35 @@ footer p {
         align-items: center;
     }
 
-    /* Bouton hamburger visible */
     .menu-toggle {
         display: block;
         font-size: 28px;
-        color: #00558B;
+        color: var(--primary-color);
         background: none;
         border: none;
         cursor: pointer;
     }
 
-    /* On cache le menu de base */
     nav.menu {
         display: none;
         flex-direction: column;
         align-items: stretch;
         gap: 0;
         margin-top: 10px;
-        background-color: #2B91BB;
+        background-color: var(--accent-color);
         border-radius: 6px;
         overflow: hidden;
         transition: max-height 0.3s ease;
     }
 
-    /* Quand on active le menu, il s’affiche */
     nav.menu.active {
         display: flex;
     }
 
-    /* Les boutons prennent toute la largeur */
     nav.menu button {
         border: none;
-        background-color: #2B91BB;
-        color: white;
+        background-color: var(--accent-color);
+        color: var(--text-color);
         padding: 12px;
         text-align: center;
         width: 100%;
@@ -491,10 +464,9 @@ footer p {
     }
 
     nav.menu button:hover {
-        background-color: #00558B;
+        background-color: var(--primary-color);
     }
 
-    /* Ajustement du logo et du bloc langue + bouton menu */
     .right-buttons {
         display: none;
     }
@@ -506,8 +478,6 @@ footer p {
         padding: 10px;
     }
 
-
-    /* Le contenu principal prend un peu moins de marge */
     main {
         margin: 1em;
         padding: 1.5em;
@@ -531,17 +501,16 @@ footer p {
 
     .pub-section {
         width: 100vw;
-        height: 175px; /* définit directement la hauteur de la section */
+        height: 175px;
         position: relative;
         overflow: hidden;
     }
 
     .pub-section img {
         width: 100%;
-        height: 100%; /* l’image remplit toute la section */
+        height: 100%;
         object-fit: cover;
     }
-
 
     .pub-text {
         font-size: 22px;
@@ -549,29 +518,23 @@ footer p {
         left: 15px;
     }
 
-
     .card h2 {
         margin-top: 60px;
     }
 
-    footer{
+    footer {
         width: 100%;
     }
-
-
 }
 
-
 @media (max-width: 500px) {
-
-    /* Ajustement du header */
     header {
         padding: 5px;
     }
 
-    #logo_amu{
+    #logo_amu {
         width: 150px;
-        height:auto;
+        height: auto;
     }
 
     .top-bar {
@@ -580,39 +543,35 @@ footer p {
         align-items: center;
     }
 
-    /* Bouton hamburger visible */
     .menu-toggle {
         display: block;
         font-size: 28px;
-        color: #00558B;
+        color: var(--primary-color);
         background: none;
         border: none;
         cursor: pointer;
     }
 
-    /* On cache le menu de base */
     nav.menu {
         display: none;
         flex-direction: column;
         align-items: stretch;
         gap: 0;
         margin-top: 10px;
-        background-color: #2B91BB;
+        background-color: var(--accent-color);
         border-radius: 6px;
         overflow: hidden;
         transition: max-height 0.3s ease;
     }
 
-    /* Quand on active le menu, il s’affiche */
     nav.menu.active {
         display: flex;
     }
 
-    /* Les boutons prennent toute la largeur */
     nav.menu button {
         border: none;
-        background-color: #2B91BB;
-        color: white;
+        background-color: var(--accent-color);
+        color: var(--text-color);
         padding: 12px;
         text-align: center;
         width: 100%;
@@ -624,10 +583,9 @@ footer p {
     }
 
     nav.menu button:hover {
-        background-color: #00558B;
+        background-color: var(--primary-color);
     }
 
-    /* Ajustement du logo et du bloc langue + bouton menu */
     .right-buttons {
         display: none;
     }
@@ -639,12 +597,9 @@ footer p {
         padding: 10px;
     }
 
-
-    /* Le contenu principal prend un peu moins de marge */
     main {
         margin: 1em;
         padding: 1.5em;
-
     }
 
     table {
@@ -665,17 +620,16 @@ footer p {
 
     .pub-section {
         width: 100vw;
-        height: 175px; /* définit directement la hauteur de la section */
+        height: 175px;
         position: relative;
         overflow: hidden;
     }
 
     .pub-section img {
         width: 100%;
-        height: 100%; /* l’image remplit toute la section */
+        height: 100%;
         object-fit: cover;
     }
-
 
     .pub-text {
         font-size: 22px;
@@ -683,66 +637,11 @@ footer p {
         left: 15px;
     }
 
-
     .card h2 {
         margin-top: 60px;
     }
 
-    footer{
+    footer {
         width: 100%;
     }
-
-}
-
-
-/* Variables de couleurs */
-:root {
-    --primary-color: #00558B; /* couleur principale normale */
-    --secondary-color: #EBC55E; /* couleur secondaire normale */
-    --text-color: #ffffff;
-    --background-color: #EBC55E;
-    --accent-color: #2B91BB; /* pour chart et légende */
-    --hero-bg-color: #00558B;
-}
-
-/* Thème tritanopie */
-body.tritanopie {
-    --primary-color: #D55E00;
-    --secondary-color: #999933;
-    --text-color: #ffffff;
-    --background-color: #999933;
-    --accent-color: #E69F00;
-    --hero-bg-color: #D55E00;
-}
-
-/* Application des variables */
-header {
-    background-color: var(--background-color);
-}
-button {
-    background-color: var(--primary-color);
-    color: var(--text-color);
-}
-button:hover {
-    background-color: var(--secondary-color);
-}
-nav.menu button {
-    background-color: var(--primary-color);
-    color: var(--text-color);
-}
-nav.menu button:hover {
-    background-color: var(--secondary-color);
-}
-footer {
-    background-color: var(--primary-color);
-    color: var(--text-color);
-}
-.hero-section {
-    background-color: var(--hero-bg-color);
-}
-.legend-color.complet {
-    background-color: var(--accent-color);
-}
-.chart-percentage {
-    color: var(--accent-color);
 }

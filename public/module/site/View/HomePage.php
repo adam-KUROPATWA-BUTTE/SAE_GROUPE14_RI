@@ -30,6 +30,10 @@ class HomePage
         $radius = 130;
         $circumference = 2 * pi() * $radius;
         $dashArray = ($this->completionPercentage / 100) * $circumference;
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         ?>
         <!DOCTYPE html>
         <html lang="<?= htmlspecialchars($this->lang) ?>">
@@ -50,7 +54,7 @@ class HomePage
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
 
-        <body>
+        <body class="<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'tritanopie' : '' ?>">
         <!-- HEADER -->
         <header>
             <div class="top-bar">
@@ -63,7 +67,10 @@ class HomePage
                             <a href="#" onclick="changeLang('en'); return false;">English</a>
                         </div>
                     </div>
-                    <button id="theme-toggle"><?= $this->t(['fr'=>'Mode tritanopie','en'=>'Tritanopia Mode']) ?></button>
+                    <button id="theme-toggle" onclick="window.location.href='?toggleTritanopia=1'">
+                        <?= $this->t(['fr'=>'Mode tritanopie','en'=>'Tritanopia Mode']) ?>
+                    </button>
+
 
                     <?php if ($this->isLoggedIn): ?>
                         <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page'=>'logout']) ?>'">

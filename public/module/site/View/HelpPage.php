@@ -12,6 +12,9 @@ class HelpPage
 
     public function render(): void
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         ?>
         <!DOCTYPE html>
         <html lang="fr">
@@ -23,7 +26,7 @@ class HelpPage
             <link rel="stylesheet" href="styles/help.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
-        <body>
+        <body class="<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'tritanopie' : '' ?>">
         <header>
             <div class="top-bar">
                 <img id="logo_amu" src="img/logo.png" alt="Logo">
