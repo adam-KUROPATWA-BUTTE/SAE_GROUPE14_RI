@@ -38,7 +38,7 @@ class PartnersPage
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title><?= htmlspecialchars($this->titre) ?></title>
             <link rel="stylesheet" href="styles/index.css">
-            <link rel="stylesheet" href="styles/Partners.css">
+            <link rel="stylesheet" href="styles/partners.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
         <body class="<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'tritanopie' : '' ?>">
