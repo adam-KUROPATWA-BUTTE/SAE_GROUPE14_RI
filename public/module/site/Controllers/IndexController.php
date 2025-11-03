@@ -43,4 +43,4 @@ class IndexController implements ControllerInterface
     {
         return $page === 'home' && $method === 'GET';
     }
-}
+} 

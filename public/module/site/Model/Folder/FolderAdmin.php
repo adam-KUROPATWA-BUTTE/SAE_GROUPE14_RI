@@ -370,6 +370,43 @@ class FolderAdmin
         }
     }
 
+    // Basculer le statut complet/incomplet d'un dossier
+    public static function toggleCompleteStatus(string $numetu): bool
+    {
+        $pdo = self::getConnection();
+
+        try {
+            // Récupérer le statut actuel
+            $stmt = $pdo->prepare("
+                SELECT IsComplete 
+                FROM dossiers 
+                WHERE NumEtu = :numetu
+            ");
+            $stmt->execute([':numetu' => $numetu]);
+            $current = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            if (!$current) {
+                return false;
+            }
+
+            // Basculer le statut (0/1 ou NULL devient 1, 1 devient 0)
+            $newStatus = ($current['IsComplete'] == 1) ? 0 : 1;
+
+            $stmt = $pdo->prepare("
+                UPDATE dossiers 
+                SET IsComplete = :status
+                WHERE NumEtu = :numetu
+            ");
+            return $stmt->execute([
+                ':status' => $newStatus,
+                ':numetu' => $numetu
+            ]);
+        } catch (\PDOException $e) {
+            error_log("Erreur basculement statut dossier : " . $e->getMessage());
+            return false;
+        }
+    }
+
     // Upload photo (met à jour PiecesJustificatives)
     public static function uploadPhoto($numetu, $file)
     {

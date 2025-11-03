@@ -484,6 +484,15 @@ class FoldersPageAdmin
                     <?= ($student['IsComplete'] ?? 0) 
                         ? $this->t(['fr'=>'✅ Complet','en'=>'✅ Complete']) 
                         : $this->t(['fr'=>'⚠️ Incomplet','en'=>'⚠️ Incomplete']) ?>
+                    <br><br>
+                    <button type="button" 
+                            onclick="window.location.href='index.php?page=toggle_complete&numetu=<?= urlencode($student['NumEtu'] ?? '') ?>&lang=<?= htmlspecialchars($this->lang) ?>'"
+                            class="btn-secondary"
+                            style="margin-top: 10px;">
+                        <?= ($student['IsComplete'] ?? 0) 
+                            ? $this->t(['fr'=>'Marquer comme incomplet','en'=>'Mark as incomplete']) 
+                            : $this->t(['fr'=>'Marquer comme complet','en'=>'Mark as complete']) ?>
+                    </button>
                 </div>
             </div>
 
