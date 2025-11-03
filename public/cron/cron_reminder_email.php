@@ -9,16 +9,35 @@
  * Placez ce fichier dans le dossier public/cron/ de votre projet.
  */
 
-require_once __DIR__ . '/../../vendor/autoload.php'; // adapter si nécessaire
+// require project autoloader and Database class (paths relative to this file)
+require_once __DIR__ . '/../../Autoloader.php';
+require_once __DIR__ . '/../../Database.php';
 
+// try to load vendor/autoload (to use vlucas/phpdotenv if present)
+$projectRoot = realpath(__DIR__ . '/../../');
+if ($projectRoot !== false && file_exists($projectRoot . '/vendor/autoload.php')) {
+    require_once $projectRoot . '/vendor/autoload.php';
+
+    // load .env into $_ENV for CLI if present
+    if (file_exists($projectRoot . '/.env')) {
+        try {
+            $dot = Dotenv\Dotenv::createImmutable($projectRoot);
+            $dot->load();
+        } catch (Exception $e) {
+            error_log("Unable to load .env: " . $e->getMessage());
+        }
+    }
+}
+
+// Import namespaced classes that the autoloader maps
 use Service\Email\EmailReminderService;
-use Database;
 
 define('DAYS_BEFORE_RELAY', 7); // nombre de jours avant de renvoyer une relance
 
 $dryRun = (isset($argv) && in_array('--dry-run', $argv, true));
 
 try {
+    // Create DB connection via your singleton Database class
     $pdo = Database::getInstance()->getConnection();
 
     // Lire les dossiers incomplets depuis la table `dossiers`
@@ -32,7 +51,7 @@ try {
     }
 
     foreach ($rows as $r) {
-        $numEtu     = $r['NumEtu']; // reste string (ex: 'k2025002')
+        $numEtu      = $r['NumEtu']; // reste string (ex: 'k2025002')
         $studentName = trim(($r['Prenom'] ?? '') . ' ' . ($r['Nom'] ?? ''));
         $email       = $r['EmailAMU'] ?: $r['EmailPersonnel'] ?: null;
 
