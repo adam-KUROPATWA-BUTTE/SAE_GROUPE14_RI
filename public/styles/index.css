@@ -427,9 +427,61 @@ li a:hover {
     color: #fff;
 }
 
+
+/* === BOUTON TRITANOPIE (interrupteur) === */
+#theme-toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    position : relative;
+    top : -15px;
+    right : 15px;
+}
+
+/* Le switch violet */
+.toggle-switch {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    background-color: var(--primary-color);
+    border-radius: 30px;
+    transition: background-color 0.3s ease;
+}
+
+/* Le petit rond blanc */
+.toggle-switch::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+/* Quand le mode tritanopie est activé */
+#theme-toggle.active .toggle-switch {
+    background-color: var(--primary-color) /* vert ou couleur accessible */
+}
+
+#theme-toggle.active .toggle-switch::before {
+    transform: translateX(30px);
+}
+
+
 .menu-toggle {
     display: none;
 }
+
+
 
 @media (max-width: 810px) {
     header {

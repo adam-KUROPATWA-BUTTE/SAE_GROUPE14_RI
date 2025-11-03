@@ -67,9 +67,7 @@ class HomePage
                             <a href="#" onclick="changeLang('en'); return false;">English</a>
                         </div>
                     </div>
-                    <button id="theme-toggle" onclick="window.location.href='?toggleTritanopia=1'">
-                        <?= $this->t(['fr'=>'Mode tritanopie','en'=>'Tritanopia Mode']) ?>
-                    </button>
+
 
 
                     <?php if ($this->isLoggedIn): ?>
@@ -83,6 +81,10 @@ class HomePage
                     <?php endif; ?>
                 </div>
             </div>
+
+            <button id="theme-toggle">
+                <span class="toggle-switch"></span>
+            </button>
 
             <nav class="menu">
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
@@ -191,11 +193,7 @@ class HomePage
 
             document.getElementById('theme-toggle').addEventListener('click', function() {
                 document.body.classList.toggle('tritanopie');
-                if (document.body.classList.contains('tritanopie')) {
-                    this.textContent = '<?= $this->t(['fr'=>'Thème normal','en'=>'Normal Mode']) ?>';
-                } else {
-                    this.textContent = '<?= $this->t(['fr'=>'Mode tritanopie','en'=>'Tritanopia Mode']) ?>';
-                }
+                this.classList.toggle('active');
             });
         </script>
         </body>
