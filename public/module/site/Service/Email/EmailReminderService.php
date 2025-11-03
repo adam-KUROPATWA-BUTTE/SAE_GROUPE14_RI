@@ -26,7 +26,7 @@ class EmailReminderService
         $result = mail($toEmail, $subject, $message, implode("\r\n", $headers));
 
         if (!$result) {
-            error_log("RelanceEmailService: échec envoi mail à {$toEmail} pour dossier {$dossierId}");
+            error_log("EmailReminderService: échec envoi mail à {$toEmail} pour dossier {$dossierId}");
         }
 
         return $result;
@@ -34,21 +34,32 @@ class EmailReminderService
 
     private static function buildMessage(int $dossierId, string $studentName, array $itemsToComplete): string
     {
-        $safeName = htmlspecialchars(trim($studentName ?: ''));
+        $safeName = htmlspecialchars(trim($studentName ?: ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $itemsHtml = '';
 
         if (!empty($itemsToComplete)) {
-            $itemsHtml .= '<ul>';
+            $itemsHtml .= '<ul style="margin:0 0 16px 20px;">';
             foreach ($itemsToComplete as $it) {
-                $itemsHtml .= '<li>' . htmlspecialchars($it) . '</li>';
+                $itemsHtml .= '<li>' . htmlspecialchars($it, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</li>';
             }
             $itemsHtml .= '</ul>';
         } else {
             $itemsHtml = '<p>Merci de compléter les pièces manquantes de votre dossier afin que nous puissions poursuivre le traitement.</p>';
         }
 
-        $logoUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBl1mF7ktLaJxYCRD64rZyUJ1WcUDvcJBcIw&s';
+        // Logo AMU — remplacez par votre URL d'image hébergée si nécessaire
+        $logoUrl = 'https://www.univ-amu.fr/sites/all/themes/amu/logo.png';
+
         $link = "https://ri-amu.app/index.php?page=folders-student&action=view&id={$dossierId}";
+
+        // Bouton HTML
+        $buttonHtml = '<div style="text-align:center;margin:18px 0;">
+            <a href="' . htmlspecialchars($link, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '" style="background-color:#1d7ac6;color:#fff;padding:10px 18px;text-decoration:none;border-radius:4px;display:inline-block;">Accéder à mon dossier</a>
+        </div>';
+
+        // Footer
+        $footer = '<p style="color:#666;font-size:13px;margin:12px 0 0;">Mail automatique • Service Relation International</p>
+                   <p style="color:#999;font-size:12px;margin:8px 0 0;">Copyright © IUT Aix-en-Provence</p>';
 
         return "
 <!DOCTYPE html>
