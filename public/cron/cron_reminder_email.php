@@ -8,8 +8,8 @@
  *
  * Placez ce fichier dans le dossier public/cron/ de votre projet.
  */
-
-require_once __DIR__ . '/../../vendor/autoload.php'; // adapter si nécessaire
+require_once __DIR__ . '/../../Autoloader.php';
+require_once __DIR__ . '/../../Database.php';
 
 use Service\Email\EmailReminderService;
 use Database;
