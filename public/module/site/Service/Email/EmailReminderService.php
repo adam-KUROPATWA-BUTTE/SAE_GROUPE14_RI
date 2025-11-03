@@ -47,25 +47,39 @@ class EmailReminderService
             $itemsHtml = '<p>Merci de compléter les pièces manquantes de votre dossier afin que nous puissions poursuivre le traitement.</p>';
         }
 
+        $logoUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBl1mF7ktLaJxYCRD64rZyUJ1WcUDvcJBcIw&s';
         $link = "https://ri-amu.app/index.php?page=folders-student&action=view&id={$dossierId}";
 
         return "
 <!DOCTYPE html>
-<html>
-<head><meta charset='utf-8'></head>
-<body style='font-family: Arial, sans-serif; color:#333;'>
-  <div style='max-width:600px;margin:0 auto;padding:20px;'>
-    <h2 style='color:#2c3e50;'>Relance : dossier incomplet</h2>
-    <p>Bonjour {$safeName},</p>
-    <p>Votre dossier n°{$dossierId} est actuellement incomplet.</p>
-    {$itemsHtml}
-    <p style='text-align:center;margin:20px 0;'>
-      <a href='{$link}' style='background:#2c3e50;color:#fff;padding:10px 16px;text-decoration:none;border-radius:4px;'>Accéder à mon dossier</a>
-    </p>
-    <p style='color:#666;font-size:13px;'>Si vous avez déjà transmis les documents, veuillez ignorer ce message.</p>
-    <hr style='border:none;border-top:1px solid #eee;'/>
-    <p style='font-size:12px;color:#999;'>IUT Aix-en-Provence</p>
-  </div>
+<html lang=\"fr\">
+<head>
+  <meta charset=\"utf-8\">
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
+  <title>Relance dossier</title>
+</head>
+<body style=\"font-family: Arial, Helvetica, sans-serif; background:#f6f6f6; margin:0; padding:20px;\">
+  <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\">
+    <tr>
+      <td align=\"center\">
+        <table width=\"600\" cellpadding=\"0\" cellspacing=\"0\" role=\"presentation\" style=\"background:#ffffff;padding:20px;border-radius:4px;\">
+          <tr>
+            <td style=\"text-align:left\">
+              <img src=\"{$logoUrl}\" alt=\"AMU\" style=\"height:48px;display:block;margin-bottom:18px;\">
+              <h2 style=\"margin:0 0 12px 0;\">Dossier Incomplet</h2>
+              <p style=\"margin:0 0 12px 0;\">Bonjour {$safeName},</p>
+              <p style=\"margin:0 0 12px 0;\">Votre dossier <strong>n°{$dossierId}</strong> est actuellement incomplet.</p>
+              {$itemsHtml}
+              {$buttonHtml}
+              <h4 style=\"margin:18px 0 6px 0;\">Questions?</h4>
+              <p style=\"margin:0 0 12px 0;\">Si vous avez des questions, contactez le support à <a href=\"mailto:support@iut-aix.fr\">support@iut-aix.fr</a>.</p>
+              {$footer}
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>
         ";
