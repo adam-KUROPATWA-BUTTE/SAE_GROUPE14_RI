@@ -38,7 +38,7 @@ class DashboardPageAdmin
         <body>
         <header>
             <div class="top-bar">
-                <img src="img/logo.png" alt="Logo" style="height:80px;">
+                <img class="logo_amu" src="img/logo.png" alt="Logo">
                 <div class="right-buttons">
                     <div class="lang-dropdown">
                         <button class="dropbtn"><?= htmlspecialchars($this->lang) ?></button>
