@@ -125,8 +125,8 @@ class HomePage
                     <div class="chart-container">
                         <div class="donut-chart">
                             <svg width="300" height="300">
-                                <circle r="<?= $radius ?>" cx="150" cy="150" fill="transparent" stroke="#EBC55E" stroke-width="40"></circle>
-                                <circle r="<?= $radius ?>" cx="150" cy="150" fill="transparent" stroke="#2B91BB" stroke-width="40"
+                                <circle id="circle_incomplet" r="<?= $radius ?>" cx="150" cy="150" fill="transparent" stroke-width="40"></circle>
+                                <circle id="circle_complet" r="<?= $radius ?>" cx="150" cy="150" fill="transparent" stroke-width="40"
                                         stroke-dasharray="<?= $dashArray ?> <?= $circumference ?>"
                                         stroke-linecap="round"></circle>
                             </svg>
