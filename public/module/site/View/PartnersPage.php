@@ -44,9 +44,9 @@ class PartnersPage
         <body class="<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'tritanopie' : '' ?>">
         <header>
             <div class="top-bar">
-                <img id="logo_amu" src="img/logo.png" alt="Logo" style="height:100px;">
+                <img class="logo_amu" src="img/logo.png" alt="Logo">
                 <div class="right-buttons">
-                    <div class="lang-dropdown" style="float:right; margin-top: 30px; margin-right: 20px;">
+                    <div class="lang-dropdown">
                         <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
                         <div class="dropdown-content">
                             <a href="#" onclick="changeLang('fr'); return false;">Français</a>
@@ -96,7 +96,7 @@ class PartnersPage
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
             <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
-                <img src="img/instagram.png" alt="Instagram" style="height:32px;">
+                <img class="insta" src="img/instagram.png" alt="Instagram">
             </a>
         </footer>
 
