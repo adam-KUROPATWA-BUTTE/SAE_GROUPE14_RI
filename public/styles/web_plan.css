@@ -39,7 +39,7 @@ main {
 
 h1 {
     text-align: center;
-    color: #005C45;
+    color: var(--primary-color);
 }
 
 ul {
@@ -58,7 +58,7 @@ li a {
     text-align: center;
     padding: 1em;
     background: #f0f4ff;
-    color: #009b73;
+    color:var(--accent-color);
     text-decoration: none;
     border-radius: 5px;
     font-size: 1.1em;
@@ -66,12 +66,12 @@ li a {
 }
 
 li a:hover {
-    background: #005C45;
+    background:var(--primary-color);
     color: #fff;
 }
 
 footer {
-    background: #005C45;
+    background:var(--primary-color);
     color: #ffffff;
     text-align: center;
     padding: 2rem 1rem;
@@ -113,7 +113,7 @@ footer p {
 }
 
 .help-popup-header {
-    background-color: #009b73;
+    background-color: var(--accent-color);
     color: white;
     padding: 10px;
     font-weight: bold;
