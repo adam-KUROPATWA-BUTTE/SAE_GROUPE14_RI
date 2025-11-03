@@ -6,11 +6,8 @@ class EmailReminderService
     private static string $fromEmail = 'noreply@iut-aix.fr';
     private static string $fromName = 'IUT Aix - Gestion Dossiers';
 
-    /**
-     * Envoie une relance pour dossier incomplet.
-     * $itemsToComplete : tableau optionnel des pièces manquantes.
-     */
-    public static function sendRelance(string $toEmail, int $dossierId, string $studentName = '', array $itemsToComplete = []): bool
+
+    public static function sendRelance(string $toEmail, int|string $dossierId, string $studentName = '', array $itemsToComplete = []): bool
     {
         $subject = "Relance : dossier incomplet (n°{$dossierId})";
 
@@ -32,7 +29,15 @@ class EmailReminderService
         return $result;
     }
 
-    private static function buildMessage(int $dossierId, string $studentName, array $itemsToComplete): string
+    /**
+     * Build the HTML email body.
+     *
+     * @param int|string $dossierId
+     * @param string $studentName
+     * @param array $itemsToComplete
+     * @return string
+     */
+    private static function buildMessage(int|string $dossierId, string $studentName, array $itemsToComplete): string
     {
         $safeName = htmlspecialchars(trim($studentName ?: ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $itemsHtml = '';
@@ -40,7 +45,7 @@ class EmailReminderService
         if (!empty($itemsToComplete)) {
             $itemsHtml .= '<ul style="margin:0 0 16px 20px;">';
             foreach ($itemsToComplete as $it) {
-                $itemsHtml .= '<li>' . htmlspecialchars($it, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</li>';
+                $itemsHtml .= '<li>' . htmlspecialchars((string)$it, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</li>';
             }
             $itemsHtml .= '</ul>';
         } else {
@@ -50,7 +55,9 @@ class EmailReminderService
         // Logo AMU — remplacez par votre URL d'image hébergée si nécessaire
         $logoUrl = 'https://www.univ-amu.fr/sites/all/themes/amu/logo.png';
 
-        $link = "https://ri-amu.app/index.php?page=folders-student&action=view&id={$dossierId}";
+        // Si le dossierId contient des caractères non numériques (ex: NumEtu), on l'encode pour l'URL
+        $encodedId = urlencode((string)$dossierId);
+        $link = "https://ri-amu.app/index.php?page=folders-student&action=view&id={$encodedId}";
 
         // Bouton HTML
         $buttonHtml = '<div style="text-align:center;margin:18px 0;">
@@ -79,7 +86,7 @@ class EmailReminderService
               <img src=\"{$logoUrl}\" alt=\"AMU\" style=\"height:48px;display:block;margin-bottom:18px;\">
               <h2 style=\"margin:0 0 12px 0;\">Dossier Incomplet</h2>
               <p style=\"margin:0 0 12px 0;\">Bonjour {$safeName},</p>
-              <p style=\"margin:0 0 12px 0;\">Votre dossier <strong>n°{$dossierId}</strong> est actuellement incomplet.</p>
+              <p style=\"margin:0 0 12px 0;\">Votre dossier <strong>n°" . htmlspecialchars((string)$dossierId, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</strong> est actuellement incomplet.</p>
               {$itemsHtml}
               {$buttonHtml}
               <h4 style=\"margin:18px 0 6px 0;\">Questions?</h4>
