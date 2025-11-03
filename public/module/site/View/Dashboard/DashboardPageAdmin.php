@@ -103,11 +103,34 @@ class DashboardPageAdmin
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université</p>
         </footer>
+
+        <!-- Bulle d'aide en bas à droite -->
+        <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
+
+        <!-- Contenu du popup d'aide -->
+        <div id="help-popup">
+            <div class="help-popup-header">
+                <span><?= $this->t(['fr'=>'Aide', 'en'=>'Help']) ?></span>
+                <button onclick="toggleHelpPopup()">✖</button>
+            </div>
+            <div class="help-popup-body">
+                <p><?= $this->t(['fr'=>'Bienvenue ! Comment pouvons-nous vous aider ?', 'en'=>'Welcome! How can we help you?']) ?></p>
+                <ul>
+                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr'=>'Page d’aide complète', 'en'=>'Full help page']) ?></a></li>
+                </ul>
+            </div>
+        </div>
+
         <script>
             function changeLang(lang) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('lang', lang);
                 window.location.href = url.toString();
+            }
+
+            function toggleHelpPopup() {
+                const popup = document.getElementById('help-popup');
+                popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
             }
         </script>
         </body>

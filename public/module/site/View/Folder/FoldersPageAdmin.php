@@ -53,8 +53,8 @@ class FoldersPageAdmin
         <body class="<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'tritanopie' : '' ?>">
         <header>
             <div class="top-bar">
-                <img src="img/logo.png" alt="Logo" style="height:100px;">
-                <div class="lang-dropdown" style="float:right; margin-top: 30px; margin-right: 20px;">
+                <img class="logo_amu" src="img/logo.png" alt="Logo">
+                <div class="lang-dropdown">
                     <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
                     <div class="dropdown-content">
                         <a href="#" onclick="changeLang('fr'); return false;">Français</a>

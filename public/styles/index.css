@@ -397,6 +397,21 @@ footer p {
     margin-bottom: 10px;
 }
 
+li a {
+    display: block;
+    padding: 1em;
+    background: #f0f4ff;
+    color:var(--accent-color);
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+}
+
+li a:hover {
+    background:var(--primary-color);
+    color: #fff;
+}
+
 #page_complete {
     display: block;
     padding: 1em;
