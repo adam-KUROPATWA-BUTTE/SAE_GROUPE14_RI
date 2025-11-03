@@ -29,7 +29,7 @@ class LoginPage
             <title>Connexion - Aix-Marseille Université</title>
             <link rel="stylesheet" href="styles/login.css">
         </head>
-        <body>
+        <body class="<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'tritanopie' : '' ?>">
             <div class="container">
 
                 <h2>Service d'authentification<br>Aix-Marseille Université</h2>

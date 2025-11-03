@@ -34,6 +34,7 @@ class HomePage
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+
         ?>
         <!DOCTYPE html>
         <html lang="<?= htmlspecialchars($this->lang) ?>">
@@ -82,9 +83,10 @@ class HomePage
                 </div>
             </div>
 
-            <button id="theme-toggle">
+            <button id="theme-toggle" onclick="window.location.href='?toggleTritanopia=1'">
                 <span class="toggle-switch"></span>
             </button>
+
 
             <nav class="menu">
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
@@ -194,7 +196,7 @@ class HomePage
             document.getElementById('theme-toggle').addEventListener('click', function() {
                 document.body.classList.toggle('tritanopie');
                 this.classList.toggle('active');
-            });
+
         </script>
         </body>
         </html>
