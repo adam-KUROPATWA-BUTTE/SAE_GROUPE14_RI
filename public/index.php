@@ -78,5 +78,7 @@ foreach ($controllers as $controller) {
 }
 
 // Page non trouvée
-http_response_code(404);
-echo "Page non trouvée (404)";
+use Controllers\site\NotFoundController;
+
+$notFound = new NotFoundController();
+$notFound->control();
