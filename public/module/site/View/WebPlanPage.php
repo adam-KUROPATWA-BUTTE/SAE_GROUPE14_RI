@@ -43,7 +43,7 @@ class WebPlanPage
         <body class="<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'tritanopie' : '' ?>">
         <header>
             <div class="top-bar">
-                <img id="logo_amu" src="img/logo.png" alt="Logo AMU">
+                <img class="logo_amu" src="img/logo.png" alt="Logo AMU">
                 <div class="right-buttons">
                     <div class="lang-dropdown">
                         <button class="dropbtn"><?= htmlspecialchars($this->lang) ?></button>
@@ -56,7 +56,7 @@ class WebPlanPage
             </div>
         </header>
 
-        <main style="padding:2em;">
+        <main>
             <h1><?= $this->t(['fr'=>'Plan du site', 'en'=>'Site Map']) ?></h1>
             <ul>
                 <?php foreach ($this->links as $link): ?>
@@ -116,7 +116,7 @@ class WebPlanPage
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
             <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
-                <img src="img/instagram.png" alt="Instagram" style="height:32px;">
+                <img class="insta" src="img/instagram.png" alt="Instagram">
             </a>
         </footer>
         </body>

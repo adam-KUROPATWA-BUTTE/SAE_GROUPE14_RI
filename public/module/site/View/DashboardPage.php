@@ -37,7 +37,7 @@ class DashboardPage
         <body class="<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'tritanopie' : '' ?>">
         <header>
             <div class="top-bar">
-                <img id="logo_amu" src="img/logo.png" alt="Logo">
+                <img class="logo_amu" src="img/logo.png" alt="Logo">
                 <div class="right-buttons">
                     <div class="lang-dropdown">
                         <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
@@ -110,13 +110,13 @@ class DashboardPage
         <!-- Contenu du popup d'aide -->
         <div id="help-popup">
             <div class="help-popup-header">
-                <span><?= $this->lang === 'en' ? 'Help' : 'Aide' ?></span>
+                <span><?= $this->t(['fr'=>'Aide', 'en'=>'Help']) ?></span>
                 <button onclick="toggleHelpPopup()">✖</button>
             </div>
             <div class="help-popup-body">
-                <p><?= $this->lang === 'en' ? 'Welcome! How can we help you?' : 'Bienvenue ! Comment pouvons-nous vous aider ?' ?></p>
+                <p><?= $this->t(['fr'=>'Bienvenue ! Comment pouvons-nous vous aider ?', 'en'=>'Welcome! How can we help you?']) ?></p>
                 <ul>
-                    <li><a id="page_complete" href="index.php?page=help" target="_blank"><?= $this->lang === 'en' ? 'Full help page' : 'Page d’aide complète' ?></a></li>
+                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr'=>'Page d’aide complète', 'en'=>'Full help page']) ?></a></li>
                 </ul>
             </div>
         </div>
@@ -148,7 +148,7 @@ class DashboardPage
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
             <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
-                <img src="img/instagram.png" alt="Instagram" style="height:32px;">
+                <img class="insta" src="img/instagram.png" alt="Instagram">
             </a>
         </footer>
         </body>

@@ -23,15 +23,19 @@ header {
     position: relative;
 }
 
-#logo_amu {
+.logo_amu {
     height: 100px;
 }
 
+
 .top-bar {
+    position : relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 5px 15px;
 }
+
 
 body {
     background-color: var(--background-color);
@@ -46,33 +50,14 @@ body {
     display: flex;
     gap: 10px;
     align-items: center;
-    position: absolute;
-    margin-top: 5px;
-    right: 15px;
-}
-
-.dropbtn {
-    background-color: var(--primary-color);
-    color: var(--text-color);
-    padding: 10px 15px;
-    font-size: 14px;
-    border: none;
-    cursor: pointer;
-}
-
-.dropbouton {
-    background-color: var(--primary-color);
-    color: var(--text-color);
-    padding: 10px 15px;
-    font-size: 14px;
-    border: none;
-    cursor: pointer;
+    margin-left :auto;
 }
 
 .lang-dropdown {
-    position: relative;
+    postion : relative;
     display: inline-block;
 }
+
 
 .dropdown-content {
     display: none;
@@ -181,6 +166,13 @@ p {
 .hero-section h1 {
     font-size: 36px;
     margin: 0;
+}
+
+.hero_logo{
+    height:80px;
+    position:absolute;
+    top:20px;
+    left:20px;
 }
 
 #hero-img {
@@ -320,6 +312,10 @@ footer p {
     font-size: 14px;
 }
 
+.insta {
+    height:32px;
+}
+
 #help-bubble {
     position: fixed;
     bottom: 20px;
@@ -338,17 +334,20 @@ footer p {
 }
 
 #help-popup {
+    display: none;
     position: fixed;
-    bottom: 90px;
+    bottom: 60px;
     right: 20px;
     width: 300px;
     background-color: white;
     border: 1px solid #ccc;
     border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    box-shadow: 0 0px 10px rgba(0,0,0,0.3);
     display: none;
-    z-index: 999;
+    z-index: 1001;
+    padding:10px;
 }
+
 
 #help-popup ul {
     list-style-type: none;
@@ -367,6 +366,7 @@ footer p {
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
 }
+
 
 .help-popup-header button {
     background: none;
@@ -413,7 +413,7 @@ footer p {
         padding: 10px;
     }
 
-    #logo_amu {
+    .logo_amu {
         width: 200px;
         height: 100px;
     }
@@ -532,7 +532,7 @@ footer p {
         padding: 5px;
     }
 
-    #logo_amu {
+    .logo_amu {
         width: 150px;
         height: auto;
     }
