@@ -60,12 +60,12 @@ try {
             continue;
         }
 
-        // Vérifier s'il y a eu une relance pour ce NumEtu dans les derniers DAYS_BEFORE_RELAY jours 
-        $checkSql = "SELECT 1 FROM relances WHERE numetu = :numetu AND date_relance >= (NOW() - INTERVAL :days DAY) LIMIT 1"; 
-        $checkStmt = $pdo->prepare($checkSql); 
-        $checkStmt->bindValue(':numetu', $numEtu, PDO::PARAM_STR); 
-        $checkStmt->bindValue(':days', DAYS_BEFORE_RELAY, PDO::PARAM_INT); 
-        $checkStmt->execute(); 
+        // Vérifier s'il y a eu une relance pour ce NumEtu dans les derniers DAYS_BEFORE_RELAY jours
+        $checkSql = "SELECT 1 FROM relances WHERE dossier_id = :dossier_id AND date_relance >= (NOW() - INTERVAL :days DAY) LIMIT 1";
+        $checkStmt = $pdo->prepare($checkSql);
+        $checkStmt->bindValue(':dossier_id', $numEtu, PDO::PARAM_STR);
+        $checkStmt->bindValue(':days', DAYS_BEFORE_RELAY, PDO::PARAM_INT);
+        $checkStmt->execute();
         $already = (bool) $checkStmt->fetchColumn();
 
         if ($already) {
@@ -85,16 +85,13 @@ try {
         $sent = EmailReminderService::sendRelance($email, $numEtu, $studentName, $itemsToComplete);
 
         // --- Remplacer par ce bloc (insertion avec dossier_id = NULL) ---
-if ($sent) {
-    // Insérer la trace de la relance sans écrire la valeur NumEtu si dossier_id est INT
-    $message = "Relance automatique envoyée à {$email} pour NumEtu={$numEtu}";
-
-    $insSql  = "INSERT INTO relances (dossier_id, numetu, message, envoye_par) VALUES (:dossier_id, :numetu, :message, NULL)";
-    $insStmt = $pdo->prepare($insSql);
-    // garder dossier_id = 0 si tu n'as pas d'id numérique lié
-    $insStmt->bindValue(':dossier_id', 0, PDO::PARAM_INT);
-    $insStmt->bindValue(':numetu', $numEtu, PDO::PARAM_STR);
-    $insStmt->bindValue(':message', $message, PDO::PARAM_STR);
+if ($sent) { 
+    $message = "Relance automatique envoyée à {$email} pour NumEtu={$numEtu}"; 
+    
+    $insSql = "INSERT INTO relances (dossier_id, message, envoye_par) VALUES (:dossier_id, :message, NULL)"; 
+    $insStmt = $pdo->prepare($insSql); 
+    $insStmt->bindValue(':dossier_id', $numEtu, PDO::PARAM_STR); 
+    $insStmt->bindValue(':message', $message, PDO::PARAM_STR); 
     $insStmt->execute();
 
     error_log("cron_relances: dossier {$numEtu} - email envoyé à {$email}");
