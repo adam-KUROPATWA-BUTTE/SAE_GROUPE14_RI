@@ -6,14 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="e4dbe818-91e3-4dc7-9532-5ab684ba46d8" name="Changes" comment="ajout de la branche daltonien">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/module/site/View/Dashboard/DashboardPageAdmin.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/module/site/View/Dashboard/DashboardPageAdmin.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/module/site/View/DashboardPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/module/site/View/DashboardPage.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/module/site/View/HelpPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/module/site/View/HelpPage.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/img/amu.png" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/public/module/site/View/HomePage.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/module/site/View/HomePage.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/module/site/View/PartnersPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/module/site/View/PartnersPage.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/module/site/View/WebPlanPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/module/site/View/WebPlanPage.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/public/styles/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/public/styles/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/styles/web_plan.css" beforeDir="false" afterPath="$PROJECT_DIR$/public/styles/web_plan.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vendor/vlucas/phpdotenv/src/Repository/Adapter/EnvConstAdapter.php" beforeDir="false" afterPath="$PROJECT_DIR$/vendor/vlucas/phpdotenv/src/Repository/Adapter/EnvConstAdapter.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -59,9 +54,9 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "remove__css",
+    "git-widget-placeholder": "update__daltonien",
     "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "/amuhome/a24029395/SAE_GROUPE14_RI",
+    "last_opened_file_path": "/Users/maelleroffidal/Desktop/S/SAE_GROUPE14_RI",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -77,6 +72,7 @@
       <recent name="$PROJECT_DIR$/img" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/public/img" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/img" />
     </key>
@@ -115,6 +111,7 @@
       <workItem from="1760967229253" duration="5538000" />
       <workItem from="1761222621960" duration="10000" />
       <workItem from="1761222634572" duration="1249000" />
+      <workItem from="1762163941109" duration="985000" />
     </task>
     <task id="LOCAL-00001" summary="ajout de la branche daltonien">
       <option name="closed" value="true" />

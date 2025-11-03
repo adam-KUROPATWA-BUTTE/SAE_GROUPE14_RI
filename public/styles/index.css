@@ -255,6 +255,14 @@ p {
     transform: rotate(-90deg);
 }
 
+#circle_incomplet{
+    stroke : var(--secondary-color);
+}
+
+#circle_complet{
+    stroke : var(--accent-color);
+}
+
 .chart-center {
     position: absolute;
     top: 50%;
