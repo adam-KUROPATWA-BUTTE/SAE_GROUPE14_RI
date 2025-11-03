@@ -8,7 +8,7 @@ class FoldersControllerAdmin
 {
     public static function support(string $page, string $method): bool
     {
-        return $page === 'folders-admin' || $page === 'save_student' || $page === 'update_student';
+        return $page === 'folders-admin' || $page === 'save_student' || $page === 'update_student' || $page === 'toggle_complete';
     }
 
     public function control(): void
@@ -27,6 +27,12 @@ class FoldersControllerAdmin
         // Si c'est une soumission de formulaire de modification
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_GET['page'] ?? '') === 'update_student') {
             $this->updateStudent();
+            return;
+        }
+
+        // Si c'est une action de basculement du statut complet/incomplet
+        if (($_GET['page'] ?? '') === 'toggle_complete' && !empty($_GET['numetu'])) {
+            $this->toggleCompleteStatus();
             return;
         }
 
@@ -245,7 +251,37 @@ class FoldersControllerAdmin
                 : 'Error updating folder';
         }
 
-        header('Location: index.php?page=folders&lang=' . $lang);
+        header('Location: index.php?page=folders-admin&lang=' . $lang);
+        exit;
+    }
+
+    private function toggleCompleteStatus(): void
+    {
+        $lang = $_GET['lang'] ?? 'fr';
+        $numetu = $_GET['numetu'] ?? '';
+
+        if (empty($numetu)) {
+            $_SESSION['message'] = $lang === 'fr'
+                ? 'Erreur : numéro étudiant manquant'
+                : 'Error: missing student ID';
+            header('Location: index.php?page=folders-admin&lang=' . $lang);
+            exit;
+        }
+
+        $success = Folder::toggleCompleteStatus($numetu);
+
+        if ($success) {
+            $_SESSION['message'] = $lang === 'fr'
+                ? 'Statut du dossier modifié avec succès'
+                : 'Folder status updated successfully';
+        } else {
+            $_SESSION['message'] = $lang === 'fr'
+                ? 'Erreur lors de la modification du statut'
+                : 'Error updating folder status';
+        }
+
+        // Rediriger vers la vue du dossier
+        header('Location: index.php?page=folders-admin&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
         exit;
     }
 }
