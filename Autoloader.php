@@ -6,7 +6,7 @@ class Autoloader
         'Controllers\\site\\' => __DIR__ . '/public/module/site/Controllers/',
         'Controllers\\' => __DIR__ . '/public/module/site/Controllers/',
         'Model\\' => __DIR__ . '/public/module/site/Model/',
-        'Config\\' => __DIR__ . '/public/module/site/config/',
+        'Service\\' => __DIR__ . '/public/module/site/Service/',
         'View\\' => __DIR__ . '/public/module/site/View/',
         'Model\\Folder\\' => __DIR__ . '/public/module/site/Model/Folder/',
         'View\\Folder\\' => __DIR__ . '/public/module/site/View/Folder/',
