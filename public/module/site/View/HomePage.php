@@ -30,6 +30,10 @@ class HomePage
         $radius = 130;
         $circumference = 2 * pi() * $radius;
         $dashArray = ($this->completionPercentage / 100) * $circumference;
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         ?>
         <!DOCTYPE html>
         <html lang="<?= htmlspecialchars($this->lang) ?>">
@@ -50,7 +54,7 @@ class HomePage
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
 
-        <body>
+        <body class="<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'tritanopie' : '' ?>">
         <!-- HEADER -->
         <header>
             <div class="top-bar">
@@ -63,6 +67,10 @@ class HomePage
                             <a href="#" onclick="changeLang('en'); return false;">English</a>
                         </div>
                     </div>
+                    <button id="theme-toggle" onclick="window.location.href='?toggleTritanopia=1'">
+                        <?= $this->t(['fr'=>'Mode tritanopie','en'=>'Tritanopia Mode']) ?>
+                    </button>
+
 
                     <?php if ($this->isLoggedIn): ?>
                         <button onclick="window.location.href='<?= $this->buildUrl('/logout') ?>'">
@@ -178,6 +186,15 @@ class HomePage
                 url.searchParams.set('lang', lang);
                 window.location.href = url.toString();
             }
+
+            document.getElementById('theme-toggle').addEventListener('click', function() {
+                document.body.classList.toggle('tritanopie');
+                if (document.body.classList.contains('tritanopie')) {
+                    this.textContent = '<?= $this->t(['fr'=>'Thème normal','en'=>'Normal Mode']) ?>';
+                } else {
+                    this.textContent = '<?= $this->t(['fr'=>'Mode tritanopie','en'=>'Tritanopia Mode']) ?>';
+                }
+            });
         </script>
         </body>
         </html>

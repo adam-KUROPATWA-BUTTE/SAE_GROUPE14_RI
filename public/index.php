@@ -4,6 +4,17 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 session_start();
 
+// bascule uniquement si le paramètre est présent
+if (isset($_GET['toggleTritanopia'])) {
+    $_SESSION['tritanopia'] = !($_SESSION['tritanopia'] ?? false);
+    // redirige pour supprimer ?toggleTritanopia de l'URL
+    header("Location: " . strtok($_SERVER["REQUEST_URI"], '?'));
+    exit;
+}
+
+// lire la session pour toutes les pages
+$tritanopiaMode = $_SESSION['tritanopia'] ?? false;
+
 define('ROOT_PATH', dirname(__DIR__));
 
 // Affichage des erreurs en dev
