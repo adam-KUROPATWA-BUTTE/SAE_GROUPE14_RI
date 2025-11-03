@@ -34,36 +34,27 @@ class DashboardController implements ControllerInterface
 
     private function showAdminDashboard(): void
     {
-        // ✅ Vérifie la session admin
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
             header('Location: /login');
             exit;
         }
 
         $lang = $_GET['lang'] ?? 'fr';
-
-        // ✅ Récupération des dossiers incomplets
         $dossiers = FolderAdmin::getDossiersIncomplets();
-
-        // ✅ Affiche la vue admin
         $page = new DashboardPageAdmin($dossiers, $lang);
         $page->render();
     }
 
     private function showStudentDashboard(): void
     {
-        // ✅ Vérifie la session étudiant
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'etudiant') {
             header('Location: /login');
             exit;
         }
 
         $lang = $_GET['lang'] ?? 'fr';
+        $dossier = FolderStudent::getMyFolder($_SESSION['etudiant_id'] ?? 0);
 
-        // ✅ Récupération du dossier étudiant
-        $dossier = FolderStudent::getDossierByEtudiantId($_SESSION['etudiant_id'] ?? 0);
-
-        // ✅ Affiche la vue étudiant
         $page = new DashboardPageStudent($dossier, $lang);
         $page->render();
     }
