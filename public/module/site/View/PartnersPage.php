@@ -89,7 +89,9 @@ class PartnersPage
                 </a>
             </p>
 
-            <img id="Université_partenaires" src="img/University.png" alt="Université partenaires">
+            <img id="Université_partenaires"
+                 src="img/<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'University_green.png' : 'University.png' ?>"
+                 alt="Université partenaires">
 
         </main>
 
