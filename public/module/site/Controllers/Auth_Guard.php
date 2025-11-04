@@ -13,7 +13,7 @@ class Auth_Guard
         }
 
         if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-            header('Location: /login-admin');
+            header('Location: /login');
             exit;
         }
     }
@@ -28,7 +28,7 @@ class Auth_Guard
         }
 
         if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
-            header('Location: /login-student');
+            header('Location: /login');
             exit;
         }
     }
@@ -58,7 +58,7 @@ class Auth_Guard
         }
 
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== $role) {
-            $loginPage = $role === 'admin' ? '/login-admin' : '/login-student';
+            $loginPage = $role === 'admin' ? '/login' : '/login';
             header('Location: ' . $loginPage);
             exit;
         }
