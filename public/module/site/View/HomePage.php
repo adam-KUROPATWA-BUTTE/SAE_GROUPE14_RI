@@ -83,10 +83,9 @@ class HomePage
                 </div>
             </div>
 
-            <button id="theme-toggle" onclick="window.location.href='?toggleTritanopia=1'">
+            <button id="theme-toggle" title="Appuyez ici si vous êtes atteint de tritanopie">
                 <span class="toggle-switch"></span>
             </button>
-
 
             <nav class="menu">
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
@@ -193,9 +192,27 @@ class HomePage
                 window.location.href = url.toString();
             }
 
-            document.getElementById('theme-toggle').addEventListener('click', function() {
-                document.body.classList.toggle('tritanopie');
-                this.classList.toggle('active');
+            document.addEventListener("DOMContentLoaded", () => {
+                const themeToggle = document.getElementById('theme-toggle');
+                themeToggle.addEventListener('click', function() {
+                    document.body.classList.toggle('tritanopie');
+                    this.classList.toggle('active');
+
+                    // Optionnel : sauvegarde dans localStorage pour que le toggle persiste
+                    if(document.body.classList.contains('tritanopie')){
+                        localStorage.setItem('tritanopie', '1');
+                    } else {
+                        localStorage.removeItem('tritanopie');
+                    }
+                });
+
+                // Vérifie si le thème tritanopie était activé au chargement
+                if(localStorage.getItem('tritanopie') === '1'){
+                    document.body.classList.add('tritanopie');
+                    themeToggle.classList.add('active');
+                }
+            });
+
 
         </script>
         </body>
