@@ -6,7 +6,7 @@ use Mailjet\Resources;
 
 class EmailReminderService
 {
-    private static string $fromEmail = 'noreply@iut-aix.fr';
+    private static string $fromEmail = 'relance-iut-amu@ri-amu.app';
     private static string $fromName = 'IUT Aix - Gestion Dossiers';
 
     public static function sendRelance(string $toEmail, int|string $dossierId, string $studentName = '', array $itemsToComplete = []): bool
@@ -70,13 +70,14 @@ class EmailReminderService
             $itemsHtml .= '<ul style="margin:0 0 16px 20px;">';
             foreach ($itemsToComplete as $it) {
                 $itemsHtml .= '<li>' . htmlspecialchars((string)$it, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</li>';
+                $itemsHtml .= '<li>' . htmlspecialchars((string)$it, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</li>';
             }
             $itemsHtml .= '</ul>';
         } else {
             $itemsHtml = '<p>Merci de compléter les pièces manquantes de votre dossier.</p>';
         }
 
-        $logoUrl = 'https://www.univ-amu.fr/sites/all/themes/amu/logo.png';
+        $logoUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBl1mF7ktLaJxYCRD64rZyUJ1WcUDvcJBcIw&s';
         $encodedId = urlencode((string)$dossierId);
         $link = "https://ri-amu.app/index.php?page=folders-student&action=view&id={$encodedId}";
 
