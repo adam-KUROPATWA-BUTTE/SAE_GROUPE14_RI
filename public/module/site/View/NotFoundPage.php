@@ -21,7 +21,7 @@ class NotFoundPage
             <link rel="stylesheet" href="styles/404.css">
             <title><?= htmlspecialchars($this->titre) ?> - 404</title>
         </head>
-        <body>
+        <body class="<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'tritanopie' : '' ?>">
             <h1>404</h1>
             <p>La page que vous cherchez n’existe pas.</p>
             <a href="/">Retour à l’accueil</a>

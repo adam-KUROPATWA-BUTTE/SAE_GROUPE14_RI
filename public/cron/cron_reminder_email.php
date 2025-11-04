@@ -60,10 +60,10 @@ try {
             continue;
         }
 
-        // Vérifier s'il y a eu une relance dans les derniers DAYS_BEFORE_RELAY jours
-        $checkSql  = "SELECT 1 FROM relances WHERE dossier_id = :dossier_id AND date_relance >= (NOW() - INTERVAL :days DAY) LIMIT 1";
+        // Vérifier s'il y a eu une relance pour ce NumEtu dans les derniers DAYS_BEFORE_RELAY jours
+        $checkSql = "SELECT 1 FROM relances WHERE dossier_id = :dossier_id AND date_relance >= (NOW() - INTERVAL :days DAY) LIMIT 1";
         $checkStmt = $pdo->prepare($checkSql);
-        $checkStmt->bindValue(':dossier_id', $numEtu);
+        $checkStmt->bindValue(':dossier_id', $numEtu, PDO::PARAM_STR);
         $checkStmt->bindValue(':days', DAYS_BEFORE_RELAY, PDO::PARAM_INT);
         $checkStmt->execute();
         $already = (bool) $checkStmt->fetchColumn();
@@ -84,22 +84,22 @@ try {
         // Envoi du mail (numEtu passé en string)
         $sent = EmailReminderService::sendRelance($email, $numEtu, $studentName, $itemsToComplete);
 
-        if ($sent) {
-            // Insérer la trace de la relance
-            $message = "Relance automatique envoyée à {$email}";
-            $insSql  = "INSERT INTO relances (dossier_id, message, envoye_par) VALUES (:dossier_id, :message, NULL)";
-            $insStmt = $pdo->prepare($insSql);
-            $insStmt->execute([
-                ':dossier_id' => $numEtu,
-                ':message'    => $message,
-            ]);
+        // --- Remplacer par ce bloc (insertion avec dossier_id = NULL) ---
+if ($sent) { 
+    $message = "Relance automatique envoyée à {$email} pour NumEtu={$numEtu}"; 
+    
+    $insSql = "INSERT INTO relances (dossier_id, message, envoye_par) VALUES (:dossier_id, :message, NULL)"; 
+    $insStmt = $pdo->prepare($insSql); 
+    $insStmt->bindValue(':dossier_id', $numEtu, PDO::PARAM_STR); 
+    $insStmt->bindValue(':message', $message, PDO::PARAM_STR); 
+    $insStmt->execute();
 
-            error_log("cron_relances: dossier {$numEtu} - email envoyé à {$email}");
-            echo "[" . date('Y-m-d H:i:s') . "] Sent to {$email} (NumEtu: {$numEtu})\n";
-        } else {
-            error_log("cron_relances: dossier {$numEtu} - échec envoi à {$email}");
-            echo "[" . date('Y-m-d H:i:s') . "] Failed to send to {$email} (NumEtu: {$numEtu})\n";
-        }
+    error_log("cron_relances: dossier {$numEtu} - email envoyé à {$email}");
+    echo "[" . date('Y-m-d H:i:s') . "] Sent to {$email} (NumEtu: {$numEtu})\n";
+} else { 
+    error_log("cron_relances: dossier {$numEtu} - échec envoi à {$email}"); 
+    echo "[" . date('Y-m-d H:i:s') . "] Failed to send to {$email} (NumEtu: {$numEtu})\n"; 
+}
 
         // Optionnel : pause courte pour ne pas surcharger le relay
         usleep(150000); // 150ms
