@@ -95,8 +95,10 @@ class DashboardPageStudent
         </main>
 
         <footer>
-            <p>&copy; 2025 - Aix-Marseille Université</p>
-        </footer>
+            <p>&copy; 2025 - Aix-Marseille Université.</p>
+            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
+                <img class="insta" src="img/instagram.png" alt="Instagram">
+            </a>
         <script>
             function changeLang(lang) {
                 const url = new URL(window.location.href);
