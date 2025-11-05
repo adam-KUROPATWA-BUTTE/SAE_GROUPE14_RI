@@ -14,8 +14,17 @@ class RelanceModel
     }
 
     /**
-     * Récupère les dossiers incomplets.
-     * Renvoie des éléments utiles : id dossier, etudiant_id, email_responsable (ou email etudiant), nom/prenom.
+     * Retrieve all incomplete dossiers.
+     *
+     * Returns useful information for sending reminders:
+     * - dossier_id: int ID of the dossier
+     * - etudiant_id: int ID of the student
+     * - email_responsable: string|null Responsible person's email (if any)
+     * - email_etudiant: string Student's email
+     * - nom: string Student's last name
+     * - prenom: string Student's first name
+     *
+     * @return array List of incomplete dossiers
      */
     public function getIncompleteDossiers(): array
     {
@@ -35,9 +44,12 @@ class RelanceModel
     }
 
     /**
-     * Insère une relance dans la table relances.
-     * message : texte sommaire de la relance (ex: "Relance automatique envoyée par script cron")
-     * envoye_par : nullable (id de l'admin qui envoie), pass NULL si script automatique.
+     * Insert a reminder (relance) for a given dossier.
+     *
+     * @param int $dossierId ID of the dossier
+     * @param string $message Text content of the reminder
+     * @param int|null $envoyePar Admin ID who sends the reminder, NULL if automatic/scripted
+     * @return bool True on success, false on failure
      */
     public function insertRelance(int $dossierId, string $message, ?int $envoyePar = null): bool
     {
@@ -51,8 +63,13 @@ class RelanceModel
     }
 
     /**
-     * (Optionnel) Vous pouvez ajouter une méthode pour vérifier la dernière relance
-     * afin d'éviter d'envoyer trop fréquemment (ex: vérifier relances sur les 7 derniers jours).
+     * Check if a reminder has been sent within the last X days.
+     *
+     * Useful to avoid sending reminders too frequently.
+     *
+     * @param int $dossierId ID of the dossier
+     * @param int $days Number of days to check
+     * @return bool True if a reminder exists in the last X days, false otherwise
      */
     public function lastRelanceWithinDays(int $dossierId, int $days): bool
     {

@@ -8,10 +8,25 @@ use Controllers\ControllerInterface;
 use Model\UserAdmin;
 use Model\UserStudent;
 
+/**
+ * AuthController
+ * 
+ * Handles authentication and registration for both students and admins.
+ * 
+ * Responsibilities:
+ *  - Display login and registration pages
+ *  - Process login for students and admins
+ *  - Register new students or admins
+ *  - Handle logout and password reset requests
+ */
 class AuthController implements ControllerInterface
 {
     /**
-     * Méthode qui vérifie si ce contrôleur gère la page demandée
+     * Determines if this controller handles the requested page.
+     *
+     * @param string $page   Requested page
+     * @param string $method HTTP method
+     * @return bool True if this controller handles the page
      */
     public static function support(string $page, string $method): bool
     {
@@ -28,11 +43,10 @@ class AuthController implements ControllerInterface
     }
 
     /**
-     * Méthode principale qui route vers la bonne action
+     * Main control method that routes requests to the appropriate action.
      */
     public function control(): void
     {
-        // Récupérer la page actuelle
         $page = $_GET['page'] ?? trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
         
         switch ($page) {
@@ -63,7 +77,9 @@ class AuthController implements ControllerInterface
     }
 
     /**
-     * Connexion universelle - détecte automatiquement le type d'utilisateur
+     * Universal login method - automatically detects user type.
+     * 
+     * Students login with student number, admins with email.
      */
     public static function login()
     {
@@ -76,24 +92,21 @@ class AuthController implements ControllerInterface
         $password = $_POST['password'] ?? '';
 
         if (empty($identifier) || empty($password)) {
-            $_SESSION['error'] = 'Veuillez remplir tous les champs';
+            $_SESSION['error'] = 'Please fill in all fields';
             header('Location: /login');
             exit();
         }
 
-        // Déterminer si c'est un email (admin) ou un numéro étudiant
+        // Detect if identifier is email (admin) or student number
         $isEmail = filter_var($identifier, FILTER_VALIDATE_EMAIL);
 
         if ($isEmail) {
-            // Tentative de connexion Admin
             $result = UserAdmin::login($identifier, $password);
         } else {
-            // Tentative de connexion Étudiant (par numéro)
             $result = UserStudent::login($identifier, $password);
         }
 
         if ($result['success']) {
-            // Redirection selon le rôle
             if ($result['role'] === 'admin') {
                 header('Location: /dashboard-admin');
             } else {
@@ -101,14 +114,14 @@ class AuthController implements ControllerInterface
             }
             exit();
         } else {
-            $_SESSION['error'] = 'Identifiant ou mot de passe incorrect';
+            $_SESSION['error'] = 'Incorrect username or password';
             header('Location: /login');
             exit();
         }
     }
 
     /**
-     * Inscription étudiant (publique)
+     * Student registration (public).
      */
     public static function registerStudent()
     {
@@ -124,27 +137,27 @@ class AuthController implements ControllerInterface
         $prenom = trim($_POST['prenom'] ?? '');
         $typeEtudiant = $_POST['type_etudiant'] ?? '';
 
-        // Validation
+        // Validate inputs
         if (empty($email) || empty($password) || empty($nom) || empty($prenom) || empty($typeEtudiant)) {
-            $_SESSION['error'] = 'Veuillez remplir tous les champs';
+            $_SESSION['error'] = 'Please fill in all fields';
             header('Location: /register');
             exit();
         }
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $_SESSION['error'] = 'Email invalide';
+            $_SESSION['error'] = 'Invalid email';
             header('Location: /register');
             exit();
         }
 
         if ($password !== $passwordConfirm) {
-            $_SESSION['error'] = 'Les mots de passe ne correspondent pas';
+            $_SESSION['error'] = 'Passwords do not match';
             header('Location: /register');
             exit();
         }
 
         if (strlen($password) < 8) {
-            $_SESSION['error'] = 'Le mot de passe doit contenir au moins 8 caractères';
+            $_SESSION['error'] = 'Password must be at least 8 characters long';
             header('Location: /register');
             exit();
         }
@@ -152,28 +165,26 @@ class AuthController implements ControllerInterface
         $result = UserStudent::register($email, $password, $nom, $prenom, $typeEtudiant);
 
         if ($result) {
-            $_SESSION['success'] = 'Inscription réussie ! Vous pouvez maintenant vous connecter.';
+            $_SESSION['success'] = 'Registration successful! You can now log in.';
             header('Location: /login');
         } else {
-            $_SESSION['error'] = 'Une erreur est survenue lors de l\'inscription. L\'email est peut-être déjà utilisé.';
+            $_SESSION['error'] = 'Error occurred during registration. The email may already be used.';
             header('Location: /register');
         }
         exit();
     }
 
     /**
-     * Inscription admin (réservé aux admins connectés)
+     * Admin registration (restricted to logged-in admins).
      */
     public static function registerAdmin()
     {
-        // Vérifier que l'utilisateur est admin
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
             header('Location: /login');
             exit();
         }
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            // Afficher le formulaire
             require_once ROOT_PATH . '/public/module/site/View/register_admin.php';
             return;
         }
@@ -184,27 +195,27 @@ class AuthController implements ControllerInterface
         $nom = trim($_POST['nom'] ?? '');
         $prenom = trim($_POST['prenom'] ?? '');
 
-        // Validation
+        // Validate inputs
         if (empty($email) || empty($password) || empty($nom) || empty($prenom)) {
-            $_SESSION['error'] = 'Veuillez remplir tous les champs';
+            $_SESSION['error'] = 'Please fill in all fields';
             header('Location: /register-admin');
             exit();
         }
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $_SESSION['error'] = 'Email invalide';
+            $_SESSION['error'] = 'Invalid email';
             header('Location: /register-admin');
             exit();
         }
 
         if ($password !== $passwordConfirm) {
-            $_SESSION['error'] = 'Les mots de passe ne correspondent pas';
+            $_SESSION['error'] = 'Passwords do not match';
             header('Location: /register-admin');
             exit();
         }
 
         if (strlen($password) < 8) {
-            $_SESSION['error'] = 'Le mot de passe doit contenir au moins 8 caractères';
+            $_SESSION['error'] = 'Password must be at least 8 characters long';
             header('Location: /register-admin');
             exit();
         }
@@ -212,17 +223,17 @@ class AuthController implements ControllerInterface
         $result = UserAdmin::register($email, $password, $nom, $prenom, $_SESSION['admin_id']);
 
         if ($result) {
-            $_SESSION['success'] = 'Admin créé avec succès !';
+            $_SESSION['success'] = 'Admin created successfully!';
             header('Location: /dashboard-admin');
         } else {
-            $_SESSION['error'] = 'Une erreur est survenue. L\'email est peut-être déjà utilisé.';
+            $_SESSION['error'] = 'Error occurred. Email may already be used.';
             header('Location: /register-admin');
         }
         exit();
     }
 
     /**
-     * Demande de réinitialisation de mot de passe
+     * Request password reset.
      */
     public static function requestPasswordReset()
     {
@@ -234,23 +245,22 @@ class AuthController implements ControllerInterface
         $email = trim($_POST['email'] ?? '');
 
         if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $_SESSION['error'] = 'Veuillez entrer une adresse email valide';
+            $_SESSION['error'] = 'Please enter a valid email address';
             header('Location: /forgot-password');
             exit();
         }
 
-        // Tenter les deux (admin et étudiant)
+        // Attempt reset for both admin and student
         UserAdmin::resetPassword($email);
         UserStudent::resetPassword($email);
 
-        // Message générique pour ne pas révéler si l'email existe
-        $_SESSION['success'] = 'Si cette adresse email existe, vous recevrez un lien de réinitialisation.';
+        $_SESSION['success'] = 'If this email exists, you will receive a reset link.';
         header('Location: /login');
         exit();
     }
 
     /**
-     * Déconnexion universelle
+     * Universal logout.
      */
     public static function logout()
     {
@@ -267,11 +277,10 @@ class AuthController implements ControllerInterface
     }
 
     /**
-     * Afficher la page de connexion
+     * Display login page.
      */
     public static function showLoginPage()
     {
-        // Récupérer les messages de session
         $message = '';
         if (isset($_SESSION['error'])) {
             $message = $_SESSION['error'];
@@ -280,23 +289,20 @@ class AuthController implements ControllerInterface
             $message = $_SESSION['success'];
             unset($_SESSION['success']);
         }
-        
-        // Utiliser le fichier Login.php qui instancie LoginPage
+
         $isTokenReset = false;
         $isLogin = true;
         $isReset = false;
         $token = '';
-        
+
         require_once ROOT_PATH . '/public/module/site/View/Login.php';
     }
 
     /**
-     * Afficher la page d'inscription étudiant
+     * Display student registration page.
      */
     public static function showRegisterPage()
     {
-        // TODO: Créer RegisterPage.php si nécessaire
-        echo "Page d'inscription étudiant - À implémenter";
+        echo "Student registration page - To be implemented";
     }
-
 }

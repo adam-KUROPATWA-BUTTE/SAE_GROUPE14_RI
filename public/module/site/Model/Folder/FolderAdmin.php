@@ -5,13 +5,21 @@ use Model\Folder\FolderAdmin;
 
 class FolderAdmin
 {
+    /**
+     * Get a PDO connection via the Database class
+     *
+     * @return \PDO
+     */
     private static function getConnection(): \PDO
     {
-        // Utiliser la classe Database pour la connexion
         return \Database::getInstance()->getConnection();
     }
 
-    // Récupérer tous les dossiers (équivalent de getAll)
+    /**
+     * Retrieve all folders (equivalent to getAll)
+     *
+     * @return array List of all folders
+     */
     public static function getAll()
     {
         $pdo = self::getConnection();
@@ -41,12 +49,16 @@ class FolderAdmin
 
             return $stmt->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
-            error_log("Erreur récupération dossiers : " . $e->getMessage());
+            error_log("Error fetching folders: " . $e->getMessage());
             return [];
         }
     }
 
-    // Récupérer dossiers incomplets (IsComplete = 0 ou NULL)
+    /**
+     * Retrieve incomplete folders (IsComplete = 0 or NULL)
+     *
+     * @return array List of incomplete folders
+     */
     public static function getDossiersIncomplets()
     {
         $pdo = self::getConnection();
@@ -77,25 +89,32 @@ class FolderAdmin
 
             return $stmt->fetchAll(\PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
-            error_log("Erreur récupération dossiers incomplets : " . $e->getMessage());
+            error_log("Error fetching incomplete folders: " . $e->getMessage());
             return [];
         }
     }
 
-    // Créer un nouveau dossier dans la table dossiers
+    /**
+     * Create a new folder in the folders table
+     *
+     * @param array $data Folder data
+     * @param string|null $photoData Binary photo data
+     * @param string|null $cvData Binary CV data
+     * @return bool
+     */
     public static function creerDossier($data, $photoData = null, $cvData = null)
     {
         $pdo = self::getConnection();
 
         try {
-            // ✅ Convertir les chaînes vides en NULL
+            // Convert empty strings to NULL
             foreach ($data as $key => $value) {
                 if ($value === '') {
                     $data[$key] = null;
                 }
             }
 
-            // ✅ Gérer spécifiquement DateNaissance qui doit être NULL ou DATE valide
+            // Ensure DateNaissance is NULL or valid DATE
             if (!empty($data['naissance'])) {
                 $date = \DateTime::createFromFormat('Y-m-d', $data['naissance']);
                 if (!$date || $date->format('Y-m-d') !== $data['naissance']) {
@@ -115,17 +134,13 @@ class FolderAdmin
                 )
             ");
 
-            // Préparer les pièces justificatives en JSON
+            // Prepare justificative files as JSON
             $pieces = [];
-            if ($photoData !== null) {
-                $pieces['photo'] = base64_encode($photoData);
-            }
-            if ($cvData !== null) {
-                $pieces['cv'] = base64_encode($cvData);
-            }
+            if ($photoData !== null) $pieces['photo'] = base64_encode($photoData);
+            if ($cvData !== null) $pieces['cv'] = base64_encode($cvData);
             $piecesJson = json_encode($pieces);
 
-            $result = $stmt->execute([
+            return $stmt->execute([
                 ':NumEtu' => $data['NumEtu'],
                 ':Nom' => $data['Nom'],
                 ':Prenom' => $data['Prenom'],
@@ -142,15 +157,18 @@ class FolderAdmin
                 ':Zone' => $data['Zone'],
                 ':PiecesJustificatives' => $piecesJson
             ]);
-
-            return $result;
         } catch (\PDOException $e) {
-            error_log("Erreur création dossier : " . $e->getMessage());
+            error_log("Error creating folder: " . $e->getMessage());
             return false;
         }
     }
 
-    // Récupérer un dossier par email
+    /**
+     * Retrieve a folder by email
+     *
+     * @param string $email
+     * @return array|null
+     */
     public static function getByEmail(string $email)
     {
         $pdo = self::getConnection();
@@ -181,12 +199,17 @@ class FolderAdmin
             $stmt->execute([':email' => $email]);
             return $stmt->fetch(\PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
-            error_log("Erreur récupération dossier par email : " . $e->getMessage());
+            error_log("Error fetching folder by email: " . $e->getMessage());
             return null;
         }
     }
 
-    // Récupérer un dossier par NumEtu
+    /**
+     * Retrieve a folder by student number (NumEtu)
+     *
+     * @param string $numetu
+     * @return array|null
+     */
     public static function getByNumetu(string $numetu)
     {
         $pdo = self::getConnection();
@@ -217,12 +240,17 @@ class FolderAdmin
             $stmt->execute([':numetu' => $numetu]);
             return $stmt->fetch(\PDO::FETCH_ASSOC);
         } catch (\PDOException $e) {
-            error_log("Erreur récupération dossier par NumEtu : " . $e->getMessage());
+            error_log("Error fetching folder by NumEtu: " . $e->getMessage());
             return null;
         }
     }
 
-    // Récupérer les détails complets d'un étudiant avec décodage des pièces
+    /**
+     * Get full student details with decoded justificative files
+     *
+     * @param string $numetu
+     * @return array|null
+     */
     public static function getStudentDetails(string $numetu)
     {
         $pdo = self::getConnection();
@@ -252,41 +280,43 @@ class FolderAdmin
             ");
             $stmt->execute([':numetu' => $numetu]);
             $result = $stmt->fetch(\PDO::FETCH_ASSOC);
-            
+
             if ($result) {
-                // Décoder les pièces justificatives JSON
-                if (!empty($result['PiecesJustificatives'])) {
-                    $result['pieces'] = json_decode($result['PiecesJustificatives'], true) ?? [];
-                } else {
-                    $result['pieces'] = [];
-                }
+                // Decode justificative files JSON
+                $result['pieces'] = !empty($result['PiecesJustificatives'])
+                    ? json_decode($result['PiecesJustificatives'], true) ?? []
+                    : [];
             }
-            
+
             return $result;
         } catch (\PDOException $e) {
-            error_log("Erreur récupération détails étudiant : " . $e->getMessage());
+            error_log("Error fetching student details: " . $e->getMessage());
             return null;
         }
     }
-    // Mettre à jour un dossier
+
+    /**
+     * Update a folder
+     *
+     * @param array $data Folder data
+     * @param string|null $photoData Binary photo data
+     * @param string|null $cvData Binary CV data
+     * @return bool
+     */
     public static function updateDossier($data, $photoData = null, $cvData = null)
     {
         $pdo = self::getConnection();
 
         try {
-            // Récupérer l'ancien PiecesJustificatives
+            // Retrieve old justificative files
             $existing = self::getByNumetu($data['NumEtu']);
             $oldPieces = [];
             if ($existing && !empty($existing['PiecesJustificatives'])) {
                 $oldPieces = json_decode($existing['PiecesJustificatives'], true) ?? [];
             }
 
-            if ($photoData !== null) {
-                $oldPieces['photo'] = base64_encode($photoData);
-            }
-            if ($cvData !== null) {
-                $oldPieces['cv'] = base64_encode($cvData);
-            }
+            if ($photoData !== null) $oldPieces['photo'] = base64_encode($photoData);
+            if ($cvData !== null) $oldPieces['cv'] = base64_encode($cvData);
             $piecesJson = json_encode($oldPieces);
 
             $stmt = $pdo->prepare("
@@ -327,12 +357,17 @@ class FolderAdmin
                 ':PiecesJustificatives' => $piecesJson
             ]);
         } catch (\PDOException $e) {
-            error_log("Erreur mise à jour dossier : " . $e->getMessage());
+            error_log("Error updating folder: " . $e->getMessage());
             return false;
         }
     }
 
-    // Supprimer un dossier par NumEtu
+    /**
+     * Delete a folder by NumEtu
+     *
+     * @param string $numetu
+     * @return bool
+     */
     public static function supprimerDossier($numetu)
     {
         $pdo = self::getConnection();
@@ -341,18 +376,31 @@ class FolderAdmin
             $stmt = $pdo->prepare("DELETE FROM dossiers WHERE NumEtu = :numetu");
             return $stmt->execute([':numetu' => $numetu]);
         } catch (\PDOException $e) {
-            error_log("Erreur suppression dossier : " . $e->getMessage());
+            error_log("Error deleting folder: " . $e->getMessage());
             return false;
         }
     }
 
-    // Ajouter une relance (vide ici, à compléter selon besoin)
+    /**
+     * Add a reminder (currently empty, to be completed as needed)
+     *
+     * @param int $dossierId
+     * @param string $message
+     * @param int $adminId
+     * @return bool
+     */
     public static function ajouterRelance($dossierId, $message, $adminId)
     {
         return true;
     }
 
-    // Valider un dossier (par exemple changer IsComplete à 1)
+    /**
+     * Validate a folder (for example, set IsComplete to 1)
+     *
+     * @param string $numetu
+     * @param int|null $adminId
+     * @return bool
+     */
     public static function valider($numetu, $adminId = null)
     {
         $pdo = self::getConnection();
@@ -365,18 +413,22 @@ class FolderAdmin
             ");
             return $stmt->execute([':numetu' => $numetu]);
         } catch (\PDOException $e) {
-            error_log("Erreur validation dossier : " . $e->getMessage());
+            error_log("Error validating folder: " . $e->getMessage());
             return false;
         }
     }
 
-    // Basculer le statut complet/incomplet d'un dossier
+    /**
+     * Toggle the complete/incomplete status of a folder
+     *
+     * @param string $numetu
+     * @return bool
+     */
     public static function toggleCompleteStatus(string $numetu): bool
     {
         $pdo = self::getConnection();
 
         try {
-            // Récupérer le statut actuel
             $stmt = $pdo->prepare("
                 SELECT IsComplete 
                 FROM dossiers 
@@ -384,12 +436,10 @@ class FolderAdmin
             ");
             $stmt->execute([':numetu' => $numetu]);
             $current = $stmt->fetch(\PDO::FETCH_ASSOC);
-            
-            if (!$current) {
-                return false;
-            }
 
-            // Basculer le statut (0/1 ou NULL devient 1, 1 devient 0)
+            if (!$current) return false;
+
+            // Toggle status: 0/NULL becomes 1, 1 becomes 0
             $newStatus = ($current['IsComplete'] == 1) ? 0 : 1;
 
             $stmt = $pdo->prepare("
@@ -397,37 +447,49 @@ class FolderAdmin
                 SET IsComplete = :status
                 WHERE NumEtu = :numetu
             ");
-            return $stmt->execute([
-                ':status' => $newStatus,
-                ':numetu' => $numetu
-            ]);
+            return $stmt->execute([':status' => $newStatus, ':numetu' => $numetu]);
         } catch (\PDOException $e) {
-            error_log("Erreur basculement statut dossier : " . $e->getMessage());
+            error_log("Error toggling folder status: " . $e->getMessage());
             return false;
         }
     }
 
-    // Upload photo (met à jour PiecesJustificatives)
+    /**
+     * Upload a photo and update PiecesJustificatives
+     *
+     * @param string $numetu
+     * @param array $file Uploaded file array
+     * @return bool
+     */
     public static function uploadPhoto($numetu, $file)
     {
-        if (!file_exists($file['tmp_name'])) {
-            return false;
-        }
+        if (!file_exists($file['tmp_name'])) return false;
         $photoData = file_get_contents($file['tmp_name']);
         return self::updatePieceJustificative($numetu, 'photo', $photoData);
     }
 
-    // Upload CV (met à jour PiecesJustificatives)
+    /**
+     * Upload a CV and update PiecesJustificatives
+     *
+     * @param string $numetu
+     * @param array $file Uploaded file array
+     * @return bool
+     */
     public static function uploadCV($numetu, $file)
     {
-        if (!file_exists($file['tmp_name'])) {
-            return false;
-        }
+        if (!file_exists($file['tmp_name'])) return false;
         $cvData = file_get_contents($file['tmp_name']);
         return self::updatePieceJustificative($numetu, 'cv', $cvData);
     }
 
-    // Méthode privée pour mettre à jour une pièce justificative dans PiecesJustificatives JSON
+    /**
+     * Private method to update a justificative file in PiecesJustificatives JSON
+     *
+     * @param string $numetu
+     * @param string $type 'photo' or 'cv'
+     * @param string $data Binary data
+     * @return bool
+     */
     private static function updatePieceJustificative(string $numetu, string $type, string $data)
     {
         $pdo = self::getConnection();
@@ -446,12 +508,9 @@ class FolderAdmin
                 SET PiecesJustificatives = :pieces
                 WHERE NumEtu = :numetu
             ");
-            return $stmt->execute([
-                ':pieces' => $piecesJson,
-                ':numetu' => $numetu
-            ]);
+            return $stmt->execute([':pieces' => $piecesJson, ':numetu' => $numetu]);
         } catch (\PDOException $e) {
-            error_log("Erreur mise à jour pièce justificative ($type) : " . $e->getMessage());
+            error_log("Error updating justificative file ($type): " . $e->getMessage());
             return false;
         }
     }

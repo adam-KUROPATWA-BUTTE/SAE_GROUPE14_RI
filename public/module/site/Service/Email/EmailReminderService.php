@@ -6,13 +6,29 @@ use Mailjet\Resources;
 
 class EmailReminderService
 {
+    /**
+     * Sender email address
+     */
     private static string $fromEmail = 'relance-iut-amu@ri-amu.app';
+
+    /**
+     * Sender display name
+     */
     private static string $fromName = 'IUT Aix - Gestion Dossiers';
 
+    /**
+     * Send a reminder email for an incomplete folder
+     *
+     * @param string $toEmail Recipient email address
+     * @param int|string $dossierId Folder ID
+     * @param string $studentName Student's name (optional)
+     * @param array $itemsToComplete List of missing items (optional)
+     * @return bool Returns true on success, false on failure
+     */
     public static function sendRelance(string $toEmail, int|string $dossierId, string $studentName = '', array $itemsToComplete = []): bool
     {
         try {
-            // Initialiser le client Mailjet
+            // Initialize Mailjet client
             $mj = new Client(
                 $_ENV['MAILJET_API_KEY'] ?? '',
                 $_ENV['MAILJET_SECRET_KEY'] ?? '',
@@ -20,10 +36,10 @@ class EmailReminderService
                 ['version' => 'v3.1']
             );
 
-            $subject = "Relance : dossier incomplet (n°{$dossierId})";
+            $subject = "Reminder: Incomplete Folder (ID {$dossierId})";
             $htmlMessage = self::buildMessage($dossierId, $studentName, $itemsToComplete);
 
-            // Construire le payload Mailjet
+            // Build Mailjet payload
             $body = [
                 'Messages' => [
                     [
@@ -44,23 +60,31 @@ class EmailReminderService
                 ]
             ];
 
-            // Envoyer via l'API Mailjet
+            // Send via Mailjet API
             $response = $mj->post(Resources::$Email, ['body' => $body]);
 
             if ($response->success()) {
-                error_log("✅ Email envoyé avec succès à {$toEmail} via Mailjet");
+                error_log("✅ Email successfully sent to {$toEmail} via Mailjet");
                 return true;
             } else {
-                error_log("❌ Erreur Mailjet: " . json_encode($response->getData()));
+                error_log("❌ Mailjet error: " . json_encode($response->getData()));
                 return false;
             }
 
         } catch (\Exception $e) {
-            error_log("❌ Exception Mailjet pour {$toEmail}: " . $e->getMessage());
+            error_log("❌ Mailjet exception for {$toEmail}: " . $e->getMessage());
             return false;
         }
     }
 
+    /**
+     * Build the HTML email message for the reminder
+     *
+     * @param int|string $dossierId Folder ID
+     * @param string $studentName Student's name
+     * @param array $itemsToComplete List of missing items
+     * @return string HTML message
+     */
     private static function buildMessage(int|string $dossierId, string $studentName, array $itemsToComplete): string
     {
         $safeName = htmlspecialchars(trim($studentName ?: ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
@@ -73,7 +97,7 @@ class EmailReminderService
             }
             $itemsHtml .= '</ul>';
         } else {
-            $itemsHtml = '<p>Merci de compléter les pièces manquantes de votre dossier.</p>';
+            $itemsHtml = '<p>Please complete the missing documents in your folder.</p>';
         }
 
         $logoUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBl1mF7ktLaJxYCRD64rZyUJ1WcUDvcJBcIw&s';
@@ -82,23 +106,23 @@ class EmailReminderService
 
         return "
 <!DOCTYPE html>
-<html lang=\"fr\">
-<head><meta charset=\"utf-8\"><title>Relance dossier</title></head>
+<html lang=\"en\">
+<head><meta charset=\"utf-8\"><title>Folder Reminder</title></head>
 <body style=\"font-family:Arial,sans-serif;background:#f6f6f6;margin:0;padding:20px;\">
   <div style=\"max-width:600px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);\">
     <div style=\"background:#1d7ac6;padding:20px;text-align:center;\">
       <img src=\"{$logoUrl}\" alt=\"AMU\" style=\"height:50px;\">
-      <h2 style=\"color:#fff;margin:10px 0 0;\">Relance - Dossier Incomplet</h2>
+      <h2 style=\"color:#fff;margin:10px 0 0;\">Reminder - Incomplete Folder</h2>
     </div>
     <div style=\"padding:30px;\">
-      <p>Bonjour {$safeName},</p>
-      <p>Votre dossier n°<strong>{$dossierId}</strong> est actuellement <strong>incomplet</strong>.</p>
+      <p>Hello {$safeName},</p>
+      <p>Your folder ID <strong>{$dossierId}</strong> is currently <strong>incomplete</strong>.</p>
       {$itemsHtml}
       <div style=\"text-align:center;margin:18px 0;\">
-        <a href=\"{$link}\" style=\"background-color:#1d7ac6;color:#fff;padding:10px 18px;text-decoration:none;border-radius:4px;display:inline-block;\">Accéder à mon dossier</a>
+        <a href=\"{$link}\" style=\"background-color:#1d7ac6;color:#fff;padding:10px 18px;text-decoration:none;border-radius:4px;display:inline-block;\">Access My Folder</a>
       </div>
-      <p style=\"font-size:14px;color:#666;\">Pour toute question, contactez le service RI.</p>
-      <p style=\"color:#666;font-size:13px;margin:12px 0 0;\">Mail automatique • Service RI</p>
+      <p style=\"font-size:14px;color:#666;\">For any questions, contact the RI service.</p>
+      <p style=\"color:#666;font-size:13px;margin:12px 0 0;\">Automatic email • RI Service</p>
     </div>
   </div>
 </body>

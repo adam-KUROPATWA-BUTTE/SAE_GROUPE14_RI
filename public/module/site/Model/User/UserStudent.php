@@ -6,7 +6,21 @@ require_once ROOT_PATH . '/Database.php';
 class UserStudent
 {
     /**
-     * Connexion étudiant (via numéro étudiant)
+     * Student login (via student number)
+     *
+     * Verifies credentials and sets session variables on success:
+     * - user_role
+     * - etudiant_id
+     * - etudiant_nom
+     * - etudiant_prenom
+     * - numetu
+     * - type_etudiant
+     *
+     * Updates last_connexion timestamp in the database.
+     *
+     * @param string $numetu Student number
+     * @param string $password Student password
+     * @return array ['success' => bool, 'role' => 'etudiant' if success]
      */
     public static function login($numetu, $password)
     {
@@ -27,7 +41,7 @@ class UserStudent
                 $_SESSION['numetu'] = $user['numetu'];
                 $_SESSION['type_etudiant'] = $user['type_etudiant'];
 
-                // Mettre à jour la date de dernière connexion
+                // Update last login timestamp
                 $db->prepare("UPDATE etudiants SET last_connexion = NOW() WHERE id = :id")
                    ->execute(['id' => $user['id']]);
 
@@ -37,20 +51,30 @@ class UserStudent
             return ['success' => false];
 
         } catch (\PDOException $e) {
-            error_log("Erreur login étudiant : " . $e->getMessage());
+            error_log("Student login error: " . $e->getMessage());
             return ['success' => false];
         }
     }
 
     /**
-     * Inscription étudiant (publique)
+     * Student registration (public)
+     *
+     * Checks email uniqueness and validates student type ('entrant' or 'sortant').
+     * Password is hashed before storing.
+     *
+     * @param string $email Student email
+     * @param string $password Student password
+     * @param string $nom Student last name
+     * @param string $prenom Student first name
+     * @param string $typeEtudiant 'entrant' or 'sortant'
+     * @return bool True on success, false on failure
      */
     public static function register($email, $password, $nom, $prenom, $typeEtudiant)
     {
         try {
             $db = \Database::getInstance()->getConnection();
             
-            // Vérifier si l'email existe déjà (admin ou étudiant)
+            // Check if email already exists in admins or students
             $sql = "SELECT id FROM admins WHERE email = :email 
                     UNION 
                     SELECT id FROM etudiants WHERE email = :email";
@@ -58,10 +82,10 @@ class UserStudent
             $stmt->execute(['email' => $email]);
             
             if ($stmt->fetch()) {
-                return false; // Email déjà utilisé
+                return false; // Email already used
             }
             
-            // Valider le type d'étudiant
+            // Validate student type
             if (!in_array($typeEtudiant, ['entrant', 'sortant'])) {
                 return false;
             }
@@ -80,19 +104,20 @@ class UserStudent
                 'type_etudiant' => $typeEtudiant
             ]);
             
-            // NE PAS créer automatiquement le dossier
-            // L'étudiant devra le créer après connexion
-            
+            // Do not create folder automatically; student must create it after login
             return $result;
             
         } catch (\PDOException $e) {
-            error_log("Erreur register étudiant : " . $e->getMessage());
+            error_log("Student registration error: " . $e->getMessage());
             return false;
         }
     }
 
     /**
-     * Vérifier si un étudiant a un dossier
+     * Check if a student has a folder
+     *
+     * @param int $etudiantId Student ID
+     * @return bool True if folder exists, false otherwise
      */
     public static function checkDossierExists($etudiantId)
     {
@@ -107,13 +132,16 @@ class UserStudent
             return $result['count'] > 0;
             
         } catch (\PDOException $e) {
-            error_log("Erreur checkDossierExists : " . $e->getMessage());
+            error_log("checkDossierExists error: " . $e->getMessage());
             return false;
         }
     }
 
     /**
-     * Récupérer le dossier d'un étudiant
+     * Retrieve a student's folder
+     *
+     * @param int $etudiantId Student ID
+     * @return array|false Folder data or false on failure
      */
     public static function getDossier($etudiantId)
     {
@@ -127,20 +155,23 @@ class UserStudent
             return $stmt->fetch();
             
         } catch (\PDOException $e) {
-            error_log("Erreur getDossier : " . $e->getMessage());
+            error_log("getDossier error: " . $e->getMessage());
             return false;
         }
     }
 
     /**
-     * Créer un dossier pour un étudiant (appelé manuellement après connexion)
+     * Create a folder for a student (manually after login)
+     *
+     * @param int $etudiantId Student ID
+     * @return bool True on success, false if folder exists or on error
      */
     public static function createDossier($etudiantId)
     {
         try {
             $db = \Database::getInstance()->getConnection();
             
-            // Vérifier que le dossier n'existe pas déjà
+            // Check if folder already exists
             if (self::checkDossierExists($etudiantId)) {
                 return false;
             }
@@ -152,13 +183,17 @@ class UserStudent
             return $stmt->execute(['etudiant_id' => $etudiantId]);
             
         } catch (\PDOException $e) {
-            error_log("Erreur création dossier : " . $e->getMessage());
+            error_log("createDossier error: " . $e->getMessage());
             return false;
         }
     }
 
     /**
-     * Déconnexion
+     * Student logout
+     *
+     * Clears session data and cookies.
+     *
+     * @return bool True on success, false on failure
      */
     public static function logout(): bool
     {   
@@ -177,13 +212,15 @@ class UserStudent
             return true;
             
         } catch (\Exception $e) {
-            error_log("Erreur logout étudiant : " . $e->getMessage());
+            error_log("Student logout error: " . $e->getMessage());
             return false;
         }
     }
 
     /**
-     * Vérifier si l'utilisateur connecté est étudiant
+     * Check if the logged-in user is a student
+     *
+     * @return bool True if student, false otherwise
      */
     public static function isStudent(): bool
     {
@@ -191,7 +228,10 @@ class UserStudent
     }
 
     /**
-     * Récupérer les informations d'un étudiant
+     * Get student information by ID
+     *
+     * @param int $id Student ID
+     * @return array|false Student data or false on failure
      */
     public static function getById($id)
     {
@@ -207,7 +247,7 @@ class UserStudent
             return $stmt->fetch();
             
         } catch (\PDOException $e) {
-            error_log("Erreur getById étudiant : " . $e->getMessage());
+            error_log("getById student error: " . $e->getMessage());
             return false;
         }
     }
