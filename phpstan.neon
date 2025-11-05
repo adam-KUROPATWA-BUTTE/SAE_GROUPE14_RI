@@ -1,0 +1,24 @@
+parameters:
+    level: 5
+    paths:
+        - Service
+        - Model
+    excludePaths:
+        - vendor
+        - tests
+    
+    # Ignorer certaines erreurs si nécessaire
+    ignoreErrors:
+        # Exemple: ignorer les erreurs liées à la classe Database non trouvée
+        - '#Call to method getConnection\(\) on an unknown class Database#'
+        - '#Call to static method getInstance\(\) on an unknown class Database#'
+    
+    # Configuration stricte
+    checkMissingIterableValueType: true
+    checkGenericClassInNonGenericObjectType: true
+    
+    # Rapporter les variables non utilisées
+    reportUnmatchedIgnoredErrors: false
+    
+    # Niveau d'analyse pour les types
+    treatPhpDocTypesAsCertain: true 
