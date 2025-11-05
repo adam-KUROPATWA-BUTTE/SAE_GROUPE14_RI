@@ -1,16 +1,74 @@
 <?php
+/**
+ * Service d'envoi d'emails de relance pour dossiers incomplets
+ * 
+ * Ce service utilise l'API Mailjet pour envoyer des emails de relance
+ * aux étudiants ayant des dossiers incomplets.
+ * 
+ * @package Service\Email
+ * @author  Adam Kuropatwa-Butté
+ * @version 1.0.0
+ */
+
 namespace Service\Email;
 
 use Mailjet\Client;
 use Mailjet\Resources;
 
+/**
+ * Service de gestion des emails de relance
+ * 
+ * Permet d'envoyer des emails de relance personnalisés aux étudiants
+ * via l'API Mailjet avec un template HTML responsive.
+ */
 class EmailReminderService
 {
+    /**
+     * Adresse email d'envoi
+     * 
+     * @var string
+     */
     private static string $fromEmail = 'relance-iut-amu@ri-amu.app';
+
+    /**
+     * Nom de l'expéditeur affiché
+     * 
+     * @var string
+     */
     private static string $fromName = 'IUT Aix - Gestion Dossiers';
 
-    public static function sendRelance(string $toEmail, int|string $dossierId, string $studentName = '', array $itemsToComplete = []): bool
-    {
+    /**
+     * Envoie un email de relance pour un dossier incomplet
+     * 
+     * Cette méthode construit et envoie un email personnalisé via Mailjet
+     * pour informer un étudiant que son dossier est incomplet et liste
+     * les pièces manquantes.
+     * 
+     * @param string       $toEmail         Email du destinataire
+     * @param int|string   $dossierId       Identifiant du dossier
+     * @param string       $studentName     Nom de l'étudiant (optionnel)
+     * @param array<int,string> $itemsToComplete Liste des pièces à compléter
+     * 
+     * @return bool True si l'email a été envoyé avec succès, false sinon
+     * 
+     * @throws \Exception Si une erreur survient lors de l'envoi
+     * 
+     * @example
+     * ```php
+     * $success = EmailReminderService::sendRelance(
+     *     'etudiant@example.com',
+     *     123,
+     *     'Jean Dupont',
+     *     ['Carte d\'identité', 'Certificat de scolarité']
+     * );
+     * ```
+     */
+    public static function sendRelance(
+        string $toEmail,
+        int|string $dossierId,
+        string $studentName = '',
+        array $itemsToComplete = []
+    ): bool {
         try {
             // Initialiser le client Mailjet
             $mj = new Client(
@@ -54,22 +112,48 @@ class EmailReminderService
                 error_log("❌ Erreur Mailjet: " . json_encode($response->getData()));
                 return false;
             }
-
         } catch (\Exception $e) {
             error_log("❌ Exception Mailjet pour {$toEmail}: " . $e->getMessage());
             return false;
         }
     }
 
-    private static function buildMessage(int|string $dossierId, string $studentName, array $itemsToComplete): string
-    {
-        $safeName = htmlspecialchars(trim($studentName ?: ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    /**
+     * Construit le message HTML de l'email de relance
+     * 
+     * Génère un template HTML responsive avec les informations du dossier
+     * et la liste des pièces à compléter. Le contenu est sanitisé pour
+     * prévenir les attaques XSS.
+     * 
+     * @param int|string   $dossierId       Identifiant du dossier
+     * @param string       $studentName     Nom de l'étudiant
+     * @param array<int,string> $itemsToComplete Liste des pièces manquantes
+     * 
+     * @return string HTML complet de l'email
+     * 
+     * @internal Cette méthode est privée et utilisée uniquement par sendRelance()
+     */
+    private static function buildMessage(
+        int|string $dossierId,
+        string $studentName,
+        array $itemsToComplete
+    ): string {
+        $safeName = htmlspecialchars(
+            trim($studentName ?: ''),
+            ENT_QUOTES | ENT_SUBSTITUTE,
+            'UTF-8'
+        );
+        
         $itemsHtml = '';
 
         if (!empty($itemsToComplete)) {
             $itemsHtml .= '<ul style="margin:0 0 16px 20px;">';
             foreach ($itemsToComplete as $it) {
-                $itemsHtml .= '<li>' . htmlspecialchars((string)$it, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</li>';
+                $itemsHtml .= '<li>' . htmlspecialchars(
+                    (string)$it,
+                    ENT_QUOTES | ENT_SUBSTITUTE,
+                    'UTF-8'
+                ) . '</li>';
             }
             $itemsHtml .= '</ul>';
         } else {
@@ -103,5 +187,157 @@ class EmailReminderService
   </div>
 </body>
 </html>";
+    }
+}
+
+// ========================================
+// Model\Folder\RelanceModel
+// ========================================
+
+/**
+ * Modèle de gestion des relances de dossiers
+ * 
+ * Gère la récupération des dossiers incomplets et l'enregistrement
+ * des relances dans la base de données.
+ * 
+ * @package Model\Folder
+ * @author  Votre Nom
+ * @version 1.0.0
+ */
+
+namespace Model\Folder;
+
+use Database;
+use PDO;
+
+/**
+ * Classe modèle pour la gestion des relances
+ * 
+ * Fournit les méthodes pour interagir avec les tables dossiers,
+ * etudiants et relances de la base de données.
+ */
+class RelanceModel
+{
+    /**
+     * Connexion PDO à la base de données
+     * 
+     * @var PDO
+     */
+    private PDO $pdo;
+
+    /**
+     * Constructeur du modèle
+     * 
+     * Initialise la connexion PDO via la classe singleton Database
+     */
+    public function __construct()
+    {
+        $this->pdo = Database::getInstance()->getConnection();
+    }
+
+    /**
+     * Récupère tous les dossiers incomplets avec les informations des étudiants
+     * 
+     * Effectue une jointure entre les tables dossiers et etudiants pour
+     * récupérer toutes les informations nécessaires à l'envoi de relances.
+     * 
+     * @return array<int,array{
+     *     dossier_id: int,
+     *     etudiant_id: int,
+     *     email_responsable: string|null,
+     *     email_etudiant: string,
+     *     nom: string,
+     *     prenom: string
+     * }> Liste des dossiers incomplets avec leurs informations
+     * 
+     * @example
+     * ```php
+     * $model = new RelanceModel();
+     * $dossiers = $model->getIncompleteDossiers();
+     * foreach ($dossiers as $dossier) {
+     *     echo "Dossier {$dossier['dossier_id']} - {$dossier['nom']} {$dossier['prenom']}";
+     * }
+     * ```
+     */
+    public function getIncompleteDossiers(): array
+    {
+        $sql = "
+            SELECT d.id AS dossier_id,
+                   d.etudiant_id,
+                   d.email_responsable,
+                   e.email AS email_etudiant,
+                   e.nom, e.prenom
+            FROM dossiers d
+            LEFT JOIN etudiants e ON e.id = d.etudiant_id
+            WHERE d.iscomplet = 0
+        ";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Enregistre une nouvelle relance dans la base de données
+     * 
+     * Insère une entrée dans la table relances avec la date automatique.
+     * Utilisé pour tracer l'historique des relances envoyées.
+     * 
+     * @param int         $dossierId   ID du dossier concerné
+     * @param string      $message     Description de la relance
+     * @param int|null    $envoyePar   ID de l'administrateur (null si automatique)
+     * 
+     * @return bool True si l'insertion a réussi, false sinon
+     * 
+     * @example
+     * ```php
+     * // Relance automatique
+     * $model->insertRelance(123, 'Relance automatique par cron', null);
+     * 
+     * // Relance manuelle
+     * $model->insertRelance(456, 'Relance manuelle', 42);
+     * ```
+     */
+    public function insertRelance(int $dossierId, string $message, ?int $envoyePar = null): bool
+    {
+        $sql = "INSERT INTO relances (dossier_id, message, envoye_par) 
+                VALUES (:dossier_id, :message, :envoye_par)";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([
+            ':dossier_id' => $dossierId,
+            ':message' => $message,
+            ':envoye_par' => $envoyePar,
+        ]);
+    }
+
+    /**
+     * Vérifie si une relance récente existe pour un dossier
+     * 
+     * Permet d'éviter d'envoyer trop de relances à un même étudiant
+     * en vérifiant si une relance a déjà été envoyée dans la période spécifiée.
+     * 
+     * @param int $dossierId ID du dossier à vérifier
+     * @param int $days      Nombre de jours à vérifier (ex: 7 pour la dernière semaine)
+     * 
+     * @return bool True si une relance existe dans la période, false sinon
+     * 
+     * @example
+     * ```php
+     * if (!$model->lastRelanceWithinDays(123, 7)) {
+     *     // Pas de relance dans les 7 derniers jours, on peut envoyer
+     *     EmailReminderService::sendRelance(...);
+     * }
+     * ```
+     */
+    public function lastRelanceWithinDays(int $dossierId, int $days): bool
+    {
+        $sql = "SELECT 1 FROM relances 
+                WHERE dossier_id = :dossier_id 
+                AND date_relance >= (NOW() - INTERVAL :days DAY) 
+                LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':dossier_id', $dossierId, PDO::PARAM_INT);
+        $stmt->bindValue(':days', $days, PDO::PARAM_INT);
+        $stmt->execute();
+        return (bool)$stmt->fetchColumn();
     }
 }

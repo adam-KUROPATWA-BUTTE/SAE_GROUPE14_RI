@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         testdox="true"
+         cacheDirectory=".phpunit.cache">
+    
+    <testsuites>
+        <testsuite name="Unit Tests">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Integration Tests">
+            <directory>tests/Integration</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory suffix=".php">public/module/site/Service</directory>
+            <directory suffix=".php">public/module/site/Model</directory>
+        </include>
+        <exclude>
+            <directory>public/module/site/View</directory>
+            <directory>vendor</directory>
+        </exclude>
+    </source>
+
+    <coverage>
+        <report>
+            <html outputDirectory="tests/coverage"/>
+            <text outputFile="php://stdout" showUncoveredFiles="false"/>
+        </report>
+    </coverage>
+
+    <php>
+        <env name="MAILJET_API_KEY" value="test_api_key"/>
+        <env name="MAILJET_SECRET_KEY" value="test_secret_key"/>
+    </php>
+</phpunit>

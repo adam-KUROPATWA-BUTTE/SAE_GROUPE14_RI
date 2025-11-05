@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<ruleset name="Project Coding Standard">
+    <description>Coding standard pour le projet</description>
+
+    <!-- Fichiers à analyser -->
+    <file>Service</file>
+    <file>Model</file>
+
+    <!-- Fichiers à exclure -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/tests/*</exclude-pattern>
+    <exclude-pattern>*/cache/*</exclude-pattern>
+
+    <!-- Standard PSR-12 -->
+    <rule ref="PSR12"/>
+
+    <!-- Configuration supplémentaire -->
+    <arg name="colors"/>
+    <arg value="sp"/>
+    <arg name="parallel" value="8"/>
+    
+    <!-- Afficher la progression -->
+    <arg value="p"/>
+
+    <!-- Extensions de fichiers -->
+    <arg name="extensions" value="php"/>
+
+    <!-- Règles personnalisées -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="150"/>
+        </properties>
+    </rule>
+
+    <rule ref="Generic.Commenting.DocComment">
+        <exclude name="Generic.Commenting.DocComment.MissingShort"/>
+    </rule>
+
+    <!-- Vérifier la complexité cyclomatique -->
+    <rule ref="Generic.Metrics.CyclomaticComplexity">
+        <properties>
+            <property name="complexity" value="10"/>
+            <property name="absoluteComplexity" value="15"/>
+        </properties>
+    </rule>
+
+    <!-- Vérifier la profondeur d'imbrication -->
+    <rule ref="Generic.Metrics.NestingLevel">
+        <properties>
+            <property name="nestingLevel" value="5"/>
+            <property name="absoluteNestingLevel" value="8"/>
+        </properties>
+    </rule>
+</ruleset>
