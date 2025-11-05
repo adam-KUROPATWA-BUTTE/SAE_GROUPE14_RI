@@ -4,14 +4,38 @@ namespace Controllers\FolderController;
 use Model\Folder\FolderAdmin;
 use View\Folder\FoldersPageAdmin;
 
+/**
+ * Controller for managing student folders (admin side).
+ * 
+ * Responsibilities:
+ *  - Display lists of student folders
+ *  - Create new student folders
+ *  - Update existing student folders
+ */
 class FoldersControllerAdmin
 {
+    /**
+     * Checks if this controller supports the given page and method.
+     *
+     * @param string $page   Requested page name
+     * @param string $method HTTP method used (GET, POST, etc.)
+     * @return bool true if the page is handled by this controller, false otherwise
+     */
     public static function support(string $page, string $method): bool
     {
         return in_array($page, ['folders', 'save_student', 'folders-admin']);
     }
 
-
+    /**
+     * Main control method to handle the admin folder flow.
+     *
+     * Actions:
+     *  - Start session if not already started
+     *  - Handle POST requests for creating or updating students
+     *  - Retrieve student data for view or edit
+     *  - Set filters and pagination
+     *  - Render the admin view
+     */
     public function control(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -22,7 +46,7 @@ class FoldersControllerAdmin
         $action = $_GET['action'] ?? 'list';
         $lang = $_GET['lang'] ?? 'fr';
 
-        // POST
+        // Handle POST requests
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($page === 'save_student') {
                 $this->saveStudent($lang);
@@ -34,12 +58,13 @@ class FoldersControllerAdmin
             }
         }
 
-        // Récupération des données pour édition ou vue
+        // Retrieve student data for view or edit
         $studentData = null;
         if ($action === 'view' && !empty($_GET['numetu'])) {
             $studentData = FolderAdmin::getStudentDetails($_GET['numetu']);
         }
 
+        // Filters for listing students
         $filters = [
             'type' => $_GET['Type'] ?? 'all',
             'zone' => $_GET['Zone'] ?? 'all',
@@ -48,19 +73,27 @@ class FoldersControllerAdmin
             'search' => $_GET['search'] ?? ''
         ];
 
+        // Pagination
         $currentPage = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
         $perPage = 10;
 
+        // Flash message
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-        // Vue
+        // Render admin view
         $view = new FoldersPageAdmin($action, $filters, $currentPage, $perPage, $message, $lang, $studentData);
         $view->render();
     }
 
+    /**
+     * Creates a new student folder.
+     *
+     * @param string $lang Language for messages (fr or en)
+     */
     private function saveStudent(string $lang): void
     {
+        // Prepare data from POST
         $data = [
             'NumEtu' => $_POST['numetu'] ?? '',
             'Nom' => $_POST['nom'] ?? '',
@@ -78,6 +111,7 @@ class FoldersControllerAdmin
             'Zone' => $_POST['zone'] ?? 'europe'
         ];
 
+        // Basic validation
         $errors = [];
         if (empty($data['NumEtu'])) $errors[] = $lang === 'fr' ? 'Le numéro étudiant est requis' : 'Student ID is required';
         if (empty($data['Nom'])) $errors[] = $lang === 'fr' ? 'Le nom est requis' : 'Last name is required';
@@ -93,6 +127,7 @@ class FoldersControllerAdmin
             exit;
         }
 
+        // Check for existing student
         if (FolderAdmin::getByNumetu($data['NumEtu'])) {
             $_SESSION['message'] = $lang === 'fr' ? 'Un étudiant avec ce numéro existe déjà' : 'A student with this ID already exists';
             header('Location: index.php?page=folders&action=create&lang=' . $lang);
@@ -105,11 +140,14 @@ class FoldersControllerAdmin
             exit;
         }
 
+        // Handle uploaded files
         $photoData = isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK ? file_get_contents($_FILES['photo']['tmp_name']) : null;
         $cvData = isset($_FILES['cv']) && $_FILES['cv']['error'] === UPLOAD_ERR_OK ? file_get_contents($_FILES['cv']['tmp_name']) : null;
 
+        // Create folder in database
         $success = FolderAdmin::creerDossier($data, $photoData, $cvData);
 
+        // Flash message and redirect
         $_SESSION['message'] = $success
             ? ($lang === 'fr' ? 'Dossier créé avec succès' : 'Folder created successfully')
             : ($lang === 'fr' ? 'Erreur lors de la création du dossier' : 'Error creating folder');
@@ -118,8 +156,14 @@ class FoldersControllerAdmin
         exit;
     }
 
+    /**
+     * Updates an existing student folder.
+     *
+     * @param string $lang Language for messages (fr or en)
+     */
     private function updateStudent(string $lang): void
     {
+        // Prepare data from POST
         $data = [
             'NumEtu' => $_POST['numetu'] ?? '',
             'Nom' => $_POST['nom'] ?? '',
@@ -137,6 +181,7 @@ class FoldersControllerAdmin
             'Zone' => $_POST['zone'] ?? 'europe'
         ];
 
+        // Basic validation
         $errors = [];
         if (empty($data['NumEtu'])) $errors[] = $lang === 'fr' ? 'Le numéro étudiant est requis' : 'Student ID is required';
         if (empty($data['Nom'])) $errors[] = $lang === 'fr' ? 'Le nom est requis' : 'Last name is required';
@@ -150,11 +195,14 @@ class FoldersControllerAdmin
             exit;
         }
 
+        // Handle uploaded files
         $photoData = isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK ? file_get_contents($_FILES['photo']['tmp_name']) : null;
         $cvData = isset($_FILES['cv']) && $_FILES['cv']['error'] === UPLOAD_ERR_OK ? file_get_contents($_FILES['cv']['tmp_name']) : null;
 
+        // Update folder in database
         $success = FolderAdmin::updateDossier($data, $photoData, $cvData);
 
+        // Flash message and redirect
         $_SESSION['message'] = $success
             ? ($lang === 'fr' ? 'Dossier modifié avec succès' : 'Folder updated successfully')
             : ($lang === 'fr' ? 'Erreur lors de la modification du dossier' : 'Error updating folder');

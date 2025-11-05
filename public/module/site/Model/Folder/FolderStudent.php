@@ -4,23 +4,34 @@ namespace Model\Folder;
 use PDO;
 use PDOException;
 
+/**
+ * FolderStudent
+ *
+ * Handles student-specific folder operations, such as retrieving
+ * and updating their own data and uploaded documents.
+ */
 class FolderStudent
 {
     /**
-     * Connexion à la base via la classe Database
+     * Get a PDO connection using the Database singleton
+     *
+     * @return PDO
+     * @throws \RuntimeException if Database class is not loaded
      */
     private static function getConnection(): PDO
     {
-        // ✅ Vérifie que la classe Database existe bien
         if (!class_exists('\Database')) {
-            throw new \RuntimeException("Classe Database introuvable. Assure-toi que Config/Database.php est chargé.");
+            throw new \RuntimeException("Database class not found. Ensure Config/Database.php is loaded.");
         }
 
         return \Database::getInstance()->getConnection();
     }
 
     /**
-     * Récupère les infos du dossier étudiant à partir du NumEtu
+     * Retrieve a student's folder by their student number
+     *
+     * @param string $numetu
+     * @return array|null Returns associative array of folder data or null if not found
      */
     public static function getStudentDetails(string $numetu): ?array
     {
@@ -53,6 +64,7 @@ class FolderStudent
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($result) {
+                // Decode supporting documents JSON
                 $result['pieces'] = !empty($result['PiecesJustificatives'])
                     ? json_decode($result['PiecesJustificatives'], true)
                     : [];
@@ -60,29 +72,39 @@ class FolderStudent
 
             return $result ?: null;
         } catch (PDOException $e) {
-            error_log("Erreur récupération dossier étudiant : " . $e->getMessage());
+            error_log("Error retrieving student folder: " . $e->getMessage());
             return null;
         }
     }
 
     /**
-     * Méthode utilisée par le dashboard étudiant
+     * Retrieve the folder for the currently logged-in student (dashboard use)
+     *
+     * @param int $etudiantId
+     * @return array|null
      */
     public static function getMyFolder(int $etudiantId): ?array
     {
-        // Compatibilité avec DashboardController
+        // Convert student ID to string for compatibility
         return self::getStudentDetails((string)$etudiantId);
     }
 
     /**
-     * Mise à jour du dossier étudiant (champs modifiables)
+     * Update a student's folder
+     *
+     * Only certain fields are editable: address, postal code, city, telephone, email, and uploaded files.
+     *
+     * @param array $data Associative array containing fields to update
+     * @param string|null $photoData Optional new photo data (binary string)
+     * @param string|null $cvData Optional new CV data (binary string)
+     * @return bool True on success, false on failure
      */
     public static function updateDossier(array $data, ?string $photoData = null, ?string $cvData = null): bool
     {
         $pdo = self::getConnection();
 
         try {
-            // Récupérer les anciennes pièces
+            // Retrieve existing supporting documents
             $stmt = $pdo->prepare("SELECT PiecesJustificatives FROM dossiers WHERE NumEtu = :numetu");
             $stmt->execute(['numetu' => $data['NumEtu']]);
             $existing = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -91,17 +113,13 @@ class FolderStudent
                 ? json_decode($existing['PiecesJustificatives'], true)
                 : [];
 
-            // Mise à jour des fichiers
-            if ($photoData !== null) {
-                $pieces['photo'] = base64_encode($photoData);
-            }
-            if ($cvData !== null) {
-                $pieces['cv'] = base64_encode($cvData);
-            }
+            // Update files if provided
+            if ($photoData !== null) $pieces['photo'] = base64_encode($photoData);
+            if ($cvData !== null) $pieces['cv'] = base64_encode($cvData);
 
             $piecesJson = json_encode($pieces);
 
-            // Mise à jour SQL
+            // Update SQL record
             $stmt = $pdo->prepare("
                 UPDATE dossiers
                 SET 
@@ -124,7 +142,7 @@ class FolderStudent
                 'PiecesJustificatives' => $piecesJson
             ]);
         } catch (PDOException $e) {
-            error_log("Erreur mise à jour dossier étudiant : " . $e->getMessage());
+            error_log("Error updating student folder: " . $e->getMessage());
             return false;
         }
     }

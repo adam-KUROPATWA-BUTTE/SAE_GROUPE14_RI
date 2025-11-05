@@ -3,16 +3,25 @@ namespace Model;
 
 class Help
 {
+    /**
+     * Return a list of frequently asked questions (FAQ)
+     *
+     * Each FAQ item contains:
+     * - question: string The question text
+     * - answer: string The answer text, may contain HTML
+     *
+     * @return array List of FAQ items
+     */
     public static function getFaq()
     {
         return [
             [
-                'question' => "Comment réinitialiser le mot de passe d’un utilisateur ?",
-                'answer' => "Depuis la page de connexion, cliquez sur \"Mot de passe oublié\" et suivez la procédure."
+                'question' => "How to reset a user's password?",
+                'answer' => "From the login page, click on \"Forgot password\" and follow the instructions."
             ],
             [
-                'question' => "Qui contacter en cas de problème technique ?",
-                'answer' => "Contactez le support informatique AMU à <a href=\"mailto:support@amu.fr\">support@amu.fr</a>."
+                'question' => "Who to contact in case of a technical issue?",
+                'answer' => "Contact AMU IT support at <a href=\"mailto:support@amu.fr\">support@amu.fr</a>."
             ]
         ];
     }
