@@ -54,11 +54,13 @@ class FoldersPageAdmin
         <header>
             <div class="top-bar">
                 <img class="logo_amu" src="img/logo.png" alt="Logo">
-                <div class="lang-dropdown">
-                    <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
-                    <div class="dropdown-content">
-                        <a href="#" onclick="changeLang('fr'); return false;">Français</a>
-                        <a href="#" onclick="changeLang('en'); return false;">English</a>
+                <div class="right-buttons">
+                    <div class="lang-dropdown">
+                        <button class="dropbtn"><?= htmlspecialchars($this->lang) ?></button>
+                        <div class="dropdown-content">
+                            <a href="#" onclick="changeLang('fr'); return false;">Français</a>
+                            <a href="#" onclick="changeLang('en'); return false;">English</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -154,6 +156,18 @@ class FoldersPageAdmin
                 else url.searchParams.delete('zone');
                 window.location.href = url.toString();
             }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const menuToggle = document.createElement('button');
+                menuToggle.classList.add('menu-toggle');
+                menuToggle.innerHTML = '☰';
+                document.querySelector('.right-buttons').appendChild(menuToggle);
+
+                const navMenu = document.querySelector('nav.menu');
+                menuToggle.addEventListener('click', () => {
+                    navMenu.classList.toggle('active');
+                });
+            });
         </script>
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>

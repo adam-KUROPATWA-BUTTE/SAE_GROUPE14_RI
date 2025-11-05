@@ -87,9 +87,7 @@ class HelpPage
         </div>
 
         <script>
-            document.addEventL<footer>
-            <p>&copy; <?= date('Y') ?> - Aix-Marseille Université.</p>
-        </footer>istener("DOMContentLoaded", () => {
+           istener("DOMContentLoaded", () => {
                 const menuToggle = document.createElement('button');
                 menuToggle.classList.add('menu-toggle');
                 menuToggle.innerHTML = '☰';
@@ -104,6 +102,18 @@ class HelpPage
                 const popup = document.getElementById('help-popup');
                 popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
             }
+
+           document.addEventListener("DOMContentLoaded", () => {
+               const menuToggle = document.createElement('button');
+               menuToggle.classList.add('menu-toggle');
+               menuToggle.innerHTML = '☰';
+               document.querySelector('.right-buttons').appendChild(menuToggle);
+
+               const navMenu = document.querySelector('nav.menu');
+               menuToggle.addEventListener('click', () => {
+                   navMenu.classList.toggle('active');
+               });
+           });
         </script>
 
         <footer>

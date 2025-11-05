@@ -548,7 +548,8 @@ li a:hover {
     }
 
     .right-buttons {
-        display: none;
+        display: flex;
+        gap: 10px;
     }
 
     .menu-right-buttons {
@@ -669,7 +670,8 @@ li a:hover {
     }
 
     .right-buttons {
-        display: none;
+        display: flex;
+        gap: 10px;
     }
 
     .menu-right-buttons {
