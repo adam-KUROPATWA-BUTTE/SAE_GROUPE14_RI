@@ -4,16 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e4dbe818-91e3-4dc7-9532-5ab684ba46d8" name="Changes" comment="update bouton daltonien">
-      <change beforePath="$PROJECT_DIR$/.idea/php.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/php.xml" afterDir="false" />
+    <list default="true" id="e4dbe818-91e3-4dc7-9532-5ab684ba46d8" name="Changes" comment="mis à jour du responsive">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/module/site/View/Dashboard/DashboardPageAdmin.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/module/site/View/Dashboard/DashboardPageAdmin.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/module/site/View/Dashboard/DashboardPageStudent.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/module/site/View/Dashboard/DashboardPageStudent.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/module/site/View/Folder/FoldersPageAdmin.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/module/site/View/Folder/FoldersPageAdmin.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/module/site/View/HelpPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/module/site/View/HelpPage.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/module/site/View/PartnersPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/module/site/View/PartnersPage.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/styles/dashboard.css" beforeDir="false" afterPath="$PROJECT_DIR$/public/styles/dashboard.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/styles/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/public/styles/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/module/site/View/WebPlanPage.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/module/site/View/WebPlanPage.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -172,7 +165,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762272773921</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="mis à jour du responsive">
+      <option name="closed" value="true" />
+      <created>1762356279278</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1762356279278</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -183,6 +184,7 @@
     <MESSAGE value="workspace" />
     <MESSAGE value="update daltonien" />
     <MESSAGE value="update bouton daltonien" />
-    <option name="LAST_COMMIT_MESSAGE" value="update bouton daltonien" />
+    <MESSAGE value="mis à jour du responsive" />
+    <option name="LAST_COMMIT_MESSAGE" value="mis à jour du responsive" />
   </component>
 </project>

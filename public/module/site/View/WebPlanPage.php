@@ -112,6 +112,7 @@ class WebPlanPage
                 url.searchParams.set('lang', lang);
                 window.location.href = url.toString();
             }
+
         </script>
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
