@@ -255,11 +255,11 @@ class FoldersPageAdmin
         ?>
         <h1><?= $this->t(['fr'=>'Créer un nouveau dossier étudiant','en'=>'Create New Student Folder']) ?></h1>
         <div class="form-back-button">
-            <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'" class="btn-secondary">
+            <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders']) ?>'" class="btn-secondary">
                 ← <?= $this->t(['fr'=>'Retour à la liste','en'=>'Back to List']) ?>
             </button>
         </div>
-        <form method="post" action="/save_student?lang=<?= htmlspecialchars($this->lang) ?>" enctype="multipart/form-data" class="creation-form">
+        <form method="post" action="index.php?page=save_student&lang=<?= htmlspecialchars($this->lang) ?>" enctype="multipart/form-data" class="creation-form">
             <div class="form-section">
                 <label for="numetu"><?= $this->t(['fr'=>'NumÉtu *','en'=>'Student ID *']) ?></label>
                 <input type="text" name="numetu" id="numetu" required>
@@ -322,7 +322,7 @@ class FoldersPageAdmin
             </div>
             <div class="form-actions">
                 <button type="submit" class="btn-secondary"><?= $this->t(['fr'=>'Enregistrer','en'=>'Save']) ?></button>
-                <button type="button" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'">
+                <button type="button" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders']) ?>'">
                     <?= $this->t(['fr'=>'Annuler','en'=>'Cancel']) ?>
                 </button>
             </div>

@@ -4,42 +4,98 @@ namespace Controllers\site\FolderController;
 use Controllers\Auth_Guard;
 use View\Folder\FoldersPageStudent;
 use Controllers\ControllerInterface;
-use Model\FolderStudent;
+use Model\Folder\FolderStudent;
 
 class FoldersControllerStudent implements ControllerInterface
 {
     public static function support(string $page, string $method): bool
     {
-        return $page === 'folders-student';
+        return $page === 'folders-student' || $page === 'update_student';
     }
 
     public function control(): void
     {
-        // Vérifier que c'est un étudiant
-        Auth_Guard::requireStudent();
-
-        // Récupérer l'ID de l'étudiant connecté
-        $studentId = $_SESSION['etudiant_id'] ?? null;
-        
-        if (!$studentId) {
-            header('Location: /login');
-            exit();
+        // --- Démarrage de session ---
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
         }
 
-        // Récupérer l'action
-        $action = $_GET['action'] ?? 'view';
+        // --- Vérifie que l'étudiant est connecté ---
+        if (empty($_SESSION['numetu'])) {
+            header('Location: index.php?page=login&error=not_logged_in');
+            exit;
+        }
 
+        $numetu = $_SESSION['numetu'];
+        $lang = $_GET['lang'] ?? 'fr';
+
+        // --- Cas : mise à jour du dossier ---
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_GET['page'] ?? '') === 'update_student') {
+            $this->updateStudent($numetu, $lang);
+            return;
+        }
+
+        // --- Récupère les informations du dossier étudiant ---
+        $studentData = FolderStudent::getStudentDetails($numetu) ?: null;
+
+        // --- Message flash depuis la session ---
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-        $lang = $_GET['lang'] ?? 'fr';
-
-        // Récupérer le dossier de l'étudiant
-        $dossier = FolderStudent::getDossierByEtudiantId($studentId);
-
-        // Charger la vue
-        require_once ROOT_PATH . '/public/module/site/View/Folder/FoldersPageStudent.php';
-        $view = new \View\FoldersPageStudent($dossier, $studentId, $action, $message, $lang);
+        // --- Affichage de la vue ---
+        $view = new FoldersPageStudent($studentData, $numetu, 'view', $message, $lang);
         $view->render();
+    }
+
+    private function updateStudent(string $numetu, string $lang): void
+    {
+        // --- Préparer les données mises à jour (certains champs ne sont pas modifiables) ---
+        $data = [
+            'NumEtu'         => $numetu, // verrouillé
+            'Adresse'        => $_POST['adresse'] ?? null,
+            'CodePostal'     => $_POST['cp'] ?? null,
+            'Ville'          => $_POST['ville'] ?? null,
+            'Telephone'      => $_POST['telephone'] ?? null,
+            'EmailPersonnel' => $_POST['email_perso'] ?? null,
+        ];
+
+        // --- Validation minimale ---
+        $errors = [];
+        if (empty($data['EmailPersonnel'])) {
+            $errors[] = $lang === 'fr' ? "L'email personnel est requis." : "Personal email is required.";
+        }
+        if (empty($data['Telephone'])) {
+            $errors[] = $lang === 'fr' ? "Le téléphone est requis." : "Phone number is required.";
+        }
+
+        if (!empty($errors)) {
+            $_SESSION['message'] = implode(' ', $errors);
+            header('Location: index.php?page=folders-student&lang=' . $lang);
+            exit;
+        }
+
+        // --- Gestion des fichiers uploadés ---
+        $uploads = [
+            'photo' => null,
+            'cv' => null,
+            'lettre_motivation' => null,
+            'convention' => null,
+        ];
+
+        foreach ($uploads as $key => &$content) {
+            if (isset($_FILES[$key]) && $_FILES[$key]['error'] === UPLOAD_ERR_OK) {
+                $content = file_get_contents($_FILES[$key]['tmp_name']);
+            }
+        }
+
+        // --- Mise à jour du dossier ---
+        $success = FolderStudent::updateDossier($data, $uploads);
+
+        $_SESSION['message'] = $success
+            ? ($lang === 'fr' ? 'Dossier mis à jour avec succès.' : 'Folder updated successfully.')
+            : ($lang === 'fr' ? 'Erreur lors de la mise à jour du dossier.' : 'Error updating folder.');
+
+        header('Location: index.php?page=folders-student&lang=' . $lang);
+        exit;
     }
 }

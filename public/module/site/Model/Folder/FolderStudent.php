@@ -1,65 +1,130 @@
 <?php
 namespace Model\Folder;
 
-use Database;
 use PDO;
+use PDOException;
 
 class FolderStudent
 {
-    public static function getMyFolder(int $studentId): ?array
+    /**
+     * Connexion à la base via la classe Database
+     */
+    private static function getConnection(): PDO
     {
+        // ✅ Vérifie que la classe Database existe bien
+        if (!class_exists('\Database')) {
+            throw new \RuntimeException("Classe Database introuvable. Assure-toi que Config/Database.php est chargé.");
+        }
+
+        return \Database::getInstance()->getConnection();
+    }
+
+    /**
+     * Récupère les infos du dossier étudiant à partir du NumEtu
+     */
+    public static function getStudentDetails(string $numetu): ?array
+    {
+        $pdo = self::getConnection();
+
         try {
-            $pdo = Database::getInstance()->getConnection();
             $stmt = $pdo->prepare("
                 SELECT 
-                    e.*,
-                    (SELECT COUNT(*) FROM documents WHERE etudiant_id = e.id) as total_pieces,
-                    (SELECT COUNT(*) FROM documents WHERE etudiant_id = e.id AND fichier IS NOT NULL) as pieces_fournies
-                FROM etudiants e
-                WHERE e.id = :student_id
+                    NumEtu,
+                    Nom,
+                    Prenom,
+                    DateNaissance,
+                    Sexe,
+                    Adresse,
+                    CodePostal,
+                    Ville,
+                    EmailPersonnel,
+                    EmailAMU,
+                    Telephone,
+                    CodeDepartement,
+                    Type,
+                    Zone,
+                    IsComplete,
+                    PiecesJustificatives
+                FROM dossiers
+                WHERE NumEtu = :numetu
+                LIMIT 1
             ");
-            $stmt->execute(['student_id' => $studentId]);
+            $stmt->execute(['numetu' => $numetu]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($result) {
+                $result['pieces'] = !empty($result['PiecesJustificatives'])
+                    ? json_decode($result['PiecesJustificatives'], true)
+                    : [];
+            }
+
             return $result ?: null;
-        } catch (\PDOException $e) {
-            error_log("Erreur getMyFolder: " . $e->getMessage());
+        } catch (PDOException $e) {
+            error_log("Erreur récupération dossier étudiant : " . $e->getMessage());
             return null;
         }
     }
 
-    public static function getMyDocuments(int $studentId): array
+    /**
+     * Méthode utilisée par le dashboard étudiant
+     */
+    public static function getMyFolder(int $etudiantId): ?array
     {
-        try {
-            $pdo = Database::getInstance()->getConnection();
-            $stmt = $pdo->prepare("
-                SELECT * FROM documents 
-                WHERE etudiant_id = :student_id
-                ORDER BY type_document
-            ");
-            $stmt->execute(['student_id' => $studentId]);
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
-        } catch (\PDOException $e) {
-            error_log("Erreur getMyDocuments: " . $e->getMessage());
-            return [];
-        }
+        // Compatibilité avec DashboardController
+        return self::getStudentDetails((string)$etudiantId);
     }
 
-    public static function uploadDocument(int $studentId, string $type, string $filename): bool
+    /**
+     * Mise à jour du dossier étudiant (champs modifiables)
+     */
+    public static function updateDossier(array $data, ?string $photoData = null, ?string $cvData = null): bool
     {
+        $pdo = self::getConnection();
+
         try {
-            $pdo = Database::getInstance()->getConnection();
+            // Récupérer les anciennes pièces
+            $stmt = $pdo->prepare("SELECT PiecesJustificatives FROM dossiers WHERE NumEtu = :numetu");
+            $stmt->execute(['numetu' => $data['NumEtu']]);
+            $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $pieces = $existing && !empty($existing['PiecesJustificatives'])
+                ? json_decode($existing['PiecesJustificatives'], true)
+                : [];
+
+            // Mise à jour des fichiers
+            if ($photoData !== null) {
+                $pieces['photo'] = base64_encode($photoData);
+            }
+            if ($cvData !== null) {
+                $pieces['cv'] = base64_encode($cvData);
+            }
+
+            $piecesJson = json_encode($pieces);
+
+            // Mise à jour SQL
             $stmt = $pdo->prepare("
-                UPDATE documents 
-                SET fichier = :filename, uploaded_at = NOW()
-                WHERE etudiant_id = :student_id AND type_document = :type
+                UPDATE dossiers
+                SET 
+                    Adresse = :Adresse,
+                    CodePostal = :CodePostal,
+                    Ville = :Ville,
+                    Telephone = :Telephone,
+                    EmailPersonnel = :EmailPersonnel,
+                    PiecesJustificatives = :PiecesJustificatives
+                WHERE NumEtu = :NumEtu
             ");
+
             return $stmt->execute([
-                'student_id' => $studentId,
-                'type' => $type,
-                'filename' => $filename
+                'NumEtu' => $data['NumEtu'],
+                'Adresse' => $data['Adresse'] ?? '',
+                'CodePostal' => $data['CodePostal'] ?? '',
+                'Ville' => $data['Ville'] ?? '',
+                'Telephone' => $data['Telephone'] ?? '',
+                'EmailPersonnel' => $data['EmailPersonnel'] ?? '',
+                'PiecesJustificatives' => $piecesJson
             ]);
-        } catch (\PDOException $e) {
-            error_log("Erreur uploadDocument: " . $e->getMessage());
+        } catch (PDOException $e) {
+            error_log("Erreur mise à jour dossier étudiant : " . $e->getMessage());
             return false;
         }
     }
