@@ -8,7 +8,7 @@ class FoldersControllerAdmin
 {
     public static function support(string $page, string $method): bool
     {
-        return in_array($page, ['folders', 'save_student', 'update_student', 'folders-admin']);
+        return in_array($page, ['folders', 'save_student', 'folders-admin']);
     }
 
 
