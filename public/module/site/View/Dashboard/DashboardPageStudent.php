@@ -39,7 +39,7 @@ class DashboardPageStudent
             <link rel="stylesheet" href="styles/dashboard.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
-        <body>
+        <body class="<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true ? 'tritanopie' : '' ?>">
         <header>
             <div class="top-bar">
                 <img src="img/logo.png" alt="Logo" style="height:80px;">

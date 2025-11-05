@@ -35,6 +35,10 @@ class HomePage
             session_start();
         }
 
+        if (isset($_GET['tritanopia'])) {
+            $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';
+        }
+
         ?>
         <!DOCTYPE html>
         <html lang="<?= htmlspecialchars($this->lang) ?>">
@@ -83,10 +87,9 @@ class HomePage
                 </div>
             </div>
 
-            <button id="theme-toggle" onclick="window.location.href='?toggleTritanopia=1'">
+            <button id="theme-toggle" title="Appuyez ici si vous êtes atteint de tritanopie">
                 <span class="toggle-switch"></span>
             </button>
-
 
             <nav class="menu">
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
@@ -193,9 +196,29 @@ class HomePage
                 window.location.href = url.toString();
             }
 
-            document.getElementById('theme-toggle').addEventListener('click', function() {
-                document.body.classList.toggle('tritanopie');
-                this.classList.toggle('active');
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const themeToggle = document.getElementById('theme-toggle');
+
+                // Vérifier si le body a la classe tritanopie au chargement
+                // et ajouter la classe active au bouton si c'est le cas
+                if (document.body.classList.contains('tritanopie')) {
+                    themeToggle.classList.add('active');
+                }
+
+                themeToggle.addEventListener('click', function() {
+                    document.body.classList.toggle('tritanopie');
+                    this.classList.toggle('active');
+
+                    const isTritanopie = document.body.classList.contains('tritanopie');
+
+                    // Sauvegarde dans la session PHP en rechargeant la page avec un paramètre
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('tritanopia', isTritanopie ? '1' : '0');
+                    window.location.href = url.toString();
+                });
+            });
+
 
         </script>
         </body>
