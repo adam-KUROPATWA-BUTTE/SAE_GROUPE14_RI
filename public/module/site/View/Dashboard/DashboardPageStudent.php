@@ -55,9 +55,9 @@ class DashboardPageStudent
             </div>
             <nav class="menu">
                 <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
-                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/dashboard-student') ?>'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/partners') ?>'"><?= $this->t(['fr'=>'Partenaire','en'=>'Partners']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/folders-student') ?>'"><?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'"><?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Site Map']) ?></button>
             </nav>
 
@@ -75,6 +75,7 @@ class DashboardPageStudent
                     <div class="progress-icon">
                         <img src="/img/depot.png" alt="Dépôt">
                     </div>
+                    <div class="progress-circle"></div>
                     <span>Dépôt de la demande</span>
                 </div>
 
@@ -82,6 +83,7 @@ class DashboardPageStudent
                     <div class="progress-icon">
                         <img src="/img/rafraichir.png" alt="Instruction">
                     </div>
+                    <div class="progress-circle"></div>
                     <span>Instruction en cours</span>
                 </div>
 
@@ -89,8 +91,10 @@ class DashboardPageStudent
                     <div class="progress-icon">
                         <img src="/img/decision.png" alt="Décision">
                     </div>
+                    <div class="progress-circle"></div>
                     <span>Décision prise</span>
                 </div>
+
             </div>
         </main>
 
@@ -99,13 +103,13 @@ class DashboardPageStudent
             <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
                 <img class="insta" src="img/instagram.png" alt="Instagram">
             </a>
-        <script>
-            function changeLang(lang) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('lang', lang);
-                window.location.href = url.toString();
-            }
-        </script>
+            <script>
+                function changeLang(lang) {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('lang', lang);
+                    window.location.href = url.toString();
+                }
+            </script>
         </body>
         </html>
         <?php
