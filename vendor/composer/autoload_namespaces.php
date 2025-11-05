@@ -6,5 +6,6 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'PHPMD\\' => array($vendorDir . '/phpmd/phpmd/src/main/php'),
     'Mailjet' => array($vendorDir . '/mailjet/mailjet-apiv3-php/src'),
 );

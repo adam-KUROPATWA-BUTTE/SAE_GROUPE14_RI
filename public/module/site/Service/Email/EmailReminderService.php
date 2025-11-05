@@ -70,7 +70,6 @@ class EmailReminderService
             $itemsHtml .= '<ul style="margin:0 0 16px 20px;">';
             foreach ($itemsToComplete as $it) {
                 $itemsHtml .= '<li>' . htmlspecialchars((string)$it, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</li>';
-                $itemsHtml .= '<li>' . htmlspecialchars((string)$it, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</li>';
             }
             $itemsHtml .= '</ul>';
         } else {
