@@ -5,6 +5,7 @@
     --background-color: #EBC55E;
     --accent-color: #2B91BB;
     --hero-bg-color: #00558B;
+    --hover-color : #1E6F8C;
 }
 
 body.tritanopie {
@@ -14,6 +15,7 @@ body.tritanopie {
     --background-color: #FF9100;
     --accent-color: #009b73;
     --hero-bg-color: #005C45;
+    --hover-color: #008764;
 }
 
 header {
@@ -476,7 +478,7 @@ li a:hover {
 }
 
 #theme-toggle.active .toggle-switch::before {
-    transform: translateX(28px); /* déplace le rond de 30px à droite */
+    transform: translateX(28px);
 }
 
 

@@ -10,7 +10,7 @@ main {
 
 /* Titres */
 h1 {
-    background-color: #004080;
+    background-color: var(--primary-color);
     color: white;
     padding: 10px;
     margin: 0 0 20px 0;
@@ -29,7 +29,7 @@ h2 {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #004080;
+    background: var(--primary-color);
     padding: 10px;
     color: white;
     margin-bottom: 20px;
@@ -44,7 +44,7 @@ h2 {
 
 .btn-primary {
     border-radius: 10px;
-    background-color: #2B91BB;
+    background-color: var(--accent-color);
     color: white;
     border: none;
     cursor: pointer;
@@ -52,7 +52,7 @@ h2 {
 }
 
 .btn-primary:hover {
-    background-color: #1E6F8C;
+    background-color: var(--hover-color);
 }
 
 .btn-secondary {
@@ -122,7 +122,7 @@ table td {
 }
 
 table th {
-    background-color: #00558B;
+    background-color: var(--accent-color);
     color: #fff;
 }
 

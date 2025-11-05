@@ -35,6 +35,10 @@ class HomePage
             session_start();
         }
 
+        if (isset($_GET['tritanopia'])) {
+            $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';
+        }
+
         ?>
         <!DOCTYPE html>
         <html lang="<?= htmlspecialchars($this->lang) ?>">
@@ -192,25 +196,27 @@ class HomePage
                 window.location.href = url.toString();
             }
 
+
             document.addEventListener("DOMContentLoaded", () => {
                 const themeToggle = document.getElementById('theme-toggle');
+
+                // Vérifier si le body a la classe tritanopie au chargement
+                // et ajouter la classe active au bouton si c'est le cas
+                if (document.body.classList.contains('tritanopie')) {
+                    themeToggle.classList.add('active');
+                }
+
                 themeToggle.addEventListener('click', function() {
                     document.body.classList.toggle('tritanopie');
                     this.classList.toggle('active');
 
-                    // Optionnel : sauvegarde dans localStorage pour que le toggle persiste
-                    if(document.body.classList.contains('tritanopie')){
-                        localStorage.setItem('tritanopie', '1');
-                    } else {
-                        localStorage.removeItem('tritanopie');
-                    }
-                });
+                    const isTritanopie = document.body.classList.contains('tritanopie');
 
-                // Vérifie si le thème tritanopie était activé au chargement
-                if(localStorage.getItem('tritanopie') === '1'){
-                    document.body.classList.add('tritanopie');
-                    themeToggle.classList.add('active');
-                }
+                    // Sauvegarde dans la session PHP en rechargeant la page avec un paramètre
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('tritanopia', isTritanopie ? '1' : '0');
+                    window.location.href = url.toString();
+                });
             });
 
 

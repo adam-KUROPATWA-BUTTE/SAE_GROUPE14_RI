@@ -1,3 +1,21 @@
+:root {
+    --primary-color: #00558B;
+    --secondary-color: #EBC55E;
+    --text-color: #ffffff;
+    --background-color: #EBC55E;
+    --accent-color: #2B91BB;
+    --hero-bg-color: #00558B;
+}
+
+body.tritanopie {
+    --primary-color: #005C45;
+    --secondary-color: #FF9100;
+    --text-color: #ffffff;
+    --background-color: #FF9100;
+    --accent-color: #009b73;
+    --hero-bg-color: #005C45;
+}
+
 /* ======= Progress Step Styles ======= */
 .progress-container {
     display: flex;

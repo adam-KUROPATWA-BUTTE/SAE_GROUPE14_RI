@@ -28,7 +28,11 @@ class PartnersPage
     {
         if (session_status() === PHP_SESSION_NONE) {
         session_start();
+
     }
+        if (isset($_GET['tritanopia'])) {
+            $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';
+        }
         ?>
 
         <!DOCTYPE html>
@@ -41,7 +45,7 @@ class PartnersPage
             <link rel="stylesheet" href="styles/partners.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
-        <body class="<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'tritanopie' : '' ?>">
+        <body class="<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true ? 'tritanopie' : '' ?>">
         <header>
             <div class="top-bar">
                 <img class="logo_amu" src="img/logo.png" alt="Logo">
