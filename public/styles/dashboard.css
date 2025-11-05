@@ -94,5 +94,19 @@ main {
 
 .progress-step.active span {
     font-weight: bold;
-    color: #006694;
+    color: var(--accent-color);
+}
+
+
+.dashboard-container {
+    max-width: 1000px;
+    margin: -50px auto 50px;
+    position: relative;
+    z-index: 2;
+    padding: 0 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
 }

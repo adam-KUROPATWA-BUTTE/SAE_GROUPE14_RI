@@ -56,6 +56,7 @@ class HomePage
                     'en' => 'Home - International Relations Service AMU'
                 ]) ?></title>
             <link rel="stylesheet" href="styles/index.css">
+            <link rel="stylesheet" href="styles/homepage.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
 
