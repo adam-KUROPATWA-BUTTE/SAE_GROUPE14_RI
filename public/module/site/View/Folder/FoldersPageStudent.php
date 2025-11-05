@@ -80,27 +80,38 @@ class FoldersPageStudent
 
                     <!-- Informations personnelles -->
                     <div class="form-section">
+                        <!-- Numéro étudiant affiché et envoyé -->
                         <label><?= $this->t(['fr'=>'Numéro étudiant','en'=>'Student ID']) ?></label>
-                        <input type="text" value="<?= htmlspecialchars($this->studentId) ?>" disabled style="background:#eee;">
+                        <input type="text" value="<?= htmlspecialchars($this->studentId) ?>" readonly style="background:#eee;">
+                        <input type="hidden" name="numetu" value="<?= htmlspecialchars($this->studentId) ?>">
 
+                        <!-- Nom bloqué -->
                         <label><?= $this->t(['fr'=>'Nom','en'=>'Last Name']) ?></label>
                         <input type="text" value="<?= htmlspecialchars($this->dossier['Nom'] ?? '') ?>" readonly style="background:#f7f7f7;">
+                        <input type="hidden" name="nom" value="<?= htmlspecialchars($this->dossier['Nom'] ?? '') ?>">
 
+                        <!-- Prénom bloqué -->
                         <label><?= $this->t(['fr'=>'Prénom','en'=>'First Name']) ?></label>
                         <input type="text" value="<?= htmlspecialchars($this->dossier['Prenom'] ?? '') ?>" readonly style="background:#f7f7f7;">
+                        <input type="hidden" name="prenom" value="<?= htmlspecialchars($this->dossier['Prenom'] ?? '') ?>">
 
+                        <!-- Email -->
                         <label><?= $this->t(['fr'=>'Email personnel','en'=>'Personal Email']) ?></label>
                         <input type="email" name="email_perso" value="<?= htmlspecialchars($this->dossier['EmailPersonnel'] ?? '') ?>" required>
 
+                        <!-- Téléphone -->
                         <label><?= $this->t(['fr'=>'Téléphone','en'=>'Phone']) ?></label>
                         <input type="text" name="telephone" value="<?= htmlspecialchars($this->dossier['Telephone'] ?? '') ?>" required>
 
+                        <!-- Adresse -->
                         <label><?= $this->t(['fr'=>'Adresse','en'=>'Address']) ?></label>
                         <input type="text" name="adresse" value="<?= htmlspecialchars($this->dossier['Adresse'] ?? '') ?>">
 
+                        <!-- Code postal -->
                         <label><?= $this->t(['fr'=>'Code postal','en'=>'Postal Code']) ?></label>
                         <input type="text" name="cp" value="<?= htmlspecialchars($this->dossier['CodePostal'] ?? '') ?>">
 
+                        <!-- Ville -->
                         <label><?= $this->t(['fr'=>'Ville','en'=>'City']) ?></label>
                         <input type="text" name="ville" value="<?= htmlspecialchars($this->dossier['Ville'] ?? '') ?>">
                     </div>
