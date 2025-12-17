@@ -19,4 +19,4 @@ jobs:
             echo "✅ SSH connection successful!"
             whoami
             pwd
-            ls -la /var/www/ri/SAE-GROUPE-14
+            ls -la /var/www/ri/SAE_GROUPE14_RI
