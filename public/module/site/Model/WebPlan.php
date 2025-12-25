@@ -3,24 +3,21 @@ namespace Model;
 
 class WebPlan
 {
-    /**
-     * Retrieve a list of main site links for the web plan / sitemap.
-     *
-     * Each link contains:
-     * - url: string The path or URL of the page
-     * - label: string The display name of the link
-     *
-     * @return array List of links
-     */
-    public static function getLinks()
+    public static function getLinks(): array
     {
-        return [
-            ['url' => '/', 'label' => 'Home'],
-            ['url' => '/dashboard', 'label' => 'Dashboard'],
-            ['url' => '/partners', 'label' => 'Partners'],
-            ['url' => '/folders', 'label' => 'Folders'],
-            ['url' => '/web_plan', 'label' => 'Site Map'],
-            ['url' => '/login', 'label' => 'Login / Register'],
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $links = [
+            ['url' => 'index.php?page=home', 'label' => 'Accueil'],
+            ['url' => 'index.php?page=dashboard-admin', 'label' => 'Tableau de bord'],
+            ['url' => 'index.php?page=partners', 'label' => 'Partenaires'],
+            ['url' => 'index.php?page=folders', 'label' => 'Dossiers'],
+            ['url' => 'index.php?page=login', 'label' => 'Connexion'],
+
         ];
+
+        return $links;
     }
 }
