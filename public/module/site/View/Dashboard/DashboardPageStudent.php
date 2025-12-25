@@ -34,7 +34,7 @@ class DashboardPageStudent
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title><?= $this->lang === 'en' ? 'Admin Dashboard' : 'Tableau de bord (Admin)' ?></title>
+            <title><?= $this->lang === 'en' ? 'Student Dashboard' : 'Tableau de bord (Étudiant)' ?></title>
             <link rel="stylesheet" href="styles/index.css">
             <link rel="stylesheet" href="styles/dashboard.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
@@ -54,12 +54,28 @@ class DashboardPageStudent
                 </div>
             </div>
             <nav class="menu">
-                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
-                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/dashboard-student') ?>'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/partners') ?>'"><?= $this->t(['fr'=>'Partenaire','en'=>'Partners']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/folders-student') ?>'"><?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Site Map']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('index.php?page=home') ?>'">
+                    <?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?>
+                </button>
+
+                <button class="active"
+                        onclick="window.location.href='<?= $this->buildUrl('index.php?page=dashboard-student') ?>'">
+                    <?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?>
+                </button>
+
+                <button onclick="window.location.href='<?= $this->buildUrl('index.php?page=partners') ?>'">
+                    <?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?>
+                </button>
+
+                <button onclick="window.location.href='<?= $this->buildUrl('index.php?page=folders-student') ?>'">
+                    <?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?>
+                </button>
+
+                <button onclick="window.location.href='<?= $this->buildUrl('index.php?page=web_plan') ?>'">
+                    <?= $this->t(['fr'=>'Plan du site','en'=>'Site Map']) ?>
+                </button>
             </nav>
+
 
         </header>
 

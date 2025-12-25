@@ -19,7 +19,6 @@ class WebPlanPage
 
     private function buildUrl(string $url): string
     {
-        // On ajoute lang au paramètre d'URL existant
         $sep = (strpos($url, '?') === false) ? '?' : '&';
         return $url . $sep . 'lang=' . urlencode($this->lang);
     }
@@ -60,11 +59,11 @@ class WebPlanPage
             <h1><?= $this->t(['fr'=>'Plan du site', 'en'=>'Site Map']) ?></h1>
             <ul>
                 <?php foreach ($this->links as $link): ?>
-                    <li><a href="<?= htmlspecialchars($this->buildUrl($link['url'])) ?>"><?= 
+                    <li><a href="<?= htmlspecialchars($this->buildUrl($link['url'])) ?>"><?=
                         htmlspecialchars($this->t([
                             'fr' => $link['label'], // labels en dur en fr dans Model, on peut compléter en dur ici si besoin
                             'en' => $this->translateLabel($link['label'])
-                        ])) 
+                        ]))
                     ?></a></li>
                 <?php endforeach; ?>
             </ul>
@@ -129,16 +128,14 @@ class WebPlanPage
 
     private function translateLabel(string $label): string
     {
-        // Mappage simple FR -> EN
         $map = [
             'Accueil' => 'Home',
             'Tableau de bord' => 'Dashboard',
             'Partenaires' => 'Partners',
             'Dossiers' => 'Folders',
-            'Plan du site' => 'Site Map',
             'Connexion / Inscription' => 'Login / Register',
         ];
 
-        return $map[$label] ?? $label; // fallback si label inconnu
+        return $map[$label] ?? $label;
     }
 }
