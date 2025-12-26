@@ -170,7 +170,7 @@ tr:nth-child(even) {
     border-left-color: #ffc107;
 }
 /* --- MEDIA QUERIES --- */
- 
+
 /* Entre 801px et 900px - ajustements légers */
 @media (max-width: 900px) and (min-width: 801px) {
     main {

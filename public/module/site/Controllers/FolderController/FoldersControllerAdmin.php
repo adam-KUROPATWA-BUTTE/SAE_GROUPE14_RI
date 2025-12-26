@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\FolderController;
 
 use Model\Folder\FolderAdmin;
@@ -6,7 +7,7 @@ use View\Folder\FoldersPageAdmin;
 
 /**
  * Controller for managing student folders (admin side).
- * 
+ *
  * Responsibilities:
  *  - Display lists of student folders
  *  - Create new student folders
@@ -65,12 +66,17 @@ class FoldersControllerAdmin
         }
 
         // Filters for listing students
+
         $filters = [
-            'type' => $_GET['Type'] ?? 'all',
-            'zone' => $_GET['Zone'] ?? 'all',
-            'stage' => $_GET['Stage'] ?? 'all',
-            'etude' => $_GET['etude'] ?? 'all',
-            'search' => $_GET['search'] ?? ''
+            'type'   => $_GET['Type'] ?? 'all',
+            'zone'   => $_GET['Zone'] ?? 'all',
+            'stage'  => $_GET['Stage'] ?? 'all',
+            'etude'  => $_GET['etude'] ?? 'all',
+            'search' => $_GET['search'] ?? '',
+            'complet'    => $_GET['complet'] ?? 'all',
+            'date_debut' => $_GET['date_debut'] ?? null,
+            'date_fin'   => $_GET['date_fin'] ?? null,
+            'tri_date'   => $_GET['tri_date'] ?? 'DESC'
         ];
 
         // Pagination
@@ -113,13 +119,27 @@ class FoldersControllerAdmin
 
         // Basic validation
         $errors = [];
-        if (empty($data['NumEtu'])) $errors[] = $lang === 'fr' ? 'Le numéro étudiant est requis' : 'Student ID is required';
-        if (empty($data['Nom'])) $errors[] = $lang === 'fr' ? 'Le nom est requis' : 'Last name is required';
-        if (empty($data['Prenom'])) $errors[] = $lang === 'fr' ? 'Le prénom est requis' : 'First name is required';
-        if (empty($data['EmailPersonnel'])) $errors[] = $lang === 'fr' ? 'L\'email est requis' : 'Email is required';
-        if (empty($data['Telephone'])) $errors[] = $lang === 'fr' ? 'Le téléphone est requis' : 'Phone is required';
-        if (empty($data['Type'])) $errors[] = $lang === 'fr' ? 'Le type est requis' : 'Type is required';
-        if (empty($data['Zone'])) $errors[] = $lang === 'fr' ? 'La zone est requise' : 'Zone is required';
+        if (empty($data['NumEtu'])) {
+            $errors[] = $lang === 'fr' ? 'Le numéro étudiant est requis' : 'Student ID is required';
+        }
+        if (empty($data['Nom'])) {
+            $errors[] = $lang === 'fr' ? 'Le nom est requis' : 'Last name is required';
+        }
+        if (empty($data['Prenom'])) {
+            $errors[] = $lang === 'fr' ? 'Le prénom est requis' : 'First name is required';
+        }
+        if (empty($data['EmailPersonnel'])) {
+            $errors[] = $lang === 'fr' ? 'L\'email est requis' : 'Email is required';
+        }
+        if (empty($data['Telephone'])) {
+            $errors[] = $lang === 'fr' ? 'Le téléphone est requis' : 'Phone is required';
+        }
+        if (empty($data['Type'])) {
+            $errors[] = $lang === 'fr' ? 'Le type est requis' : 'Type is required';
+        }
+        if (empty($data['Zone'])) {
+            $errors[] = $lang === 'fr' ? 'La zone est requise' : 'Zone is required';
+        }
 
         if (!empty($errors)) {
             $_SESSION['message'] = implode(', ', $errors);
@@ -183,11 +203,21 @@ class FoldersControllerAdmin
 
         // Basic validation
         $errors = [];
-        if (empty($data['NumEtu'])) $errors[] = $lang === 'fr' ? 'Le numéro étudiant est requis' : 'Student ID is required';
-        if (empty($data['Nom'])) $errors[] = $lang === 'fr' ? 'Le nom est requis' : 'Last name is required';
-        if (empty($data['Prenom'])) $errors[] = $lang === 'fr' ? 'Le prénom est requis' : 'First name is required';
-        if (empty($data['EmailPersonnel'])) $errors[] = $lang === 'fr' ? 'L\'email est requis' : 'Email is required';
-        if (empty($data['Telephone'])) $errors[] = $lang === 'fr' ? 'Le téléphone est requis' : 'Phone is required';
+        if (empty($data['NumEtu'])) {
+            $errors[] = $lang === 'fr' ? 'Le numéro étudiant est requis' : 'Student ID is required';
+        }
+        if (empty($data['Nom'])) {
+            $errors[] = $lang === 'fr' ? 'Le nom est requis' : 'Last name is required';
+        }
+        if (empty($data['Prenom'])) {
+            $errors[] = $lang === 'fr' ? 'Le prénom est requis' : 'First name is required';
+        }
+        if (empty($data['EmailPersonnel'])) {
+            $errors[] = $lang === 'fr' ? 'L\'email est requis' : 'Email is required';
+        }
+        if (empty($data['Telephone'])) {
+            $errors[] = $lang === 'fr' ? 'Le téléphone est requis' : 'Phone is required';
+        }
 
         if (!empty($errors)) {
             $_SESSION['message'] = implode(', ', $errors);

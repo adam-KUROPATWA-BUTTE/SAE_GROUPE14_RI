@@ -1,4 +1,5 @@
 <?php
+
 namespace Service\Email;
 
 use Mailjet\Client;
@@ -70,7 +71,6 @@ class EmailReminderService
                 error_log("❌ Mailjet error: " . json_encode($response->getData()));
                 return false;
             }
-
         } catch (\Exception $e) {
             error_log("❌ Mailjet exception for {$toEmail}: " . $e->getMessage());
             return false;

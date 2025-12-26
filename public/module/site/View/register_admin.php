@@ -1,4 +1,5 @@
 <?php
+
 namespace View;
 
 class RegisterAdminPage
@@ -41,7 +42,7 @@ class RegisterAdminPage
             </div>
 
             <div class="container">
-                <?php if (!empty($message)): ?>
+                <?php if (!empty($message)) : ?>
                     <?php
                     $messageType = 'info';
                     if (strpos($message, 'succès') !== false) {

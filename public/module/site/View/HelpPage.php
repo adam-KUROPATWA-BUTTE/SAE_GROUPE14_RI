@@ -1,4 +1,5 @@
 <?php
+
 namespace View;
 
 class HelpPage
@@ -55,7 +56,7 @@ class HelpPage
 
             <h2>Questions fréquentes</h2>
             <ul>
-                <?php foreach ($this->faq as $item): ?>
+                <?php foreach ($this->faq as $item) : ?>
                     <li>
                         <strong><?= htmlspecialchars($item['question']) ?></strong><br>
                         <?= $item['answer'] ?>
@@ -75,13 +76,13 @@ class HelpPage
         <!-- Contenu du popup d'aide -->
         <div id="help-popup">
             <div class="help-popup-header">
-                <span><?= $this->t(['fr'=>'Aide', 'en'=>'Help']) ?></span>
+                <span><?= $this->t(['fr' => 'Aide', 'en' => 'Help']) ?></span>
                 <button onclick="toggleHelpPopup()">✖</button>
             </div>
             <div class="help-popup-body">
-                <p><?= $this->t(['fr'=>'Bienvenue ! Comment pouvons-nous vous aider ?', 'en'=>'Welcome! How can we help you?']) ?></p>
+                <p><?= $this->t(['fr' => 'Bienvenue ! Comment pouvons-nous vous aider ?', 'en' => 'Welcome! How can we help you?']) ?></p>
                 <ul>
-                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr'=>'Page d’aide complète', 'en'=>'Full help page']) ?></a></li>
+                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr' => 'Page d’aide complète', 'en' => 'Full help page']) ?></a></li>
                 </ul>
             </div>
         </div>

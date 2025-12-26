@@ -1,4 +1,5 @@
 <?php
+
 namespace View;
 
 class LoginPage
@@ -34,7 +35,7 @@ class LoginPage
 
                 <h2>Service d'authentification<br>Aix-Marseille Université</h2>
 
-                <?php if (!empty($this->message)): ?>
+                <?php if (!empty($this->message)) : ?>
                     <div class="message <?= strpos($this->message, 'succès') !== false ? 'success' : 'error' ?>">
                         <?= htmlspecialchars($this->message) ?>
                     </div>

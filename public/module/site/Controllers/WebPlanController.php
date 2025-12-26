@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\site;
 
 use Controllers\ControllerInterface;
@@ -7,9 +8,9 @@ use Model\WebPlan;
 
 /**
  * WebPlanController
- * 
+ *
  * Handles the "Web Plan" page of the application.
- * 
+ *
  * Responsibilities:
  *  - Fetch links or items from the WebPlan model
  *  - Render the web plan page view

@@ -1,4 +1,5 @@
 <?php
+
 namespace View\Dashboard;
 
 class DashboardPageAdmin
@@ -17,7 +18,7 @@ class DashboardPageAdmin
         return $path . '?lang=' . urlencode($this->lang);
     }
 
-        private function t(array $frEn): string
+    private function t(array $frEn): string
     {
         return $this->lang === 'en' ? $frEn['en'] : $frEn['fr'];
     }
@@ -50,22 +51,22 @@ class DashboardPageAdmin
                 </div>
             </div>
             <nav class="menu">
-                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
-                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/partners') ?>'"><?= $this->t(['fr'=>'Partenaire','en'=>'Partners']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'"><?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Site Map']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Accueil','en' => 'Home']) ?></button>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'"><?= $this->t(['fr' => 'Tableau de bord','en' => 'Dashboard']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/partners') ?>'"><?= $this->t(['fr' => 'Partenaire','en' => 'Partners']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'"><?= $this->t(['fr' => 'Dossiers','en' => 'Folders']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'"><?= $this->t(['fr' => 'Plan du site','en' => 'Site Map']) ?></button>
             </nav>
         </header>
 
         <main>
             <h1><?= $this->lang === 'en' ? 'Incomplete Student Files' : 'Dossiers étudiants incomplets' ?></h1>
 
-            <?php if (empty($this->dossiers)): ?>
+            <?php if (empty($this->dossiers)) : ?>
                 <p style="text-align:center;color:#666;">
                     <?= $this->lang === 'en' ? 'No incomplete files found.' : 'Aucun dossier incomplet trouvé.' ?>
                 </p>
-            <?php else: ?>
+            <?php else : ?>
                 <table>
                     <thead>
                     <tr>
@@ -77,7 +78,7 @@ class DashboardPageAdmin
                     </tr>
                     </thead>
                     <tbody>
-                    <?php foreach ($this->dossiers as $d): ?>
+                    <?php foreach ($this->dossiers as $d) : ?>
                         <?php
                         $nom = $d['Nom'] ?? $d['nom'] ?? '';
                         $prenom = $d['Prenom'] ?? $d['prenom'] ?? '';
@@ -110,13 +111,13 @@ class DashboardPageAdmin
         <!-- Contenu du popup d'aide -->
         <div id="help-popup">
             <div class="help-popup-header">
-                <span><?= $this->t(['fr'=>'Aide', 'en'=>'Help']) ?></span>
+                <span><?= $this->t(['fr' => 'Aide', 'en' => 'Help']) ?></span>
                 <button onclick="toggleHelpPopup()">✖</button>
             </div>
             <div class="help-popup-body">
-                <p><?= $this->t(['fr'=>'Bienvenue ! Comment pouvons-nous vous aider ?', 'en'=>'Welcome! How can we help you?']) ?></p>
+                <p><?= $this->t(['fr' => 'Bienvenue ! Comment pouvons-nous vous aider ?', 'en' => 'Welcome! How can we help you?']) ?></p>
                 <ul>
-                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr'=>'Page d’aide complète', 'en'=>'Full help page']) ?></a></li>
+                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr' => 'Page d’aide complète', 'en' => 'Full help page']) ?></a></li>
                 </ul>
             </div>
         </div>

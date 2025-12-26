@@ -1,4 +1,5 @@
 <?php
+
 /**
  * cron_reminder_email.php
  *
@@ -85,21 +86,21 @@ try {
         $sent = EmailReminderService::sendRelance($email, $numEtu, $studentName, $itemsToComplete);
 
         // --- Remplacer par ce bloc (insertion avec dossier_id = NULL) ---
-if ($sent) { 
-    $message = "Relance automatique envoyée à {$email} pour NumEtu={$numEtu}"; 
-    
-    $insSql = "INSERT INTO relances (dossier_id, message, envoye_par) VALUES (:dossier_id, :message, NULL)"; 
-    $insStmt = $pdo->prepare($insSql); 
-    $insStmt->bindValue(':dossier_id', $numEtu, PDO::PARAM_STR); 
-    $insStmt->bindValue(':message', $message, PDO::PARAM_STR); 
-    $insStmt->execute();
+        if ($sent) {
+            $message = "Relance automatique envoyée à {$email} pour NumEtu={$numEtu}";
 
-    error_log("cron_relances: dossier {$numEtu} - email envoyé à {$email}");
-    echo "[" . date('Y-m-d H:i:s') . "] Sent to {$email} (NumEtu: {$numEtu})\n";
-} else { 
-    error_log("cron_relances: dossier {$numEtu} - échec envoi à {$email}"); 
-    echo "[" . date('Y-m-d H:i:s') . "] Failed to send to {$email} (NumEtu: {$numEtu})\n"; 
-}
+            $insSql = "INSERT INTO relances (dossier_id, message, envoye_par) VALUES (:dossier_id, :message, NULL)";
+            $insStmt = $pdo->prepare($insSql);
+            $insStmt->bindValue(':dossier_id', $numEtu, PDO::PARAM_STR);
+            $insStmt->bindValue(':message', $message, PDO::PARAM_STR);
+            $insStmt->execute();
+
+            error_log("cron_relances: dossier {$numEtu} - email envoyé à {$email}");
+            echo "[" . date('Y-m-d H:i:s') . "] Sent to {$email} (NumEtu: {$numEtu})\n";
+        } else {
+            error_log("cron_relances: dossier {$numEtu} - échec envoi à {$email}");
+            echo "[" . date('Y-m-d H:i:s') . "] Failed to send to {$email} (NumEtu: {$numEtu})\n";
+        }
 
         // Optionnel : pause courte pour ne pas surcharger le relay
         usleep(150000); // 150ms
@@ -107,7 +108,6 @@ if ($sent) {
 
     echo "[" . date('Y-m-d H:i:s') . "] Traitement terminé.\n";
     exit(0);
-
 } catch (Exception $e) {
     error_log("cron_relances: exception - " . $e->getMessage());
     echo "Erreur: " . $e->getMessage() . PHP_EOL;

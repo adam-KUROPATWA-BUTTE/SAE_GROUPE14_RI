@@ -1,4 +1,5 @@
 <?php
+
 namespace View\Folder;
 
 class FoldersPageStudent
@@ -40,7 +41,7 @@ class FoldersPageStudent
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title><?= $this->t(['fr'=>'Mon dossier','en'=>'My Folder']) ?></title>
+            <title><?= $this->t(['fr' => 'Mon dossier','en' => 'My Folder']) ?></title>
             <link rel="stylesheet" href="styles/index.css">
             <link rel="stylesheet" href="styles/folders.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
@@ -58,21 +59,21 @@ class FoldersPageStudent
                 </div>
             </div>
             <nav class="menu">
-                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
-                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/folders-student') ?>'"><?= $this->t(['fr'=>'Mon dossier','en'=>'My Folder']) ?></button>
-                <button onclick="window.location.href='index.php?page=logout'"><?= $this->t(['fr'=>'Déconnexion','en'=>'Logout']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Accueil','en' => 'Home']) ?></button>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/folders-student') ?>'"><?= $this->t(['fr' => 'Mon dossier','en' => 'My Folder']) ?></button>
+                <button onclick="window.location.href='index.php?page=logout'"><?= $this->t(['fr' => 'Déconnexion','en' => 'Logout']) ?></button>
             </nav>
         </header>
         <main>
-            <h1><?= $this->t(['fr'=>'Mon dossier étudiant','en'=>'My Student Folder']) ?></h1>
+            <h1><?= $this->t(['fr' => 'Mon dossier étudiant','en' => 'My Student Folder']) ?></h1>
 
-            <?php if (!empty($this->message)): ?>
+            <?php if (!empty($this->message)) : ?>
                 <div class="message"><?= htmlspecialchars($this->message) ?></div>
             <?php endif; ?>
 
-            <?php if (empty($this->dossier)): ?>
-                <p><?= $this->t(['fr'=>'Aucun dossier trouvé','en'=>'No folder found']) ?></p>
-            <?php else: ?>
+            <?php if (empty($this->dossier)) : ?>
+                <p><?= $this->t(['fr' => 'Aucun dossier trouvé','en' => 'No folder found']) ?></p>
+            <?php else : ?>
                 <form method="post"
                       action="index.php?page=update_student&lang=<?= htmlspecialchars($this->lang) ?>"
                       enctype="multipart/form-data"
@@ -81,71 +82,71 @@ class FoldersPageStudent
                     <!-- Informations personnelles -->
                     <div class="form-section">
                         <!-- Numéro étudiant affiché et envoyé -->
-                        <label><?= $this->t(['fr'=>'Numéro étudiant','en'=>'Student ID']) ?></label>
+                        <label><?= $this->t(['fr' => 'Numéro étudiant','en' => 'Student ID']) ?></label>
                         <input type="text" value="<?= htmlspecialchars($this->studentId) ?>" readonly style="background:#eee;">
                         <input type="hidden" name="numetu" value="<?= htmlspecialchars($this->studentId) ?>">
 
                         <!-- Nom bloqué -->
-                        <label><?= $this->t(['fr'=>'Nom','en'=>'Last Name']) ?></label>
+                        <label><?= $this->t(['fr' => 'Nom','en' => 'Last Name']) ?></label>
                         <input type="text" value="<?= htmlspecialchars($this->dossier['Nom'] ?? '') ?>" readonly style="background:#f7f7f7;">
                         <input type="hidden" name="nom" value="<?= htmlspecialchars($this->dossier['Nom'] ?? '') ?>">
 
                         <!-- Prénom bloqué -->
-                        <label><?= $this->t(['fr'=>'Prénom','en'=>'First Name']) ?></label>
+                        <label><?= $this->t(['fr' => 'Prénom','en' => 'First Name']) ?></label>
                         <input type="text" value="<?= htmlspecialchars($this->dossier['Prenom'] ?? '') ?>" readonly style="background:#f7f7f7;">
                         <input type="hidden" name="prenom" value="<?= htmlspecialchars($this->dossier['Prenom'] ?? '') ?>">
 
                         <!-- Email -->
-                        <label><?= $this->t(['fr'=>'Email personnel','en'=>'Personal Email']) ?></label>
+                        <label><?= $this->t(['fr' => 'Email personnel','en' => 'Personal Email']) ?></label>
                         <input type="email" name="email_perso" value="<?= htmlspecialchars($this->dossier['EmailPersonnel'] ?? '') ?>" required>
 
                         <!-- Téléphone -->
-                        <label><?= $this->t(['fr'=>'Téléphone','en'=>'Phone']) ?></label>
+                        <label><?= $this->t(['fr' => 'Téléphone','en' => 'Phone']) ?></label>
                         <input type="text" name="telephone" value="<?= htmlspecialchars($this->dossier['Telephone'] ?? '') ?>" required>
 
                         <!-- Adresse -->
-                        <label><?= $this->t(['fr'=>'Adresse','en'=>'Address']) ?></label>
+                        <label><?= $this->t(['fr' => 'Adresse','en' => 'Address']) ?></label>
                         <input type="text" name="adresse" value="<?= htmlspecialchars($this->dossier['Adresse'] ?? '') ?>">
 
                         <!-- Code postal -->
-                        <label><?= $this->t(['fr'=>'Code postal','en'=>'Postal Code']) ?></label>
+                        <label><?= $this->t(['fr' => 'Code postal','en' => 'Postal Code']) ?></label>
                         <input type="text" name="cp" value="<?= htmlspecialchars($this->dossier['CodePostal'] ?? '') ?>">
 
                         <!-- Ville -->
-                        <label><?= $this->t(['fr'=>'Ville','en'=>'City']) ?></label>
+                        <label><?= $this->t(['fr' => 'Ville','en' => 'City']) ?></label>
                         <input type="text" name="ville" value="<?= htmlspecialchars($this->dossier['Ville'] ?? '') ?>">
                     </div>
 
                     <!-- Documents -->
                     <div class="form-section" style="margin-top: 30px;">
-                        <h2><?= $this->t(['fr'=>'Mes documents','en'=>'My Documents']) ?></h2>
+                        <h2><?= $this->t(['fr' => 'Mes documents','en' => 'My Documents']) ?></h2>
 
                         <?php
-                        $docs = ['photo'=>'Photo', 'cv'=>'CV'];
-                        foreach ($docs as $key => $label):
+                        $docs = ['photo' => 'Photo', 'cv' => 'CV'];
+                        foreach ($docs as $key => $label) :
                             $hasFile = !empty($this->dossier['pieces'][$key]);
-                        ?>
+                            ?>
                         <div style="margin-bottom: 20px;">
-                            <label><?= $this->t(['fr'=>$label,'en'=>$label]) ?></label>
-                            <?php if ($hasFile): ?>
+                            <label><?= $this->t(['fr' => $label,'en' => $label]) ?></label>
+                            <?php if ($hasFile) : ?>
                                 <div style="margin-top: 10px;">
                                     <a href="data:application/octet-stream;base64,<?= $this->dossier['pieces'][$key] ?>"
-                                       download="<?= $key ?>_<?= htmlspecialchars($this->studentId) ?>.<?= $key==='photo'?'jpg':'pdf' ?>"
+                                       download="<?= $key ?>_<?= htmlspecialchars($this->studentId) ?>.<?= $key === 'photo' ? 'jpg' : 'pdf' ?>"
                                        class="btn-secondary">
-                                       <?= $this->t(['fr'=>'📥 Télécharger','en'=>'📥 Download']) ?>
+                                       <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
                                     </a>
                                 </div>
-                            <?php else: ?>
-                                <p style="color:#999;"><?= $this->t(['fr'=>'Aucun fichier','en'=>'No file']) ?></p>
+                            <?php else : ?>
+                                <p style="color:#999;"><?= $this->t(['fr' => 'Aucun fichier','en' => 'No file']) ?></p>
                             <?php endif; ?>
-                            <input type="file" name="<?= $key ?>" accept="<?= $key==='photo'?'image/*':'.pdf' ?>">
+                            <input type="file" name="<?= $key ?>" accept="<?= $key === 'photo' ? 'image/*' : '.pdf' ?>">
                         </div>
                         <?php endforeach; ?>
                     </div>
 
                     <div class="form-actions">
-                        <button type="submit" class="btn-secondary"><?= $this->t(['fr'=>'Enregistrer mes modifications','en'=>'Save changes']) ?></button>
-                        <button type="button" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Annuler','en'=>'Cancel']) ?></button>
+                        <button type="submit" class="btn-secondary"><?= $this->t(['fr' => 'Enregistrer mes modifications','en' => 'Save changes']) ?></button>
+                        <button type="button" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Annuler','en' => 'Cancel']) ?></button>
                     </div>
                 </form>
             <?php endif; ?>

@@ -1,4 +1,5 @@
 <?php
+
 namespace View;
 
 class ResetPasswordPage
@@ -35,19 +36,19 @@ class ResetPasswordPage
                 <div class="login-card">
                     <h1>Nouveau mot de passe</h1>
                     
-                    <?php if ($this->error): ?>
+                    <?php if ($this->error) : ?>
                         <div class="error-message">
                             <?= htmlspecialchars($this->error) ?>
                         </div>
                     <?php endif; ?>
                     
-                    <?php if ($this->success): ?>
+                    <?php if ($this->success) : ?>
                         <div class="success-message">
                             <?= htmlspecialchars($this->success) ?>
                             <br><br>
                             <a href="/index.php?page=login" class="btn-primary">Se connecter</a>
                         </div>
-                    <?php else: ?>
+                    <?php else : ?>
                         <form method="POST" action="">
                             <input type="hidden" name="token" value="<?= htmlspecialchars($this->token ?? '') ?>">
                             

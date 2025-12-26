@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\site;
 
 use Controllers\ControllerInterface;
@@ -9,9 +10,9 @@ use View\Dashboard\DashboardPageStudent;
 
 /**
  * DashboardController
- * 
+ *
  * Handles rendering dashboards for both admin and student users.
- * 
+ *
  * Responsibilities:
  *  - Display admin dashboard with incomplete folders
  *  - Display student dashboard with the user's own folder

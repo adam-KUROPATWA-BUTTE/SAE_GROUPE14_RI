@@ -1,4 +1,5 @@
 <?php
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -60,7 +61,9 @@ $controllers = [
 
 // Récupération de la page demandée
 $page = $_GET['page'] ?? trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
-if ($page === '') $page = 'home';
+if ($page === '') {
+    $page = 'home';
+}
 
 // Gestion de la déconnexion
 if ($page === 'logout') {
