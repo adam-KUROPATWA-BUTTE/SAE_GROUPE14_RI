@@ -65,12 +65,17 @@ class FoldersControllerAdmin
         }
 
         // Filters for listing students
+
         $filters = [
-            'type' => $_GET['Type'] ?? 'all',
-            'zone' => $_GET['Zone'] ?? 'all',
-            'stage' => $_GET['Stage'] ?? 'all',
-            'etude' => $_GET['etude'] ?? 'all',
-            'search' => $_GET['search'] ?? ''
+            'type'   => $_GET['Type'] ?? 'all',
+            'zone'   => $_GET['Zone'] ?? 'all',
+            'stage'  => $_GET['Stage'] ?? 'all',
+            'etude'  => $_GET['etude'] ?? 'all',
+            'search' => $_GET['search'] ?? '',
+            'complet'    => $_GET['complet'] ?? 'all',
+            'date_debut' => $_GET['date_debut'] ?? null,
+            'date_fin'   => $_GET['date_fin'] ?? null,
+            'tri_date'   => $_GET['tri_date'] ?? 'DESC'
         ];
 
         // Pagination

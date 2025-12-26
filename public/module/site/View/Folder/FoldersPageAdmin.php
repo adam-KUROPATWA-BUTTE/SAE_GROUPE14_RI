@@ -144,17 +144,36 @@ class FoldersPageAdmin
                     });
                 });
             });
-            function appliquerFiltres() {
+function appliquerFiltres() {
                 const url = new URL(window.location.href);
+                
                 const typesChecked = Array.from(document.querySelectorAll('input[name="entrant_sortant"]:checked')).map(cb => cb.value);
                 if (typesChecked.length === 1) url.searchParams.set('type', typesChecked[0]);
-                else url.searchParams.delete('type');
+                else url.searchParams.delete('type'); 
+                
                 const zonesChecked = Array.from(document.querySelectorAll('input[name="zone"]:checked')).map(cb => cb.value);
                 if (zonesChecked.length === 1) url.searchParams.set('zone', zonesChecked[0]);
                 else url.searchParams.delete('zone');
+
+                const completVal = document.getElementById('filter-complet').value;
+                if (completVal !== 'all') {
+                    url.searchParams.set('complet', completVal);
+                } else {
+                    url.searchParams.delete('complet');
+                }
+
+                const dateDebut = document.getElementById('date-debut').value;
+                if (dateDebut) url.searchParams.set('date_debut', dateDebut);
+                else url.searchParams.delete('date_debut');
+
+                const dateFin = document.getElementById('date-fin').value;
+                if (dateFin) url.searchParams.set('date_fin', dateFin);
+                else url.searchParams.delete('date_fin');
+
+                url.searchParams.set('p', 1);
+
                 window.location.href = url.toString();
-            }
-        </script>
+            }        </script>
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
             <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
@@ -166,19 +185,22 @@ class FoldersPageAdmin
         <?php
     }
 
-    private function renderStudentsList(): void
+private function renderStudentsList(): void
     {
         $etudiants = Folder::getAll();
         $filtered = $this->applyFilters($etudiants);
+        
         $total = count($filtered);
         $totalPages = ceil($total / $this->perPage);
         $offset = ($this->page - 1) * $this->perPage;
         $paginated = array_slice($filtered, $offset, $this->perPage);
         ?>
         <h1><?= $this->t(['fr'=>'Liste des étudiants','en'=>'Students List']) ?></h1>
+        
         <?php if (!empty($this->message)): ?>
-        <div class="message"><?= htmlspecialchars($this->message) ?></div>
+            <div class="message"><?= htmlspecialchars($this->message) ?></div>
         <?php endif; ?>
+
         <div class="student-toolbar">
             <div class="search-container-toolbar">
                 <label for="search" class="search-label"><?= $this->t(['fr'=>'Rechercher','en'=>'Search']) ?></label>
@@ -190,42 +212,75 @@ class FoldersPageAdmin
                 </button>
             </div>
         </div>
-        <div class="filters">
-            <label><input type="checkbox" name="entrant_sortant" value="entrant" <?= $this->filters['type'] === 'entrant' ? 'checked' : '' ?>><?= $this->t(['fr'=>'Entrant','en'=>'Incoming']) ?></label>
-            <label><input type="checkbox" name="entrant_sortant" value="sortant" <?= $this->filters['type'] === 'sortant' ? 'checked' : '' ?>><?= $this->t(['fr'=>'Sortant','en'=>'Outgoing']) ?></label>
-            <label><input type="checkbox" name="zone" value="europe" <?= $this->filters['zone'] === 'europe' ? 'checked' : '' ?>><?= $this->t(['fr'=>'Europe','en'=>'Europe']) ?></label>
-            <label><input type="checkbox" name="zone" value="hors_europe" <?= $this->filters['zone'] === 'hors_europe' ? 'checked' : '' ?>><?= $this->t(['fr'=>'Hors-Europe','en'=>'Non-Europe']) ?></label>
-            <?php if ($this->hasActiveFilters()): ?>
-                <a href="<?= $this->buildUrl('/folders') ?>" class="btn-reset"><?= $this->t(['fr'=>'Réinitialiser','en'=>'Reset']) ?></a>
-            <?php endif; ?>
+
+        <div class="filters-container" style="background: #f4f4f4; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <p style="margin-top: 0; font-weight: bold;"><?= $this->t(['fr'=>'Filtres','en'=>'Filters']) ?></p>
+            
+            <div class="filters" style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+                
+                <div class="filter-group">
+                    <label><input type="checkbox" name="entrant_sortant" value="entrant" <?= ($this->filters['type'] ?? '') === 'entrant' ? 'checked' : '' ?>><?= $this->t(['fr'=>'Entrant','en'=>'Incoming']) ?></label>
+                    <label><input type="checkbox" name="entrant_sortant" value="sortant" <?= ($this->filters['type'] ?? '') === 'sortant' ? 'checked' : '' ?>><?= $this->t(['fr'=>'Sortant','en'=>'Outgoing']) ?></label>
+                </div>
+                
+                <div class="filter-group">
+                    <label><input type="checkbox" name="zone" value="europe" <?= ($this->filters['zone'] ?? '') === 'europe' ? 'checked' : '' ?>><?= $this->t(['fr'=>'Europe','en'=>'Europe']) ?></label>
+                    <label><input type="checkbox" name="zone" value="hors_europe" <?= ($this->filters['zone'] ?? '') === 'hors_europe' ? 'checked' : '' ?>><?= $this->t(['fr'=>'Hors-Europe','en'=>'Non-Europe']) ?></label>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filter-complet"><?= $this->t(['fr'=>'Statut :','en'=>'Status:']) ?></label>
+                    <select id="filter-complet" onchange="appliquerFiltres()" style="padding: 5px;">
+                        <option value="all" <?= ($this->filters['complet'] ?? 'all') === 'all' ? 'selected' : '' ?>><?= $this->t(['fr'=>'Tous','en'=>'All']) ?></option>
+                        <option value="1" <?= ($this->filters['complet'] ?? '') === '1' ? 'selected' : '' ?>><?= $this->t(['fr'=>'Complet ✅','en'=>'Complete ✅']) ?></option>
+                        <option value="0" <?= ($this->filters['complet'] ?? '') === '0' ? 'selected' : '' ?>><?= $this->t(['fr'=>'Incomplet ⚠️','en'=>'Incomplete ⚠️']) ?></option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label><?= $this->t(['fr'=>'Né(e) entre :','en'=>'Born between:']) ?></label>
+                    <input type="date" id="date-debut" value="<?= htmlspecialchars($this->filters['date_debut'] ?? '') ?>" onchange="appliquerFiltres()" style="padding: 4px;">
+                    <span><?= $this->t(['fr'=>'et','en'=>'and']) ?></span>
+                    <input type="date" id="date-fin" value="<?= htmlspecialchars($this->filters['date_fin'] ?? '') ?>" onchange="appliquerFiltres()" style="padding: 4px;">
+                </div>
+
+                <?php if ($this->hasActiveFilters()): ?>
+                    <a href="<?= $this->buildUrl('/folders-admin') ?>" class="btn-reset" style="color: red; text-decoration: underline; margin-left: auto;">
+                        <?= $this->t(['fr'=>'✖ Réinitialiser les filtres','en'=>'✖ Reset filters']) ?>
+                    </a>
+                <?php endif; ?>
+            </div>
         </div>
+
         <p class="results-count"><?= $total ?> <?= $this->t(['fr'=>'étudiant(s) trouvé(s)','en'=>'student(s) found']) ?></p>
+        
         <table id="table-etudiants">
             <thead>
                 <tr>
                     <th><?= $this->t(['fr'=>'Nom','en'=>'Last Name']) ?></th>
                     <th><?= $this->t(['fr'=>'Prénom','en'=>'First Name']) ?></th>
-                    <th><?= $this->t(['fr'=>'Email','en'=>'Email']) ?></th>
-                    <th><?= $this->t(['fr'=>'Type','en'=>'Type']) ?></th>
+                    <th><?= $this->t(['fr'=>'Né(e) le','en'=>'Birth Date']) ?></th> <th><?= $this->t(['fr'=>'Type','en'=>'Type']) ?></th>
                     <th><?= $this->t(['fr'=>'Zone','en'=>'Zone']) ?></th>
-                    <th><?= $this->t(['fr'=>'Pièces','en'=>'Documents']) ?></th>
-                    <th><?= $this->t(['fr'=>'Dernière relance','en'=>'Last Follow-up']) ?></th>
-                </tr>
+                    <th><?= $this->t(['fr'=>'Statut','en'=>'Status']) ?></th> </tr>
             </thead>
             <tbody>
             <?php foreach ($paginated as $etudiant): ?>
                 <tr onclick="ouvrirFicheEtudiant('<?= htmlspecialchars($etudiant['NumEtu'] ?? '') ?>')" style="cursor: pointer;">
                     <td><?= htmlspecialchars($etudiant['Nom']) ?></td>
                     <td><?= htmlspecialchars($etudiant['Prenom']) ?></td>
-                    <td><?= htmlspecialchars($etudiant['EmailAMU'] ?? '') ?></td>
+                    <td><?= htmlspecialchars($etudiant['DateNaissance'] ?? '') ?></td>
                     <td><?= $this->t(['fr' => ($etudiant['Type'] === 'entrant' ? 'Entrant' : 'Sortant'), 'en' => ($etudiant['Type'] === 'entrant' ? 'Incoming' : 'Outgoing')]) ?></td>
                     <td><?= $this->t(['fr' => ($etudiant['Zone'] === 'europe' ? 'Europe' : 'Hors Europe'), 'en' => ($etudiant['Zone'] === 'europe' ? 'Europe' : 'Non-Europe')]) ?></td>
-                    <td><?= ($etudiant['pieces_fournies'] ?? 0) ?>/<?= ($etudiant['total_pieces'] ?? 0) ?></td>
-                    <td><?= htmlspecialchars($etudiant['date_derniere_relance'] ?? '') ?></td>
+                    <td>
+                        <?= ($etudiant['IsComplete'] ?? 0) == 1 
+                            ? '<span style="color:green">✔ Complet</span>' 
+                            : '<span style="color:orange">⚠️ Incomplet</span>' ?>
+                    </td>
                 </tr>
             <?php endforeach; ?>
             </tbody>
         </table>
+
         <?php if ($totalPages > 0): ?>
         <div class="pagination">
             <?php if ($this->page > 1): ?>
@@ -330,7 +385,6 @@ class FoldersPageAdmin
         <?php
     }
 
-// ✅ MÉTHODE CORRIGÉE - Afficher le formulaire de visualisation/modification
     private function renderViewForm(): void
     {
         if (!$this->studentData) {
@@ -404,11 +458,9 @@ class FoldersPageAdmin
                 </select>
             </div>
 
-            <!-- ✅ SECTION PIÈCES JUSTIFICATIVES -->
             <div class="form-section" style="margin-top: 30px;">
                 <h2><?= $this->t(['fr'=>'Pièces Justificatives','en'=>'Supporting Documents']) ?></h2>
                 
-                <!-- Photo -->
                 <div style="margin-bottom: 20px;">
                     <label><?= $this->t(['fr'=>'Photo','en'=>'Photo']) ?></label>
                     <?php if (!empty($student['pieces']['photo'])): ?>
@@ -430,7 +482,6 @@ class FoldersPageAdmin
                     <input type="file" name="photo" id="photo" accept="image/*" disabled style="background-color: #e0e0e0; color: #666; margin-top: 10px;">
                 </div>
 
-                <!-- CV -->
                 <div style="margin-bottom: 20px;">
                     <label><?= $this->t(['fr'=>'CV','en'=>'CV']) ?></label>
                     <?php if (!empty($student['pieces']['cv'])): ?>
@@ -448,7 +499,6 @@ class FoldersPageAdmin
                     <input type="file" name="cv" id="cv" accept=".pdf,.doc,.docx" disabled style="background-color: #e0e0e0; color: #666; margin-top: 10px;">
                 </div>
 
-                <!-- Convention de stage -->
                 <?php if (!empty($student['pieces']['convention'])): ?>
                 <div style="margin-bottom: 20px;">
                     <label><?= $this->t(['fr'=>'Convention de stage','en'=>'Internship Agreement']) ?></label>
@@ -463,7 +513,6 @@ class FoldersPageAdmin
                 </div>
                 <?php endif; ?>
 
-                <!-- Lettre de motivation -->
                 <?php if (!empty($student['pieces']['lettre_motivation'])): ?>
                 <div style="margin-bottom: 20px;">
                     <label><?= $this->t(['fr'=>'Lettre de motivation','en'=>'Motivation Letter']) ?></label>
@@ -478,7 +527,6 @@ class FoldersPageAdmin
                 </div>
                 <?php endif; ?>
 
-                <!-- Statut du dossier -->
                 <div style="margin-top: 20px; padding: 15px; background-color: <?= ($student['IsComplete'] ?? 0) ? '#d4edda' : '#fff3cd' ?>; border-radius: 5px;">
                     <strong><?= $this->t(['fr'=>'Statut du dossier :','en'=>'Folder status:']) ?></strong>
                     <?= ($student['IsComplete'] ?? 0) 
@@ -497,22 +545,18 @@ class FoldersPageAdmin
             </div>
 
             <div class="form-actions">
-                <!-- Bouton Modifier -->
                 <button type="button" id="btn-modifier" class="btn-danger" onclick="activerModification()">
                     <?= $this->t(['fr'=>'Modifier','en'=>'Edit']) ?>
                 </button>
 
-                <!-- Bouton Enregistrer (caché par défaut) -->
                 <button type="submit" id="btn-enregistrer" class="btn-secondary" style="display: none;">
                     <?= $this->t(['fr'=>'Enregistrer','en'=>'Save']) ?>
                 </button>
 
-                <!-- Bouton Annuler -->
                 <button type="button" id="btn-annuler" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'" style="display: none;">
                     <?= $this->t(['fr'=>'Annuler','en'=>'Cancel']) ?>
                 </button>
 
-                <!-- Bouton Retour -->
                 <button type="button" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'">
                     <?= $this->t(['fr'=>'Retour','en'=>'Back']) ?>
                 </button>
@@ -524,20 +568,40 @@ class FoldersPageAdmin
     private function applyFilters(array $etudiants): array
     {
         $filtered = $etudiants;
-        if ($this->filters['type'] !== 'all') {
-            $filtered = array_filter($filtered, fn($e) => ($e['type'] ?? '') === $this->filters['type']);
+
+        if (($this->filters['type'] ?? 'all') !== 'all') {
+            $filtered = array_filter($filtered, fn($e) => ($e['Type'] ?? '') === $this->filters['type']);
         }
-        if ($this->filters['zone'] !== 'all') {
-            $filtered = array_filter($filtered, fn($e) => ($e['zone'] ?? '') === $this->filters['zone']);
+
+        if (($this->filters['zone'] ?? 'all') !== 'all') {
+            $filtered = array_filter($filtered, fn($e) => ($e['Zone'] ?? '') === $this->filters['zone']);
         }
+
+        if (isset($this->filters['complet']) && $this->filters['complet'] !== 'all') {
+            $wantComplete = $this->filters['complet'] == '1';
+            $filtered = array_filter($filtered, function($e) use ($wantComplete) {
+                $isComplete = !empty($e['IsComplete']) && $e['IsComplete'] == 1;
+                return $isComplete === $wantComplete;
+            });
+        }
+
+        if (!empty($this->filters['date_debut'])) {
+            $filtered = array_filter($filtered, fn($e) => ($e['DateNaissance'] ?? '') >= $this->filters['date_debut']);
+        }
+        if (!empty($this->filters['date_fin'])) {
+            $filtered = array_filter($filtered, fn($e) => ($e['DateNaissance'] ?? '') <= $this->filters['date_fin']);
+        }
+
         if (!empty($this->filters['search'])) {
             $search = strtolower($this->filters['search']);
             $filtered = array_filter($filtered, function($e) use ($search) {
-                return strpos(strtolower($e['nom'] ?? ''), $search) !== false
-                        || strpos(strtolower($e['prenom'] ?? ''), $search) !== false
-                        || strpos(strtolower($e['email'] ?? ''), $search) !== false;
+                return strpos(strtolower($e['Nom'] ?? ''), $search) !== false
+                        || strpos(strtolower($e['Prenom'] ?? ''), $search) !== false
+                        || strpos(strtolower($e['EmailPersonnel'] ?? ''), $search) !== false
+                        || strpos(strtolower($e['NumEtu'] ?? ''), $search) !== false;
             });
         }
+
         return array_values($filtered);
     }
 
@@ -553,8 +617,11 @@ class FoldersPageAdmin
 
     private function hasActiveFilters(): bool
     {
-        return $this->filters['type'] !== 'all'
-                || $this->filters['zone'] !== 'all'
-                || !empty($this->filters['search']);
+        return ($this->filters['type'] ?? 'all') !== 'all'
+            || ($this->filters['zone'] ?? 'all') !== 'all'
+            || ($this->filters['complet'] ?? 'all') !== 'all'
+            || !empty($this->filters['date_debut'])           
+            || !empty($this->filters['date_fin'])       
+            || !empty($this->filters['search']);
     }
 }

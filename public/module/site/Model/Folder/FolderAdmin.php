@@ -514,4 +514,74 @@ class FolderAdmin
             return false;
         }
     }
+
+    /**
+     * Advanced filters with filters
+     * * @param array $filters array 
+     * @return array list folder after filters
+     */
+    public static function rechercher(array $filters)
+    {
+        $pdo = self::getConnection();
+        $params = [];
+        
+        $sql = "
+            SELECT 
+                NumEtu, Nom, Prenom, EmailPersonnel as email, Telephone,
+                Type, Zone, DateNaissance, Sexe, Adresse, CodePostal, Ville,
+                EmailAMU, CodeDepartement, IsComplete, PiecesJustificatives
+            FROM dossiers
+            WHERE 1=1
+        ";
+
+        // --- Filter : Complétude ---
+        if (isset($filters['complet']) && $filters['complet'] !== 'all') {
+            if ($filters['complet'] == '1') {
+                $sql .= " AND IsComplete = 1";
+            } else {
+                // Incomplet inclut 0 et NULL
+                $sql .= " AND (IsComplete = 0 OR IsComplete IS NULL)";
+            }
+        }
+
+        // --- Filter : Date  ---
+        if (!empty($filters['date_debut'])) {
+            $sql .= " AND DateNaissance >= :date_debut";
+            $params[':date_debut'] = $filters['date_debut'];
+        }
+
+        if (!empty($filters['date_fin'])) {
+            $sql .= " AND DateNaissance <= :date_fin";
+            $params[':date_fin'] = $filters['date_fin'];
+        }
+
+        // --- Other filters 
+        if (!empty($filters['type']) && $filters['type'] !== 'all') {
+            $sql .= " AND Type = :type";
+            $params[':type'] = $filters['type'];
+        }
+
+        if (!empty($filters['zone']) && $filters['zone'] !== 'all') {
+            $sql .= " AND Zone = :zone";
+            $params[':zone'] = $filters['zone'];
+        }
+
+        if (!empty($filters['search'])) {
+            $sql .= " AND (Nom LIKE :search OR Prenom LIKE :search OR NumEtu LIKE :search OR EmailPersonnel LIKE :search)";
+            $params[':search'] = '%' . $filters['search'] . '%';
+        }
+
+     
+        $orderDirection = (isset($filters['tri_date']) && strtoupper($filters['tri_date']) === 'ASC') ? 'ASC' : 'DESC';
+        $sql .= " ORDER BY DateNaissance $orderDirection, Nom ASC";
+
+        try {
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            error_log("Error searching folders: " . $e->getMessage());
+            return [];
+        }
+    }
 }
