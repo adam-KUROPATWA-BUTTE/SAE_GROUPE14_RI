@@ -1,4 +1,5 @@
 <?php
+
 namespace Model\Folder;
 
 use Model\Folder\FolderAdmin;
@@ -136,8 +137,12 @@ class FolderAdmin
 
             // Prepare justificative files as JSON
             $pieces = [];
-            if ($photoData !== null) $pieces['photo'] = base64_encode($photoData);
-            if ($cvData !== null) $pieces['cv'] = base64_encode($cvData);
+            if ($photoData !== null) {
+                $pieces['photo'] = base64_encode($photoData);
+            }
+            if ($cvData !== null) {
+                $pieces['cv'] = base64_encode($cvData);
+            }
             $piecesJson = json_encode($pieces);
 
             return $stmt->execute([
@@ -315,8 +320,12 @@ class FolderAdmin
                 $oldPieces = json_decode($existing['PiecesJustificatives'], true) ?? [];
             }
 
-            if ($photoData !== null) $oldPieces['photo'] = base64_encode($photoData);
-            if ($cvData !== null) $oldPieces['cv'] = base64_encode($cvData);
+            if ($photoData !== null) {
+                $oldPieces['photo'] = base64_encode($photoData);
+            }
+            if ($cvData !== null) {
+                $oldPieces['cv'] = base64_encode($cvData);
+            }
             $piecesJson = json_encode($oldPieces);
 
             $stmt = $pdo->prepare("
@@ -437,7 +446,9 @@ class FolderAdmin
             $stmt->execute([':numetu' => $numetu]);
             $current = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-            if (!$current) return false;
+            if (!$current) {
+                return false;
+            }
 
             // Toggle status: 0/NULL becomes 1, 1 becomes 0
             $newStatus = ($current['IsComplete'] == 1) ? 0 : 1;
@@ -463,7 +474,9 @@ class FolderAdmin
      */
     public static function uploadPhoto($numetu, $file)
     {
-        if (!file_exists($file['tmp_name'])) return false;
+        if (!file_exists($file['tmp_name'])) {
+            return false;
+        }
         $photoData = file_get_contents($file['tmp_name']);
         return self::updatePieceJustificative($numetu, 'photo', $photoData);
     }
@@ -477,7 +490,9 @@ class FolderAdmin
      */
     public static function uploadCV($numetu, $file)
     {
-        if (!file_exists($file['tmp_name'])) return false;
+        if (!file_exists($file['tmp_name'])) {
+            return false;
+        }
         $cvData = file_get_contents($file['tmp_name']);
         return self::updatePieceJustificative($numetu, 'cv', $cvData);
     }
@@ -517,14 +532,14 @@ class FolderAdmin
 
     /**
      * Advanced filters with filters
-     * * @param array $filters array 
+     * * @param array $filters array
      * @return array list folder after filters
      */
     public static function rechercher(array $filters)
     {
         $pdo = self::getConnection();
         $params = [];
-        
+
         $sql = "
             SELECT 
                 NumEtu, Nom, Prenom, EmailPersonnel as email, Telephone,
@@ -555,7 +570,7 @@ class FolderAdmin
             $params[':date_fin'] = $filters['date_fin'];
         }
 
-        // --- Other filters 
+        // --- Other filters
         if (!empty($filters['type']) && $filters['type'] !== 'all') {
             $sql .= " AND Type = :type";
             $params[':type'] = $filters['type'];
@@ -571,7 +586,7 @@ class FolderAdmin
             $params[':search'] = '%' . $filters['search'] . '%';
         }
 
-     
+
         $orderDirection = (isset($filters['tri_date']) && strtoupper($filters['tri_date']) === 'ASC') ? 'ASC' : 'DESC';
         $sql .= " ORDER BY DateNaissance $orderDirection, Nom ASC";
 

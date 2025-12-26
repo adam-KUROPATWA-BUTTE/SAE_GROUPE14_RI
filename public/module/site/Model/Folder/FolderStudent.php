@@ -1,4 +1,5 @@
 <?php
+
 namespace Model\Folder;
 
 use PDO;
@@ -114,8 +115,12 @@ class FolderStudent
                 : [];
 
             // Update files if provided
-            if ($photoData !== null) $pieces['photo'] = base64_encode($photoData);
-            if ($cvData !== null) $pieces['cv'] = base64_encode($cvData);
+            if ($photoData !== null) {
+                $pieces['photo'] = base64_encode($photoData);
+            }
+            if ($cvData !== null) {
+                $pieces['cv'] = base64_encode($cvData);
+            }
 
             $piecesJson = json_encode($pieces);
 

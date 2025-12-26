@@ -1,18 +1,16 @@
 <?php
+
 namespace Controllers\site;
 
-require_once ROOT_PATH . '/public/module/site/Model/User/UserAdmin.php';
-require_once ROOT_PATH . '/public/module/site/Model/User/UserStudent.php';
-
 use Controllers\ControllerInterface;
-use Model\UserAdmin;
-use Model\UserStudent;
+use Model\User\UserAdmin;
+use Model\User\UserStudent;
 
 /**
  * AuthController
- * 
+ *
  * Handles authentication and registration for both students and admins.
- * 
+ *
  * Responsibilities:
  *  - Display login and registration pages
  *  - Process login for students and admins
@@ -38,7 +36,7 @@ class AuthController implements ControllerInterface
             'forgot-password',
             'reset-password'
         ];
-        
+
         return in_array($page, $authPages);
     }
 
@@ -48,7 +46,7 @@ class AuthController implements ControllerInterface
     public function control(): void
     {
         $page = $_GET['page'] ?? trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
-        
+
         switch ($page) {
             case 'login':
                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -57,7 +55,7 @@ class AuthController implements ControllerInterface
                     self::showLoginPage();
                 }
                 break;
-                
+
             case 'register':
                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     self::registerStudent();
@@ -65,11 +63,11 @@ class AuthController implements ControllerInterface
                     self::showRegisterPage();
                 }
                 break;
-                
+
             case 'register-admin':
                 self::registerAdmin();
                 break;
-                
+
             case 'logout':
                 self::logout();
                 break;
@@ -78,7 +76,7 @@ class AuthController implements ControllerInterface
 
     /**
      * Universal login method - automatically detects user type.
-     * 
+     *
      * Students login with student number, admins with email.
      */
     public static function login()
@@ -265,13 +263,13 @@ class AuthController implements ControllerInterface
     public static function logout()
     {
         $isAdmin = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
-        
+
         if ($isAdmin) {
             UserAdmin::logout();
         } else {
             UserStudent::logout();
         }
-        
+
         header('Location: /login');
         exit();
     }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\site;
 
 use Controllers\ControllerInterface;
@@ -6,9 +7,9 @@ use View\PartnersPage;
 
 /**
  * PartnersController
- * 
+ *
  * Handles the partners page of the application.
- * 
+ *
  * Responsibilities:
  *  - Display a list of partner universities
  *  - Support multilingual titles based on the 'lang' parameter

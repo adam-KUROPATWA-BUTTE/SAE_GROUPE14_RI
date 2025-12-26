@@ -1,4 +1,5 @@
 <?php
+
 namespace Model\Folder;
 
 use Database;

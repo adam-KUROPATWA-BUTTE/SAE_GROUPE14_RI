@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\site;
 
 use Controllers\ControllerInterface;
@@ -6,9 +7,9 @@ use View\HelpPage;
 
 /**
  * HelpController
- * 
+ *
  * Handles displaying the help or FAQ page.
- * 
+ *
  * Responsibilities:
  *  - Provide a list of frequently asked questions (FAQ)
  *  - Render the help page view
@@ -23,11 +24,11 @@ class HelpController implements ControllerInterface
         // Example FAQ (can be replaced with a real model)
         $faq = [
             [
-                'question' => 'How to add a user?', 
+                'question' => 'How to add a user?',
                 'answer' => 'You can add a user via the Settings menu > Users.'
             ],
             [
-                'question' => 'How to reset a password?', 
+                'question' => 'How to reset a password?',
                 'answer' => 'Click on the "Reset Password" button in the user profile.'
             ]
         ];

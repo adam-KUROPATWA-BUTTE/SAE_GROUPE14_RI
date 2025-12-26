@@ -1,11 +1,12 @@
 <?php
+
 namespace Controllers;
 
 /**
  * ControllerInterface
- * 
+ *
  * Defines the basic structure for all controllers.
- * 
+ *
  * Responsibilities:
  *  - Every controller must implement a `control()` method to handle request logic.
  *  - Every controller must implement a static `support()` method to indicate
@@ -16,7 +17,7 @@ interface ControllerInterface
     /**
      * Main method to handle the request logic for the controller.
      */
-    function control();
+    public function control();
 
     /**
      * Determines if the controller supports a given path and HTTP method.
@@ -25,5 +26,5 @@ interface ControllerInterface
      * @param string $method HTTP method (GET, POST, etc.)
      * @return bool True if the controller supports handling the path
      */
-    static function support(string $chemin, string $method): bool;
+    public static function support(string $chemin, string $method): bool;
 }

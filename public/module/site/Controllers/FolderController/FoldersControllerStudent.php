@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\site\FolderController;
 
 use Controllers\Auth_Guard;
@@ -8,7 +9,7 @@ use Model\Folder\FolderStudent;
 
 /**
  * Controller for managing student folders (student side).
- * 
+ *
  * Responsibilities:
  *  - Display the student's folder information
  *  - Update personal information

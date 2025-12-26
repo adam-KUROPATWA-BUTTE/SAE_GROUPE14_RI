@@ -1,15 +1,18 @@
 <?php
+
 namespace Controllers\site;
 
 use Controllers\ControllerInterface;
 use View\HomePage;
-use Database; // Ensure the Database class is imported
+use Database;
+
+// Ensure the Database class is imported
 
 /**
  * IndexController
- * 
+ *
  * Handles the homepage of the application.
- * 
+ *
  * Responsibilities:
  *  - Check if a user is logged in
  *  - Calculate completion statistics for dossiers
@@ -41,7 +44,6 @@ class IndexController implements ControllerInterface
             if ($row['total'] > 0) {
                 $completionPercentage = ($row['completed'] / $row['total']) * 100;
             }
-
         } catch (\PDOException $e) {
             error_log("Error fetching statistics: " . $e->getMessage());
             // Do not expose error details to the user

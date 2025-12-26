@@ -1,17 +1,18 @@
 <?php
+
 namespace Controllers;
 
 /**
- * Auth_Guard
- * 
+ * AuthGuard
+ *
  * Handles user authentication and role-based access control.
  * Provides methods to ensure that a user is logged in and has the correct role.
  */
-class Auth_Guard
+class AuthGuard
 {
     /**
      * Ensures that an admin user is logged in.
-     * 
+     *
      * If the user is not an admin, they are redirected to the login page.
      */
     public static function requireAdmin(): void
@@ -28,7 +29,7 @@ class Auth_Guard
 
     /**
      * Ensures that a student user is logged in.
-     * 
+     *
      * If the user is not a student, they are redirected to the login page.
      */
     public static function requireStudent(): void
@@ -45,7 +46,7 @@ class Auth_Guard
 
     /**
      * Ensures that any authenticated user is logged in.
-     * 
+     *
      * Redirects to login page if no user is authenticated.
      */
     public static function requireAuth(): void
@@ -62,7 +63,7 @@ class Auth_Guard
 
     /**
      * Ensures that the user has a specific role.
-     * 
+     *
      * @param string $role Role to check (e.g., 'admin', 'student')
      */
     public static function requireRole(string $role): void
@@ -80,7 +81,7 @@ class Auth_Guard
 
     /**
      * Checks if the current user is an admin.
-     * 
+     *
      * @return bool True if admin, false otherwise
      */
     public static function isAdmin(): bool
@@ -90,7 +91,7 @@ class Auth_Guard
 
     /**
      * Checks if the current user is a student.
-     * 
+     *
      * @return bool True if student, false otherwise
      */
     public static function isStudent(): bool
@@ -100,7 +101,7 @@ class Auth_Guard
 
     /**
      * Redirects the user to their dashboard based on role.
-     * 
+     *
      * Admin users are redirected to '/dashboard-admin', students to '/dashboard-student'.
      */
     public static function redirectToDashboard(): void

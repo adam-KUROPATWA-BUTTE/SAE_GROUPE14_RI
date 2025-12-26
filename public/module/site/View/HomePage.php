@@ -1,4 +1,5 @@
 <?php
+
 namespace View;
 
 class HomePage
@@ -76,13 +77,13 @@ class HomePage
 
 
 
-                    <?php if ($this->isLoggedIn): ?>
+                    <?php if ($this->isLoggedIn) : ?>
                         <button onclick="window.location.href='<?= $this->buildUrl('/logout') ?>'">
-                            <?= $this->t(['fr'=>'Se déconnecter','en'=>'Log out']) ?>
+                            <?= $this->t(['fr' => 'Se déconnecter','en' => 'Log out']) ?>
                         </button>
-                    <?php else: ?>
+                    <?php else : ?>
                         <button onclick="window.location.href='<?= $this->buildUrl('/login') ?>'">
-                            <?= $this->t(['fr'=>'Se connecter','en'=>'Log in']) ?>
+                            <?= $this->t(['fr' => 'Se connecter','en' => 'Log in']) ?>
                         </button>
                     <?php endif; ?>
                 </div>
@@ -93,11 +94,11 @@ class HomePage
             </button>
 
             <nav class="menu">
-                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/partners') ?>'"><?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'"><?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Sitemap']) ?></button>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Accueil','en' => 'Home']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'"><?= $this->t(['fr' => 'Tableau de bord','en' => 'Dashboard']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/partners') ?>'"><?= $this->t(['fr' => 'Partenaires','en' => 'Partners']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'"><?= $this->t(['fr' => 'Dossiers','en' => 'Folders']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'"><?= $this->t(['fr' => 'Plan du site','en' => 'Sitemap']) ?></button>
             </nav>
         </header>
 
@@ -119,14 +120,14 @@ class HomePage
         <main>
             <div class="dashboard-container">
                 <div class="card">
-                    <h2><?= $this->t(['fr'=>'Complétude du dossier','en'=>'File Completeness']) ?></h2>
+                    <h2><?= $this->t(['fr' => 'Complétude du dossier','en' => 'File Completeness']) ?></h2>
 
                     <div class="legend">
                         <div class="legend-item">
-                            <span class="legend-color complet"></span> <?= $this->t(['fr'=>'Complet','en'=>'Complete']) ?>
+                            <span class="legend-color complet"></span> <?= $this->t(['fr' => 'Complet','en' => 'Complete']) ?>
                         </div>
                         <div class="legend-item">
-                            <span class="legend-color incomplet"></span> <?= $this->t(['fr'=>'Incomplet','en'=>'Incomplete']) ?>
+                            <span class="legend-color incomplet"></span> <?= $this->t(['fr' => 'Incomplet','en' => 'Incomplete']) ?>
                         </div>
                     </div>
 
@@ -140,7 +141,7 @@ class HomePage
                             </svg>
                             <div class="chart-center">
                                 <div class="chart-percentage"><?= round($this->completionPercentage) ?>%</div>
-                                <div class="chart-label"><?= $this->t(['fr'=>'Complet','en'=>'Complete']) ?></div>
+                                <div class="chart-label"><?= $this->t(['fr' => 'Complet','en' => 'Complete']) ?></div>
                             </div>
                         </div>
                     </div>
@@ -154,13 +155,13 @@ class HomePage
         <!-- Contenu du popup d'aide -->
         <div id="help-popup">
             <div class="help-popup-header">
-                <span><?= $this->t(['fr'=>'Aide', 'en'=>'Help']) ?></span>
+                <span><?= $this->t(['fr' => 'Aide', 'en' => 'Help']) ?></span>
                 <button onclick="toggleHelpPopup()">✖</button>
             </div>
             <div class="help-popup-body">
-                <p><?= $this->t(['fr'=>'Bienvenue ! Comment pouvons-nous vous aider ?', 'en'=>'Welcome! How can we help you?']) ?></p>
+                <p><?= $this->t(['fr' => 'Bienvenue ! Comment pouvons-nous vous aider ?', 'en' => 'Welcome! How can we help you?']) ?></p>
                 <ul>
-                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr'=>'Page d’aide complète', 'en'=>'Full help page']) ?></a></li>
+                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr' => 'Page d’aide complète', 'en' => 'Full help page']) ?></a></li>
                 </ul>
             </div>
         </div>

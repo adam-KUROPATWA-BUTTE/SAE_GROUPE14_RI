@@ -1,13 +1,14 @@
 <?php
+
 namespace Controllers\site;
 
 use Model\Folder;
 
 /**
  * SaveStudentController
- * 
+ *
  * Handles the creation of a new student folder.
- * 
+ *
  * Responsibilities:
  *  - Validate submitted student data
  *  - Check for existing student ID or email
@@ -55,11 +56,21 @@ class SaveStudentController
 
         // Basic validation
         $errors = [];
-        if (empty($data['numetu'])) $errors[] = $lang === 'fr' ? 'Le numéro étudiant est requis' : 'Student ID is required';
-        if (empty($data['nom'])) $errors[] = $lang === 'fr' ? 'Le nom est requis' : 'Last name is required';
-        if (empty($data['prenom'])) $errors[] = $lang === 'fr' ? 'Le prénom est requis' : 'First name is required';
-        if (empty($data['email'])) $errors[] = $lang === 'fr' ? 'L\'email est requis' : 'Email is required';
-        if (empty($data['telephone'])) $errors[] = $lang === 'fr' ? 'Le téléphone est requis' : 'Phone is required';
+        if (empty($data['numetu'])) {
+            $errors[] = $lang === 'fr' ? 'Le numéro étudiant est requis' : 'Student ID is required';
+        }
+        if (empty($data['nom'])) {
+            $errors[] = $lang === 'fr' ? 'Le nom est requis' : 'Last name is required';
+        }
+        if (empty($data['prenom'])) {
+            $errors[] = $lang === 'fr' ? 'Le prénom est requis' : 'First name is required';
+        }
+        if (empty($data['email'])) {
+            $errors[] = $lang === 'fr' ? 'L\'email est requis' : 'Email is required';
+        }
+        if (empty($data['telephone'])) {
+            $errors[] = $lang === 'fr' ? 'Le téléphone est requis' : 'Phone is required';
+        }
 
         // If there are errors, redirect back with error message
         if (!empty($errors)) {

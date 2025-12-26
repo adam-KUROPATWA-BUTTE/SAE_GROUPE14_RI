@@ -1,4 +1,5 @@
 <?php
+
 // Fichier View/Login.php
 // Ce fichier instancie et affiche la page de login
 
