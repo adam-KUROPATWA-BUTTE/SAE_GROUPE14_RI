@@ -1,5 +1,6 @@
 <?php
 
+// phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
 class Autoloader
 {
     private static array $prefixes = [
