@@ -80,7 +80,13 @@ class PartnersPage
 
         <main>
             <h1><?= htmlspecialchars($this->titre) ?></h1>
+            <div class="partners-actions">
+                <button class="btn-add-partner">
+                    <span class="btn-plus">+</span>
+                    <?= $this->t(['fr' => 'Ajouter', 'en' => 'Add']) ?>
+                </button>
 
+            </div>
             <p>
                 <?= $this->t([
                     'fr' => 'Veuillez trouver la liste des partenaires d’AMU en cliquant sur ce lien :',
