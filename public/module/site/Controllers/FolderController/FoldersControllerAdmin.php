@@ -99,9 +99,9 @@ class FoldersControllerAdmin
 
         // Collect filters from GET parameters for the list view
         $filters = [
-            'type'       => $_GET['Type'] ?? 'all',       // entrant/sortant
-            'zone'       => $_GET['Zone'] ?? 'all',       // europe/hors_europe
-            'stage'      => $_GET['Stage'] ?? 'all',
+            'type'       => $_GET['type'] ?? 'all',       // entrant/sortant
+            'zone'       => $_GET['zone'] ?? 'all',       // europe/hors_europe
+            'stage'      => $_GET['stage'] ?? 'all',
             'etude'      => $_GET['etude'] ?? 'all',
             'search'     => $_GET['search'] ?? '',        // Text search
             'complet'    => $_GET['complet'] ?? 'all',    // Status filter
