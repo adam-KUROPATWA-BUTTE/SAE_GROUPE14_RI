@@ -1,6 +1,6 @@
 <?php
-
 namespace View;
+
 
 class PartnersPage
 {
@@ -28,6 +28,7 @@ class PartnersPage
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
+
         }
         if (isset($_GET['tritanopia'])) {
             $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';
@@ -60,26 +61,32 @@ class PartnersPage
             </div>
             <nav class="menu">
                 <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'">
-                    <?= $this->t(['fr' => 'Accueil','en' => 'Home']) ?>
+                    <?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?>
                 </button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'">
-                    <?= $this->t(['fr' => 'Tableau de bord','en' => 'Dashboard']) ?>
+                    <?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?>
                 </button>
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('/partners') ?>'">
-                    <?= $this->t(['fr' => 'Partenaires','en' => 'Partners']) ?>
+                    <?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?>
                 </button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'">
-                    <?= $this->t(['fr' => 'Dossiers','en' => 'Folders']) ?>
+                    <?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?>
                 </button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'">
-                    <?= $this->t(['fr' => 'Plan du site','en' => 'Site Map']) ?>
+                    <?= $this->t(['fr'=>'Plan du site','en'=>'Site Map']) ?>
                 </button>
             </nav>
         </header>
 
         <main>
             <h1><?= htmlspecialchars($this->titre) ?></h1>
+            <div class="partners-actions">
+                <button class="btn-add-partner">
+                    <span class="btn-plus">+</span>
+                    <?= $this->t(['fr' => 'Ajouter', 'en' => 'Add']) ?>
+                </button>
 
+            </div>
             <p>
                 <?= $this->t([
                     'fr' => 'Veuillez trouver la liste des partenaires d’AMU en cliquant sur ce lien :',
@@ -111,13 +118,13 @@ class PartnersPage
         <!-- Contenu du popup d'aide -->
         <div id="help-popup">
             <div class="help-popup-header">
-                <span><?= $this->t(['fr' => 'Aide', 'en' => 'Help']) ?></span>
+                <span><?= $this->t(['fr'=>'Aide', 'en'=>'Help']) ?></span>
                 <button onclick="toggleHelpPopup()">✖</button>
             </div>
             <div class="help-popup-body">
-                <p><?= $this->t(['fr' => 'Bienvenue ! Comment pouvons-nous vous aider ?', 'en' => 'Welcome! How can we help you?']) ?></p>
+                <p><?= $this->t(['fr'=>'Bienvenue ! Comment pouvons-nous vous aider ?', 'en'=>'Welcome! How can we help you?']) ?></p>
                 <ul>
-                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr' => 'Page d’aide complète', 'en' => 'Full help page']) ?></a></li>
+                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr'=>'Page d’aide complète', 'en'=>'Full help page']) ?></a></li>
                 </ul>
             </div>
         </div>
@@ -146,7 +153,7 @@ class PartnersPage
             }
         </script>
         </body>
-    </html>
+        </html>
         <?php
     }
 }
