@@ -2,7 +2,6 @@
 
 namespace Model\Folder;
 
-use Model\Folder\FolderAdmin;
 
 class FolderAdmin
 {
