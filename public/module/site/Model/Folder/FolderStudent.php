@@ -90,16 +90,91 @@ class FolderStudent
     }
 
     /**
-     * Update a student's folder
+     * Create a new folder for the student.
      *
-     * Only certain fields are editable: address, postal code, city, telephone, email, and uploaded files.
+     * @param array $data Folder data
+     * @param string|null $photoData Binary photo data
+     * @param string|null $cvData Binary CV data
+     * @param string|null $conventionData Binary Convention data
+     * @param string|null $lettreData Binary Motivation Letter data
+     * @return bool
+     */
+    public static function createDossier(array $data, ?string $photoData = null, ?string $cvData = null, ?string $conventionData = null, ?string $lettreData = null): bool
+    {
+        $pdo = self::getConnection();
+
+        try {
+            // Convert empty strings to NULL
+            foreach ($data as $key => $value) {
+                if ($value === '') {
+                    $data[$key] = null;
+                }
+            }
+
+            // Handle Date
+            if (!empty($data['DateNaissance'])) {
+                $date = \DateTime::createFromFormat('Y-m-d', $data['DateNaissance']);
+                if (!$date || $date->format('Y-m-d') !== $data['DateNaissance']) {
+                    $data['DateNaissance'] = null;
+                }
+            }
+
+            $stmt = $pdo->prepare("
+                INSERT INTO dossiers (
+                    NumEtu, Nom, Prenom, DateNaissance, Sexe, Adresse, CodePostal, Ville,
+                    EmailPersonnel, EmailAMU, Telephone, CodeDepartement, Type, Zone,
+                    IsComplete, PiecesJustificatives
+                ) VALUES (
+                    :NumEtu, :Nom, :Prenom, :DateNaissance, :Sexe, :Adresse, :CodePostal, :Ville,
+                    :EmailPersonnel, :EmailAMU, :Telephone, :CodeDepartement, :Type, :Zone,
+                    0, :PiecesJustificatives
+                )
+            ");
+
+            // Prepare justificative files as JSON
+            $pieces = [];
+            if ($photoData !== null) $pieces['photo'] = base64_encode($photoData);
+            if ($cvData !== null) $pieces['cv'] = base64_encode($cvData);
+            if ($conventionData !== null) $pieces['convention'] = base64_encode($conventionData);
+            if ($lettreData !== null) $pieces['lettre_motivation'] = base64_encode($lettreData);
+            
+            $piecesJson = json_encode($pieces);
+
+            return $stmt->execute([
+                ':NumEtu' => $data['NumEtu'],
+                ':Nom' => $data['Nom'],
+                ':Prenom' => $data['Prenom'],
+                ':DateNaissance' => $data['DateNaissance'],
+                ':Sexe' => $data['Sexe'],
+                ':Adresse' => $data['Adresse'],
+                ':CodePostal' => $data['CodePostal'],
+                ':Ville' => $data['Ville'],
+                ':EmailPersonnel' => $data['EmailPersonnel'],
+                ':EmailAMU' => $data['EmailAMU'],
+                ':Telephone' => $data['Telephone'],
+                ':CodeDepartement' => $data['CodeDepartement'],
+                ':Type' => $data['Type'],
+                ':Zone' => $data['Zone'],
+                ':PiecesJustificatives' => $piecesJson
+            ]);
+
+        } catch (PDOException $e) {
+            error_log("Error creating student folder: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Update a student's folder
      *
      * @param array $data Associative array containing fields to update
      * @param string|null $photoData Optional new photo data (binary string)
      * @param string|null $cvData Optional new CV data (binary string)
+     * @param string|null $conventionData Optional new Convention data
+     * @param string|null $lettreData Optional new Letter data
      * @return bool True on success, false on failure
      */
-    public static function updateDossier(array $data, ?string $photoData = null, ?string $cvData = null): bool
+    public static function updateDossier(array $data, ?string $photoData = null, ?string $cvData = null, ?string $conventionData = null, ?string $lettreData = null): bool
     {
         $pdo = self::getConnection();
 
@@ -116,6 +191,8 @@ class FolderStudent
             // Update files if provided
             if ($photoData !== null) $pieces['photo'] = base64_encode($photoData);
             if ($cvData !== null) $pieces['cv'] = base64_encode($cvData);
+            if ($conventionData !== null) $pieces['convention'] = base64_encode($conventionData);
+            if ($lettreData !== null) $pieces['lettre_motivation'] = base64_encode($lettreData);
 
             $piecesJson = json_encode($pieces);
 

@@ -1,32 +1,75 @@
 <?php
+
 namespace View\Dashboard;
 
+/**
+ * Class DashboardPageStudent
+ *
+ * View responsible for displaying the student dashboard.
+ * It visualizes the progress of the student's file (Depot -> Instruction -> Decision).
+ */
 class DashboardPageStudent
 {
-    private $dossier;
+    private array $dossier;
     private string $lang;
 
+    /**
+     * Constructor.
+     *
+     * @param array|null $dossier Data regarding the student's folder (status, etc.).
+     * @param string     $lang    Current language ('fr' or 'en').
+     */
     public function __construct(?array $dossier = null, string $lang = 'fr')
     {
         $this->dossier = $dossier ?? [];
         $this->lang = $lang;
     }
 
-    private function buildUrl(string $path): string
+    /**
+     * Builds a URL safely handling query parameters.
+     *
+     * @param string $path   Base path (usually 'index.php').
+     * @param array  $params Associative array of query parameters.
+     * @return string The constructed URL.
+     */
+    private function buildUrl(string $path, array $params = []): string
     {
-        return $path . '?lang=' . urlencode($this->lang);
+        // Add language to parameters
+        $params['lang'] = $this->lang;
+
+        // Determine separator based on whether the path already has a query string
+        $separator = (strpos($path, '?') === false) ? '?' : '&';
+
+        return $path . $separator . http_build_query($params);
     }
 
+    /**
+     * Translates a string based on the current language.
+     *
+     * @param array $frEn Array ['fr' => '...', 'en' => '...'].
+     * @return string The translated string.
+     */
     private function t(array $frEn): string
     {
         return $this->lang === 'en' ? $frEn['en'] : $frEn['fr'];
     }
 
+    /**
+     * Renders the HTML content of the dashboard.
+     */
     public function render(): void
     {
+        // Determine current status and progress percentage
         $status = $this->dossier['status'] ?? 'depot';
         $steps = ['depot', 'instruction', 'decision'];
+        
+        // Find the index of the current status (0, 1, or 2)
         $currentStepIndex = array_search($status, $steps);
+        if ($currentStepIndex === false) {
+            $currentStepIndex = 0; // Default to first step if unknown
+        }
+
+        // Calculate CSS width for the progress bar line
         $progressWidth = ($currentStepIndex / (count($steps) - 1)) * 100 . '%';
         ?>
         <!DOCTYPE html>
@@ -34,7 +77,7 @@ class DashboardPageStudent
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title><?= $this->lang === 'en' ? 'Admin Dashboard' : 'Tableau de bord (Admin)' ?></title>
+            <title><?= $this->t(['fr' => 'Tableau de bord (Étudiant)', 'en' => 'Student Dashboard']) ?></title>
             <link rel="stylesheet" href="styles/index.css">
             <link rel="stylesheet" href="styles/dashboard.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
@@ -65,7 +108,7 @@ class DashboardPageStudent
 
         <main>
             <h1 style="text-align:center; margin-top:40px;">
-                <?= $this->lang === 'en' ? 'File Tracking' : 'Suivi du dossier ' ?>
+                <?= $this->t(['fr' => 'Suivi du dossier', 'en' => 'File Tracking']) ?>
             </h1>
 
             <div class="progress-container">
@@ -75,21 +118,21 @@ class DashboardPageStudent
                     <div class="progress-icon">
                         <img src="/img/depot.png" alt="Dépôt">
                     </div>
-                    <span>Dépôt de la demande</span>
+                    <span><?= $this->t(['fr' => 'Dépôt de la demande', 'en' => 'Application Submitted']) ?></span>
                 </div>
 
                 <div class="progress-step <?= in_array($status, ['instruction', 'decision']) ? 'active' : '' ?>">
                     <div class="progress-icon">
                         <img src="/img/rafraichir.png" alt="Instruction">
                     </div>
-                    <span>Instruction en cours</span>
+                    <span><?= $this->t(['fr' => 'Instruction en cours', 'en' => 'Under Review']) ?></span>
                 </div>
 
                 <div class="progress-step <?= $status === 'decision' ? 'active' : '' ?>">
                     <div class="progress-icon">
                         <img src="/img/decision.png" alt="Décision">
                     </div>
-                    <span>Décision prise</span>
+                    <span><?= $this->t(['fr' => 'Décision prise', 'en' => 'Decision Made']) ?></span>
                 </div>
             </div>
         </main>
@@ -99,25 +142,17 @@ class DashboardPageStudent
             <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
                 <img class="insta" src="img/instagram.png" alt="Instagram">
             </a>
-        <script>
-            function changeLang(lang) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('lang', lang);
-                window.location.href = url.toString();
-            }
-
-            document.addEventListener("DOMContentLoaded", () => {
-                const menuToggle = document.createElement('button');
-                menuToggle.classList.add('menu-toggle');
-                menuToggle.innerHTML = '☰';
-                document.querySelector('.right-buttons').appendChild(menuToggle);
-
-                const navMenu = document.querySelector('nav.menu');
-                menuToggle.addEventListener('click', () => {
-                    navMenu.classList.toggle('active');
-                });
-            });
-        </script>
+            
+            <script>
+                /**
+                 * Helper to switch language by reloading the page with new query param.
+                 */
+                function changeLang(lang) {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('lang', lang);
+                    window.location.href = url.toString();
+                }
+            </script>
         </body>
         </html>
         <?php
