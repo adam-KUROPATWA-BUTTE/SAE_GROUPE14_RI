@@ -10,7 +10,7 @@ use PhpOption\Some;
 final class EnvConstAdapter implements AdapterInterface
 {
     /**
-     * Create a new .....env const adapter instance.
+     * Create a new ......env const adapter instance.
      *
      * @return void
      */

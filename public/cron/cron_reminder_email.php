@@ -18,13 +18,13 @@ $projectRoot = realpath(__DIR__ . '/../../');
 if ($projectRoot !== false && file_exists($projectRoot . '/vendor/autoload.php')) {
     require_once $projectRoot . '/vendor/autoload.php';
 
-    // load .env into $_ENV for CLI if present
+    // load ..env into $_ENV for CLI if present
     if (file_exists($projectRoot . '/.env')) {
         try {
             $dot = Dotenv\Dotenv::createImmutable($projectRoot);
             $dot->load();
         } catch (Exception $e) {
-            error_log("Unable to load .env: " . $e->getMessage());
+            error_log("Unable to load ..env: " . $e->getMessage());
         }
     }
 }
