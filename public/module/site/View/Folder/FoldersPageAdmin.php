@@ -2,6 +2,12 @@
 namespace View\Folder;
 use Model\Folder\FolderAdmin as Folder;
 
+/**
+ * Class FoldersPageAdmin
+ *
+ * Handles the HTML rendering for the administrative folder management page.
+ * Includes lists, creation forms, and view/edit details forms.
+ */
 class FoldersPageAdmin
 {
     private string $action;
@@ -12,6 +18,17 @@ class FoldersPageAdmin
     private string $lang;
     private ?array $studentData;
 
+    /**
+     * Constructor.
+     *
+     * @param string     $action      Current action (list, create, view).
+     * @param array      $filters     Active filters for the list.
+     * @param int        $page        Current page number.
+     * @param int        $perPage     Items per page.
+     * @param string     $message     Flash message to display (success/error).
+     * @param string     $lang        Current language ('fr' or 'en').
+     * @param array|null $studentData Data of a specific student (for view/edit mode).
+     */
     public function __construct(string $action, array $filters, int $page, int $perPage, string $message, string $lang, ?array $studentData = null)
     {
         $this->action = $action;
@@ -23,17 +40,33 @@ class FoldersPageAdmin
         $this->studentData = $studentData;
     }
 
+    /**
+     * Helper to translate strings based on the current language.
+     *
+     * @param array $frEn Array ['fr' => '...', 'en' => '...'].
+     * @return string The translated string.
+     */
     private function t(array $frEn): string
     {
         return $this->lang === 'en' ? $frEn['en'] : $frEn['fr'];
     }
 
+    /**
+     * Builds a URL with current parameters and language.
+     *
+     * @param string $path   Base path.
+     * @param array  $params Query parameters.
+     * @return string The complete URL.
+     */
     private function buildUrl(string $path, array $params = []): string
     {
         $params['lang'] = $this->lang;
         return $path . '?' . http_build_query($params);
     }
 
+    /**
+     * Main render method. Outputs the HTML structure.
+     */
     public function render(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -81,6 +114,7 @@ class FoldersPageAdmin
                 <?php $this->renderStudentsList(); ?>
             <?php endif; ?>
         </main>
+        
         <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
         <div id="help-popup">
             <div class="help-popup-header">
@@ -94,22 +128,38 @@ class FoldersPageAdmin
                 </ul>
             </div>
         </div>
+
         <script>
+            /**
+             * Toggle the help popup visibility.
+             */
             function toggleHelpPopup() {
                 const popup = document.getElementById('help-popup');
                 popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
             }
+
+            /**
+             * Change the interface language.
+             */
             function changeLang(lang) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('lang', lang);
                 window.location.href = url.toString();
             }
+
+            /**
+             * Redirect to student details view.
+             */
             function ouvrirFicheEtudiant(numetu) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('action', 'view');
                 url.searchParams.set('numetu', numetu);
                 window.location.href = url.toString();
             }
+
+            /**
+             * Client-side search filtering (simple table filter).
+             */
             function filtrerEtudiants() {
                 let input = document.getElementById("search");
                 let filter = input.value.toLowerCase();
@@ -119,27 +169,53 @@ class FoldersPageAdmin
                     row.style.display = text.includes(filter) ? "" : "none";
                 });
             }
+
+            /**
+             * Toggles visibility of specific document fields based on mobility type.
+             * Shows 'Convention' for Internships, 'Motivation Letter' for Studies.
+             */
             function changerTypeMobilite(type) {
-                document.querySelectorAll('.fichier-obligatoire').forEach(el => el.style.display = 'none');
+                // Hide both by default
+                const conventionBlock = document.getElementById('justificatif_convention');
+                const lettreBlock = document.getElementById('lettre_motivation');
+
+                if(conventionBlock) conventionBlock.style.display = 'none';
+                if(lettreBlock) lettreBlock.style.display = 'none';
+
+                // Show appropriate block
                 if (type === 'stage') {
-                    document.getElementById('justificatif_convention').style.display = 'grid';
+                    if(conventionBlock) conventionBlock.style.display = 'block'; 
                 } else if (type === 'etudes') {
-                    document.getElementById('lettre_motivation').style.display = 'grid';
+                    if(lettreBlock) lettreBlock.style.display = 'block';
                 }
             }
+
+            /**
+             * Enables input fields for editing in the View form.
+             */
             function activerModification() {
                 document.querySelectorAll('.creation-form input, .creation-form select').forEach(field => {
-                    field.disabled = false;
-                    field.style.backgroundColor = 'white';
-                    field.style.color = 'black';
+                    // Do not enable NumEtu visually as it is the primary key, but ensure it is sent via hidden field
+                    if (field.id !== 'numetu') {
+                        field.disabled = false;
+                        field.style.backgroundColor = 'white';
+                        field.style.color = 'black';
+                    }
                 });
+                
+                // Toggle action buttons
                 document.getElementById('btn-modifier').style.display = 'none';
                 document.getElementById('btn-enregistrer').style.display = 'inline-block';
                 document.getElementById('btn-annuler').style.display = 'inline-block';
             }
+
+            // Initialize scripts on page load
             window.addEventListener('DOMContentLoaded', (event) => {
+                // Initialize mobility type display
                 const sel = document.getElementById('mobilite_type');
                 if (sel) changerTypeMobilite(sel.value);
+                
+                // Initialize filter listeners
                 document.querySelectorAll('.filters input[type="checkbox"]').forEach(checkbox => {
                     checkbox.addEventListener('change', function() {
                         appliquerFiltres();
@@ -180,6 +256,9 @@ class FoldersPageAdmin
         <?php
     }
 
+    /**
+     * Renders the list of students (Table view).
+     */
     private function renderStudentsList(): void
     {
         $etudiants = Folder::getAll();
@@ -262,8 +341,13 @@ class FoldersPageAdmin
         </div>
         <?php endif; ?>
         <?php
+        <?php endif; ?>
+        <?php
     }
 
+    /**
+     * Renders the form to create a new student folder.
+     */
     private function renderCreateForm(): void
     {
         ?>
@@ -326,6 +410,7 @@ class FoldersPageAdmin
                     <option value="etudes"><?= $this->t(['fr'=>'Études','en'=>'Studies']) ?></option>
                 </select>
             </div>
+            
             <div class="fichier-obligatoire" id="justificatif_convention" style="display: none;">
                 <label><?= $this->t(['fr'=>'Convention de stage','en'=>'Internship Agreement']) ?></label>
                 <input type="file" name="convention" accept=".pdf,.doc,.docx">
@@ -334,6 +419,7 @@ class FoldersPageAdmin
                 <label><?= $this->t(['fr'=>'Lettre de motivation','en'=>'Motivation Letter']) ?></label>
                 <input type="file" name="lettre_motivation" accept=".pdf,.doc,.docx">
             </div>
+
             <div class="form-actions">
                 <button type="submit" class="btn-secondary"><?= $this->t(['fr'=>'Enregistrer','en'=>'Save']) ?></button>
                 <button type="button" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders']) ?>'">
@@ -353,6 +439,15 @@ class FoldersPageAdmin
         }
         
         $student = $this->studentData;
+        
+        // --- AUTO-DETECT MOBILITY TYPE ---
+        // Determine if it is 'stage' or 'studies' based on existing files.
+        $detectedType = '';
+        if (!empty($student['pieces']['convention'])) {
+            $detectedType = 'stage';
+        } elseif (!empty($student['pieces']['lettre_motivation'])) {
+            $detectedType = 'etudes';
+        }
         ?>
         <h1><?= $this->t(['fr'=>'Dossier étudiant','en'=>'Student Folder']) ?></h1>
         <div class="form-back-button">
@@ -475,7 +570,6 @@ class FoldersPageAdmin
                         </a>
                     </div>
                 </div>
-                <?php endif; ?>
 
                 <!-- Lettre de motivation -->
                 <?php if (!empty($student['pieces']['lettre_motivation'])): ?>
@@ -535,6 +629,13 @@ class FoldersPageAdmin
         <?php
     }
 
+    /**
+     * Applies filters (PHP side) to the list of students before pagination.
+     * Note: Ideally, this should be done in SQL (Model), but kept here for compatibility with existing structure.
+     *
+     * @param array $etudiants Full list of students.
+     * @return array Filtered list.
+     */
     private function applyFilters(array $etudiants): array
     {
         $filtered = $etudiants;
@@ -555,6 +656,12 @@ class FoldersPageAdmin
         return array_values($filtered);
     }
 
+    /**
+     * Builds pagination URL preserving current filters.
+     *
+     * @param int $page Target page number.
+     * @return string URL.
+     */
     private function buildPaginationUrl(int $page): string
     {
         $params = array_merge($this->filters, [
@@ -564,7 +671,11 @@ class FoldersPageAdmin
         return 'index.php?' . http_build_query($params);
     }
 
-
+    /**
+     * Checks if any filter is currently active.
+     *
+     * @return bool True if filters are active.
+     */
     private function hasActiveFilters(): bool
     {
         return $this->filters['type'] !== 'all'
