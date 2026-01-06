@@ -41,11 +41,6 @@ class FoldersControllerAdmin
         $action = $_GET['action'] ?? 'list';
         $lang = $_GET['lang'] ?? 'fr';
 
-        // ---------------------------------------------------------------------
-        // ACTION: TOGGLE COMPLETE STATUS
-        // This block handles the "Mark as Complete/Incomplete" button click.
-        // It must be placed BEFORE rendering the view to process the change.
-        // ---------------------------------------------------------------------
         if ($page === 'toggle_complete') {
             $numetu = $_GET['numetu'] ?? null;
             
@@ -74,9 +69,7 @@ class FoldersControllerAdmin
             }
         }
 
-        // ---------------------------------------------------------------------
-        // POST REQUEST HANDLING (Create / Update)
-        // ---------------------------------------------------------------------
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($page === 'save_student') {
                 $this->saveStudent($lang);
@@ -88,9 +81,7 @@ class FoldersControllerAdmin
             }
         }
 
-        // ---------------------------------------------------------------------
-        // DATA RETRIEVAL FOR VIEW
-        // ---------------------------------------------------------------------
+
         $studentData = null;
         // If we are in 'view' mode, fetch the specific student details
         if ($action === 'view' && !empty($_GET['numetu'])) {
@@ -99,9 +90,9 @@ class FoldersControllerAdmin
 
         // Collect filters from GET parameters for the list view
         $filters = [
-            'type'       => $_GET['type'] ?? 'all',       // entrant/sortant
-            'zone'       => $_GET['zone'] ?? 'all',       // europe/hors_europe
-            'stage'      => $_GET['stage'] ?? 'all',
+            'type'       => $_GET['Type'] ?? 'all',       // entrant/sortant
+            'zone'       => $_GET['Zone'] ?? 'all',       // europe/hors_europe
+            'stage'      => $_GET['Stage'] ?? 'all',
             'etude'      => $_GET['etude'] ?? 'all',
             'search'     => $_GET['search'] ?? '',        // Text search
             'complet'    => $_GET['complet'] ?? 'all',    // Status filter
@@ -118,9 +109,6 @@ class FoldersControllerAdmin
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-        // ---------------------------------------------------------------------
-        // RENDER VIEW
-        // ---------------------------------------------------------------------
         $view = new FoldersPageAdmin($action, $filters, $currentPage, $perPage, $message, $lang, $studentData);
         $view->render();
     }
@@ -181,9 +169,18 @@ class FoldersControllerAdmin
             $cvData = file_get_contents($_FILES['cv']['tmp_name']);
         }
 
+        $conventionData = null;
+        if (isset($_FILES['convention']) && $_FILES['convention']['error'] === UPLOAD_ERR_OK) {
+            $conventionData = file_get_contents($_FILES['convention']['tmp_name']);
+        }
+
+        $lettreData = null;
+        if (isset($_FILES['lettre_motivation']) && $_FILES['lettre_motivation']['error'] === UPLOAD_ERR_OK) {
+            $lettreData = file_get_contents($_FILES['lettre_motivation']['tmp_name']);
+        }
+
         // 5. Save to Database
-        $success = FolderAdmin::creerDossier($data, $photoData, $cvData);
-        
+        $success = FolderAdmin::creerDossier($data, $photoData, $cvData, $conventionData, $lettreData);        
         $_SESSION['message'] = $success 
             ? (($lang === 'fr') ? 'Dossier créé avec succès' : 'Folder created successfully')
             : (($lang === 'fr') ? 'Erreur lors de la création' : 'Error creating folder');
@@ -229,8 +226,18 @@ class FoldersControllerAdmin
             $cvData = file_get_contents($_FILES['cv']['tmp_name']);
         }
 
+        $conventionData = null;
+        if (isset($_FILES['convention']) && $_FILES['convention']['error'] === UPLOAD_ERR_OK) {
+            $conventionData = file_get_contents($_FILES['convention']['tmp_name']);
+        }
+
+        $lettreData = null;
+        if (isset($_FILES['lettre_motivation']) && $_FILES['lettre_motivation']['error'] === UPLOAD_ERR_OK) {
+            $lettreData = file_get_contents($_FILES['lettre_motivation']['tmp_name']);
+        }
+
         // 3. Update Database
-        $success = FolderAdmin::updateDossier($data, $photoData, $cvData);
+        $success = FolderAdmin::updateDossier($data, $photoData, $cvData,$conventionData,$lettreData);
 
         $_SESSION['message'] = $success 
             ? (($lang === 'fr') ? 'Dossier mis à jour' : 'Folder updated')

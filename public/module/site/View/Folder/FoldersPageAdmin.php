@@ -4,6 +4,12 @@ namespace View\Folder;
 
 use Model\Folder\FolderAdmin as Folder;
 
+/**
+ * Class FoldersPageAdmin
+ *
+ * Handles the HTML rendering for the administrative folder management page.
+ * Includes lists, creation forms, and view/edit details forms.
+ */
 class FoldersPageAdmin
 {
     private string $action;
@@ -14,6 +20,17 @@ class FoldersPageAdmin
     private string $lang;
     private ?array $studentData;
 
+    /**
+     * Constructor.
+     *
+     * @param string     $action      Current action (list, create, view).
+     * @param array      $filters     Active filters for the list.
+     * @param int        $page        Current page number.
+     * @param int        $perPage     Items per page.
+     * @param string     $message     Flash message to display (success/error).
+     * @param string     $lang        Current language ('fr' or 'en').
+     * @param array|null $studentData Data of a specific student (for view/edit mode).
+     */
     public function __construct(string $action, array $filters, int $page, int $perPage, string $message, string $lang, ?array $studentData = null)
     {
         $this->action = $action;
@@ -25,17 +42,33 @@ class FoldersPageAdmin
         $this->studentData = $studentData;
     }
 
+    /**
+     * Helper to translate strings based on the current language.
+     *
+     * @param array $frEn Array ['fr' => '...', 'en' => '...'].
+     * @return string The translated string.
+     */
     private function t(array $frEn): string
     {
         return $this->lang === 'en' ? $frEn['en'] : $frEn['fr'];
     }
 
+    /**
+     * Builds a URL with current parameters and language.
+     *
+     * @param string $path   Base path.
+     * @param array  $params Query parameters.
+     * @return string The complete URL.
+     */
     private function buildUrl(string $path, array $params = []): string
     {
         $params['lang'] = $this->lang;
         return $path . '?' . http_build_query($params);
     }
 
+    /**
+     * Main render method. Outputs the HTML structure.
+     */
     public function render(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -81,6 +114,7 @@ class FoldersPageAdmin
                 <?php $this->renderStudentsList(); ?>
             <?php endif; ?>
         </main>
+        
         <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
         <div id="help-popup">
             <div class="help-popup-header">
@@ -94,22 +128,38 @@ class FoldersPageAdmin
                 </ul>
             </div>
         </div>
+
         <script>
+            /**
+             * Toggle the help popup visibility.
+             */
             function toggleHelpPopup() {
                 const popup = document.getElementById('help-popup');
                 popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
             }
+
+            /**
+             * Change the interface language.
+             */
             function changeLang(lang) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('lang', lang);
                 window.location.href = url.toString();
             }
+
+            /**
+             * Redirect to student details view.
+             */
             function ouvrirFicheEtudiant(numetu) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('action', 'view');
                 url.searchParams.set('numetu', numetu);
                 window.location.href = url.toString();
             }
+
+            /**
+             * Client-side search filtering (simple table filter).
+             */
             function filtrerEtudiants() {
                 let input = document.getElementById("search");
                 let filter = input.value.toLowerCase();
@@ -119,44 +169,77 @@ class FoldersPageAdmin
                     row.style.display = text.includes(filter) ? "" : "none";
                 });
             }
+
+            /**
+             * Toggles visibility of specific document fields based on mobility type.
+             * Shows 'Convention' for Internships, 'Motivation Letter' for Studies.
+             */
             function changerTypeMobilite(type) {
-                document.querySelectorAll('.fichier-obligatoire').forEach(el => el.style.display = 'none');
+                // Hide both by default
+                const conventionBlock = document.getElementById('justificatif_convention');
+                const lettreBlock = document.getElementById('lettre_motivation');
+
+                if(conventionBlock) conventionBlock.style.display = 'none';
+                if(lettreBlock) lettreBlock.style.display = 'none';
+
+                // Show appropriate block
                 if (type === 'stage') {
-                    document.getElementById('justificatif_convention').style.display = 'grid';
+                    if(conventionBlock) conventionBlock.style.display = 'block'; 
                 } else if (type === 'etudes') {
-                    document.getElementById('lettre_motivation').style.display = 'grid';
+                    if(lettreBlock) lettreBlock.style.display = 'block';
                 }
             }
+
+            /**
+             * Enables input fields for editing in the View form.
+             */
             function activerModification() {
                 document.querySelectorAll('.creation-form input, .creation-form select').forEach(field => {
-                    field.disabled = false;
-                    field.style.backgroundColor = 'white';
-                    field.style.color = 'black';
+                    // Do not enable NumEtu visually as it is the primary key, but ensure it is sent via hidden field
+                    if (field.id !== 'numetu') {
+                        field.disabled = false;
+                        field.style.backgroundColor = 'white';
+                        field.style.color = 'black';
+                    }
                 });
+                
+                // Toggle action buttons
                 document.getElementById('btn-modifier').style.display = 'none';
                 document.getElementById('btn-enregistrer').style.display = 'inline-block';
                 document.getElementById('btn-annuler').style.display = 'inline-block';
             }
+
+            // Initialize scripts on page load
             window.addEventListener('DOMContentLoaded', (event) => {
+                // Initialize mobility type display
                 const sel = document.getElementById('mobilite_type');
                 if (sel) changerTypeMobilite(sel.value);
+                
+                // Initialize filter listeners
                 document.querySelectorAll('.filters input[type="checkbox"]').forEach(checkbox => {
                     checkbox.addEventListener('change', function() {
                         appliquerFiltres();
                     });
                 });
             });
-function appliquerFiltres() {
+
+            /**
+             * Applies filters by reloading the page with query parameters.
+             */
+            function appliquerFiltres() {
                 const url = new URL(window.location.href);
                 
+                // Handle Checkbox Filters (Type)
                 const typesChecked = Array.from(document.querySelectorAll('input[name="entrant_sortant"]:checked')).map(cb => cb.value);
                 if (typesChecked.length === 1) url.searchParams.set('type', typesChecked[0]);
                 else url.searchParams.delete('type'); 
                 
+                // Handle Checkbox Filters (Zone)
                 const zonesChecked = Array.from(document.querySelectorAll('input[name="zone"]:checked')).map(cb => cb.value);
                 if (zonesChecked.length === 1) url.searchParams.set('zone', zonesChecked[0]);
                 else url.searchParams.delete('zone');
 
+                // Handle Select Filter (Completeness)
                 const completVal = document.getElementById('filter-complet').value;
                 if (completVal !== 'all') {
                     url.searchParams.set('complet', completVal);
@@ -164,6 +247,7 @@ function appliquerFiltres() {
                     url.searchParams.delete('complet');
                 }
 
+                // Handle Date Filters
                 const dateDebut = document.getElementById('date-debut').value;
                 if (dateDebut) url.searchParams.set('date_debut', dateDebut);
                 else url.searchParams.delete('date_debut');
@@ -172,10 +256,12 @@ function appliquerFiltres() {
                 if (dateFin) url.searchParams.set('date_fin', dateFin);
                 else url.searchParams.delete('date_fin');
 
+                // Reset to page 1
                 url.searchParams.set('p', 1);
 
                 window.location.href = url.toString();
-            }        </script>
+            }        
+        </script>
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
             <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
@@ -187,6 +273,9 @@ function appliquerFiltres() {
         <?php
     }
 
+    /**
+     * Renders the list of students (Table view).
+     */
     private function renderStudentsList(): void
     {
         $etudiants = Folder::getAll();
@@ -261,18 +350,32 @@ function appliquerFiltres() {
                 <tr>
                     <th><?= $this->t(['fr' => 'Nom','en' => 'Last Name']) ?></th>
                     <th><?= $this->t(['fr' => 'Prénom','en' => 'First Name']) ?></th>
-                    <th><?= $this->t(['fr' => 'Né(e) le','en' => 'Birth Date']) ?></th> <th><?= $this->t(['fr' => 'Type','en' => 'Type']) ?></th>
+                    <th><?= $this->t(['fr' => 'Né(e) le','en' => 'Birth Date']) ?></th> 
+                    <th><?= $this->t(['fr' => 'Type','en' => 'Type']) ?></th>
                     <th><?= $this->t(['fr' => 'Zone','en' => 'Zone']) ?></th>
-                    <th><?= $this->t(['fr' => 'Statut','en' => 'Status']) ?></th> </tr>
+                    <th><?= $this->t(['fr' => 'Mobilité', 'en' => 'Mobility']) ?></th>
+                    <th><?= $this->t(['fr' => 'Statut','en' => 'Status']) ?></th> 
+                </tr>
             </thead>
             <tbody>
             <?php foreach ($paginated as $etudiant) : ?>
+                <?php
+                    // Determine Mobility Type (Stage/Etudes) based on existing files in JSON
+                    $pieces = json_decode($etudiant['PiecesJustificatives'] ?? '{}', true);
+                    $mobilityType = '-';
+                    if (!empty($pieces['convention'])) {
+                        $mobilityType = $this->t(['fr' => 'Stage', 'en' => 'Internship']);
+                    } elseif (!empty($pieces['lettre_motivation'])) {
+                        $mobilityType = $this->t(['fr' => 'Études', 'en' => 'Studies']);
+                    }
+                ?>
                 <tr onclick="ouvrirFicheEtudiant('<?= htmlspecialchars($etudiant['NumEtu'] ?? '') ?>')" style="cursor: pointer;">
                     <td><?= htmlspecialchars($etudiant['Nom']) ?></td>
                     <td><?= htmlspecialchars($etudiant['Prenom']) ?></td>
                     <td><?= htmlspecialchars($etudiant['DateNaissance'] ?? '') ?></td>
                     <td><?= $this->t(['fr' => ($etudiant['Type'] === 'entrant' ? 'Entrant' : 'Sortant'), 'en' => ($etudiant['Type'] === 'entrant' ? 'Incoming' : 'Outgoing')]) ?></td>
                     <td><?= $this->t(['fr' => ($etudiant['Zone'] === 'europe' ? 'Europe' : 'Hors Europe'), 'en' => ($etudiant['Zone'] === 'europe' ? 'Europe' : 'Non-Europe')]) ?></td>
+                    <td><?= htmlspecialchars($mobilityType) ?></td>
                     <td>
                         <?= ($etudiant['IsComplete'] ?? 0) == 1
                             ? '<span style="color:green">✔ Complet</span>'
@@ -283,7 +386,7 @@ function appliquerFiltres() {
             </tbody>
         </table>
 
-            <?php if ($totalPages > 0) : ?>
+        <?php if ($totalPages > 0) : ?>
         <div class="pagination">
                 <?php if ($this->page > 1) : ?>
                 <button onclick="window.location.href='<?= $this->buildPaginationUrl(1) ?>'">«</button>
@@ -303,10 +406,13 @@ function appliquerFiltres() {
                 <button disabled>»</button>
                 <?php endif; ?>
         </div>
-            <?php endif; ?>
-            <?php
+        <?php endif; ?>
+        <?php
     }
 
+    /**
+     * Renders the form to create a new student folder.
+     */
     private function renderCreateForm(): void
     {
         ?>
@@ -358,10 +464,13 @@ function appliquerFiltres() {
                     <option value="europe"><?= $this->t(['fr' => 'Europe','en' => 'Europe']) ?></option>
                     <option value="hors_europe"><?= $this->t(['fr' => 'Hors Europe','en' => 'Non-Europe']) ?></option>
                 </select>
+                
                 <label for="photo"><?= $this->t(['fr' => 'Photo','en' => 'Photo']) ?></label>
                 <input type="file" name="photo" id="photo" accept="image/*">
+                
                 <label for="cv"><?= $this->t(['fr' => 'CV','en' => 'CV']) ?></label>
                 <input type="file" name="cv" id="cv" accept=".pdf,.doc,.docx">
+
                 <label for="mobilite_type"><?= $this->t(['fr' => 'Type de mobilité','en' => 'Mobility Type']) ?></label>
                 <select name="mobilite_type" id="mobilite_type" onchange="changerTypeMobilite(this.value)">
                     <option value=""><?= $this->t(['fr' => '-- Choisir --','en' => '-- Choose --']) ?></option>
@@ -369,6 +478,7 @@ function appliquerFiltres() {
                     <option value="etudes"><?= $this->t(['fr' => 'Études','en' => 'Studies']) ?></option>
                 </select>
             </div>
+            
             <div class="fichier-obligatoire" id="justificatif_convention" style="display: none;">
                 <label><?= $this->t(['fr' => 'Convention de stage','en' => 'Internship Agreement']) ?></label>
                 <input type="file" name="convention" accept=".pdf,.doc,.docx">
@@ -377,6 +487,7 @@ function appliquerFiltres() {
                 <label><?= $this->t(['fr' => 'Lettre de motivation','en' => 'Motivation Letter']) ?></label>
                 <input type="file" name="lettre_motivation" accept=".pdf,.doc,.docx">
             </div>
+
             <div class="form-actions">
                 <button type="submit" class="btn-secondary"><?= $this->t(['fr' => 'Enregistrer','en' => 'Save']) ?></button>
                 <button type="button" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders']) ?>'">
@@ -387,6 +498,9 @@ function appliquerFiltres() {
         <?php
     }
 
+    /**
+     * Renders the detailed view of a student folder (Edit Mode).
+     */
     private function renderViewForm(): void
     {
         if (!$this->studentData) {
@@ -395,6 +509,15 @@ function appliquerFiltres() {
         }
 
         $student = $this->studentData;
+        
+        // --- AUTO-DETECT MOBILITY TYPE ---
+        // Determine if it is 'stage' or 'studies' based on existing files.
+        $detectedType = '';
+        if (!empty($student['pieces']['convention'])) {
+            $detectedType = 'stage';
+        } elseif (!empty($student['pieces']['lettre_motivation'])) {
+            $detectedType = 'etudes';
+        }
         ?>
         <h1><?= $this->t(['fr' => 'Dossier étudiant','en' => 'Student Folder']) ?></h1>
         <div class="form-back-button">
@@ -406,7 +529,8 @@ function appliquerFiltres() {
         <form method="post" action="index.php?page=update_student&lang=<?= htmlspecialchars($this->lang) ?>" enctype="multipart/form-data" class="creation-form">
             <div class="form-section">
                 <label for="numetu"><?= $this->t(['fr' => 'NumÉtu *','en' => 'Student ID *']) ?></label>
-                <input type="text" name="numetu" id="numetu" value="<?= htmlspecialchars($student['NumEtu'] ?? '') ?>" disabled style="background-color: #e0e0e0; color: #666;">
+                <input type="text" id="numetu_display" value="<?= htmlspecialchars($student['NumEtu'] ?? '') ?>" disabled style="background-color: #e0e0e0; color: #666;">
+                <input type="hidden" name="numetu" id="numetu" value="<?= htmlspecialchars($student['NumEtu'] ?? '') ?>">
 
                 <label for="nom"><?= $this->t(['fr' => 'Nom *','en' => 'Last Name *']) ?></label>
                 <input type="text" name="nom" id="nom" value="<?= htmlspecialchars($student['Nom'] ?? '') ?>" disabled style="background-color: #e0e0e0; color: #666;" required>
@@ -458,6 +582,13 @@ function appliquerFiltres() {
                     <option value="europe" <?= ($student['Zone'] ?? '') === 'europe' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Europe','en' => 'Europe']) ?></option>
                     <option value="hors_europe" <?= ($student['Zone'] ?? '') === 'hors_europe' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Hors Europe','en' => 'Non-Europe']) ?></option>
                 </select>
+
+                <label for="mobilite_type"><?= $this->t(['fr' => 'Type de mobilité','en' => 'Mobility Type']) ?></label>
+                <select name="mobilite_type" id="mobilite_type" onchange="changerTypeMobilite(this.value)" disabled style="background-color: #e0e0e0; color: #666;">
+                    <option value=""><?= $this->t(['fr' => '-- Choisir --','en' => '-- Choose --']) ?></option>
+                    <option value="stage" <?= $detectedType === 'stage' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Stage','en' => 'Internship']) ?></option>
+                    <option value="etudes" <?= $detectedType === 'etudes' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Études','en' => 'Studies']) ?></option>
+                </select>
             </div>
 
             <div class="form-section" style="margin-top: 30px;">
@@ -501,33 +632,43 @@ function appliquerFiltres() {
                     <input type="file" name="cv" id="cv" accept=".pdf,.doc,.docx" disabled style="background-color: #e0e0e0; color: #666; margin-top: 10px;">
                 </div>
 
-                <?php if (!empty($student['pieces']['convention'])) : ?>
-                <div style="margin-bottom: 20px;">
+                <div id="justificatif_convention" style="margin-bottom: 20px; display: none;">
                     <label><?= $this->t(['fr' => 'Convention de stage','en' => 'Internship Agreement']) ?></label>
-                    <div style="margin-top: 10px;">
-                        <p>✅ <?= $this->t(['fr' => 'Convention disponible','en' => 'Agreement available']) ?></p>
-                        <a href="data:application/pdf;base64,<?= $student['pieces']['convention'] ?>" 
-                        download="convention_<?= htmlspecialchars($student['NumEtu']) ?>.pdf" 
-                        class="btn-secondary">
-                            <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
-                        </a>
-                    </div>
-                </div>
-                <?php endif; ?>
+                    
+                    <?php if (!empty($student['pieces']['convention'])) : ?>
+                        <div style="margin-top: 10px;">
+                            <p>✅ <?= $this->t(['fr' => 'Convention disponible','en' => 'Agreement available']) ?></p>
+                            <a href="data:application/pdf;base64,<?= $student['pieces']['convention'] ?>" 
+                            download="convention_<?= htmlspecialchars($student['NumEtu']) ?>.pdf" 
+                            class="btn-secondary">
+                                <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
+                            </a>
+                        </div>
+                    <?php else : ?>
+                        <p style="color: #999;"><?= $this->t(['fr' => 'Aucune convention disponible','en' => 'No agreement available']) ?></p>
+                    <?php endif; ?>
 
-                <?php if (!empty($student['pieces']['lettre_motivation'])) : ?>
-                <div style="margin-bottom: 20px;">
-                    <label><?= $this->t(['fr' => 'Lettre de motivation','en' => 'Motivation Letter']) ?></label>
-                    <div style="margin-top: 10px;">
-                        <p>✅ <?= $this->t(['fr' => 'Lettre disponible','en' => 'Letter available']) ?></p>
-                        <a href="data:application/pdf;base64,<?= $student['pieces']['lettre_motivation'] ?>" 
-                        download="lettre_<?= htmlspecialchars($student['NumEtu']) ?>.pdf" 
-                        class="btn-secondary">
-                            <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
-                        </a>
-                    </div>
+                    <input type="file" name="convention" id="convention" accept=".pdf,.doc,.docx" disabled style="background-color: #e0e0e0; color: #666; margin-top: 10px;">
                 </div>
-                <?php endif; ?>
+
+                <div id="lettre_motivation" style="margin-bottom: 20px; display: none;">
+                    <label><?= $this->t(['fr' => 'Lettre de motivation','en' => 'Motivation Letter']) ?></label>
+                    
+                    <?php if (!empty($student['pieces']['lettre_motivation'])) : ?>
+                        <div style="margin-top: 10px;">
+                            <p>✅ <?= $this->t(['fr' => 'Lettre disponible','en' => 'Letter available']) ?></p>
+                            <a href="data:application/pdf;base64,<?= $student['pieces']['lettre_motivation'] ?>" 
+                            download="lettre_<?= htmlspecialchars($student['NumEtu']) ?>.pdf" 
+                            class="btn-secondary">
+                                <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
+                            </a>
+                        </div>
+                    <?php else : ?>
+                        <p style="color: #999;"><?= $this->t(['fr' => 'Aucune lettre disponible','en' => 'No letter available']) ?></p>
+                    <?php endif; ?>
+
+                    <input type="file" name="lettre_motivation" id="lettre_motivation_file" accept=".pdf,.doc,.docx" disabled style="background-color: #e0e0e0; color: #666; margin-top: 10px;">
+                </div>  
 
                 <div style="margin-top: 20px; padding: 15px; background-color: <?= ($student['IsComplete'] ?? 0) ? '#d4edda' : '#fff3cd' ?>; border-radius: 5px;">
                     <strong><?= $this->t(['fr' => 'Statut du dossier :','en' => 'Folder status:']) ?></strong>
@@ -567,6 +708,13 @@ function appliquerFiltres() {
         <?php
     }
 
+    /**
+     * Applies filters (PHP side) to the list of students before pagination.
+     * Note: Ideally, this should be done in SQL (Model), but kept here for compatibility with existing structure.
+     *
+     * @param array $etudiants Full list of students.
+     * @return array Filtered list.
+     */
     private function applyFilters(array $etudiants): array
     {
         $filtered = $etudiants;
@@ -607,6 +755,12 @@ function appliquerFiltres() {
         return array_values($filtered);
     }
 
+    /**
+     * Builds pagination URL preserving current filters.
+     *
+     * @param int $page Target page number.
+     * @return string URL.
+     */
     private function buildPaginationUrl(int $page): string
     {
         $params = array_merge($this->filters, [
@@ -616,7 +770,11 @@ function appliquerFiltres() {
         return 'index.php?' . http_build_query($params);
     }
 
-
+    /**
+     * Checks if any filter is currently active.
+     *
+     * @return bool True if filters are active.
+     */
     private function hasActiveFilters(): bool
     {
         return ($this->filters['type'] ?? 'all') !== 'all'
