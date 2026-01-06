@@ -132,7 +132,7 @@ class WebPlanPage
         $map = [
             'Accueil' => 'Home',
             'Tableau de bord' => 'Dashboard',
-            'Partenaires' => 'Partners',
+            'Partenaires' => 'Partners-admin',
             'Dossiers' => 'Folders',
             'Connexion / Inscription' => 'Login / Register',
         ];
