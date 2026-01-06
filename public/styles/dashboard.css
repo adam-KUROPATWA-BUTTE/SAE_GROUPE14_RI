@@ -124,6 +124,10 @@ main {
     width: 100%;
 }
 
+.menu-toggle {
+    display: none;
+}
+
 /* ======= RESPONSIVE 810px ======= */
 @media (max-width: 810px) {
     main {
@@ -164,6 +168,15 @@ main {
 
     h1 {
         font-size: 24px;
+    }
+
+    .menu-toggle {
+        display: block;
+        font-size: 28px;
+        color: var(--primary-color);
+        background: none;
+        border: none;
+        cursor: pointer;
     }
 }
 
@@ -277,5 +290,14 @@ main {
     table td:nth-child(5) {
         font-size: 0.85em;
         white-space: nowrap;
+    }
+
+    .menu-toggle {
+        display: block;
+        font-size: 28px;
+        color: var(--primary-color);
+        background: none;
+        border: none;
+        cursor: pointer;
     }
 }

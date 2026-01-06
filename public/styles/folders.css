@@ -169,6 +169,87 @@ tr:nth-child(even) {
 .form-section > div[style*="#fff3cd"] {
     border-left-color: #ffc107;
 }
+
+.menu-toggle {
+    display: none;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+
+.pagination button {
+    background: #004080;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    transition: background 0.3s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+    background: #00558B;
+}
+
+.pagination button.active {
+    background: #00558B;
+    font-weight: bold;
+}
+
+.pagination button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* ✅ Bouton rouge pour "Modifier" */
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+/* Style pour le message de succès/erreur */
+.message {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+
+    animation: hideMessage 1s ease-in-out 2s forwards;
+    overflow: hidden;
+}
+
+@keyframes hideMessage {
+    to {
+        opacity: 0;
+        height: 0;
+        margin: 0;
+        padding: 0;
+    }
+}
+#search{
+    border-radius: 30px;
+}
+
 /* --- MEDIA QUERIES --- */
 
 /* Entre 801px et 900px - ajustements légers */
@@ -201,6 +282,15 @@ tr:nth-child(even) {
 
     .form-section input[type="file"] {
         grid-column: span 2;
+    }
+
+    .menu-toggle {
+        display: block;
+        font-size: 28px;
+        color: var(--primary-color);
+        background: none;
+        border: none;
+        cursor: pointer;
     }
 }
 
@@ -250,6 +340,50 @@ tr:nth-child(even) {
     .sub-menu {
         flex-direction: column;
     }
+
+    .menu-toggle {
+        display: block;
+        font-size: 28px;
+        color: var(--primary-color);
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 30px;
+        margin-bottom: 20px;
+    }
+
+    .pagination button {
+        background: #004080;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 0.95rem;
+        transition: background 0.3s ease;
+    }
+
+    .pagination button:hover:not(:disabled) {
+        background: #00558B;
+    }
+
+    .pagination button.active {
+        background: #00558B;
+        font-weight: bold;
+    }
+
+    .pagination button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
 }
 
 /* Très petits écrans (moins de 400px) */
@@ -266,97 +400,13 @@ tr:nth-child(even) {
     .student-toolbar input[type="text"] {
         font-size: 0.9rem;
     }
-}
 
-/* Pagination */
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    margin-top: 30px;
-    margin-bottom: 20px;
-}
-
-.pagination button {
-    background: #004080;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 0.95rem;
-    transition: background 0.3s ease;
-}
-
-.pagination button:hover:not(:disabled) {
-    background: #00558B;
-}
-
-.pagination button.active {
-    background: #00558B;
-    font-weight: bold;
-}
-
-.pagination button:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-/* Responsive pagination */
-@media (max-width: 600px) {
-    .pagination {
-        gap: 5px;
+    .menu-toggle {
+        display: block;
+        font-size: 28px;
+        color: var(--primary-color);
+        background: none;
+        border: none;
+        cursor: pointer;
     }
-
-    .pagination button {
-        padding: 6px 10px;
-        font-size: 0.85rem;
-    }
-
-    .form-section label {
-        align-self: center;
-        text-align: left;
-    }
-}
-
-/* ✅ Bouton rouge pour "Modifier" */
-.btn-danger {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    border-radius: 5px;
-    font-size: 1rem;
-}
-
-.btn-danger:hover {
-    background-color: #c82333;
-}
-
-/* Style pour le message de succès/erreur */
-.message {
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 5px;
-    background-color: #d4edda;
-    border: 1px solid #c3e6cb;
-    color: #155724;
-
-    animation: hideMessage 1s ease-in-out 2s forwards;
-    overflow: hidden;
-}
-
-@keyframes hideMessage {
-    to {
-        opacity: 0;
-        height: 0;
-        margin: 0;
-        padding: 0;
-    }
-}
-#search{
-    border-radius: 30px;
 }
