@@ -66,10 +66,10 @@ class PartnersPageStudent
                 <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'">
                     <?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?>
                 </button>
-                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/partners') ?>'">
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/partners-student') ?>'">
                     <?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?>
                 </button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'">
+                <button onclick="window.location.href='<?= $this->buildUrl('/folders-student') ?>'">
                     <?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?>
                 </button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'">
