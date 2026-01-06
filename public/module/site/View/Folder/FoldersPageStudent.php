@@ -101,7 +101,7 @@ class FoldersPageStudent
                 <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'dashboard-student']) ?>'">
                     <?= $this->t(['fr' => 'Tableau de bord', 'en' => 'Dashboard']) ?>
                 </button>
-                <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'partners']) ?>'">
+                <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'partners-student']) ?>'">
                     <?= $this->t(['fr' => 'Partenaires', 'en' => 'Partners']) ?>
                 </button>
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders-student']) ?>'">
