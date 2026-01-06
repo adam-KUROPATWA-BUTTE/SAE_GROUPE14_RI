@@ -2,6 +2,12 @@
 
 namespace View\Folder;
 
+/**
+ * Class FoldersPageStudent
+ *
+ * View responsible for displaying the student's personal folder page.
+ * Includes the form to view and edit personal information and documents.
+ */
 class FoldersPageStudent
 {
     private array $dossier;
@@ -10,6 +16,15 @@ class FoldersPageStudent
     private string $message;
     private string $lang;
 
+    /**
+     * Constructor.
+     *
+     * @param array|null $dossier   Student folder data.
+     * @param string     $studentId Student identifier (NumEtu).
+     * @param string     $action    Current action.
+     * @param string     $message   Flash message (success/error).
+     * @param string     $lang      Current language.
+     */
     public function __construct(?array $dossier, string $studentId, string $action, string $message, string $lang)
     {
         $this->dossier = $dossier ?? [];
@@ -19,21 +34,42 @@ class FoldersPageStudent
         $this->lang = $lang;
     }
 
+    /**
+     * Translates a string based on the current language.
+     */
     private function t(array $frEn): string
     {
         return $this->lang === 'en' ? $frEn['en'] : $frEn['fr'];
     }
 
+    /**
+     * Builds a URL safely handling query parameters.
+     */
     private function buildUrl(string $path, array $params = []): string
     {
         $params['lang'] = $this->lang;
-        return $path . '?' . http_build_query($params);
+        $separator = (strpos($path, '?') === false) ? '?' : '&';
+        return $path . $separator . http_build_query($params);
     }
 
+    /**
+     * Main method to render the HTML page.
+     */
     public function render(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
+        }
+
+        // --- Determine View Mode: CREATE or UPDATE ---
+        $isCreateMode = empty($this->dossier);
+        $formAction = $isCreateMode ? 'create_folder' : 'update_student';
+        
+        // Auto-detect mobility type for display logic (only if updating)
+        $detectedType = '';
+        if (!$isCreateMode) {
+            if (!empty($this->dossier['pieces']['convention'])) $detectedType = 'stage';
+            elseif (!empty($this->dossier['pieces']['lettre_motivation'])) $detectedType = 'etudes';
         }
         ?>
         <!DOCTYPE html>
@@ -59,9 +95,21 @@ class FoldersPageStudent
                 </div>
             </div>
             <nav class="menu">
-                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Accueil','en' => 'Home']) ?></button>
-                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/folders-student') ?>'"><?= $this->t(['fr' => 'Mon dossier','en' => 'My Folder']) ?></button>
-                <button onclick="window.location.href='index.php?page=logout'"><?= $this->t(['fr' => 'Déconnexion','en' => 'Logout']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'home']) ?>'">
+                    <?= $this->t(['fr' => 'Accueil', 'en' => 'Home']) ?>
+                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'dashboard-student']) ?>'">
+                    <?= $this->t(['fr' => 'Tableau de bord', 'en' => 'Dashboard']) ?>
+                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'partners']) ?>'">
+                    <?= $this->t(['fr' => 'Partenaires', 'en' => 'Partners']) ?>
+                </button>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders-student']) ?>'">
+                    <?= $this->t(['fr' => 'Dossiers', 'en' => 'Folders']) ?>
+                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'web_plan']) ?>'">
+                    <?= $this->t(['fr' => 'Plan du site', 'en' => 'Site Map']) ?>
+                </button>
             </nav>
         </header>
         <main>
@@ -71,85 +119,148 @@ class FoldersPageStudent
                 <div class="message"><?= htmlspecialchars($this->message) ?></div>
             <?php endif; ?>
 
-            <?php if (empty($this->dossier)) : ?>
-                <p><?= $this->t(['fr' => 'Aucun dossier trouvé','en' => 'No folder found']) ?></p>
-            <?php else : ?>
-                <form method="post"
-                      action="index.php?page=update_student&lang=<?= htmlspecialchars($this->lang) ?>"
-                      enctype="multipart/form-data"
-                      class="creation-form">
+            <form method="post"
+                  action="<?= $this->buildUrl('index.php', ['page' => $formAction]) ?>"
+                  enctype="multipart/form-data"
+                  class="creation-form">
 
-                    <!-- Informations personnelles -->
-                    <div class="form-section">
-                        <!-- Numéro étudiant affiché et envoyé -->
-                        <label><?= $this->t(['fr' => 'Numéro étudiant','en' => 'Student ID']) ?></label>
-                        <input type="text" value="<?= htmlspecialchars($this->studentId) ?>" readonly style="background:#eee;">
-                        <input type="hidden" name="numetu" value="<?= htmlspecialchars($this->studentId) ?>">
+                <div class="form-section">
+                    <label><?= $this->t(['fr' => 'Numéro étudiant','en' => 'Student ID']) ?></label>
+                    <input type="text" value="<?= htmlspecialchars($this->studentId) ?>" readonly style="background:#eee;">
+                    <input type="hidden" name="numetu" value="<?= htmlspecialchars($this->studentId) ?>">
 
-                        <!-- Nom bloqué -->
-                        <label><?= $this->t(['fr' => 'Nom','en' => 'Last Name']) ?></label>
-                        <input type="text" value="<?= htmlspecialchars($this->dossier['Nom'] ?? '') ?>" readonly style="background:#f7f7f7;">
-                        <input type="hidden" name="nom" value="<?= htmlspecialchars($this->dossier['Nom'] ?? '') ?>">
+                    <label><?= $this->t(['fr' => 'Nom *','en' => 'Last Name *']) ?></label>
+                    <input type="text" name="nom" value="<?= htmlspecialchars($this->dossier['Nom'] ?? '') ?>" 
+                           <?= $isCreateMode ? 'required' : 'readonly style="background:#f7f7f7;"' ?>>
 
-                        <!-- Prénom bloqué -->
-                        <label><?= $this->t(['fr' => 'Prénom','en' => 'First Name']) ?></label>
-                        <input type="text" value="<?= htmlspecialchars($this->dossier['Prenom'] ?? '') ?>" readonly style="background:#f7f7f7;">
-                        <input type="hidden" name="prenom" value="<?= htmlspecialchars($this->dossier['Prenom'] ?? '') ?>">
+                    <label><?= $this->t(['fr' => 'Prénom *','en' => 'First Name *']) ?></label>
+                    <input type="text" name="prenom" value="<?= htmlspecialchars($this->dossier['Prenom'] ?? '') ?>" 
+                           <?= $isCreateMode ? 'required' : 'readonly style="background:#f7f7f7;"' ?>>
 
-                        <!-- Email -->
-                        <label><?= $this->t(['fr' => 'Email personnel','en' => 'Personal Email']) ?></label>
-                        <input type="email" name="email_perso" value="<?= htmlspecialchars($this->dossier['EmailPersonnel'] ?? '') ?>" required>
+                    <label><?= $this->t(['fr' => 'Date de naissance','en' => 'Date of Birth']) ?></label>
+                    <input type="date" name="naissance" value="<?= htmlspecialchars($this->dossier['DateNaissance'] ?? '') ?>"
+                           <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
 
-                        <!-- Téléphone -->
-                        <label><?= $this->t(['fr' => 'Téléphone','en' => 'Phone']) ?></label>
-                        <input type="text" name="telephone" value="<?= htmlspecialchars($this->dossier['Telephone'] ?? '') ?>" required>
+                    <label><?= $this->t(['fr' => 'Sexe','en' => 'Gender']) ?></label>
+                    <select name="sexe" id="sexe" <?= $isCreateMode ? '' : 'disabled style="background:#f7f7f7;"' ?>>
+                        <option value="M" <?= ($this->dossier['Sexe'] ?? '') === 'M' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Masculin','en' => 'Male']) ?></option>
+                        <option value="F" <?= ($this->dossier['Sexe'] ?? '') === 'F' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Féminin','en' => 'Female']) ?></option>
+                        <option value="Autre" <?= ($this->dossier['Sexe'] ?? '') === 'Autre' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Autre','en' => 'Other']) ?></option>
+                    </select>
 
-                        <!-- Adresse -->
-                        <label><?= $this->t(['fr' => 'Adresse','en' => 'Address']) ?></label>
-                        <input type="text" name="adresse" value="<?= htmlspecialchars($this->dossier['Adresse'] ?? '') ?>">
+                    <label><?= $this->t(['fr' => 'Email personnel *','en' => 'Personal Email *']) ?></label>
+                    <input type="email" name="email_perso" value="<?= htmlspecialchars($this->dossier['EmailPersonnel'] ?? '') ?>" required>
 
-                        <!-- Code postal -->
-                        <label><?= $this->t(['fr' => 'Code postal','en' => 'Postal Code']) ?></label>
-                        <input type="text" name="cp" value="<?= htmlspecialchars($this->dossier['CodePostal'] ?? '') ?>">
+                    <label><?= $this->t(['fr' => 'Email AMU','en' => 'AMU Email']) ?></label>
+                    <input type="email" name="email_amu" value="<?= htmlspecialchars($this->dossier['EmailAMU'] ?? '') ?>"
+                           <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
 
-                        <!-- Ville -->
-                        <label><?= $this->t(['fr' => 'Ville','en' => 'City']) ?></label>
-                        <input type="text" name="ville" value="<?= htmlspecialchars($this->dossier['Ville'] ?? '') ?>">
+                    <label><?= $this->t(['fr' => 'Téléphone *','en' => 'Phone *']) ?></label>
+                    <input type="text" name="telephone" value="<?= htmlspecialchars($this->dossier['Telephone'] ?? '') ?>" required>
+
+                    <label><?= $this->t(['fr' => 'Adresse','en' => 'Address']) ?></label>
+                    <input type="text" name="adresse" value="<?= htmlspecialchars($this->dossier['Adresse'] ?? '') ?>">
+
+                    <label><?= $this->t(['fr' => 'Code postal','en' => 'Postal Code']) ?></label>
+                    <input type="text" name="cp" value="<?= htmlspecialchars($this->dossier['CodePostal'] ?? '') ?>">
+
+                    <label><?= $this->t(['fr' => 'Ville','en' => 'City']) ?></label>
+                    <input type="text" name="ville" value="<?= htmlspecialchars($this->dossier['Ville'] ?? '') ?>">
+                    
+                    <label><?= $this->t(['fr' => 'Code Département','en' => 'Department Code']) ?></label>
+                    <input type="text" name="departement" value="<?= htmlspecialchars($this->dossier['CodeDepartement'] ?? '') ?>"
+                           <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
+
+                    <label for="type"><?= $this->t(['fr' => 'Type *','en' => 'Type *']) ?></label>
+                    <select name="type" id="type" <?= $isCreateMode ? 'required' : 'disabled style="background:#f7f7f7;"' ?>>
+                        <option value=""><?= $this->t(['fr' => '-- Choisir --','en' => '-- Choose --']) ?></option>
+                        <option value="entrant" <?= ($this->dossier['Type'] ?? '') === 'entrant' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Entrant','en' => 'Incoming']) ?></option>
+                        <option value="sortant" <?= ($this->dossier['Type'] ?? '') === 'sortant' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Sortant','en' => 'Outgoing']) ?></option>
+                    </select>
+
+                    <label for="zone"><?= $this->t(['fr' => 'Zone *','en' => 'Zone *']) ?></label>
+                    <select name="zone" id="zone" <?= $isCreateMode ? 'required' : 'disabled style="background:#f7f7f7;"' ?>>
+                        <option value=""><?= $this->t(['fr' => '-- Choisir --','en' => '-- Choose --']) ?></option>
+                        <option value="europe" <?= ($this->dossier['Zone'] ?? '') === 'europe' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Europe','en' => 'Europe']) ?></option>
+                        <option value="hors_europe" <?= ($this->dossier['Zone'] ?? '') === 'hors_europe' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Hors Europe','en' => 'Non-Europe']) ?></option>
+                    </select>
+
+                    <label for="mobilite_type"><?= $this->t(['fr' => 'Type de mobilité','en' => 'Mobility Type']) ?></label>
+                    <select name="mobilite_type" id="mobilite_type" onchange="changerTypeMobilite(this.value)" 
+                        <?= $isCreateMode ? '' : 'disabled style="background:#f7f7f7;"' ?>>
+                        <option value=""><?= $this->t(['fr' => '-- Choisir --','en' => '-- Choose --']) ?></option>
+                        <option value="stage" <?= $detectedType === 'stage' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Stage','en' => 'Internship']) ?></option>
+                        <option value="etudes" <?= $detectedType === 'etudes' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Études','en' => 'Studies']) ?></option>
+                    </select>
+                </div>
+
+                <div class="form-section" style="margin-top: 30px;">
+                    <h2><?= $this->t(['fr' => 'Mes documents','en' => 'My Documents']) ?></h2>
+
+                    <?php 
+                    $docs = ['photo' => 'Photo', 'cv' => 'CV'];
+                    foreach ($docs as $key => $label) :
+                        $hasFile = !empty($this->dossier['pieces'][$key]);
+                        ?>
+                    <div style="margin-bottom: 20px;">
+                        <label><?= $this->t(['fr' => $label,'en' => $label]) ?></label>
+                        <?php if ($hasFile) : ?>
+                            <div style="margin-top: 10px;">
+                                <a href="data:application/octet-stream;base64,<?= $this->dossier['pieces'][$key] ?>"
+                                   download="<?= $key ?>_<?= htmlspecialchars($this->studentId) ?>.<?= $key === 'photo' ? 'jpg' : 'pdf' ?>"
+                                   class="btn-secondary">
+                                   <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
+                                </a>
+                            </div>
+                        <?php else : ?>
+                            <p style="color:#999;"><?= $this->t(['fr' => 'Aucun fichier','en' => 'No file']) ?></p>
+                        <?php endif; ?>
+                        <input type="file" name="<?= $key ?>" accept="<?= $key === 'photo' ? 'image/*' : '.pdf' ?>">
+                    </div>
+                    <?php endforeach; ?>
+
+                    <div id="justificatif_convention" style="display: none; margin-bottom: 20px;">
+                        <label><?= $this->t(['fr' => 'Convention de stage','en' => 'Internship Agreement']) ?></label>
+                        <?php if (!empty($this->dossier['pieces']['convention'])) : ?>
+                             <div style="margin-top: 10px;">
+                                <a href="data:application/pdf;base64,<?= $this->dossier['pieces']['convention'] ?>" download="convention.pdf" class="btn-secondary">
+                                    <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
+                                </a>
+                            </div>
+                        <?php endif; ?>
+                        <input type="file" name="convention" accept=".pdf,.doc,.docx">
                     </div>
 
-                    <!-- Documents -->
-                    <div class="form-section" style="margin-top: 30px;">
-                        <h2><?= $this->t(['fr' => 'Mes documents','en' => 'My Documents']) ?></h2>
-
-                        <?php
-                        $docs = ['photo' => 'Photo', 'cv' => 'CV'];
-                        foreach ($docs as $key => $label) :
-                            $hasFile = !empty($this->dossier['pieces'][$key]);
-                            ?>
-                        <div style="margin-bottom: 20px;">
-                            <label><?= $this->t(['fr' => $label,'en' => $label]) ?></label>
-                            <?php if ($hasFile) : ?>
-                                <div style="margin-top: 10px;">
-                                    <a href="data:application/octet-stream;base64,<?= $this->dossier['pieces'][$key] ?>"
-                                       download="<?= $key ?>_<?= htmlspecialchars($this->studentId) ?>.<?= $key === 'photo' ? 'jpg' : 'pdf' ?>"
-                                       class="btn-secondary">
-                                       <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
-                                    </a>
-                                </div>
-                            <?php else : ?>
-                                <p style="color:#999;"><?= $this->t(['fr' => 'Aucun fichier','en' => 'No file']) ?></p>
-                            <?php endif; ?>
-                            <input type="file" name="<?= $key ?>" accept="<?= $key === 'photo' ? 'image/*' : '.pdf' ?>">
-                        </div>
-                        <?php endforeach; ?>
+                    <div id="lettre_motivation" style="display: none; margin-bottom: 20px;">
+                        <label><?= $this->t(['fr' => 'Lettre de motivation','en' => 'Motivation Letter']) ?></label>
+                        <?php if (!empty($this->dossier['pieces']['lettre_motivation'])) : ?>
+                             <div style="margin-top: 10px;">
+                                <a href="data:application/pdf;base64,<?= $this->dossier['pieces']['lettre_motivation'] ?>" download="lettre.pdf" class="btn-secondary">
+                                    <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
+                                </a>
+                            </div>
+                        <?php endif; ?>
+                        <input type="file" name="lettre_motivation" accept=".pdf,.doc,.docx">
                     </div>
 
-                    <div class="form-actions">
-                        <button type="submit" class="btn-secondary"><?= $this->t(['fr' => 'Enregistrer mes modifications','en' => 'Save changes']) ?></button>
-                        <button type="button" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Annuler','en' => 'Cancel']) ?></button>
-                    </div>
-                </form>
-            <?php endif; ?>
+                </div>
+
+                <div class="form-actions">
+                    <?php if ($isCreateMode): ?>
+                        <button type="submit" class="btn-secondary">
+                            <?= $this->t(['fr' => 'Déposer ma demande','en' => 'Submit my application']) ?>
+                        </button>
+                    <?php else: ?>
+                        <button type="submit" class="btn-secondary">
+                            <?= $this->t(['fr' => 'Enregistrer mes modifications','en' => 'Save changes']) ?>
+                        </button>
+                    <?php endif; ?>
+                    
+                    <button type="button" class="btn-secondary" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'home']) ?>'">
+                        <?= $this->t(['fr' => 'Annuler','en' => 'Cancel']) ?>
+                    </button>
+                </div>
+            </form>
         </main>
 
         <script>
@@ -158,6 +269,25 @@ class FoldersPageStudent
                 url.searchParams.set('lang', lang);
                 window.location.href = url.toString();
             }
+
+            function changerTypeMobilite(type) {
+                const conventionBlock = document.getElementById('justificatif_convention');
+                const lettreBlock = document.getElementById('lettre_motivation');
+
+                if(conventionBlock) conventionBlock.style.display = 'none';
+                if(lettreBlock) lettreBlock.style.display = 'none';
+
+                if (type === 'stage') {
+                    if(conventionBlock) conventionBlock.style.display = 'block'; 
+                } else if (type === 'etudes') {
+                    if(lettreBlock) lettreBlock.style.display = 'block';
+                }
+            }
+
+            window.addEventListener('DOMContentLoaded', (event) => {
+                const sel = document.getElementById('mobilite_type');
+                if (sel) changerTypeMobilite(sel.value);
+            });
         </script>
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université</p>
