@@ -1,8 +1,8 @@
 <?php
-namespace View;
+namespace View\Partners;
 
 
-class PartnersPage
+class PartnersPageAdmin
 {
     private string $titre;
     private string $lang;
@@ -66,7 +66,7 @@ class PartnersPage
                 <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'">
                     <?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?>
                 </button>
-                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/partners') ?>'">
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/partners-admin') ?>'">
                     <?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?>
                 </button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'">
@@ -85,8 +85,8 @@ class PartnersPage
                     <span class="btn-plus">+</span>
                     <?= $this->t(['fr' => 'Ajouter', 'en' => 'Add']) ?>
                 </button>
-
             </div>
+
             <p>
                 <?= $this->t([
                     'fr' => 'Veuillez trouver la liste des partenaires d’AMU en cliquant sur ce lien :',

@@ -43,7 +43,8 @@ use Controllers\site\FolderController\FoldersControllerStudent;
 use Controllers\site\HelpController;
 use Controllers\site\IndexController;
 use Controllers\site\SaveStudentController;
-use Controllers\site\PartnersController;
+use Controllers\PartnersController\PartnersControllerStudent;
+use Controllers\PartnersController\PartnersControllerAdmin;
 use Controllers\site\WebPlanController;
 
 // Liste des contrôleurs - IMPORTANT: ordre de priorité
@@ -53,7 +54,8 @@ $controllers = [
     new FoldersControllerStudent(),
     new DashboardController(),
     new HelpController(),
-    new PartnersController(),
+    new PartnersControllerStudent(),
+    new PartnersControllerAdmin(),
     new WebPlanController(),
     new IndexController(),
     new SaveStudentController(),

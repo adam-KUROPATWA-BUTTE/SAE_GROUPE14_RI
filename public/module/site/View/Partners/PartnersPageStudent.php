@@ -1,0 +1,165 @@
+<?php
+namespace View\Partners;
+
+
+class PartnersPageStudent
+{
+    private string $titre;
+    private string $lang;
+
+    public function __construct(string $titre, string $lang = 'fr')
+    {
+        $this->titre = $titre;
+        $this->lang = $lang;
+    }
+
+    private function buildUrl(string $path, array $params = []): string
+    {
+        $params['lang'] = $this->lang;
+        return $path . '?' . http_build_query($params);
+    }
+
+    private function t(array $frEn): string
+    {
+        return $this->lang === 'en' ? $frEn['en'] : $frEn['fr'];
+    }
+
+    public function render(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+
+        }
+        if (isset($_GET['tritanopia'])) {
+            $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';
+        }
+        ?>
+
+        <!DOCTYPE html>
+        <html lang="<?= htmlspecialchars($this->lang) ?>">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title><?= htmlspecialchars($this->titre) ?></title>
+            <link rel="stylesheet" href="styles/index.css">
+            <link rel="stylesheet" href="styles/partners.css">
+            <link rel="icon" type="image/png" href="img/favicon.webp"/>
+        </head>
+        <body class="<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true ? 'tritanopie' : '' ?>">
+        <header>
+            <div class="top-bar">
+                <img class="logo_amu" src="img/logo.png" alt="Logo">
+                <div class="right-buttons">
+                    <div class="lang-dropdown">
+                        <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
+                        <div class="dropdown-content">
+                            <a href="#" onclick="changeLang('fr'); return false;">Français</a>
+                            <a href="#" onclick="changeLang('en'); return false;">English</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <nav class="menu">
+                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'">
+                    <?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?>
+                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'">
+                    <?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?>
+                </button>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/partners') ?>'">
+                    <?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?>
+                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'">
+                    <?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?>
+                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'">
+                    <?= $this->t(['fr'=>'Plan du site','en'=>'Site Map']) ?>
+                </button>
+            </nav>
+        </header>
+
+        <main>
+            <h1>Universités Partenaires</h1>
+            <p>
+                <?= $this->t([
+                    'fr' => 'Veuillez trouver la liste des partenaires d’AMU en cliquant sur ce lien :',
+                    'en' => 'Please find the list of AMU\'s partners by clicking on this link:'
+                ]) ?>
+            </p>
+
+            <p class="lien">
+                <a href="https://www.univ-amu.fr/fr/public/universites-et-reseaux-partenaires" target="_blank">
+                    Universites-et-reseaux-partenaires
+                </a>
+            </p>
+
+            <img id="Université_partenaires"
+                 src="img/<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'University_green.png' : 'University.png' ?>"
+                 alt="Université partenaires">
+
+        </main>
+
+        <footer>
+            <p>&copy; 2025 - Aix-Marseille Université.</p>
+            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
+                <img class="insta" src="img/instagram.png" alt="Instagram">
+            </a>
+        </footer>
+
+        <!-- Bulle d'aide en bas à droite -->
+        <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
+
+        <!-- Contenu du popup d'aide -->
+        <div id="help-popup">
+            <div class="help-popup-header">
+                <span><?= $this->t(['fr'=>'Aide', 'en'=>'Help']) ?></span>
+                <button onclick="toggleHelpPopup()">✖</button>
+            </div>
+            <div class="help-popup-body">
+                <p><?= $this->t(['fr'=>'Bienvenue ! Comment pouvons-nous vous aider ?', 'en'=>'Welcome! How can we help you?']) ?></p>
+                <ul>
+                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr'=>'Page d’aide complète', 'en'=>'Full help page']) ?></a></li>
+                </ul>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('current-lang').addEventListener('click', function(event) {
+                event.stopPropagation(); // empêcher la propagation au document
+                const rightButtons = document.querySelector('.right-buttons');
+                rightButtons.classList.toggle('show');
+            });
+
+            // Fermer le dropdown si clic ailleurs sur la page
+            document.addEventListener('click', function() {
+                const rightButtons = document.querySelector('.right-buttons');
+                rightButtons.classList.remove('show');
+            });
+
+            function toggleHelpPopup() {
+                const popup = document.getElementById('help-popup');
+                popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
+            }
+            function changeLang(lang) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('lang', lang);
+                window.location.href = url.toString();
+            }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const menuToggle = document.createElement('button');
+                menuToggle.classList.add('menu-toggle');
+                menuToggle.innerHTML = '☰';
+                document.querySelector('.right-buttons').appendChild(menuToggle);
+
+                const navMenu = document.querySelector('nav.menu');
+                menuToggle.addEventListener('click', () => {
+                    navMenu.classList.toggle('active');
+                });
+            });
+        </script>
+        </body>
+        </html>
+        <?php
+    }
+}
