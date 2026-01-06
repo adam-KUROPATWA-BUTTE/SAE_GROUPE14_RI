@@ -123,3 +123,159 @@ main {
     flex-direction: column;
     width: 100%;
 }
+
+/* ======= RESPONSIVE 810px ======= */
+@media (max-width: 810px) {
+    main {
+        width: 90%;
+        padding: 40px 30px;
+        margin: 30px auto;
+    }
+
+    .progress-container {
+        margin: 60px auto;
+    }
+
+    .progress-icon {
+        height: 60px;
+        margin-bottom: 10px;
+    }
+
+    .progress-icon img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .progress-step span {
+        font-size: 12px;
+    }
+
+    /* Tables responsive */
+    table {
+        font-size: 0.9em;
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    th, td {
+        padding: 10px 8px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+}
+
+/* ======= RESPONSIVE 500px ======= */
+@media (max-width: 500px) {
+    main {
+        width: 95%;
+        padding: 20px 15px;
+        margin: 20px auto;
+    }
+
+    h1 {
+        font-size: 20px;
+        text-align: center;
+    }
+
+    /* Progress bar en vertical pour mobile */
+    .progress-container {
+        flex-direction: column;
+        margin: 40px auto;
+        align-items: stretch;
+    }
+
+    /* Ligne verticale au lieu d'horizontale */
+    .progress-container::before {
+        width: 3px;
+        height: 100%;
+        left: 25px;
+        top: 0;
+        transform: none;
+    }
+
+    .progress-line {
+        width: 4px;
+        height: 0;
+        left: 25px;
+        top: 0;
+        transform: none;
+        transition: height 0.4s ease;
+    }
+
+    .progress-step {
+        display: flex;
+        align-items: center;
+        text-align: left;
+        margin-bottom: 30px;
+        flex: none;
+    }
+
+    .progress-icon {
+        height: 50px;
+        width: 50px;
+        margin-bottom: 0;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    .progress-icon img {
+        width: 35px;
+        height: 35px;
+    }
+
+    .progress-step span {
+        font-size: 13px;
+        flex: 1;
+    }
+
+    /* Tables très petits écrans - s'adapte sans scroll */
+    table {
+        font-size: 0.65em;
+        width: 100%;
+        display: table;
+        overflow-x: visible;
+        white-space: normal;
+    }
+
+    th, td {
+        padding: 5px 2px;
+        word-wrap: break-word;
+        vertical-align: middle;
+    }
+
+    /* Réduire la largeur de la colonne NumEtu */
+    table th:nth-child(1),
+    table td:nth-child(1) {
+        font-size: 0.9em;
+        max-width: 50px;
+    }
+
+    /* Colonne Nom/Prénom */
+    table th:nth-child(2),
+    table td:nth-child(2),
+    table th:nth-child(3),
+    table td:nth-child(3) {
+        max-width: 70px;
+    }
+
+    /* Réduire la colonne Avancement */
+    .progress-bar {
+        min-width: 50px;
+        height: 12px;
+    }
+
+    .progress {
+        font-size: 0.75em;
+        line-height: 12px;
+    }
+
+    /* Colonne Pièces fournies */
+    table th:nth-child(5),
+    table td:nth-child(5) {
+        font-size: 0.85em;
+        white-space: nowrap;
+    }
+}

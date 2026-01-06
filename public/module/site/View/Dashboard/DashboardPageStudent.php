@@ -34,7 +34,7 @@ class DashboardPageStudent
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title><?= $this->lang === 'en' ? 'Student Dashboard' : 'Tableau de bord (Étudiant)' ?></title>
+            <title><?= $this->lang === 'en' ? 'Admin Dashboard' : 'Tableau de bord (Admin)' ?></title>
             <link rel="stylesheet" href="styles/index.css">
             <link rel="stylesheet" href="styles/dashboard.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
@@ -54,28 +54,12 @@ class DashboardPageStudent
                 </div>
             </div>
             <nav class="menu">
-                <button onclick="window.location.href='<?= $this->buildUrl('index.php?page=home') ?>'">
-                    <?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?>
-                </button>
-
-                <button class="active"
-                        onclick="window.location.href='<?= $this->buildUrl('index.php?page=dashboard-student') ?>'">
-                    <?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?>
-                </button>
-
-                <button onclick="window.location.href='<?= $this->buildUrl('index.php?page=partners') ?>'">
-                    <?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?>
-                </button>
-
-                <button onclick="window.location.href='<?= $this->buildUrl('index.php?page=folders-student') ?>'">
-                    <?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?>
-                </button>
-
-                <button onclick="window.location.href='<?= $this->buildUrl('index.php?page=web_plan') ?>'">
-                    <?= $this->t(['fr'=>'Plan du site','en'=>'Site Map']) ?>
-                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/dashboard-student') ?>'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/partners') ?>'"><?= $this->t(['fr'=>'Partenaire','en'=>'Partners']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/folders-student') ?>'"><?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Site Map']) ?></button>
             </nav>
-
 
         </header>
 
@@ -115,13 +99,25 @@ class DashboardPageStudent
             <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
                 <img class="insta" src="img/instagram.png" alt="Instagram">
             </a>
-            <script>
-                function changeLang(lang) {
-                    const url = new URL(window.location.href);
-                    url.searchParams.set('lang', lang);
-                    window.location.href = url.toString();
-                }
-            </script>
+        <script>
+            function changeLang(lang) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('lang', lang);
+                window.location.href = url.toString();
+            }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const menuToggle = document.createElement('button');
+                menuToggle.classList.add('menu-toggle');
+                menuToggle.innerHTML = '☰';
+                document.querySelector('.right-buttons').appendChild(menuToggle);
+
+                const navMenu = document.querySelector('nav.menu');
+                menuToggle.addEventListener('click', () => {
+                    navMenu.classList.toggle('active');
+                });
+            });
+        </script>
         </body>
         </html>
         <?php
