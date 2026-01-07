@@ -62,11 +62,11 @@ class WebPLanPageStudent
             <ul>
                 <?php foreach ($this->links as $link): ?>
                     <li><a href="<?= htmlspecialchars($this->buildUrl($link['url'])) ?>"><?=
-                            htmlspecialchars($this->t([
-                                'fr' => $link['label'], // labels en dur en fr dans Model, on peut compléter en dur ici si besoin
-                                'en' => $this->translateLabel($link['label'])
-                            ]))
-                            ?></a></li>
+                        htmlspecialchars($this->t([
+                            'fr' => $link['label'], // labels en dur en fr dans Model, on peut compléter en dur ici si besoin
+                            'en' => $this->translateLabel($link['label'])
+                        ]))
+                    ?></a></li>
                 <?php endforeach; ?>
             </ul>
 
