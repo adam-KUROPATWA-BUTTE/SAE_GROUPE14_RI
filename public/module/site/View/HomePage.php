@@ -86,12 +86,12 @@ class HomePage
                             <?= $this->t(['fr' => 'Se connecter','en' => 'Log in']) ?>
                         </button>
                     <?php endif; ?>
+                    <button id="theme-toggle" title="Appuyez ici si vous êtes atteint de tritanopie">
+                        <span class="toggle-switch"></span>
+                    </button>
                 </div>
             </div>
 
-            <button id="theme-toggle" title="Appuyez ici si vous êtes atteint de tritanopie">
-                <span class="toggle-switch"></span>
-            </button>
 
             <nav class="menu">
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Accueil','en' => 'Home']) ?></button>
