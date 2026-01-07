@@ -2,7 +2,7 @@
 
 namespace View\HomePage;
 
-class HomePage
+class HomePageAdmin
 {
     private bool $isLoggedIn;
     private string $lang;
