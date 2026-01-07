@@ -145,5 +145,31 @@ class TestFoldersControllerAdmin extends TestCase
 			'tri_date' => 'ASC',
 		], $filters);
 	}
+
+	public function testControlRejectsSaveWhenMissingNumetu(): void
+	{
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_GET['page'] = 'save_student';
+		$_POST = ['nom' => 'Dupont', 'prenom' => 'Jean']; // numetu manquant
+
+		$controller = new FoldersControllerAdmin();
+
+		$bufferStarted = false;
+		try {
+			ob_start();
+			$bufferStarted = true;
+			$controller->control();
+		} catch (\RuntimeException $e) {
+			// Expected: header() stub throws to avoid real exit/redirect
+		} finally {
+			if ($bufferStarted && ob_get_level() > 0) {
+				ob_end_clean();
+			}
+		}
+
+		$this->assertNotEmpty($_SESSION['message']);
+		$this->assertStringContainsString('requis', $_SESSION['message']);
+	}
+    
 }
 
