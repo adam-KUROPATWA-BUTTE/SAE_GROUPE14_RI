@@ -63,10 +63,11 @@ class HomePageStudent
                             <?= $this->t(['fr' => 'Se connecter','en' => 'Log in']) ?>
                         </button>
                     <?php endif; ?>
+                    <button id="theme-toggle" title="Mode tritanopie"><span class="toggle-switch"></span></button>
+
                 </div>
             </div>
 
-            <button id="theme-toggle" title="Mode tritanopie"><span class="toggle-switch"></span></button>
 
             <nav class="menu">
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Accueil','en' => 'Home']) ?></button>
@@ -80,7 +81,7 @@ class HomePageStudent
         <section class="hero-section"><img class="hero_logo" src="img/amu.png" alt="Logo AMU"></section>
         
         <section class="pub-section">
-            <img id="pub_amu" src="img/pub.jpg" alt="Publicité AMU">
+            <img id="pub_amu" src="img/image_etudiants.png" alt="Publicité AMU">
             <div class="pub-text"><?= $this->t([
                     'fr' => '« Bienvenue sur votre portail de mobilité internationale »',
                     'en' => '“Welcome to your international mobility portal”'
