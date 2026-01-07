@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Main Entry Point (Front Controller).
  *
@@ -27,7 +28,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // Checks if the 'toggleTritanopia' parameter is in the URL
 if (isset($_GET['toggleTritanopia'])) {
     $_SESSION['tritanopia'] = !($_SESSION['tritanopia'] ?? false);
-    
+
     // Clean the URL by removing the query parameter and redirecting
     $cleanUrl = strtok($_SERVER["REQUEST_URI"], '?');
     header("Location: " . $cleanUrl);
@@ -83,7 +84,7 @@ use Controllers\WebPlanController\WebPlanControllerStudent;
  */
 $controllers = [
     new AuthController(),
-    
+
     // Home Controllers (Admin first for security)
     new HomeControllerAdmin(),
     new HomeControllerStudent(),
@@ -117,18 +118,15 @@ $page = $_GET['page'] ?? trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), 
  * we automatically redirect them based on their authentication status.
  */
 if ($page === '' || $page === 'index.php' || $page === 'home') {
-    
     if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') {
         // User is Admin -> Redirect to Admin Home
         header('Location: index.php?page=home-admin');
         exit;
-    } 
-    elseif (isset($_SESSION['numetu'])) {
+    } elseif (isset($_SESSION['numetu'])) {
         // User is Student -> Redirect to Student Home
         header('Location: index.php?page=home-student');
         exit;
-    } 
-    else {
+    } else {
         // User is Guest -> Redirect to Login
         header('Location: index.php?page=login');
         exit;
