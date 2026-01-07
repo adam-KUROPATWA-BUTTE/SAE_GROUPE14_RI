@@ -41,7 +41,8 @@ use Controllers\site\DashboardController;
 use Controllers\FolderController\FoldersControllerAdmin;
 use Controllers\site\FolderController\FoldersControllerStudent;
 use Controllers\site\HelpController;
-use Controllers\site\IndexController;
+use Controllers\site\HomeController\HomeControllerAdmin;
+use Controllers\site\HomeController\HomeControllerStudent;
 use Controllers\site\SaveStudentController;
 use Controllers\PartnersController\PartnersControllerStudent;
 use Controllers\PartnersController\PartnersControllerAdmin;
@@ -59,7 +60,8 @@ $controllers = [
     new PartnersControllerAdmin(),
     new WebPlanControllerAdmin(),
     new WebPlanControllerStudent(),
-    new IndexController(),
+    new HomeControllerAdmin(),
+    new HomeControllerStudent(),
     new SaveStudentController(),
 ];
 

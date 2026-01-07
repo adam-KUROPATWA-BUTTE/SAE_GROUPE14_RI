@@ -1,6 +1,6 @@
 <?php
 
-namespace View;
+namespace View\HomePage;
 
 class HomePage
 {
