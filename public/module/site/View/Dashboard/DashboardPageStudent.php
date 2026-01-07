@@ -98,11 +98,13 @@ class DashboardPageStudent
             </div>
             <nav class="menu">
                 <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
-                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/dashboard-student') ?>'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('index.php?page=dashboard-student') ?>'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/partners-student') ?>'"><?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/folders-student') ?>'"><?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Site Map']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-student') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Sitemap']) ?></button>
             </nav>
+
+
 
         </header>
 
