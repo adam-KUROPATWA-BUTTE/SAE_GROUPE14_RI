@@ -41,7 +41,7 @@ class WebPLanPageStudent
             <title><?= $this->t(['fr' => 'Plan du site', 'en' => 'Site Map']) ?></title>
         </head>
         <body class="<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true ? 'tritanopie' : '' ?>">
-        <header>
+        <header class="header">
             <div class="top-bar">
                 <img class="logo_amu" src="img/logo.png" alt="Logo AMU">
                 <div class="right-buttons">

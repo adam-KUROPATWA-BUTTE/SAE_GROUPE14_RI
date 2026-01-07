@@ -112,6 +112,7 @@ table {
     border-collapse: collapse;
     margin-top: 2em;
     background: #f9f9f9;
+    table-layout: auto;
 }
 
 table th,
@@ -270,6 +271,7 @@ tr:nth-child(even) {
 
     table {
         font-size: 0.95rem;
+        table-layout: auto;
     }
 }
 
@@ -335,6 +337,7 @@ tr:nth-child(even) {
         font-size: 0.85rem;
         overflow-x: auto;
         display: block;
+        table-layout: auto;
     }
 
     .sub-menu {
