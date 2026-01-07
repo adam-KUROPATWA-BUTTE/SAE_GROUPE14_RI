@@ -67,5 +67,79 @@ class TestFoldersControllerStudent extends TestCase
 
 		$this->assertArrayNotHasKey('message', $_SESSION, 'Flash message should be cleared');
 	}
+
+	/**
+	 * Test POST createFolder: rejects when student already has a folder
+	 */
+	public function testCreateFolderRejectsWhenAlreadyExists(): void
+	{
+		$_SESSION['numetu'] = 'S123';
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_GET['page'] = 'create_folder';
+		$_GET['lang'] = 'fr';
+		$_POST = [
+			'nom' => 'Dupont',
+			'prenom' => 'Jean',
+			'type' => 'entrant',
+			'zone' => 'europe'
+		];
+
+		// Simulate that student already has a folder
+		ModelStub::$studentDetailsReturn = ['NumEtu' => 'S123', 'Nom' => 'Dupont'];
+
+		$controller = new FoldersControllerStudent();
+
+		$bufferStarted = false;
+		try {
+			ob_start();
+			$bufferStarted = true;
+			$controller->control();
+		} catch (\RuntimeException $e) {
+			// Expected: header() stub throws to avoid real exit/redirect
+		} finally {
+			if ($bufferStarted && ob_get_level() > 0) {
+				ob_end_clean();
+			}
+		}
+
+		$this->assertNotEmpty($_SESSION['message']);
+		$this->assertStringContainsString('déjà', $_SESSION['message']);
+	}
+
+	/**
+	 * Test POST updateStudent: rejects when email_perso is missing
+	 */
+	public function testUpdateStudentRejectsWhenEmailMissing(): void
+	{
+		$_SESSION['numetu'] = 'S123';
+		$_SERVER['REQUEST_METHOD'] = 'POST';
+		$_GET['page'] = 'update_student';
+		$_GET['lang'] = 'fr';
+		$_POST = [
+			'adresse' => '123 Rue Test',
+			'cp' => '13090',
+			'ville' => 'Aix-en-Provence',
+			'telephone' => '0612345678'
+			// email_perso manquant
+		];
+
+		$controller = new FoldersControllerStudent();
+
+		$bufferStarted = false;
+		try {
+			ob_start();
+			$bufferStarted = true;
+			$controller->control();
+		} catch (\RuntimeException $e) {
+			// Expected: header() stub throws
+		} finally {
+			if ($bufferStarted && ob_get_level() > 0) {
+				ob_end_clean();
+			}
+		}
+
+		$this->assertNotEmpty($_SESSION['message']);
+		$this->assertStringContainsString('requis', $_SESSION['message']);
+	}
 }
 
