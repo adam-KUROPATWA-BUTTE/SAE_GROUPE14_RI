@@ -111,7 +111,7 @@ if (!function_exists('PHPUnit\Framework\assertIsList')) {
      *
      * @see Assert::assertIsList
      */
-    function assertIsList(array $array, string $message = ''): void
+    function assertIsList(mixed $array, string $message = ''): void
     {
         Assert::assertIsList(...func_get_args());
     }
@@ -236,6 +236,7 @@ if (!function_exists('PHPUnit\Framework\assertCount')) {
      *
      * @throws Exception
      * @throws ExpectationFailedException
+     * @throws GeneratorNotSupportedException
      *
      * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
      *
@@ -253,6 +254,7 @@ if (!function_exists('PHPUnit\Framework\assertNotCount')) {
      *
      * @throws Exception
      * @throws ExpectationFailedException
+     * @throws GeneratorNotSupportedException
      *
      * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
      *
@@ -411,6 +413,7 @@ if (!function_exists('PHPUnit\Framework\assertEmpty')) {
      * Asserts that a variable is empty.
      *
      * @throws ExpectationFailedException
+     * @throws GeneratorNotSupportedException
      *
      * @psalm-assert empty $actual
      *
@@ -429,6 +432,7 @@ if (!function_exists('PHPUnit\Framework\assertNotEmpty')) {
      * Asserts that a variable is not empty.
      *
      * @throws ExpectationFailedException
+     * @throws GeneratorNotSupportedException
      *
      * @psalm-assert !empty $actual
      *
@@ -1122,6 +1126,38 @@ if (!function_exists('PHPUnit\Framework\assertNan')) {
     }
 }
 
+if (!function_exists('PHPUnit\Framework\assertObjectHasProperty')) {
+    /**
+     * Asserts that an object has a specified property.
+     *
+     * @throws ExpectationFailedException
+     *
+     * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+     *
+     * @see Assert::assertObjectHasProperty()
+     */
+    function assertObjectHasProperty(string $attributeName, object $object, string $message = ''): void
+    {
+        Assert::assertObjectHasProperty(...func_get_args());
+    }
+}
+
+if (!function_exists('PHPUnit\Framework\assertObjectNotHasProperty')) {
+    /**
+     * Asserts that an object does not have a specified property.
+     *
+     * @throws ExpectationFailedException
+     *
+     * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+     *
+     * @see Assert::assertObjectNotHasProperty()
+     */
+    function assertObjectNotHasProperty(string $attributeName, object $object, string $message = ''): void
+    {
+        Assert::assertObjectNotHasProperty(...func_get_args());
+    }
+}
+
 if (!function_exists('PHPUnit\Framework\assertSame')) {
     /**
      * Asserts that two variables have the same type and value.
@@ -1705,6 +1741,7 @@ if (!function_exists('PHPUnit\Framework\assertSameSize')) {
      *
      * @throws Exception
      * @throws ExpectationFailedException
+     * @throws GeneratorNotSupportedException
      *
      * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
      *
@@ -1723,6 +1760,7 @@ if (!function_exists('PHPUnit\Framework\assertNotSameSize')) {
      *
      * @throws Exception
      * @throws ExpectationFailedException
+     * @throws GeneratorNotSupportedException
      *
      * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
      *
@@ -1764,6 +1802,38 @@ if (!function_exists('PHPUnit\Framework\assertStringEqualsStringIgnoringLineEndi
     }
 }
 
+if (!function_exists('PHPUnit\Framework\assertFileMatchesFormat')) {
+    /**
+     * Asserts that a string matches a given format string.
+     *
+     * @throws ExpectationFailedException
+     *
+     * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+     *
+     * @see Assert::assertFileMatchesFormat
+     */
+    function assertFileMatchesFormat(string $format, string $actualFile, string $message = ''): void
+    {
+        Assert::assertFileMatchesFormat(...func_get_args());
+    }
+}
+
+if (!function_exists('PHPUnit\Framework\assertFileMatchesFormatFile')) {
+    /**
+     * Asserts that a string matches a given format string.
+     *
+     * @throws ExpectationFailedException
+     *
+     * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
+     *
+     * @see Assert::assertFileMatchesFormatFile
+     */
+    function assertFileMatchesFormatFile(string $formatFile, string $actualFile, string $message = ''): void
+    {
+        Assert::assertFileMatchesFormatFile(...func_get_args());
+    }
+}
+
 if (!function_exists('PHPUnit\Framework\assertStringMatchesFormat')) {
     /**
      * Asserts that a string matches a given format string.
@@ -1789,6 +1859,7 @@ if (!function_exists('PHPUnit\Framework\assertStringNotMatchesFormat')) {
      * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
      *
      * @see Assert::assertStringNotMatchesFormat
+     * @deprecated https://github.com/sebastianbergmann/phpunit/issues/5472
      */
     function assertStringNotMatchesFormat(string $format, string $string, string $message = ''): void
     {
@@ -1821,6 +1892,7 @@ if (!function_exists('PHPUnit\Framework\assertStringNotMatchesFormatFile')) {
      * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
      *
      * @see Assert::assertStringNotMatchesFormatFile
+     * @deprecated https://github.com/sebastianbergmann/phpunit/issues/5472
      */
     function assertStringNotMatchesFormatFile(string $formatFile, string $string, string $message = ''): void
     {
@@ -2089,7 +2161,7 @@ if (!function_exists('PHPUnit\Framework\assertJson')) {
      *
      * @see Assert::assertJson
      */
-    function assertJson(string $actualJson, string $message = ''): void
+    function assertJson(string $actual, string $message = ''): void
     {
         Assert::assertJson(...func_get_args());
     }
@@ -2418,6 +2490,9 @@ if (!function_exists('PHPUnit\Framework\identicalTo')) {
 }
 
 if (!function_exists('PHPUnit\Framework\isInstanceOf')) {
+    /**
+     * @throws UnknownClassOrInterfaceException
+     */
     function isInstanceOf(string $className): IsInstanceOf
     {
         return Assert::isInstanceOf(...func_get_args());
@@ -2542,7 +2617,7 @@ if (!function_exists('PHPUnit\Framework\atLeast')) {
     function atLeast(int $requiredInvocations): InvokedAtLeastCountMatcher
     {
         return new InvokedAtLeastCountMatcher(
-            $requiredInvocations
+            $requiredInvocations,
         );
     }
 }
