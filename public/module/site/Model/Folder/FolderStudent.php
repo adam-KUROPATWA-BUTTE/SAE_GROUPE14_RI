@@ -1,4 +1,5 @@
 <?php
+
 namespace Model\Folder;
 
 use PDO;
@@ -133,11 +134,19 @@ class FolderStudent
 
             // Prepare justificative files as JSON
             $pieces = [];
-            if ($photoData !== null) $pieces['photo'] = base64_encode($photoData);
-            if ($cvData !== null) $pieces['cv'] = base64_encode($cvData);
-            if ($conventionData !== null) $pieces['convention'] = base64_encode($conventionData);
-            if ($lettreData !== null) $pieces['lettre_motivation'] = base64_encode($lettreData);
-            
+            if ($photoData !== null) {
+                $pieces['photo'] = base64_encode($photoData);
+            }
+            if ($cvData !== null) {
+                $pieces['cv'] = base64_encode($cvData);
+            }
+            if ($conventionData !== null) {
+                $pieces['convention'] = base64_encode($conventionData);
+            }
+            if ($lettreData !== null) {
+                $pieces['lettre_motivation'] = base64_encode($lettreData);
+            }
+
             $piecesJson = json_encode($pieces);
 
             return $stmt->execute([
@@ -157,7 +166,6 @@ class FolderStudent
                 ':Zone' => $data['Zone'],
                 ':PiecesJustificatives' => $piecesJson
             ]);
-
         } catch (PDOException $e) {
             error_log("Error creating student folder: " . $e->getMessage());
             return false;
@@ -189,10 +197,18 @@ class FolderStudent
                 : [];
 
             // Update files if provided
-            if ($photoData !== null) $pieces['photo'] = base64_encode($photoData);
-            if ($cvData !== null) $pieces['cv'] = base64_encode($cvData);
-            if ($conventionData !== null) $pieces['convention'] = base64_encode($conventionData);
-            if ($lettreData !== null) $pieces['lettre_motivation'] = base64_encode($lettreData);
+            if ($photoData !== null) {
+                $pieces['photo'] = base64_encode($photoData);
+            }
+            if ($cvData !== null) {
+                $pieces['cv'] = base64_encode($cvData);
+            }
+            if ($conventionData !== null) {
+                $pieces['convention'] = base64_encode($conventionData);
+            }
+            if ($lettreData !== null) {
+                $pieces['lettre_motivation'] = base64_encode($lettreData);
+            }
 
             $piecesJson = json_encode($pieces);
 

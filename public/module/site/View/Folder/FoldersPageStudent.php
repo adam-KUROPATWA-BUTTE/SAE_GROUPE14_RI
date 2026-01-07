@@ -64,12 +64,15 @@ class FoldersPageStudent
         // --- Determine View Mode: CREATE or UPDATE ---
         $isCreateMode = empty($this->dossier);
         $formAction = $isCreateMode ? 'create_folder' : 'update_student';
-        
+
         // Auto-detect mobility type for display logic (only if updating)
         $detectedType = '';
         if (!$isCreateMode) {
-            if (!empty($this->dossier['pieces']['convention'])) $detectedType = 'stage';
-            elseif (!empty($this->dossier['pieces']['lettre_motivation'])) $detectedType = 'etudes';
+            if (!empty($this->dossier['pieces']['convention'])) {
+                $detectedType = 'stage';
+            } elseif (!empty($this->dossier['pieces']['lettre_motivation'])) {
+                $detectedType = 'etudes';
+            }
         }
         ?>
         <!DOCTYPE html>
@@ -107,7 +110,7 @@ class FoldersPageStudent
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders-student']) ?>'">
                     <?= $this->t(['fr' => 'Dossiers', 'en' => 'Folders']) ?>
                 </button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-student') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Sitemap']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-student') ?>'"><?= $this->t(['fr' => 'Plan du site','en' => 'Sitemap']) ?></button>
 
             </nav>
         </header>
@@ -196,7 +199,7 @@ class FoldersPageStudent
                 <div class="form-section" style="margin-top: 30px;">
                     <h2><?= $this->t(['fr' => 'Mes documents','en' => 'My Documents']) ?></h2>
 
-                    <?php 
+                    <?php
                     $docs = ['photo' => 'Photo', 'cv' => 'CV'];
                     foreach ($docs as $key => $label) :
                         $hasFile = !empty($this->dossier['pieces'][$key]);
@@ -245,11 +248,11 @@ class FoldersPageStudent
                 </div>
 
                 <div class="form-actions">
-                    <?php if ($isCreateMode): ?>
+                    <?php if ($isCreateMode) : ?>
                         <button type="submit" class="btn-secondary">
                             <?= $this->t(['fr' => 'Déposer ma demande','en' => 'Submit my application']) ?>
                         </button>
-                    <?php else: ?>
+                    <?php else : ?>
                         <button type="submit" class="btn-secondary">
                             <?= $this->t(['fr' => 'Enregistrer mes modifications','en' => 'Save changes']) ?>
                         </button>

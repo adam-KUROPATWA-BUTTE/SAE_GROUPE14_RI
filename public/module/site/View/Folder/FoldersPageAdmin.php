@@ -102,7 +102,7 @@ class FoldersPageAdmin
                 <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'"><?= $this->t(['fr' => 'Tableau de bord','en' => 'Dashboard']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/partners-admin') ?>'"><?= $this->t(['fr' => 'Partenaires','en' => 'Partners']) ?></button>
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'"><?= $this->t(['fr' => 'Dossiers','en' => 'Folders']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-admin') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Sitemap']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-admin') ?>'"><?= $this->t(['fr' => 'Plan du site','en' => 'Sitemap']) ?></button>
             </nav>
         </header>
         <main>
@@ -363,11 +363,11 @@ class FoldersPageAdmin
                     // Determine Mobility Type (Stage/Etudes) based on existing files in JSON
                     $pieces = json_decode($etudiant['PiecesJustificatives'] ?? '{}', true);
                     $mobilityType = '-';
-                    if (!empty($pieces['convention'])) {
-                        $mobilityType = $this->t(['fr' => 'Stage', 'en' => 'Internship']);
-                    } elseif (!empty($pieces['lettre_motivation'])) {
-                        $mobilityType = $this->t(['fr' => 'Études', 'en' => 'Studies']);
-                    }
+                if (!empty($pieces['convention'])) {
+                    $mobilityType = $this->t(['fr' => 'Stage', 'en' => 'Internship']);
+                } elseif (!empty($pieces['lettre_motivation'])) {
+                    $mobilityType = $this->t(['fr' => 'Études', 'en' => 'Studies']);
+                }
                 ?>
                 <tr onclick="ouvrirFicheEtudiant('<?= htmlspecialchars($etudiant['NumEtu'] ?? '') ?>')" style="cursor: pointer;">
                     <td><?= htmlspecialchars($etudiant['Nom']) ?></td>
@@ -509,7 +509,7 @@ class FoldersPageAdmin
         }
 
         $student = $this->studentData;
-        
+
         // --- AUTO-DETECT MOBILITY TYPE ---
         // Determine if it is 'stage' or 'studies' based on existing files.
         $detectedType = '';

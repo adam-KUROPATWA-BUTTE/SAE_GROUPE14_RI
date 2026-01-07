@@ -80,8 +80,8 @@ class FoldersControllerStudent implements ControllerInterface
     {
         // Check if folder already exists (Constraint: Single application)
         if (FolderStudent::getStudentDetails($numetu)) {
-            $_SESSION['message'] = ($lang === 'fr') 
-                ? "Vous avez déjà déposé un dossier." 
+            $_SESSION['message'] = ($lang === 'fr')
+                ? "Vous avez déjà déposé un dossier."
                 : "You have already submitted an application.";
             header('Location: index.php?page=folders-student&lang=' . $lang);
             exit;
@@ -185,7 +185,8 @@ class FoldersControllerStudent implements ControllerInterface
     /**
      * Helper to retrieve file content if uploaded correctly
      */
-    private function getFileData(string $inputName): ?string {
+    private function getFileData(string $inputName): ?string
+    {
         if (isset($_FILES[$inputName]) && $_FILES[$inputName]['error'] === UPLOAD_ERR_OK) {
             return file_get_contents($_FILES[$inputName]['tmp_name']);
         }

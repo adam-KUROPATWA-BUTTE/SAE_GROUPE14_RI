@@ -1,6 +1,6 @@
 <?php
-namespace View\Partners;
 
+namespace View\Partners;
 
 class PartnersPageAdmin
 {
@@ -28,7 +28,6 @@ class PartnersPageAdmin
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
-
         }
         if (isset($_GET['tritanopia'])) {
             $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';
@@ -60,11 +59,11 @@ class PartnersPageAdmin
                 </div>
             </div>
             <nav class="menu">
-                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
-                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/partners-admin') ?>'"><?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'"><?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-admin') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Sitemap']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Accueil','en' => 'Home']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'"><?= $this->t(['fr' => 'Tableau de bord','en' => 'Dashboard']) ?></button>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/partners-admin') ?>'"><?= $this->t(['fr' => 'Partenaires','en' => 'Partners']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'"><?= $this->t(['fr' => 'Dossiers','en' => 'Folders']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-admin') ?>'"><?= $this->t(['fr' => 'Plan du site','en' => 'Sitemap']) ?></button>
             </nav>
 
         </header>
@@ -109,13 +108,13 @@ class PartnersPageAdmin
         <!-- Contenu du popup d'aide -->
         <div id="help-popup">
             <div class="help-popup-header">
-                <span><?= $this->t(['fr'=>'Aide', 'en'=>'Help']) ?></span>
+                <span><?= $this->t(['fr' => 'Aide', 'en' => 'Help']) ?></span>
                 <button onclick="toggleHelpPopup()">✖</button>
             </div>
             <div class="help-popup-body">
-                <p><?= $this->t(['fr'=>'Bienvenue ! Comment pouvons-nous vous aider ?', 'en'=>'Welcome! How can we help you?']) ?></p>
+                <p><?= $this->t(['fr' => 'Bienvenue ! Comment pouvons-nous vous aider ?', 'en' => 'Welcome! How can we help you?']) ?></p>
                 <ul>
-                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr'=>'Page d’aide complète', 'en'=>'Full help page']) ?></a></li>
+                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr' => 'Page d’aide complète', 'en' => 'Full help page']) ?></a></li>
                 </ul>
             </div>
         </div>
