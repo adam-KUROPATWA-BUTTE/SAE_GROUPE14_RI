@@ -106,9 +106,9 @@ class AuthController implements ControllerInterface
 
         if ($result['success']) {
             if ($result['role'] === 'admin') {
-                header('Location: /home');
+                header('Location: /home-admin');
             } else {
-                header('Location: /home');
+                header('Location: /home-student');
             }
             exit();
         } else {

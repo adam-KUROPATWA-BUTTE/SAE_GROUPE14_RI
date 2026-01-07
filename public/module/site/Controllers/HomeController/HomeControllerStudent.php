@@ -30,7 +30,7 @@ class HomeControllerStudent implements ControllerInterface
      */
     public static function support(string $page, string $method): bool
     {
-        return $page === 'home' && $method === 'GET';
+        return $page === 'home-student';
     }
 
     /**
