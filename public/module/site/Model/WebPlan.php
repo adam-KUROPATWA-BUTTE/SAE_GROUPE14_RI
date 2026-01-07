@@ -3,21 +3,35 @@ namespace Model;
 
 class WebPlan
 {
-    public static function getLinks(): array
+    public static function getLinksAdmin(): array
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        $links = [
+        return [
             ['url' => 'index.php?page=home', 'label' => 'Accueil'],
             ['url' => 'index.php?page=dashboard-admin', 'label' => 'Tableau de bord'],
             ['url' => 'index.php?page=partners-admin', 'label' => 'Partenaires'],
             ['url' => 'index.php?page=folders-admin', 'label' => 'Dossiers'],
-            ['url' => 'index.php?page=login', 'label' => 'Connexion'],
-
+            ['url' => 'index.php?page=web_plan-admin', 'label' => 'Plan du site'],
+            ['url' => 'index.php?page=logout', 'label' => 'Déconnexion'],
         ];
+    }
 
-        return $links;
+    public static function getLinksStudent(): array
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        return [
+            ['url' => 'index.php?page=home', 'label' => 'Accueil'],
+            ['url' => 'index.php?page=dashboard-student', 'label' => 'Tableau de bord'],
+            ['url' => 'index.php?page=partners-student', 'label' => 'Partenaires'],
+            ['url' => 'index.php?page=folders-student', 'label' => 'Dossiers'],
+            ['url' => 'index.php?page=web_plan-student', 'label' => 'Plan du site'],
+            ['url' => 'index.php?page=logout', 'label' => 'Déconnexion'],
+        ];
     }
 }

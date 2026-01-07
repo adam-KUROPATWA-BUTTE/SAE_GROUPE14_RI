@@ -60,22 +60,13 @@ class PartnersPageAdmin
                 </div>
             </div>
             <nav class="menu">
-                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'">
-                    <?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?>
-                </button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'">
-                    <?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?>
-                </button>
-                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/partners-admin') ?>'">
-                    <?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?>
-                </button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'">
-                    <?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?>
-                </button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'">
-                    <?= $this->t(['fr'=>'Plan du site','en'=>'Site Map']) ?>
-                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/partners-admin') ?>'"><?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'"><?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-admin') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Sitemap']) ?></button>
             </nav>
+
         </header>
 
         <main>

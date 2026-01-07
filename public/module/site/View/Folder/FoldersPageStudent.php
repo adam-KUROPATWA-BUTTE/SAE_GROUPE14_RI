@@ -107,9 +107,8 @@ class FoldersPageStudent
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders-student']) ?>'">
                     <?= $this->t(['fr' => 'Dossiers', 'en' => 'Folders']) ?>
                 </button>
-                <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'web_plan']) ?>'">
-                    <?= $this->t(['fr' => 'Plan du site', 'en' => 'Site Map']) ?>
-                </button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-student') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Sitemap']) ?></button>
+
             </nav>
         </header>
         <main>

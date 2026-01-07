@@ -1,7 +1,9 @@
 <?php
-namespace View;
 
-class WebPlanPage
+namespace View\WebPlan;
+
+
+class WebPLanPageStudent
 {
     private array $links;
     private string $lang;
