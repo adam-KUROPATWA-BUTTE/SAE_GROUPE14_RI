@@ -1,4 +1,5 @@
 <?php
+
 namespace Controllers\PartnersController;
 
 use Controllers\ControllerInterface;

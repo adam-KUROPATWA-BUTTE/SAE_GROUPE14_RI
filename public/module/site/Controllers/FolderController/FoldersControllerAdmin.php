@@ -43,22 +43,22 @@ class FoldersControllerAdmin
 
         if ($page === 'toggle_complete') {
             $numetu = $_GET['numetu'] ?? null;
-            
+
             if ($numetu) {
                 // Decode URL parameter to handle special characters in ID
                 $numetu = urldecode($numetu);
-                
+
                 // Call Model to switch status in Database (0 <-> 1)
                 $success = FolderAdmin::toggleCompleteStatus($numetu);
 
                 // Set Flash Message for the user
                 if ($success) {
-                    $_SESSION['message'] = ($lang === 'fr') 
-                        ? "Statut du dossier mis à jour." 
+                    $_SESSION['message'] = ($lang === 'fr')
+                        ? "Statut du dossier mis à jour."
                         : "Folder status updated.";
                 } else {
-                    $_SESSION['message'] = ($lang === 'fr') 
-                        ? "Erreur lors de la mise à jour." 
+                    $_SESSION['message'] = ($lang === 'fr')
+                        ? "Erreur lors de la mise à jour."
                         : "Error updating status.";
                 }
 
@@ -141,8 +141,12 @@ class FoldersControllerAdmin
 
         // 2. Validate required fields
         $errors = [];
-        if (empty($data['NumEtu'])) $errors[] = ($lang === 'fr') ? 'Numéro étudiant requis' : 'Student ID required';
-        if (empty($data['Nom'])) $errors[] = ($lang === 'fr') ? 'Nom requis' : 'Name required';
+        if (empty($data['NumEtu'])) {
+            $errors[] = ($lang === 'fr') ? 'Numéro étudiant requis' : 'Student ID required';
+        }
+        if (empty($data['Nom'])) {
+            $errors[] = ($lang === 'fr') ? 'Nom requis' : 'Name required';
+        }
         // Add more validations as needed...
 
         if (!empty($errors)) {
@@ -180,8 +184,8 @@ class FoldersControllerAdmin
         }
 
         // 5. Save to Database
-        $success = FolderAdmin::creerDossier($data, $photoData, $cvData, $conventionData, $lettreData);        
-        $_SESSION['message'] = $success 
+        $success = FolderAdmin::creerDossier($data, $photoData, $cvData, $conventionData, $lettreData);
+        $_SESSION['message'] = $success
             ? (($lang === 'fr') ? 'Dossier créé avec succès' : 'Folder created successfully')
             : (($lang === 'fr') ? 'Erreur lors de la création' : 'Error creating folder');
 
@@ -237,9 +241,9 @@ class FoldersControllerAdmin
         }
 
         // 3. Update Database
-        $success = FolderAdmin::updateDossier($data, $photoData, $cvData,$conventionData,$lettreData);
+        $success = FolderAdmin::updateDossier($data, $photoData, $cvData, $conventionData, $lettreData);
 
-        $_SESSION['message'] = $success 
+        $_SESSION['message'] = $success
             ? (($lang === 'fr') ? 'Dossier mis à jour' : 'Folder updated')
             : (($lang === 'fr') ? 'Erreur lors de la mise à jour' : 'Error updating folder');
 

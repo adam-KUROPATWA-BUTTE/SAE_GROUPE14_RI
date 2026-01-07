@@ -2,8 +2,6 @@
 
 namespace View\WebPlan;
 
-
-
 class WebPlanPageAdmin
 {
     private array $links;
@@ -40,7 +38,7 @@ class WebPlanPageAdmin
             <link rel="stylesheet" href="styles/index.css">
             <link rel="stylesheet" href="styles/web_plan.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
-            <title><?= $this->t(['fr'=>'Plan du site', 'en'=>'Site Map']) ?></title>
+            <title><?= $this->t(['fr' => 'Plan du site', 'en' => 'Site Map']) ?></title>
         </head>
         <body class="<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true ? 'tritanopie' : '' ?>">
         <header>
@@ -59,15 +57,15 @@ class WebPlanPageAdmin
         </header>
 
         <main>
-            <h1><?= $this->t(['fr'=>'Plan du site', 'en'=>'Site Map']) ?></h1>
+            <h1><?= $this->t(['fr' => 'Plan du site', 'en' => 'Site Map']) ?></h1>
             <ul>
-                <?php foreach ($this->links as $link): ?>
+                <?php foreach ($this->links as $link) : ?>
                     <li><a href="<?= htmlspecialchars($this->buildUrl($link['url'])) ?>"><?=
                             htmlspecialchars($this->t([
                                 'fr' => $link['label'], // labels en dur en fr dans Model, on peut compléter en dur ici si besoin
                                 'en' => $this->translateLabel($link['label'])
                             ]))
-                            ?></a></li>
+                                    ?></a></li>
                 <?php endforeach; ?>
             </ul>
 
@@ -81,13 +79,13 @@ class WebPlanPageAdmin
         <!-- Contenu du popup d'aide -->
         <div id="help-popup">
             <div class="help-popup-header">
-                <span><?= $this->t(['fr'=>'Aide', 'en'=>'Help']) ?></span>
+                <span><?= $this->t(['fr' => 'Aide', 'en' => 'Help']) ?></span>
                 <button onclick="toggleHelpPopup()">✖</button>
             </div>
             <div class="help-popup-body">
-                <p><?= $this->t(['fr'=>'Bienvenue ! Comment pouvons-nous vous aider ?', 'en'=>'Welcome! How can we help you?']) ?></p>
+                <p><?= $this->t(['fr' => 'Bienvenue ! Comment pouvons-nous vous aider ?', 'en' => 'Welcome! How can we help you?']) ?></p>
                 <ul>
-                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr'=>'Page d’aide complète', 'en'=>'Full help page']) ?></a></li>
+                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr' => 'Page d’aide complète', 'en' => 'Full help page']) ?></a></li>
                 </ul>
             </div>
         </div>

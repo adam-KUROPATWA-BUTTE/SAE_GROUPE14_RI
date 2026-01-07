@@ -35,8 +35,8 @@ class HomeControllerAdmin implements ControllerInterface
     public static function support(string $page, string $method): bool
     {
         // Check for 'home' page AND active admin session
-        return $page === 'home' 
-            && $method === 'GET' 
+        return $page === 'home'
+            && $method === 'GET'
             && isset($_SESSION['user']);
     }
 

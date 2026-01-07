@@ -62,7 +62,7 @@ class DashboardPageStudent
         // Determine current status and progress percentage
         $status = $this->dossier['status'] ?? 'depot';
         $steps = ['depot', 'instruction', 'decision'];
-        
+
         // Find the index of the current status (0, 1, or 2)
         $currentStepIndex = array_search($status, $steps);
         if ($currentStepIndex === false) {
@@ -97,11 +97,11 @@ class DashboardPageStudent
                 </div>
             </div>
             <nav class="menu">
-                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
-                <button class="active" onclick="window.location.href='<?= $this->buildUrl('index.php?page=dashboard-student') ?>'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/partners-student') ?>'"><?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/folders-student') ?>'"><?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-student') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Sitemap']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Accueil','en' => 'Home']) ?></button>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('index.php?page=dashboard-student') ?>'"><?= $this->t(['fr' => 'Tableau de bord','en' => 'Dashboard']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/partners-student') ?>'"><?= $this->t(['fr' => 'Partenaires','en' => 'Partners']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/folders-student') ?>'"><?= $this->t(['fr' => 'Dossiers','en' => 'Folders']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-student') ?>'"><?= $this->t(['fr' => 'Plan du site','en' => 'Sitemap']) ?></button>
             </nav>
 
 

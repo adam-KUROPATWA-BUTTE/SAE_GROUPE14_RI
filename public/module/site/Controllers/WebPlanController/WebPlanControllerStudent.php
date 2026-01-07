@@ -2,8 +2,6 @@
 
 namespace Controllers\WebPlanController;
 
-
-
 use Controllers\ControllerInterface;
 use View\WebPlan\WebPlanPageStudent;
 use Model\WebPlan;

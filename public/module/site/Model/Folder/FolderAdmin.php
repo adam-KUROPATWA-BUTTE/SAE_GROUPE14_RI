@@ -157,7 +157,7 @@ class FolderAdmin
             if ($lettreData !== null) {
                 $pieces['lettre_motivation'] = base64_encode($lettreData);
             }
-            
+
             $piecesJson = json_encode($pieces);
 
             return $stmt->execute([
@@ -542,7 +542,7 @@ class FolderAdmin
             if ($existing && !empty($existing['PiecesJustificatives'])) {
                 $pieces = json_decode($existing['PiecesJustificatives'], true) ?? [];
             }
-            
+
             // Update or add the new file (Base64 encoded)
             $pieces[$type] = base64_encode($data);
             $piecesJson = json_encode($pieces);
