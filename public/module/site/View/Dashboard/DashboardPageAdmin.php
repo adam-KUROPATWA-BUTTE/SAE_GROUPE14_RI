@@ -49,34 +49,48 @@ class DashboardPageAdmin
             $numEtu     = $d['NumEtu'] ?? '';
             $dept       = $d['CodeDepartement'] ?? '';
             $type       = $d['Type'] ?? '';
-            $zone       = $d['Zone'] ?? ''; 
-            $annee      = $d['Annee'] ?? '2024-2025'; 
-            $campagne   = $d['Campagne'] ?? 'Automne 2024'; 
+            $zone       = $d['Zone'] ?? '';
+            $annee      = $d['Annee'] ?? '2024-2025';
+            $campagne   = $d['Campagne'] ?? 'Automne 2024';
 
             // --- A. Filtering Logic ---
             if ($searchStudent) {
                 $fullName = strtolower("$nom $prenom $numEtu");
-                if (strpos($fullName, $searchStudent) === false) continue;
+                if (strpos($fullName, $searchStudent) === false) {
+                    continue;
+                }
             }
-            if ($filterDept && $dept !== $filterDept) continue;
-            if ($filterType && $type !== $filterType) continue;
-            if ($filterYear && $annee !== $filterYear) continue;
-            if ($filterDest && strpos(strtolower($zone), strtolower($filterDest)) === false) continue;
-            if ($filterCamp && $campagne !== $filterCamp) continue;
+            if ($filterDept && $dept !== $filterDept) {
+                continue;
+            }
+            if ($filterType && $type !== $filterType) {
+                continue;
+            }
+            if ($filterYear && $annee !== $filterYear) {
+                continue;
+            }
+            if ($filterDest && strpos(strtolower($zone), strtolower($filterDest)) === false) {
+                continue;
+            }
+            if ($filterCamp && $campagne !== $filterCamp) {
+                continue;
+            }
 
             // --- B. Color Code Logic (Correction here) ---
             $isComplete = $d['IsComplete'] ?? 0;
             $piecesJson = $d['PiecesJustificatives'] ?? '';
             $pieces = (!empty($piecesJson)) ? json_decode($piecesJson, true) : [];
-            
-            $totalRequired = 4; 
+
+            $totalRequired = 4;
             $countProvided = is_array($pieces) ? count($pieces) : 0;
-            
+
             if ($isComplete == 1) {
                 $percentage = 100;
             } else {
                 $percentage = ($totalRequired > 0) ? round(($countProvided / $totalRequired) * 100) : 0;
-                if ($percentage > 100) $percentage = 100;
+                if ($percentage > 100) {
+                    $percentage = 100;
+                }
             }
 
             $d['calc_percentage'] = $percentage;
@@ -180,7 +194,7 @@ class DashboardPageAdmin
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($outgoing as $d) : 
+                        <?php foreach ($outgoing as $d) :
                             $pct = $d['calc_percentage'];
                             if ($pct >= 100) {
                                 $badgeClass = 'bg-success'; // Green
@@ -192,7 +206,7 @@ class DashboardPageAdmin
                                 $badgeClass = 'bg-danger';  // Red
                                 $label = $pct . '%';
                             }
-                        ?>
+                            ?>
                             <tr>
                                 <td>
                                     <strong><?= htmlspecialchars($d['Nom'] . ' ' . $d['Prenom']) ?></strong><br>
@@ -230,12 +244,19 @@ class DashboardPageAdmin
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($incoming as $d) : 
+                        <?php foreach ($incoming as $d) :
                             $pct = $d['calc_percentage'];
-                            if ($pct >= 100) { $badgeClass = 'bg-success';$label = $this->t(['fr' => 'Validé', 'en' => 'Done']); }
-                            elseif ($pct > 50) { $badgeClass = 'bg-warning'; $label = $pct . '%'; }
-                            else { $badgeClass = 'bg-danger'; $label = $pct . '%'; }
-                        ?>
+                            if ($pct >= 100) {
+                                $badgeClass = 'bg-success';
+                                $label = $this->t(['fr' => 'Validé', 'en' => 'Done']);
+                            } elseif ($pct > 50) {
+                                $badgeClass = 'bg-warning';
+                                $label = $pct . '%';
+                            } else {
+                                $badgeClass = 'bg-danger';
+                                $label = $pct . '%';
+                            }
+                            ?>
                             <tr>
                                 <td>
                                     <strong><?= htmlspecialchars($d['Nom'] . ' ' . $d['Prenom']) ?></strong><br>
