@@ -80,6 +80,7 @@ class DashboardPageStudent
             <title><?= $this->t(['fr' => 'Tableau de bord (Étudiant)', 'en' => 'Student Dashboard']) ?></title>
             <link rel="stylesheet" href="styles/index.css">
             <link rel="stylesheet" href="styles/dashboard.css">
+            <link rel="stylesheet" href="styles/chatbot.css"`>
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
         <body class="<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true ? 'tritanopie' : '' ?>">
@@ -145,16 +146,27 @@ class DashboardPageStudent
                 <img class="insta" src="img/instagram.png" alt="Instagram">
             </a>
             
-            <script>
-                /**
-                 * Helper to switch language by reloading the page with new query param.
-                 */
-                function changeLang(lang) {
-                    const url = new URL(window.location.href);
-                    url.searchParams.set('lang', lang);
-                    window.location.href = url.toString();
-                }
-            </script>
+            <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
+        <div id="help-popup" class="chat-popup">
+            <div class="help-popup-header">
+                <span>Assistant</span>
+                <button onclick="toggleHelpPopup()">✖</button>
+            </div>
+            <div id="chat-messages" class="chat-messages"></div>
+            <div id="quick-actions" class="quick-actions"></div>
+            <div class="chat-input-area">
+                <input type="text" id="user-input" placeholder="..." onkeypress="handleKeyPress(event)">
+                <button onclick="sendMessage()">➤</button>
+            </div>
+        </div>
+
+        <script>
+            const CHAT_CONFIG = {
+                lang: '<?= $this->lang ?>',
+                role: '<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>'
+            };
+        </script>
+        <script src="js/chatbot.js"></script>
         </body>
         </html>
         <?php

@@ -115,41 +115,25 @@ class FoldersPageAdmin
             <?php endif; ?>
         </main>
         
-        <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
-        <div id="help-popup">
+        <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
+            <div id="help-popup" class="chat-popup">
             <div class="help-popup-header">
-                <span><?= $this->t(['fr' => 'Aide', 'en' => 'Help']) ?></span>
+                <span>Assistant</span>
                 <button onclick="toggleHelpPopup()">✖</button>
             </div>
-            <div class="help-popup-body">
-                <p><?= $this->t(['fr' => 'Bienvenue ! Comment pouvons-nous vous aider ?', 'en' => 'Welcome! How can we help you?']) ?></p>
-                <ul>
-                    <li><a href="/help" target="_blank"><?= $this->t(['fr' => 'Page d’aide complète', 'en' => 'Full help page']) ?></a></li>
-                </ul>
+            <div id="chat-messages" class="chat-messages"></div>
+            <div id="quick-actions" class="quick-actions"></div>
             </div>
         </div>
 
         <script>
-            /**
-             * Toggle the help popup visibility.
-             */
-            function toggleHelpPopup() {
-                const popup = document.getElementById('help-popup');
-                popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
-            }
-
-            /**
-             * Change the interface language.
-             */
-            function changeLang(lang) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('lang', lang);
-                window.location.href = url.toString();
-            }
-
-            /**
-             * Redirect to student details view.
-             */
+            const CHAT_CONFIG = {
+                lang: '<?= $this->lang ?>',
+                role: '<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>'
+            };
+        </script>
+        <script src="js/chatbot.js"></script>
+        <script>
             function ouvrirFicheEtudiant(numetu) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('action', 'view');

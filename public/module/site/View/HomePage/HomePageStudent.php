@@ -39,6 +39,7 @@ class HomePageStudent
             <title><?= $this->t(['fr' => 'Espace Étudiant - AMU', 'en' => 'Student Area - AMU']) ?></title>
             <link rel="stylesheet" href="styles/index.css">
             <link rel="stylesheet" href="styles/homepage.css">
+            <link rel="stylesheet" href="styles/chatbot.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
 
@@ -95,12 +96,24 @@ class HomePageStudent
             </a>
         </footer>
 
-        <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
-        <div id="help-popup">
-             </div>
+      <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
+            <div id="help-popup" class="chat-popup">
+            <div class="help-popup-header">
+                <span>Assistant</span>
+                <button onclick="toggleHelpPopup()">✖</button>
+            </div>
+            <div id="chat-messages" class="chat-messages"></div>
+            <div id="quick-actions" class="quick-actions"></div>
+            </div>
+        </div>
 
         <script>
-            // ... (Mêmes scripts JS qu'avant : toggleHelpPopup, changeLang, theme-toggle) ...
+            const CHAT_CONFIG = {
+                lang: '<?= $this->lang ?>',
+                role: '<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>'
+            };
+        </script>
+        <script src="js/chatbot.js">
             function changeLang(lang) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('lang', lang);
