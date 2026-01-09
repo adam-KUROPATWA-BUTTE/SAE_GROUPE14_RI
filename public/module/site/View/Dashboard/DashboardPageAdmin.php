@@ -6,7 +6,8 @@ namespace View\Dashboard;
  * Class DashboardPageAdmin
  *
  * Renders the HTML for the Administrator's Global Dashboard.
- * Includes advanced filtering logic, status calculation, and responsive tables.
+ * Includes advanced filtering logic, status calculation, responsive tables,
+ * Chatbot integration, and Reminder buttons.
  */
 class DashboardPageAdmin
 {
@@ -53,30 +54,18 @@ class DashboardPageAdmin
             $annee      = $d['Annee'] ?? '2024-2025';
             $campagne   = $d['Campagne'] ?? 'Automne 2024';
 
-            // --- A. Filtering Logic ---
+            // --- Filter Logic ---
             if ($searchStudent) {
                 $fullName = strtolower("$nom $prenom $numEtu");
-                if (strpos($fullName, $searchStudent) === false) {
-                    continue;
-                }
+                if (strpos($fullName, $searchStudent) === false) continue;
             }
-            if ($filterDept && $dept !== $filterDept) {
-                continue;
-            }
-            if ($filterType && $type !== $filterType) {
-                continue;
-            }
-            if ($filterYear && $annee !== $filterYear) {
-                continue;
-            }
-            if ($filterDest && strpos(strtolower($zone), strtolower($filterDest)) === false) {
-                continue;
-            }
-            if ($filterCamp && $campagne !== $filterCamp) {
-                continue;
-            }
+            if ($filterDept && $dept !== $filterDept) continue;
+            if ($filterType && $type !== $filterType) continue;
+            if ($filterYear && $annee !== $filterYear) continue;
+            if ($filterDest && strpos(strtolower($zone), strtolower($filterDest)) === false) continue;
+            if ($filterCamp && $campagne !== $filterCamp) continue;
 
-            // --- B. Color Code Logic (Correction here) ---
+            // --- Status Logic ---
             $isComplete = $d['IsComplete'] ?? 0;
             $piecesJson = $d['PiecesJustificatives'] ?? '';
             $pieces = (!empty($piecesJson)) ? json_decode($piecesJson, true) : [];
@@ -88,16 +77,14 @@ class DashboardPageAdmin
                 $percentage = 100;
             } else {
                 $percentage = ($totalRequired > 0) ? round(($countProvided / $totalRequired) * 100) : 0;
-                if ($percentage > 100) {
-                    $percentage = 100;
-                }
+                if ($percentage > 100) $percentage = 100;
             }
 
             $d['calc_percentage'] = $percentage;
             $d['calc_annee']      = $annee;
             $d['calc_camp']       = $campagne;
 
-            // --- C. Sort Incoming/Outgoing ---
+            // --- Sort Arrays ---
             if (stripos($type, 'incoming') !== false || stripos($type, 'entrant') !== false) {
                 $incoming[] = $d;
             } else {
@@ -111,10 +98,32 @@ class DashboardPageAdmin
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title><?= $this->t(['fr' => 'Tableau de bord Admin', 'en' => 'Admin Dashboard']) ?></title>
-            <link rel="stylesheet" href="styles/index.css">
+            
             <link rel="stylesheet" href="styles/folders.css">
             <link rel="stylesheet" href="styles/dashboard.css">
+            <link rel="stylesheet" href="styles/chatbot.css">
+            <link rel="stylesheet" href="styles/index.css">
+
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
+            <style>
+                .clickable-row { cursor: pointer; transition: background 0.2s; }
+                .clickable-row:hover { background-color: #e9ecef; }
+                
+                /* Reminder Button Style */
+                .btn-relance {
+                    text-decoration: none; font-size: 1.2em; margin-left: 10px; cursor: pointer;
+                    display: inline-block; transition: transform 0.2s; border: none; background: none;
+                }
+                .btn-relance:hover { transform: scale(1.3); }
+
+                /* New Button Style */
+                .btn-create {
+                    background-color: #28a745; color: white; padding: 10px 20px; 
+                    border: none; border-radius: 5px; cursor: pointer; text-decoration: none;
+                    font-size: 0.95em; display: inline-block; float: right; margin-top: -50px;
+                }
+                .btn-create:hover { background-color: #218838; }
+            </style>
         </head>
         <body class="<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true ? 'tritanopie' : '' ?>">
         <header>
@@ -132,63 +141,64 @@ class DashboardPageAdmin
             </div>
             <nav class="menu">
                 <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Accueil','en' => 'Home']) ?></button>
-                <button class="active" onclick="window.location.href='<?= $this->buildUrl('index.php?page=dashboard-admin') ?>'"><?= $this->t(['fr' => 'Tableau de bord','en' => 'Dashboard']) ?></button>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'"><?= $this->t(['fr' => 'Tableau de bord','en' => 'Dashboard']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/partners-admin') ?>'"><?= $this->t(['fr' => 'Partenaires','en' => 'Partners']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'"><?= $this->t(['fr' => 'Dossiers','en' => 'Folders']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-admin') ?>'"><?= $this->t(['fr' => 'Plan du site','en' => 'Sitemap']) ?></button>
+
             </nav>
         </header>
 
         <main>
             <h1><?= $this->t(['fr' => 'Suivi Global des Mobilités', 'en' => 'Global Mobility Tracking']) ?></h1>
 
-            <form class="filters-container" method="GET" action="index.php">
+            <?php if (isset($_SESSION['message'])): ?>
+                <div class="message" style="background: #e7f3fe; border-left: 6px solid #2196F3; margin-bottom: 15px; padding: 10px; clear: both;">
+                    <?= htmlspecialchars($_SESSION['message']) ?>
+                    <?php unset($_SESSION['message']); ?>
+                </div>
+            <?php endif; ?>
+
+            <form class="filters-container" method="GET" action="index.php" style="clear:both;">
                 <input type="hidden" name="page" value="dashboard-admin">
                 <input type="hidden" name="lang" value="<?= $this->lang ?>">
-
-                <input type="text" name="student" placeholder="<?= $this->t(['fr' => 'Rechercher étudiant...', 'en' => 'Search student...']) ?>" value="<?= htmlspecialchars($searchStudent) ?>">
+                <input type="text" name="student" placeholder="<?= $this->t(['fr' => 'Rechercher...', 'en' => 'Search...']) ?>" value="<?= htmlspecialchars($searchStudent) ?>">
                 
                 <select name="dept">
-                    <option value=""><?= $this->t(['fr' => 'Tous Départements', 'en' => 'All Departments']) ?></option>
-                    <option value="Informatique" <?= $filterDept == 'Informatique' ? 'selected' : '' ?>>Informatique</option>
+                    <option value=""><?= $this->t(['fr' => 'Départements', 'en' => 'Departments']) ?></option>
+                    <option value="Informatique" <?= $filterDept == 'Informatique' ? 'selected' : '' ?>>Info</option>
                     <option value="GEA" <?= $filterDept == 'GEA' ? 'selected' : '' ?>>GEA</option>
-                    <option value="Biologie" <?= $filterDept == 'Biologie' ? 'selected' : '' ?>>Biologie</option>
+                    <option value="Biologie" <?= $filterDept == 'Biologie' ? 'selected' : '' ?>>Bio</option>
                 </select>
-
                 <select name="year">
-                    <option value=""><?= $this->t(['fr' => 'Toutes Années', 'en' => 'All Years']) ?></option>
-                    <option value="2024-2025" <?= $filterYear == '2024-2025' ? 'selected' : '' ?>>2024-2025</option>
-                    <option value="2025-2026" <?= $filterYear == '2025-2026' ? 'selected' : '' ?>>2025-2026</option>
+                    <option value=""><?= $this->t(['fr' => 'Année', 'en' => 'Year']) ?></option>
+                    <option value="2024-2025" <?= $filterYear == '2024-2025' ? 'selected' : '' ?>>24-25</option>
                 </select>
-
                 <select name="type">
-                    <option value=""><?= $this->t(['fr' => 'Tous Types', 'en' => 'All Types']) ?></option>
+                    <option value=""><?= $this->t(['fr' => 'Type', 'en' => 'Type']) ?></option>
                     <option value="Erasmus" <?= $filterType == 'Erasmus' ? 'selected' : '' ?>>Erasmus</option>
                     <option value="Stage" <?= $filterType == 'Stage' ? 'selected' : '' ?>>Stage</option>
                 </select>
-
                 <select name="camp">
-                    <option value=""><?= $this->t(['fr' => 'Toutes Campagnes', 'en' => 'All Campaigns']) ?></option>
-                    <option value="Automne 2024" <?= $filterCamp == 'Automne 2024' ? 'selected' : '' ?>>Automne 2024</option>
-                    <option value="Hiver 2025" <?= $filterCamp == 'Hiver 2025' ? 'selected' : '' ?>>Hiver 2025</option>
+                    <option value=""><?= $this->t(['fr' => 'Campagne', 'en' => 'Campaign']) ?></option>
+                    <option value="Automne 2024" <?= $filterCamp == 'Automne 2024' ? 'selected' : '' ?>>Automne 24</option>
                 </select>
-
-                <input type="text" name="dest" placeholder="<?= $this->t(['fr' => 'Destination...', 'en' => 'Destination...']) ?>" value="<?= htmlspecialchars($filterDest) ?>">
-
+                <input type="text" name="dest" placeholder="<?= $this->t(['fr' => 'Destination', 'en' => 'Destination']) ?>" value="<?= htmlspecialchars($filterDest) ?>">
                 <button type="submit" class="btn-filter"><?= $this->t(['fr' => 'Filtrer', 'en' => 'Filter']) ?></button>
             </form>
 
-            <h2><?= $this->t(['fr' => 'Mobilités Sortantes', 'en' => 'Outgoing Mobilities']) ?></h2>
+            <h2><?= $this->t(['fr' => 'Sortants', 'en' => 'Outgoing']) ?></h2>
             <div class="table-responsive">
                 <?php if (empty($outgoing)) : ?>
-                    <p style="text-align:center; color:#666;"><?= $this->t(['fr' => 'Aucun dossier sortant trouvé.', 'en' => 'No outgoing files found.']) ?></p>
+                    <p style="text-align:center; color:#666;"><?= $this->t(['fr' => 'Aucun dossier.', 'en' => 'No files.']) ?></p>
                 <?php else : ?>
                     <table>
                         <thead>
                         <tr>
                             <th><?= $this->t(['fr' => 'Étudiant', 'en' => 'Student']) ?></th>
-                            <th><?= $this->t(['fr' => 'Département', 'en' => 'Dept']) ?></th>
-                            <th><?= $this->t(['fr' => 'Destination', 'en' => 'Destination']) ?></th>
-                            <th><?= $this->t(['fr' => 'Campagne', 'en' => 'Campaign']) ?></th>
+                            <th><?= $this->t(['fr' => 'Dept', 'en' => 'Dept']) ?></th>
+                            <th><?= $this->t(['fr' => 'Dest', 'en' => 'Dest']) ?></th>
+                            <th><?= $this->t(['fr' => 'Campagne', 'en' => 'Camp']) ?></th>
                             <th><?= $this->t(['fr' => 'Année', 'en' => 'Year']) ?></th>
                             <th><?= $this->t(['fr' => 'État', 'en' => 'Status']) ?></th>
                         </tr>
@@ -196,18 +206,14 @@ class DashboardPageAdmin
                         <tbody>
                         <?php foreach ($outgoing as $d) :
                             $pct = $d['calc_percentage'];
-                            if ($pct >= 100) {
-                                $badgeClass = 'bg-success'; // Green
-                                $label = $this->t(['fr' => 'Validé', 'en' => 'Done']);
-                            } elseif ($pct > 50) {
-                                $badgeClass = 'bg-warning'; // Orange
-                                $label = $pct . '%';
-                            } else {
-                                $badgeClass = 'bg-danger';  // Red
-                                $label = $pct . '%';
-                            }
+                            if ($pct >= 100) $badgeClass = 'bg-success';
+                            elseif ($pct > 50) $badgeClass = 'bg-warning';
+                            else $badgeClass = 'bg-danger';
+                            
+                            $label = ($pct >= 100) ? 'Validé' : $pct . '%';
+                            $detailUrl = "index.php?page=folders-admin&action=view&numetu=" . urlencode($d['NumEtu'] ?? '') . "&lang=" . urlencode($this->lang);
                             ?>
-                            <tr>
+                            <tr onclick="window.location.href='<?= $detailUrl ?>'" class="clickable-row">
                                 <td>
                                     <strong><?= htmlspecialchars($d['Nom'] . ' ' . $d['Prenom']) ?></strong><br>
                                     <small><?= htmlspecialchars($d['NumEtu'] ?? '') ?></small>
@@ -217,9 +223,16 @@ class DashboardPageAdmin
                                 <td><?= htmlspecialchars($d['calc_camp'] ?? '') ?></td>
                                 <td><?= htmlspecialchars($d['calc_annee'] ?? '') ?></td>
                                 <td>
-                                    <span class="status-badge <?= $badgeClass ?>">
-                                        <?= $label ?>
-                                    </span>
+                                    <span class="status-badge <?= $badgeClass ?>"><?= $label ?></span>
+                                    
+                                    <?php if (($d['IsComplete'] ?? 0) == 0 && !empty($d['NumEtu'])) : ?>
+                                        <a href="index.php?page=send_reminder&numetu=<?= urlencode($d['NumEtu']) ?>&lang=<?= $this->lang ?>" 
+                                           class="btn-relance" 
+                                           title="Relancer"
+                                           onclick="event.stopPropagation(); return confirm('<?= $this->t(['fr' => 'Relancer ?', 'en' => 'Send reminder?']) ?>')">
+                                           📩
+                                        </a>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -228,16 +241,16 @@ class DashboardPageAdmin
                 <?php endif; ?>
             </div>
 
-            <h2><?= $this->t(['fr' => 'Mobilités Entrantes', 'en' => 'Incoming Mobilities']) ?></h2>
+            <h2><?= $this->t(['fr' => 'Entrants', 'en' => 'Incoming']) ?></h2>
             <div class="table-responsive">
                 <?php if (empty($incoming)) : ?>
-                    <p style="text-align:center; color:#666;"><?= $this->t(['fr' => 'Aucun dossier entrant trouvé.', 'en' => 'No incoming files found.']) ?></p>
+                    <p style="text-align:center; color:#666;"><?= $this->t(['fr' => 'Aucun dossier.', 'en' => 'No files.']) ?></p>
                 <?php else : ?>
                     <table>
                         <thead>
                         <tr>
                             <th><?= $this->t(['fr' => 'Étudiant', 'en' => 'Student']) ?></th>
-                            <th><?= $this->t(['fr' => 'Département', 'en' => 'Dept']) ?></th>
+                            <th><?= $this->t(['fr' => 'Dept', 'en' => 'Dept']) ?></th>
                             <th><?= $this->t(['fr' => 'Type', 'en' => 'Type']) ?></th>
                             <th><?= $this->t(['fr' => 'Année', 'en' => 'Year']) ?></th>
                             <th><?= $this->t(['fr' => 'État', 'en' => 'Status']) ?></th>
@@ -246,18 +259,14 @@ class DashboardPageAdmin
                         <tbody>
                         <?php foreach ($incoming as $d) :
                             $pct = $d['calc_percentage'];
-                            if ($pct >= 100) {
-                                $badgeClass = 'bg-success';
-                                $label = $this->t(['fr' => 'Validé', 'en' => 'Done']);
-                            } elseif ($pct > 50) {
-                                $badgeClass = 'bg-warning';
-                                $label = $pct . '%';
-                            } else {
-                                $badgeClass = 'bg-danger';
-                                $label = $pct . '%';
-                            }
+                            if ($pct >= 100) $badgeClass = 'bg-success';
+                            elseif ($pct > 50) $badgeClass = 'bg-warning';
+                            else $badgeClass = 'bg-danger';
+                            
+                            $label = ($pct >= 100) ? 'Validé' : $pct . '%';
+                            $detailUrl = "index.php?page=folders-admin&action=view&numetu=" . urlencode($d['NumEtu'] ?? '') . "&lang=" . urlencode($this->lang);
                             ?>
-                            <tr>
+                            <tr onclick="window.location.href='<?= $detailUrl ?>'" class="clickable-row">
                                 <td>
                                     <strong><?= htmlspecialchars($d['Nom'] . ' ' . $d['Prenom']) ?></strong><br>
                                     <small><?= htmlspecialchars($d['NumEtu'] ?? '') ?></small>
@@ -266,9 +275,15 @@ class DashboardPageAdmin
                                 <td><?= htmlspecialchars($d['Type'] ?? '') ?></td>
                                 <td><?= htmlspecialchars($d['calc_annee'] ?? '') ?></td>
                                 <td>
-                                    <span class="status-badge <?= $badgeClass ?>">
-                                        <?= $label ?>
-                                    </span>
+                                    <span class="status-badge <?= $badgeClass ?>"><?= $label ?></span>
+                                    
+                                    <?php if (($d['IsComplete'] ?? 0) == 0 && !empty($d['NumEtu'])) : ?>
+                                        <a href="index.php?page=send_reminder&numetu=<?= urlencode($d['NumEtu']) ?>&lang=<?= $this->lang ?>" 
+                                           class="btn-relance" 
+                                           onclick="event.stopPropagation(); return confirm('<?= $this->t(['fr' => 'Relancer ?', 'en' => 'Send reminder?']) ?>')">
+                                           📩
+                                        </a>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -278,47 +293,27 @@ class DashboardPageAdmin
             </div>
         </main>
 
-        <footer>
-            <p>&copy; 2025 - Aix-Marseille Université</p>
-        </footer>
+        <footer><p>&copy; 2025 - AMU</p></footer>
 
-        <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
-        <div id="help-popup">
+        <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
+        <div id="help-popup" class="chat-popup">
             <div class="help-popup-header">
-                <span><?= $this->t(['fr' => 'Aide', 'en' => 'Help']) ?></span>
+                <span>Assistant</span>
                 <button onclick="toggleHelpPopup()">✖</button>
             </div>
-            <div class="help-popup-body">
-                <p><?= $this->t(['fr' => 'Besoin d\'aide ?', 'en' => 'Need help?']) ?></p>
+            <div id="chat-messages" class="chat-messages"></div>
+            <div id="quick-actions" class="quick-actions"></div>
             </div>
         </div>
 
         <script>
-            function changeLang(lang) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('lang', lang);
-                window.location.href = url.toString();
-            }
-
-            function toggleHelpPopup() {
-                const popup = document.getElementById('help-popup');
-                popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
-            }
-
-            document.addEventListener("DOMContentLoaded", () => {
-                const menuToggle = document.createElement('button');
-                menuToggle.classList.add('menu-toggle');
-                menuToggle.innerHTML = '☰';
-                
-                const rightBtn = document.querySelector('.right-buttons');
-                if(rightBtn) rightBtn.appendChild(menuToggle);
-
-                const navMenu = document.querySelector('nav.menu');
-                menuToggle.addEventListener('click', () => {
-                    navMenu.classList.toggle('active');
-                });
-            });
+            const CHAT_CONFIG = {
+                lang: '<?= $this->lang ?>',
+                role: '<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>'
+            };
         </script>
+        <script src="js/dashboard.js"></script>
+        <script src="js/chatbot.js"></script>
         </body>
         </html>
         <?php

@@ -42,6 +42,7 @@ class PartnersPageStudent
             <title><?= htmlspecialchars($this->titre) ?></title>
             <link rel="stylesheet" href="styles/index.css">
             <link rel="stylesheet" href="styles/partners.css">
+            <link rel="stylesheet" href="styles/chatbot">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
         <body class="<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true ? 'tritanopie' : '' ?>">
@@ -96,22 +97,24 @@ class PartnersPageStudent
             </a>
         </footer>
 
-        <!-- Bulle d'aide en bas à droite -->
-        <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
-
-        <!-- Contenu du popup d'aide -->
-        <div id="help-popup">
+        <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
+            <div id="help-popup" class="chat-popup">
             <div class="help-popup-header">
-                <span><?= $this->t(['fr' => 'Aide', 'en' => 'Help']) ?></span>
+                <span>Assistant</span>
                 <button onclick="toggleHelpPopup()">✖</button>
             </div>
-            <div class="help-popup-body">
-                <p><?= $this->t(['fr' => 'Bienvenue ! Comment pouvons-nous vous aider ?', 'en' => 'Welcome! How can we help you?']) ?></p>
-                <ul>
-                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr' => 'Page d’aide complète', 'en' => 'Full help page']) ?></a></li>
-                </ul>
+            <div id="chat-messages" class="chat-messages"></div>
+            <div id="quick-actions" class="quick-actions"></div>
             </div>
         </div>
+
+        <script>
+            const CHAT_CONFIG = {
+                lang: '<?= $this->lang ?>',
+                role: '<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>'
+            };
+        </script>
+        <script src="js/chatbot.js"></script>
 
         <script>
             document.getElementById('current-lang').addEventListener('click', function(event) {
@@ -126,10 +129,6 @@ class PartnersPageStudent
                 rightButtons.classList.remove('show');
             });
 
-            function toggleHelpPopup() {
-                const popup = document.getElementById('help-popup');
-                popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
-            }
             function changeLang(lang) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('lang', lang);
