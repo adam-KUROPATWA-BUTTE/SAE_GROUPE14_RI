@@ -60,6 +60,10 @@ class FoldersPageStudent
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+        if (isset($_GET['tritanopia'])) {
+            $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';
+        }
+        $tritanopia = !empty($_SESSION['tritanopia']);
 
         // --- Determine View Mode: CREATE or UPDATE ---
         $isCreateMode = empty($this->dossier);
@@ -86,7 +90,7 @@ class FoldersPageStudent
             <link rel="stylesheet" href="styles/chatbot.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
-        <body>
+        <body class="<?= $tritanopia ? 'tritanopie' : '' ?>">
         <header>
             <div class="top-bar">
                 <img class="logo_amu" src="img/logo.png" alt="Logo">
@@ -274,7 +278,6 @@ class FoldersPageStudent
             </div>
             <div id="chat-messages" class="chat-messages"></div>
             <div id="quick-actions" class="quick-actions"></div>
-            </div>
         </div>
 
         <script>
@@ -283,7 +286,39 @@ class FoldersPageStudent
                 role: '<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>'
             };
         </script>
-        <script src="js/chatbot.js">
+        <script src="js/chatbot.js"></scriptsrc></script>
+        <script>
+            document.getElementById('current-lang').addEventListener('click', function(event) {
+                event.stopPropagation(); // empêcher la propagation au document
+                const rightButtons = document.querySelector('.right-buttons');
+                rightButtons.classList.toggle('show');
+            });
+
+            // Fermer le dropdown si clic ailleurs sur la page
+            document.addEventListener('click', function() {
+                const rightButtons = document.querySelector('.right-buttons');
+                rightButtons.classList.remove('show');
+            });
+
+            function changeLang(lang) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('lang', lang);
+                window.location.href = url.toString();
+            }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const menuToggle = document.createElement('button');
+                menuToggle.classList.add('menu-toggle');
+                menuToggle.innerHTML = '☰';
+                document.querySelector('.right-buttons').appendChild(menuToggle);
+
+                const navMenu = document.querySelector('nav.menu');
+                menuToggle.addEventListener('click', () => {
+                    navMenu.classList.toggle('active');
+                });
+            });
+        </script>
+        <script>
 
             function changerTypeMobilite(type) {
                 const conventionBlock = document.getElementById('justificatif_convention');

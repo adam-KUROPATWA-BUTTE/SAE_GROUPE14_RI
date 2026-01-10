@@ -30,6 +30,16 @@ class HomePageStudent
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+
+        if (isset($_GET['lang'])) {
+            $_SESSION['lang'] = $_GET['lang'];
+        }
+
+        $this->lang = $_SESSION['lang'] ?? $this->lang;
+
+        if (isset($_GET['tritanopia'])) {
+            $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';
+        }
         ?>
         <!DOCTYPE html>
         <html lang="<?= htmlspecialchars($this->lang) ?>">
@@ -80,7 +90,7 @@ class HomePageStudent
         </header>
 
         <section class="hero-section"><img class="hero_logo" src="img/amu.png" alt="Logo AMU"></section>
-        
+
         <section class="pub-section">
             <img id="pub_amu" src="img/image_etudiants.png" alt="Publicité AMU">
             <div class="pub-text"><?= $this->t([
@@ -98,14 +108,13 @@ class HomePageStudent
         </footer>
 
       <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
-            <div id="help-popup" class="chat-popup">
+        <div id="help-popup" class="chat-popup">
             <div class="help-popup-header">
                 <span>Assistant</span>
                 <button onclick="toggleHelpPopup()">✖</button>
             </div>
             <div id="chat-messages" class="chat-messages"></div>
             <div id="quick-actions" class="quick-actions"></div>
-            </div>
         </div>
 
         <script>
@@ -115,13 +124,52 @@ class HomePageStudent
             };
         </script>
         <script src="js/chatbot.js">
+            document.addEventListener("DOMContentLoaded", () => {
+                const menuToggle = document.createElement('button');
+                menuToggle.classList.add('menu-toggle');
+                menuToggle.innerHTML = '☰';
+                document.querySelector('.right-buttons').appendChild(menuToggle);
+
+                const navMenu = document.querySelector('nav.menu');
+                menuToggle.addEventListener('click', () => {
+                    navMenu.classList.toggle('active');
+                });
+            });
+        </script>
+
+        <script>
+
             function changeLang(lang) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('lang', lang);
                 window.location.href = url.toString();
             }
-            // Ajoutez ici le reste de vos scripts JS existants
+
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const themeToggle = document.getElementById('theme-toggle');
+
+
+                if (document.body.classList.contains('tritanopie')) {
+                    themeToggle.classList.add('active');
+                }
+
+                themeToggle.addEventListener('click', function() {
+                    const isTritanopie = document.body.classList.toggle('tritanopie');
+                    this.classList.toggle('active');
+
+                    fetch('save_preferences.php', {
+                        method: 'POST',
+                        headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({tritanopia: isTritanopie ? 1 : 0})
+                    });
+                });
+
+            });
+
+
         </script>
+
         </body>
         </html>
         <?php
