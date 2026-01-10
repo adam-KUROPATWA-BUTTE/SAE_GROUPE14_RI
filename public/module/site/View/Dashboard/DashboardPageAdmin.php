@@ -105,25 +105,6 @@ class DashboardPageAdmin
             <link rel="stylesheet" href="styles/index.css">
 
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
-            <style>
-                .clickable-row { cursor: pointer; transition: background 0.2s; }
-                .clickable-row:hover { background-color: #e9ecef; }
-                
-                /* Reminder Button Style */
-                .btn-relance {
-                    text-decoration: none; font-size: 1.2em; margin-left: 10px; cursor: pointer;
-                    display: inline-block; transition: transform 0.2s; border: none; background: none;
-                }
-                .btn-relance:hover { transform: scale(1.3); }
-
-                /* New Button Style */
-                .btn-create {
-                    background-color: #28a745; color: white; padding: 10px 20px; 
-                    border: none; border-radius: 5px; cursor: pointer; text-decoration: none;
-                    font-size: 0.95em; display: inline-block; float: right; margin-top: -50px;
-                }
-                .btn-create:hover { background-color: #218838; }
-            </style>
         </head>
         <body class="<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true ? 'tritanopie' : '' ?>">
         <header>
@@ -150,7 +131,7 @@ class DashboardPageAdmin
         </header>
 
         <main>
-            <h1><?= $this->t(['fr' => 'Suivi Global des Mobilités', 'en' => 'Global Mobility Tracking']) ?></h1>
+            <h1 class="suivi-global"><?= $this->t(['fr' => 'Suivi Global des Mobilités', 'en' => 'Global Mobility Tracking']) ?></h1>
 
             <?php if (isset($_SESSION['message'])): ?>
                 <div class="message" style="background: #e7f3fe; border-left: 6px solid #2196F3; margin-bottom: 15px; padding: 10px; clear: both;">
@@ -230,7 +211,6 @@ class DashboardPageAdmin
                                            class="btn-relance" 
                                            title="Relancer"
                                            onclick="event.stopPropagation(); return confirm('<?= $this->t(['fr' => 'Relancer ?', 'en' => 'Send reminder?']) ?>')">
-                                           📩
                                         </a>
                                     <?php endif; ?>
                                 </td>
@@ -281,7 +261,7 @@ class DashboardPageAdmin
                                         <a href="index.php?page=send_reminder&numetu=<?= urlencode($d['NumEtu']) ?>&lang=<?= $this->lang ?>" 
                                            class="btn-relance" 
                                            onclick="event.stopPropagation(); return confirm('<?= $this->t(['fr' => 'Relancer ?', 'en' => 'Send reminder?']) ?>')">
-                                           📩
+
                                         </a>
                                     <?php endif; ?>
                                 </td>

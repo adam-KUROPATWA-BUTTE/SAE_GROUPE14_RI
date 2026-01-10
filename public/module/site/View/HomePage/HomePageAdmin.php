@@ -36,9 +36,16 @@ class HomePageAdmin
             session_start();
         }
 
+        if (isset($_GET['lang'])) {
+            $_SESSION['lang'] = $_GET['lang'];
+        }
+
+        $this->lang = $_SESSION['lang'] ?? $this->lang;
+
         if (isset($_GET['tritanopia'])) {
             $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';
         }
+
 
         ?>
         <!DOCTYPE html>
@@ -190,7 +197,9 @@ class HomePageAdmin
                     navMenu.classList.toggle('active');
                 });
             });
-            
+        </script>
+
+        <script>
 
             function changeLang(lang) {
                 const url = new URL(window.location.href);
@@ -202,8 +211,7 @@ class HomePageAdmin
             document.addEventListener("DOMContentLoaded", () => {
                 const themeToggle = document.getElementById('theme-toggle');
 
-                // Vérifier si le body a la classe tritanopie au chargement
-                // et ajouter la classe active au bouton si c'est le cas
+
                 if (document.body.classList.contains('tritanopie')) {
                     themeToggle.classList.add('active');
                 }
@@ -214,7 +222,6 @@ class HomePageAdmin
 
                     const isTritanopie = document.body.classList.contains('tritanopie');
 
-                    // Sauvegarde dans la session PHP en rechargeant la page avec un paramètre
                     const url = new URL(window.location.href);
                     url.searchParams.set('tritanopia', isTritanopie ? '1' : '0');
                     window.location.href = url.toString();

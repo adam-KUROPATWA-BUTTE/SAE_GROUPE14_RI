@@ -114,7 +114,7 @@ class FoldersPageAdmin
                 <?php $this->renderStudentsList(); ?>
             <?php endif; ?>
         </main>
-        
+
         <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
             <div id="help-popup" class="chat-popup">
             <div class="help-popup-header">
@@ -168,7 +168,7 @@ class FoldersPageAdmin
 
                 // Show appropriate block
                 if (type === 'stage') {
-                    if(conventionBlock) conventionBlock.style.display = 'block'; 
+                    if(conventionBlock) conventionBlock.style.display = 'block';
                 } else if (type === 'etudes') {
                     if(lettreBlock) lettreBlock.style.display = 'block';
                 }
@@ -186,7 +186,7 @@ class FoldersPageAdmin
                         field.style.color = 'black';
                     }
                 });
-                
+
                 // Toggle action buttons
                 document.getElementById('btn-modifier').style.display = 'none';
                 document.getElementById('btn-enregistrer').style.display = 'inline-block';
@@ -198,7 +198,7 @@ class FoldersPageAdmin
                 // Initialize mobility type display
                 const sel = document.getElementById('mobilite_type');
                 if (sel) changerTypeMobilite(sel.value);
-                
+
                 // Initialize filter listeners
                 document.querySelectorAll('.filters input[type="checkbox"]').forEach(checkbox => {
                     checkbox.addEventListener('change', function() {
@@ -212,12 +212,12 @@ class FoldersPageAdmin
              */
             function appliquerFiltres() {
                 const url = new URL(window.location.href);
-                
+
                 // Handle Checkbox Filters (Type)
                 const typesChecked = Array.from(document.querySelectorAll('input[name="entrant_sortant"]:checked')).map(cb => cb.value);
                 if (typesChecked.length === 1) url.searchParams.set('type', typesChecked[0]);
-                else url.searchParams.delete('type'); 
-                
+                else url.searchParams.delete('type');
+
                 // Handle Checkbox Filters (Zone)
                 const zonesChecked = Array.from(document.querySelectorAll('input[name="zone"]:checked')).map(cb => cb.value);
                 if (zonesChecked.length === 1) url.searchParams.set('zone', zonesChecked[0]);
@@ -244,7 +244,7 @@ class FoldersPageAdmin
                 url.searchParams.set('p', 1);
 
                 window.location.href = url.toString();
-            }        
+            }
         </script>
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
@@ -271,7 +271,7 @@ class FoldersPageAdmin
         $paginated = array_slice($filtered, $offset, $this->perPage);
         ?>
         <h1><?= $this->t(['fr' => 'Liste des étudiants','en' => 'Students List']) ?></h1>
-        
+
         <?php if (!empty($this->message)) : ?>
             <div class="message"><?= htmlspecialchars($this->message) ?></div>
         <?php endif; ?>
@@ -290,14 +290,14 @@ class FoldersPageAdmin
 
         <div class="filters-container" style="background: #f4f4f4; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
             <p style="margin-top: 0; font-weight: bold;"><?= $this->t(['fr' => 'Filtres','en' => 'Filters']) ?></p>
-            
+
             <div class="filters" style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
-                
+
                 <div class="filter-group">
                     <label><input type="checkbox" name="entrant_sortant" value="entrant" <?= ($this->filters['type'] ?? '') === 'entrant' ? 'checked' : '' ?>><?= $this->t(['fr' => 'Entrant','en' => 'Incoming']) ?></label>
                     <label><input type="checkbox" name="entrant_sortant" value="sortant" <?= ($this->filters['type'] ?? '') === 'sortant' ? 'checked' : '' ?>><?= $this->t(['fr' => 'Sortant','en' => 'Outgoing']) ?></label>
                 </div>
-                
+
                 <div class="filter-group">
                     <label><input type="checkbox" name="zone" value="europe" <?= ($this->filters['zone'] ?? '') === 'europe' ? 'checked' : '' ?>><?= $this->t(['fr' => 'Europe','en' => 'Europe']) ?></label>
                     <label><input type="checkbox" name="zone" value="hors_europe" <?= ($this->filters['zone'] ?? '') === 'hors_europe' ? 'checked' : '' ?>><?= $this->t(['fr' => 'Hors-Europe','en' => 'Non-Europe']) ?></label>
@@ -308,7 +308,7 @@ class FoldersPageAdmin
                     <select id="filter-complet" onchange="appliquerFiltres()" style="padding: 5px;">
                         <option value="all" <?= ($this->filters['complet'] ?? 'all') === 'all' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Tous','en' => 'All']) ?></option>
                         <option value="1" <?= ($this->filters['complet'] ?? '') === '1' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Complet ✅','en' => 'Complete ✅']) ?></option>
-                        <option value="0" <?= ($this->filters['complet'] ?? '') === '0' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Incomplet ⚠️','en' => 'Incomplete ⚠️']) ?></option>
+                        <option value="0" <?= ($this->filters['complet'] ?? '') === '0' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Incomplet ','en' => 'Incomplete ']) ?></option>
                     </select>
                 </div>
 
@@ -328,17 +328,17 @@ class FoldersPageAdmin
         </div>
 
         <p class="results-count"><?= $total ?> <?= $this->t(['fr' => 'étudiant(s) trouvé(s)','en' => 'student(s) found']) ?></p>
-        
+
         <table id="table-etudiants">
             <thead>
                 <tr>
                     <th><?= $this->t(['fr' => 'Nom','en' => 'Last Name']) ?></th>
                     <th><?= $this->t(['fr' => 'Prénom','en' => 'First Name']) ?></th>
-                    <th><?= $this->t(['fr' => 'Né(e) le','en' => 'Birth Date']) ?></th> 
+                    <th><?= $this->t(['fr' => 'Né(e) le','en' => 'Birth Date']) ?></th>
                     <th><?= $this->t(['fr' => 'Type','en' => 'Type']) ?></th>
                     <th><?= $this->t(['fr' => 'Zone','en' => 'Zone']) ?></th>
                     <th><?= $this->t(['fr' => 'Mobilité', 'en' => 'Mobility']) ?></th>
-                    <th><?= $this->t(['fr' => 'Statut','en' => 'Status']) ?></th> 
+                    <th><?= $this->t(['fr' => 'Statut','en' => 'Status']) ?></th>
                 </tr>
             </thead>
             <tbody>
@@ -362,8 +362,8 @@ class FoldersPageAdmin
                     <td><?= htmlspecialchars($mobilityType) ?></td>
                     <td>
                         <?= ($etudiant['IsComplete'] ?? 0) == 1
-                            ? '<span style="color:green">✔ Complet</span>'
-                            : '<span style="color:orange">⚠️ Incomplet</span>' ?>
+                            ? '<span style="color:#00701a"> Complet</span>'
+                            : '<span style="color:#f1ae00"> Incomplet</span>' ?>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -448,10 +448,10 @@ class FoldersPageAdmin
                     <option value="europe"><?= $this->t(['fr' => 'Europe','en' => 'Europe']) ?></option>
                     <option value="hors_europe"><?= $this->t(['fr' => 'Hors Europe','en' => 'Non-Europe']) ?></option>
                 </select>
-                
+
                 <label for="photo"><?= $this->t(['fr' => 'Photo','en' => 'Photo']) ?></label>
                 <input type="file" name="photo" id="photo" accept="image/*">
-                
+
                 <label for="cv"><?= $this->t(['fr' => 'CV','en' => 'CV']) ?></label>
                 <input type="file" name="cv" id="cv" accept=".pdf,.doc,.docx">
 
@@ -462,7 +462,7 @@ class FoldersPageAdmin
                     <option value="etudes"><?= $this->t(['fr' => 'Études','en' => 'Studies']) ?></option>
                 </select>
             </div>
-            
+
             <div class="fichier-obligatoire" id="justificatif_convention" style="display: none;">
                 <label><?= $this->t(['fr' => 'Convention de stage','en' => 'Internship Agreement']) ?></label>
                 <input type="file" name="convention" accept=".pdf,.doc,.docx">
@@ -509,7 +509,7 @@ class FoldersPageAdmin
                 ← <?= $this->t(['fr' => 'Retour à la liste','en' => 'Back to List']) ?>
             </button>
         </div>
-        
+
         <form method="post" action="index.php?page=update_student&lang=<?= htmlspecialchars($this->lang) ?>" enctype="multipart/form-data" class="creation-form">
             <div class="form-section">
                 <label for="numetu"><?= $this->t(['fr' => 'NumÉtu *','en' => 'Student ID *']) ?></label>
@@ -577,18 +577,18 @@ class FoldersPageAdmin
 
             <div class="form-section" style="margin-top: 30px;">
                 <h2><?= $this->t(['fr' => 'Pièces Justificatives','en' => 'Supporting Documents']) ?></h2>
-                
+
                 <div style="margin-bottom: 20px;">
                     <label><?= $this->t(['fr' => 'Photo','en' => 'Photo']) ?></label>
                     <?php if (!empty($student['pieces']['photo'])) : ?>
                         <div style="margin-top: 10px;">
-                            <img src="data:image/jpeg;base64,<?= $student['pieces']['photo'] ?>" 
-                                alt="Photo" 
+                            <img src="data:image/jpeg;base64,<?= $student['pieces']['photo'] ?>"
+                                alt="Photo"
                                 style="max-width: 200px; max-height: 200px; border: 1px solid #ccc; border-radius: 5px;">
                             <br>
-                            <a href="data:image/jpeg;base64,<?= $student['pieces']['photo'] ?>" 
-                            download="photo_<?= htmlspecialchars($student['NumEtu']) ?>.jpg" 
-                            class="btn-secondary" 
+                            <a href="data:image/jpeg;base64,<?= $student['pieces']['photo'] ?>"
+                            download="photo_<?= htmlspecialchars($student['NumEtu']) ?>.jpg"
+                            class="btn-secondary"
                             style="margin-top: 10px; display: inline-block;">
                                 <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
                             </a>
@@ -604,8 +604,8 @@ class FoldersPageAdmin
                     <?php if (!empty($student['pieces']['cv'])) : ?>
                         <div style="margin-top: 10px;">
                             <p>✅ <?= $this->t(['fr' => 'CV disponible','en' => 'CV available']) ?></p>
-                            <a href="data:application/pdf;base64,<?= $student['pieces']['cv'] ?>" 
-                            download="cv_<?= htmlspecialchars($student['NumEtu']) ?>.pdf" 
+                            <a href="data:application/pdf;base64,<?= $student['pieces']['cv'] ?>"
+                            download="cv_<?= htmlspecialchars($student['NumEtu']) ?>.pdf"
                             class="btn-secondary">
                                 <?= $this->t(['fr' => '📥 Télécharger le CV','en' => '📥 Download CV']) ?>
                             </a>
@@ -618,12 +618,12 @@ class FoldersPageAdmin
 
                 <div id="justificatif_convention" style="margin-bottom: 20px; display: none;">
                     <label><?= $this->t(['fr' => 'Convention de stage','en' => 'Internship Agreement']) ?></label>
-                    
+
                     <?php if (!empty($student['pieces']['convention'])) : ?>
                         <div style="margin-top: 10px;">
                             <p>✅ <?= $this->t(['fr' => 'Convention disponible','en' => 'Agreement available']) ?></p>
-                            <a href="data:application/pdf;base64,<?= $student['pieces']['convention'] ?>" 
-                            download="convention_<?= htmlspecialchars($student['NumEtu']) ?>.pdf" 
+                            <a href="data:application/pdf;base64,<?= $student['pieces']['convention'] ?>"
+                            download="convention_<?= htmlspecialchars($student['NumEtu']) ?>.pdf"
                             class="btn-secondary">
                                 <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
                             </a>
@@ -637,12 +637,12 @@ class FoldersPageAdmin
 
                 <div id="lettre_motivation" style="margin-bottom: 20px; display: none;">
                     <label><?= $this->t(['fr' => 'Lettre de motivation','en' => 'Motivation Letter']) ?></label>
-                    
+
                     <?php if (!empty($student['pieces']['lettre_motivation'])) : ?>
                         <div style="margin-top: 10px;">
                             <p>✅ <?= $this->t(['fr' => 'Lettre disponible','en' => 'Letter available']) ?></p>
-                            <a href="data:application/pdf;base64,<?= $student['pieces']['lettre_motivation'] ?>" 
-                            download="lettre_<?= htmlspecialchars($student['NumEtu']) ?>.pdf" 
+                            <a href="data:application/pdf;base64,<?= $student['pieces']['lettre_motivation'] ?>"
+                            download="lettre_<?= htmlspecialchars($student['NumEtu']) ?>.pdf"
                             class="btn-secondary">
                                 <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
                             </a>
@@ -652,7 +652,7 @@ class FoldersPageAdmin
                     <?php endif; ?>
 
                     <input type="file" name="lettre_motivation" id="lettre_motivation_file" accept=".pdf,.doc,.docx" disabled style="background-color: #e0e0e0; color: #666; margin-top: 10px;">
-                </div>  
+                </div>
 
                 <div style="margin-top: 20px; padding: 15px; background-color: <?= ($student['IsComplete'] ?? 0) ? '#d4edda' : '#fff3cd' ?>; border-radius: 5px;">
                     <strong><?= $this->t(['fr' => 'Statut du dossier :','en' => 'Folder status:']) ?></strong>
@@ -660,7 +660,7 @@ class FoldersPageAdmin
                         ? $this->t(['fr' => '✅ Complet','en' => '✅ Complete'])
                         : $this->t(['fr' => '⚠️ Incomplet','en' => '⚠️ Incomplete']) ?>
                     <br><br>
-                    <button type="button" 
+                    <button type="button"
                             onclick="window.location.href='index.php?page=toggle_complete&numetu=<?= urlencode($student['NumEtu'] ?? '') ?>&lang=<?= htmlspecialchars($this->lang) ?>'"
                             class="btn-secondary"
                             style="margin-top: 10px;">
