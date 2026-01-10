@@ -42,9 +42,9 @@ class FoldersPageAdmin
             string $message,
             string $lang,
             ?array $studentData = null,
-            array $paginatedData = [],      // ✅ NOUVEAU
-            int $totalCount = 0,            // ✅ NOUVEAU
-            int $totalPages = 0             // ✅ NOUVEAU
+            array $paginatedData = [],
+            int $totalCount = 0,
+            int $totalPages = 0
     ) {
         $this->action = $action;
         $this->filters = $filters;
@@ -53,9 +53,9 @@ class FoldersPageAdmin
         $this->message = $message;
         $this->lang = $lang;
         $this->studentData = $studentData;
-        $this->paginatedData = $paginatedData;      // ✅ NOUVEAU
-        $this->totalCount = $totalCount;            // ✅ NOUVEAU
-        $this->totalPages = $totalPages;            // ✅ NOUVEAU
+        $this->paginatedData = $paginatedData;
+        $this->totalCount = $totalCount;
+        $this->totalPages = $totalPages;
     }
 
     /**
@@ -197,7 +197,7 @@ class FoldersPageAdmin
 
             if (searchInput.value.trim() !== '') {
                 url.searchParams.set('search', searchInput.value.trim());
-                url.searchParams.set('p', 1); // ✅ Revenir à la page 1
+                url.searchParams.set('p', 1);
             } else {
                 url.searchParams.delete('search');
             }
@@ -245,13 +245,11 @@ class FoldersPageAdmin
             }
 
             // Initialize scripts on page load
-            // Initialize scripts on page load
             window.addEventListener('DOMContentLoaded', (event) => {
                 // Initialize mobility type display
                 const sel = document.getElementById('mobilite_type');
                 if (sel) changerTypeMobilite(sel.value);
 
-                // ✅ Comportement exclusif pour Type (entrant/sortant)
                 const typeCheckboxes = document.querySelectorAll('input[name="entrant_sortant"]');
                 typeCheckboxes.forEach(checkbox => {
                     checkbox.addEventListener('click', function(e) {
@@ -275,7 +273,7 @@ class FoldersPageAdmin
                     });
                 });
 
-                // ✅ Comportement exclusif pour Zone (europe/hors_europe)
+
                 const zoneCheckboxes = document.querySelectorAll('input[name="zone"]');
                 zoneCheckboxes.forEach(checkbox => {
                     checkbox.addEventListener('click', function(e) {
@@ -294,7 +292,6 @@ class FoldersPageAdmin
                     });
                 });
 
-                // ✅ Pour le filtre statut (select), pas besoin de comportement exclusif
                 const filterComplet = document.getElementById('filter-complet');
                 if (filterComplet) {
                     filterComplet.addEventListener('change', function() {
@@ -302,7 +299,6 @@ class FoldersPageAdmin
                     });
                 }
 
-                // ✅ Pour les filtres de date
                 const dateDebut = document.getElementById('date-debut');
                 if (dateDebut) {
                     dateDebut.addEventListener('change', function() {
@@ -389,8 +385,6 @@ class FoldersPageAdmin
      */
     private function renderStudentsList(): void
     {
-        //ici
-        // ✅ CORRECTION : Utiliser directement les données paginées du Model
         $etudiants = $this->paginatedData;
         $total = $this->totalCount;
         $totalPages = $this->totalPages;
@@ -616,7 +610,6 @@ class FoldersPageAdmin
 
         $student = $this->studentData;
 
-        // --- AUTO-DETECT MOBILITY TYPE ---
         // Determine if it is 'stage' or 'studies' based on existing files.
         $detectedType = '';
         if (!empty($student['pieces']['convention'])) {
