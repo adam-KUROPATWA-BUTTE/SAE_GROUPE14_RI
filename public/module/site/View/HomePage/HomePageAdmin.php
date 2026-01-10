@@ -1,8 +1,8 @@
 <?php
 
-namespace View;
+namespace View\HomePage;
 
-class HomePage
+class HomePageAdmin
 {
     private bool $isLoggedIn;
     private string $lang;
@@ -36,9 +36,16 @@ class HomePage
             session_start();
         }
 
+        if (isset($_GET['lang'])) {
+            $_SESSION['lang'] = $_GET['lang'];
+        }
+
+        $this->lang = $_SESSION['lang'] ?? $this->lang;
+
         if (isset($_GET['tritanopia'])) {
             $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';
         }
+
 
         ?>
         <!DOCTYPE html>
@@ -58,6 +65,7 @@ class HomePage
                 ]) ?></title>
             <link rel="stylesheet" href="styles/index.css">
             <link rel="stylesheet" href="styles/homepage.css">
+            <link rel="stylesheet" href="styles/chatbot.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
 
@@ -86,19 +94,19 @@ class HomePage
                             <?= $this->t(['fr' => 'Se connecter','en' => 'Log in']) ?>
                         </button>
                     <?php endif; ?>
+                    <button id="theme-toggle" title="Appuyez ici si vous êtes atteint de tritanopie">
+                        <span class="toggle-switch"></span>
+                    </button>
                 </div>
             </div>
 
-            <button id="theme-toggle" title="Appuyez ici si vous êtes atteint de tritanopie">
-                <span class="toggle-switch"></span>
-            </button>
 
             <nav class="menu">
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Accueil','en' => 'Home']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'"><?= $this->t(['fr' => 'Tableau de bord','en' => 'Dashboard']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/partners-admin') ?>'"><?= $this->t(['fr' => 'Partenaires','en' => 'Partners']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'"><?= $this->t(['fr' => 'Dossiers','en' => 'Folders']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-admin') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Sitemap']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-admin') ?>'"><?= $this->t(['fr' => 'Plan du site','en' => 'Sitemap']) ?></button>
             </nav>
         </header>
 
@@ -109,7 +117,7 @@ class HomePage
 
         <!-- PUBLICITÉ -->
         <section class="pub-section">
-            <img id="pub_amu" src="img/pub.jpg" alt="Publicité AMU">
+            <img id="pub_amu" src="img/image_etudiants.png" alt="Publicité AMU">
             <div class="pub-text"><?= $this->t([
                     'fr' => '« Aix-Marseille Université, une université ouverte sur le monde »',
                     'en' => '“Aix-Marseille University, a university open to the world”'
@@ -149,22 +157,7 @@ class HomePage
             </div>
         </main>
 
-        <!-- Bulle d'aide en bas à droite -->
-        <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
 
-        <!-- Contenu du popup d'aide -->
-        <div id="help-popup">
-            <div class="help-popup-header">
-                <span><?= $this->t(['fr' => 'Aide', 'en' => 'Help']) ?></span>
-                <button onclick="toggleHelpPopup()">✖</button>
-            </div>
-            <div class="help-popup-body">
-                <p><?= $this->t(['fr' => 'Bienvenue ! Comment pouvons-nous vous aider ?', 'en' => 'Welcome! How can we help you?']) ?></p>
-                <ul>
-                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr' => 'Page d’aide complète', 'en' => 'Full help page']) ?></a></li>
-                </ul>
-            </div>
-        </div>
 
         <!-- FOOTER -->
         <footer>
@@ -175,7 +168,24 @@ class HomePage
         </footer>
 
 
+        <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
+            <div id="help-popup" class="chat-popup">
+            <div class="help-popup-header">
+                <span>Assistant</span>
+                <button onclick="toggleHelpPopup()">✖</button>
+            </div>
+            <div id="chat-messages" class="chat-messages"></div>
+            <div id="quick-actions" class="quick-actions"></div>
+            </div>
+        </div>
+
         <script>
+            const CHAT_CONFIG = {
+                lang: '<?= $this->lang ?>',
+                role: '<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>'
+            };
+        </script>
+        <script src="js/chatbot.js">
             document.addEventListener("DOMContentLoaded", () => {
                 const menuToggle = document.createElement('button');
                 menuToggle.classList.add('menu-toggle');
@@ -187,10 +197,9 @@ class HomePage
                     navMenu.classList.toggle('active');
                 });
             });
-            function toggleHelpPopup() {
-                const popup = document.getElementById('help-popup');
-                popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
-            }
+        </script>
+
+        <script>
 
             function changeLang(lang) {
                 const url = new URL(window.location.href);
@@ -202,8 +211,7 @@ class HomePage
             document.addEventListener("DOMContentLoaded", () => {
                 const themeToggle = document.getElementById('theme-toggle');
 
-                // Vérifier si le body a la classe tritanopie au chargement
-                // et ajouter la classe active au bouton si c'est le cas
+
                 if (document.body.classList.contains('tritanopie')) {
                     themeToggle.classList.add('active');
                 }
@@ -214,7 +222,6 @@ class HomePage
 
                     const isTritanopie = document.body.classList.contains('tritanopie');
 
-                    // Sauvegarde dans la session PHP en rechargeant la page avec un paramètre
                     const url = new URL(window.location.href);
                     url.searchParams.set('tritanopia', isTritanopie ? '1' : '0');
                     window.location.href = url.toString();

@@ -3,15 +3,14 @@
 namespace Controllers\FolderController;
 
 use Model\Folder\FolderAdmin;
+use Model\EmailReminder; // FIXED: Correct namespace for the model
 use View\Folder\FoldersPageAdmin;
 
 /**
  * Class FoldersControllerAdmin
  *
  * Controller responsible for the administrative management of student folders.
- * It handles the listing, creation, modification, and validation status of student files.
- *
- * VERSION CORRIGÉE - Optimisations de performance
+ * It handles the listing, creation, modification, validation status, and reminders.
  */
 class FoldersControllerAdmin
 {
@@ -24,7 +23,7 @@ class FoldersControllerAdmin
      */
     public static function support(string $page, string $method): bool
     {
-        return in_array($page, ['folders', 'save_student', 'folders-admin', 'toggle_complete', 'update_student']);
+        return in_array($page, ['folders', 'save_student', 'folders-admin', 'toggle_complete', 'update_student', 'send_reminder']);
     }
 
     /**
@@ -33,7 +32,6 @@ class FoldersControllerAdmin
      */
     public function control(): void
     {
-        // Ensure session is started for flash messages
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -43,35 +41,29 @@ class FoldersControllerAdmin
         $action = $_GET['action'] ?? 'list';
         $lang = $_GET['lang'] ?? 'fr';
 
-        // Handle toggle complete status action
+        // --- 1. Handle Reminder Sending ---
+        if ($page === 'send_reminder') {
+            $this->sendReminder($lang);
+            return; // Stop execution here
+        }
+
+        // --- 2. Handle Status Toggle ---
         if ($page === 'toggle_complete') {
             $numetu = $_GET['numetu'] ?? null;
-
             if ($numetu) {
-                // Decode URL parameter to handle special characters in ID
                 $numetu = urldecode($numetu);
-
-                // Call Model to switch status in Database (0 <-> 1)
                 $success = FolderAdmin::toggleCompleteStatus($numetu);
 
-                // Set Flash Message for the user
-                if ($success) {
-                    $_SESSION['message'] = ($lang === 'fr')
-                        ? "Statut du dossier mis à jour."
-                        : "Folder status updated.";
-                } else {
-                    $_SESSION['message'] = ($lang === 'fr')
-                        ? "Erreur lors de la mise à jour."
-                        : "Error updating status.";
-                }
+                $_SESSION['message'] = $success
+                    ? (($lang === 'fr') ? "Statut mis à jour." : "Status updated.")
+                    : (($lang === 'fr') ? "Erreur mise à jour." : "Update error.");
 
-                // Redirect back to the student view
                 header('Location: index.php?page=folders-admin&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
                 exit;
             }
         }
 
-        // Handle POST requests (create/update)
+        // --- 3. Handle POST Actions ---
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($page === 'save_student') {
                 $this->saveStudent($lang);
@@ -83,63 +75,103 @@ class FoldersControllerAdmin
             }
         }
 
+        // --- 4. Render View (List or Detail) ---
         $studentData = null;
-        // If we are in 'view' mode, fetch the specific student details
         if ($action === 'view' && !empty($_GET['numetu'])) {
             $studentData = FolderAdmin::getStudentDetails($_GET['numetu']);
         }
 
-        // ✅ CORRECTION : Réinitialiser à la page 1 si une recherche est effectuée
-        $currentPage = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
-
-        // Si une recherche est en cours et qu'on était sur une autre page, revenir à la page 1
-        if (!empty($_GET['search']) && !isset($_GET['p'])) {
-            $currentPage = 1;
-        }
-
-        // Collect filters from GET parameters for the list view
+        // Filters setup
         $filters = [
-            'type'       => $_GET['Type'] ?? $_GET['type'] ?? 'all',
-            'zone'       => $_GET['Zone'] ?? $_GET['zone'] ?? 'all',
-            'search'     => $_GET['search'] ?? '',
-            'complet'    => $_GET['complet'] ?? 'all',
+            'type' => $_GET['Type'] ?? 'all',
+            'zone' => $_GET['Zone'] ?? 'all',
+            'search' => $_GET['search'] ?? '',
+            'complet' => $_GET['complet'] ?? 'all',
+            'date_debut' => $_GET['date_debut'] ?? null,
+            'date_fin' => $_GET['date_fin'] ?? null,
+            'tri_date' => $_GET['tri_date'] ?? 'DESC'
         ];
 
-        // ✅ CORRECTION : Utiliser la pagination SQL au lieu du filtrage PHP
+        $currentPage = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
         $perPage = 10;
 
-        // Utiliser la nouvelle méthode avec pagination SQL
-        $result = FolderAdmin::rechercherAvecPagination($filters, $currentPage, $perPage);
-
-        // Retrieve and clear Flash Message
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-        // ✅ CORRECTION : Passer les données paginées à la vue
-        $view = new FoldersPageAdmin(
-            $action,
-            $filters,
-            $currentPage,
-            $perPage,
-            $message,
-            $lang,
-            $studentData,
-            $result['data'],        // Données paginées
-            $result['total'],       // Nombre total
-            $result['totalPages']   // Nombre de pages
-        );
+        $view = new FoldersPageAdmin($action, $filters, $currentPage, $perPage, $message, $lang, $studentData);
         $view->render();
     }
 
     /**
+     * Sends a reminder email to a student via NumEtu.
+     */
+    private function sendReminder(string $lang): void
+    {
+        // 1. Sécurité
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+            header('Location: /login');
+            exit;
+        }
+
+        $numetu = $_GET['numetu'] ?? null;
+
+        if ($numetu) {
+            $numetu = urldecode($numetu);
+            $etudiant = FolderAdmin::getByNumetu($numetu);
+
+            if ($etudiant) {
+                // Récupération des emails
+                $emailPerso = !empty($etudiant['EmailPersonnel']) ? $etudiant['EmailPersonnel'] : ($etudiant['email'] ?? '');
+                $emailAMU   = $etudiant['EmailAMU'] ?? '';
+                $prenom     = $etudiant['Prenom'] ?? 'Étudiant';
+
+                // Préparation du message
+                $subject = ($lang === 'fr')
+                    ? "Action requise : Votre dossier de mobilité est incomplet"
+                    : "Action required: Your mobility folder is incomplete";
+
+                $messageContent = ($lang === 'fr')
+                    ? "Bonjour $prenom,\n\nVotre dossier est incomplet. Merci de fournir les pièces manquantes.\n\nCordialement,\nRelations Internationales."
+                    : "Hello $prenom,\n\nYour folder is incomplete. Please provide documents.\n\nRegards,\nInternational Relations.";
+
+                $headers = "From: no-reply@univ-amu.fr";
+
+                // Tentative d'envoi réel
+                $sentCount = 0;
+                // On utilise @ devant mail() pour masquer les erreurs si pas de serveur SMTP local
+                if (!empty($emailPerso)) { @mail($emailPerso, $subject, $messageContent, $headers); $sentCount++; }
+                if (!empty($emailAMU))   { @mail($emailAMU, $subject, $messageContent, $headers); $sentCount++; }
+
+                // Enregistrement en base de données
+                $relanceModel = new EmailReminder();
+                $relanceModel->insertRelance($numetu, $messageContent, $_SESSION['user_id'] ?? null);
+
+                // Message de succès ou d'avertissement
+                if ($sentCount > 0) {
+                    $_SESSION['message'] = ($lang === 'fr')
+                        ? "Relance envoyée avec succès !"
+                        : "Reminder sent successfully!";
+                } else {
+                    $_SESSION['message'] = ($lang === 'fr')
+                        ? "Relance enregistrée en base (mais l'envoi mail a échoué)."
+                        : "Reminder logged in DB (but email sending failed).";
+                }
+
+            } else {
+                $_SESSION['message'] = ($lang === 'fr') ? "Étudiant introuvable." : "Student not found.";
+            }
+        }
+
+        header('Location: index.php?page=dashboard-admin&lang=' . $lang);
+        exit;
+    }
+
+    /**
      * Handles the creation of a new student folder.
-     * Processes POST data, uploads files, and calls the Model.
-     *
-     * @param string $lang Language for error messages.
      */
     private function saveStudent(string $lang): void
     {
-        // 1. Collect form data
+        // 1. Collect Data
         $data = [
             'NumEtu' => $_POST['numetu'] ?? '',
             'Nom' => $_POST['nom'] ?? '',
@@ -157,7 +189,7 @@ class FoldersControllerAdmin
             'Zone' => $_POST['zone'] ?? 'europe'
         ];
 
-        // 2. Validate required fields
+        // 2. Validate
         $errors = [];
         if (empty($data['NumEtu'])) $errors[] = ($lang === 'fr') ? 'Numéro étudiant requis' : 'Student ID required';
         if (empty($data['Nom'])) $errors[] = ($lang === 'fr') ? 'Nom requis' : 'Name required';
@@ -168,35 +200,31 @@ class FoldersControllerAdmin
             exit;
         }
 
-        // 3. Check for duplicates in DB
         if (FolderAdmin::getByNumetu($data['NumEtu'])) {
             $_SESSION['message'] = ($lang === 'fr') ? 'Ce numéro étudiant existe déjà' : 'ID already exists';
             header('Location: index.php?page=folders-admin&action=create&lang=' . $lang);
             exit;
         }
 
-        // 4. Handle File Uploads
+        // 3. Handle Files
         $photoData = null;
         if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
             $photoData = file_get_contents($_FILES['photo']['tmp_name']);
         }
-
         $cvData = null;
         if (isset($_FILES['cv']) && $_FILES['cv']['error'] === UPLOAD_ERR_OK) {
             $cvData = file_get_contents($_FILES['cv']['tmp_name']);
         }
-
         $conventionData = null;
         if (isset($_FILES['convention']) && $_FILES['convention']['error'] === UPLOAD_ERR_OK) {
             $conventionData = file_get_contents($_FILES['convention']['tmp_name']);
         }
-
         $lettreData = null;
         if (isset($_FILES['lettre_motivation']) && $_FILES['lettre_motivation']['error'] === UPLOAD_ERR_OK) {
             $lettreData = file_get_contents($_FILES['lettre_motivation']['tmp_name']);
         }
 
-        // 5. Save to Database
+        // 4. Save
         $success = FolderAdmin::creerDossier($data, $photoData, $cvData, $conventionData, $lettreData);
         $_SESSION['message'] = $success
             ? (($lang === 'fr') ? 'Dossier créé avec succès' : 'Folder created successfully')
@@ -208,13 +236,9 @@ class FoldersControllerAdmin
 
     /**
      * Handles the update of an existing student folder.
-     * Note: This does NOT update the "IsComplete" status.
-     *
-     * @param string $lang Language for error messages.
      */
     private function updateStudent(string $lang): void
     {
-        // 1. Collect form data
         $data = [
             'NumEtu' => $_POST['numetu'] ?? '',
             'Nom' => $_POST['nom'] ?? '',
@@ -232,35 +256,29 @@ class FoldersControllerAdmin
             'Zone' => $_POST['zone'] ?? 'europe'
         ];
 
-        // 2. Handle File Uploads (Only if new files are provided)
         $photoData = null;
         if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
             $photoData = file_get_contents($_FILES['photo']['tmp_name']);
         }
-
         $cvData = null;
         if (isset($_FILES['cv']) && $_FILES['cv']['error'] === UPLOAD_ERR_OK) {
             $cvData = file_get_contents($_FILES['cv']['tmp_name']);
         }
-
         $conventionData = null;
         if (isset($_FILES['convention']) && $_FILES['convention']['error'] === UPLOAD_ERR_OK) {
             $conventionData = file_get_contents($_FILES['convention']['tmp_name']);
         }
-
         $lettreData = null;
         if (isset($_FILES['lettre_motivation']) && $_FILES['lettre_motivation']['error'] === UPLOAD_ERR_OK) {
             $lettreData = file_get_contents($_FILES['lettre_motivation']['tmp_name']);
         }
 
-        // 3. Update Database
         $success = FolderAdmin::updateDossier($data, $photoData, $cvData, $conventionData, $lettreData);
 
         $_SESSION['message'] = $success
             ? (($lang === 'fr') ? 'Dossier mis à jour' : 'Folder updated')
             : (($lang === 'fr') ? 'Erreur lors de la mise à jour' : 'Error updating folder');
 
-        // Redirect back to the student's detail view
         header('Location: index.php?page=folders-admin&action=view&numetu=' . urlencode($data['NumEtu']) . '&lang=' . $lang);
         exit;
     }

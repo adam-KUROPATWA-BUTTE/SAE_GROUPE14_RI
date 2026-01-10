@@ -19,7 +19,7 @@ main {
     align-items: center;
     gap: 10px;
 
-    background-color: #006a2d; /* vert */
+    background-color: var(--primary-color);
     color: #ffffff;
 
     border: none;

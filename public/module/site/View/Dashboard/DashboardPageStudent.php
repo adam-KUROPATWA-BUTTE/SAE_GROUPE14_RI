@@ -62,7 +62,7 @@ class DashboardPageStudent
         // Determine current status and progress percentage
         $status = $this->dossier['status'] ?? 'depot';
         $steps = ['depot', 'instruction', 'decision'];
-        
+
         // Find the index of the current status (0, 1, or 2)
         $currentStepIndex = array_search($status, $steps);
         if ($currentStepIndex === false) {
@@ -70,7 +70,7 @@ class DashboardPageStudent
         }
 
         // Calculate CSS width for the progress bar line
-        $progressWidth = ($currentStepIndex / (count($steps) - 1)) * 100 . '%';
+        $progressWidth = ($currentStepIndex / (count($steps) - 1)) * (100 * 2 / 3) . '%';
         ?>
         <!DOCTYPE html>
         <html lang="<?= htmlspecialchars($this->lang) ?>">
@@ -78,14 +78,15 @@ class DashboardPageStudent
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title><?= $this->t(['fr' => 'Tableau de bord (Étudiant)', 'en' => 'Student Dashboard']) ?></title>
-            <link rel="stylesheet" href="styles/index.css">
             <link rel="stylesheet" href="styles/dashboard.css">
+            <link rel="stylesheet" href="styles/index.css">
+            <link rel="stylesheet" href="styles/chatbot.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
         <body class="<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true ? 'tritanopie' : '' ?>">
         <header>
             <div class="top-bar">
-                <img src="img/logo.png" alt="Logo" style="height:80px;">
+                <img src="img/logo.png" alt="Logo AMU" class="logo_amu">
                 <div class="right-buttons">
                     <div class="lang-dropdown">
                         <button class="dropbtn"><?= htmlspecialchars($this->lang) ?></button>
@@ -97,11 +98,11 @@ class DashboardPageStudent
                 </div>
             </div>
             <nav class="menu">
-                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
-                <button class="active" onclick="window.location.href='<?= $this->buildUrl('index.php?page=dashboard-student') ?>'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/partners-student') ?>'"><?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/folders-student') ?>'"><?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-student') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Sitemap']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Accueil','en' => 'Home']) ?></button>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('index.php?page=dashboard-student') ?>'"><?= $this->t(['fr' => 'Mon Tableau de bord','en' => 'My Dashboard']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/partners-student') ?>'"><?= $this->t(['fr' => 'Partenaires','en' => 'Partners']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/folders-student') ?>'"><?= $this->t(['fr' => 'Dossiers','en' => 'Folders']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-student') ?>'"><?= $this->t(['fr' => 'Plan du site','en' => 'Sitemap']) ?></button>
             </nav>
 
 
@@ -109,6 +110,7 @@ class DashboardPageStudent
         </header>
 
         <main>
+
             <h1 style="text-align:center; margin-top:40px;">
                 <?= $this->t(['fr' => 'Suivi du dossier', 'en' => 'File Tracking']) ?>
             </h1>
@@ -120,6 +122,7 @@ class DashboardPageStudent
                     <div class="progress-icon">
                         <img src="/img/depot.png" alt="Dépôt">
                     </div>
+                    <div class="progress-circle"></div>
                     <span><?= $this->t(['fr' => 'Dépôt de la demande', 'en' => 'Application Submitted']) ?></span>
                 </div>
 
@@ -127,6 +130,7 @@ class DashboardPageStudent
                     <div class="progress-icon">
                         <img src="/img/rafraichir.png" alt="Instruction">
                     </div>
+                    <div class="progress-circle"></div>
                     <span><?= $this->t(['fr' => 'Instruction en cours', 'en' => 'Under Review']) ?></span>
                 </div>
 
@@ -134,9 +138,32 @@ class DashboardPageStudent
                     <div class="progress-icon">
                         <img src="/img/decision.png" alt="Décision">
                     </div>
+                    <div class="progress-circle"></div>
                     <span><?= $this->t(['fr' => 'Décision prise', 'en' => 'Decision Made']) ?></span>
                 </div>
             </div>
+            <div class="contact-info-box">
+                <p class="contact-title">
+                    <?= $this->t([
+                        'fr' => 'Une question ou besoin d’assistance ?',
+                        'en' => 'A question or need assistance?'
+                    ]) ?>
+                </p>
+
+                <p>
+                    <?= $this->t([
+                        'fr' => 'Pour toute information complémentaire concernant votre dossier, vous pouvez contacter le service des relations internationales à l’adresse suivante :',
+                        'en' => 'For any additional information regarding your application, you may contact the International Relations Office at the following address:'
+                    ]) ?>
+                </p>
+
+                <p class="contact-email">
+                    <a href="mailto:relations.internationale@amu-univ.fr">
+                        relations.internationale@amu-univ.fr
+                    </a>
+                </p>
+            </div>
+
         </main>
 
         <footer>
@@ -144,7 +171,19 @@ class DashboardPageStudent
             <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
                 <img class="insta" src="img/instagram.png" alt="Instagram">
             </a>
-            
+            <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
+
+            <div id="help-popup" class="chat-popup">
+                <div class="help-popup-header">
+                    <span><?= $this->t(['fr' => 'Assistant', 'en' => 'Assistant']) ?></span>
+                    <button onclick="toggleHelpPopup()">✖</button>
+                </div>
+
+                <div id="chat-messages" class="chat-messages"></div>
+                <div id="quick-actions" class="quick-actions"></div>
+            </div>
+
+
             <script>
                 /**
                  * Helper to switch language by reloading the page with new query param.
@@ -155,6 +194,15 @@ class DashboardPageStudent
                     window.location.href = url.toString();
                 }
             </script>
+            <script>
+                const CHAT_CONFIG = {
+                    lang: '<?= $this->lang ?>',
+                    role: 'student'
+                };
+            </script>
+
+            <script src="js/chatbot.js"></script>
+
         </body>
         </html>
         <?php

@@ -60,16 +60,23 @@ class FoldersPageStudent
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+        if (isset($_GET['tritanopia'])) {
+            $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';
+        }
+        $tritanopia = !empty($_SESSION['tritanopia']);
 
         // --- Determine View Mode: CREATE or UPDATE ---
         $isCreateMode = empty($this->dossier);
         $formAction = $isCreateMode ? 'create_folder' : 'update_student';
-        
+
         // Auto-detect mobility type for display logic (only if updating)
         $detectedType = '';
         if (!$isCreateMode) {
-            if (!empty($this->dossier['pieces']['convention'])) $detectedType = 'stage';
-            elseif (!empty($this->dossier['pieces']['lettre_motivation'])) $detectedType = 'etudes';
+            if (!empty($this->dossier['pieces']['convention'])) {
+                $detectedType = 'stage';
+            } elseif (!empty($this->dossier['pieces']['lettre_motivation'])) {
+                $detectedType = 'etudes';
+            }
         }
         ?>
         <!DOCTYPE html>
@@ -80,9 +87,10 @@ class FoldersPageStudent
             <title><?= $this->t(['fr' => 'Mon dossier','en' => 'My Folder']) ?></title>
             <link rel="stylesheet" href="styles/index.css">
             <link rel="stylesheet" href="styles/folders.css">
+            <link rel="stylesheet" href="styles/chatbot.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
-        <body>
+        <body class="<?= $tritanopia ? 'tritanopie' : '' ?>">
         <header>
             <div class="top-bar">
                 <img class="logo_amu" src="img/logo.png" alt="Logo">
@@ -107,7 +115,7 @@ class FoldersPageStudent
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders-student']) ?>'">
                     <?= $this->t(['fr' => 'Dossiers', 'en' => 'Folders']) ?>
                 </button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-student') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Sitemap']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-student') ?>'"><?= $this->t(['fr' => 'Plan du site','en' => 'Sitemap']) ?></button>
 
             </nav>
         </header>
@@ -196,7 +204,7 @@ class FoldersPageStudent
                 <div class="form-section" style="margin-top: 30px;">
                     <h2><?= $this->t(['fr' => 'Mes documents','en' => 'My Documents']) ?></h2>
 
-                    <?php 
+                    <?php
                     $docs = ['photo' => 'Photo', 'cv' => 'CV'];
                     foreach ($docs as $key => $label) :
                         $hasFile = !empty($this->dossier['pieces'][$key]);
@@ -245,11 +253,11 @@ class FoldersPageStudent
                 </div>
 
                 <div class="form-actions">
-                    <?php if ($isCreateMode): ?>
+                    <?php if ($isCreateMode) : ?>
                         <button type="submit" class="btn-secondary">
                             <?= $this->t(['fr' => 'Déposer ma demande','en' => 'Submit my application']) ?>
                         </button>
-                    <?php else: ?>
+                    <?php else : ?>
                         <button type="submit" class="btn-secondary">
                             <?= $this->t(['fr' => 'Enregistrer mes modifications','en' => 'Save changes']) ?>
                         </button>
@@ -262,12 +270,55 @@ class FoldersPageStudent
             </form>
         </main>
 
+       <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
+            <div id="help-popup" class="chat-popup">
+            <div class="help-popup-header">
+                <span>Assistant</span>
+                <button onclick="toggleHelpPopup()">✖</button>
+            </div>
+            <div id="chat-messages" class="chat-messages"></div>
+            <div id="quick-actions" class="quick-actions"></div>
+        </div>
+
         <script>
+            const CHAT_CONFIG = {
+                lang: '<?= $this->lang ?>',
+                role: '<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>'
+            };
+        </script>
+        <script src="js/chatbot.js"></scriptsrc></script>
+        <script>
+            document.getElementById('current-lang').addEventListener('click', function(event) {
+                event.stopPropagation(); // empêcher la propagation au document
+                const rightButtons = document.querySelector('.right-buttons');
+                rightButtons.classList.toggle('show');
+            });
+
+            // Fermer le dropdown si clic ailleurs sur la page
+            document.addEventListener('click', function() {
+                const rightButtons = document.querySelector('.right-buttons');
+                rightButtons.classList.remove('show');
+            });
+
             function changeLang(lang) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('lang', lang);
                 window.location.href = url.toString();
             }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const menuToggle = document.createElement('button');
+                menuToggle.classList.add('menu-toggle');
+                menuToggle.innerHTML = '☰';
+                document.querySelector('.right-buttons').appendChild(menuToggle);
+
+                const navMenu = document.querySelector('nav.menu');
+                menuToggle.addEventListener('click', () => {
+                    navMenu.classList.toggle('active');
+                });
+            });
+        </script>
+        <script>
 
             function changerTypeMobilite(type) {
                 const conventionBlock = document.getElementById('justificatif_convention');
