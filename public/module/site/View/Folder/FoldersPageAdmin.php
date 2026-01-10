@@ -19,6 +19,9 @@ class FoldersPageAdmin
     private string $message;
     private string $lang;
     private ?array $studentData;
+    private array $paginatedData;
+    private int $totalCount;
+    private int $totalPages;
 
     /**
      * Constructor.
@@ -31,8 +34,18 @@ class FoldersPageAdmin
      * @param string     $lang        Current language ('fr' or 'en').
      * @param array|null $studentData Data of a specific student (for view/edit mode).
      */
-    public function __construct(string $action, array $filters, int $page, int $perPage, string $message, string $lang, ?array $studentData = null)
-    {
+    public function __construct(
+            string $action,
+            array $filters,
+            int $page,
+            int $perPage,
+            string $message,
+            string $lang,
+            ?array $studentData = null,
+            array $paginatedData = [],      // ✅ NOUVEAU
+            int $totalCount = 0,            // ✅ NOUVEAU
+            int $totalPages = 0             // ✅ NOUVEAU
+    ) {
         $this->action = $action;
         $this->filters = $filters;
         $this->page = $page;
@@ -40,6 +53,9 @@ class FoldersPageAdmin
         $this->message = $message;
         $this->lang = $lang;
         $this->studentData = $studentData;
+        $this->paginatedData = $paginatedData;      // ✅ NOUVEAU
+        $this->totalCount = $totalCount;            // ✅ NOUVEAU
+        $this->totalPages = $totalPages;            // ✅ NOUVEAU
     }
 
     /**
@@ -100,9 +116,9 @@ class FoldersPageAdmin
             <nav class="menu">
                 <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Accueil','en' => 'Home']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'"><?= $this->t(['fr' => 'Tableau de bord','en' => 'Dashboard']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/partners-admin') ?>'"><?= $this->t(['fr' => 'Partenaires','en' => 'Partners']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/partners-admin') ?>'"><?= $this->t(['fr' => 'Partenaire','en' => 'Partners']) ?></button>
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'"><?= $this->t(['fr' => 'Dossiers','en' => 'Folders']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-admin') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Sitemap']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'"><?= $this->t(['fr' => 'Plan du site','en' => 'Site Map']) ?></button>
             </nav>
         </header>
         <main>
@@ -114,7 +130,7 @@ class FoldersPageAdmin
                 <?php $this->renderStudentsList(); ?>
             <?php endif; ?>
         </main>
-        
+
         <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
         <div id="help-popup">
             <div class="help-popup-header">
@@ -170,6 +186,25 @@ class FoldersPageAdmin
                 });
             }
 
+                    /**
+            * Effectue une recherche côté serveur et revient à la page 1
+            */
+            function rechercherEtRevenirPage1() {
+            const searchInput = document.getElementById('search');
+            if (!searchInput) return;
+
+            const url = new URL(window.location.href);
+
+            if (searchInput.value.trim() !== '') {
+                url.searchParams.set('search', searchInput.value.trim());
+                url.searchParams.set('p', 1); // ✅ Revenir à la page 1
+            } else {
+                url.searchParams.delete('search');
+            }
+
+            window.location.href = url.toString();
+            }
+
             /**
              * Toggles visibility of specific document fields based on mobility type.
              * Shows 'Convention' for Internships, 'Motivation Letter' for Studies.
@@ -184,7 +219,7 @@ class FoldersPageAdmin
 
                 // Show appropriate block
                 if (type === 'stage') {
-                    if(conventionBlock) conventionBlock.style.display = 'block'; 
+                    if(conventionBlock) conventionBlock.style.display = 'block';
                 } else if (type === 'etudes') {
                     if(lettreBlock) lettreBlock.style.display = 'block';
                 }
@@ -202,7 +237,7 @@ class FoldersPageAdmin
                         field.style.color = 'black';
                     }
                 });
-                
+
                 // Toggle action buttons
                 document.getElementById('btn-modifier').style.display = 'none';
                 document.getElementById('btn-enregistrer').style.display = 'inline-block';
@@ -210,17 +245,77 @@ class FoldersPageAdmin
             }
 
             // Initialize scripts on page load
+            // Initialize scripts on page load
             window.addEventListener('DOMContentLoaded', (event) => {
                 // Initialize mobility type display
                 const sel = document.getElementById('mobilite_type');
                 if (sel) changerTypeMobilite(sel.value);
-                
-                // Initialize filter listeners
-                document.querySelectorAll('.filters input[type="checkbox"]').forEach(checkbox => {
-                    checkbox.addEventListener('change', function() {
+
+                // ✅ Comportement exclusif pour Type (entrant/sortant)
+                const typeCheckboxes = document.querySelectorAll('input[name="entrant_sortant"]');
+                typeCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('click', function(e) {
+                        // Empêcher le comportement par défaut temporairement
+                        const wasChecked = this.checked;
+
+                        // Décocher toutes les autres checkboxes du même groupe AVANT
+                        typeCheckboxes.forEach(other => {
+                            if (other !== this) {
+                                other.checked = false;
+                            }
+                        });
+
+                        // Si on clique sur une case déjà cochée, la décocher
+                        if (!wasChecked && this.checked) {
+                            // Ne rien faire, elle est déjà cochée
+                        }
+
+                        // Appliquer les filtres après avoir géré l'exclusivité
                         appliquerFiltres();
                     });
                 });
+
+                // ✅ Comportement exclusif pour Zone (europe/hors_europe)
+                const zoneCheckboxes = document.querySelectorAll('input[name="zone"]');
+                zoneCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('click', function(e) {
+                        // Empêcher le comportement par défaut temporairement
+                        const wasChecked = this.checked;
+
+                        // Décocher toutes les autres checkboxes du même groupe AVANT
+                        zoneCheckboxes.forEach(other => {
+                            if (other !== this) {
+                                other.checked = false;
+                            }
+                        });
+
+                        // Appliquer les filtres après avoir géré l'exclusivité
+                        appliquerFiltres();
+                    });
+                });
+
+                // ✅ Pour le filtre statut (select), pas besoin de comportement exclusif
+                const filterComplet = document.getElementById('filter-complet');
+                if (filterComplet) {
+                    filterComplet.addEventListener('change', function() {
+                        appliquerFiltres();
+                    });
+                }
+
+                // ✅ Pour les filtres de date
+                const dateDebut = document.getElementById('date-debut');
+                if (dateDebut) {
+                    dateDebut.addEventListener('change', function() {
+                        appliquerFiltres();
+                    });
+                }
+
+                const dateFin = document.getElementById('date-fin');
+                if (dateFin) {
+                    dateFin.addEventListener('change', function() {
+                        appliquerFiltres();
+                    });
+                }
             });
 
             /**
@@ -228,39 +323,55 @@ class FoldersPageAdmin
              */
             function appliquerFiltres() {
                 const url = new URL(window.location.href);
-                
-                // Handle Checkbox Filters (Type)
+
+                // Handle Checkbox Filters (Type) - Exclusive behavior
                 const typesChecked = Array.from(document.querySelectorAll('input[name="entrant_sortant"]:checked')).map(cb => cb.value);
-                if (typesChecked.length === 1) url.searchParams.set('type', typesChecked[0]);
-                else url.searchParams.delete('type'); 
-                
-                // Handle Checkbox Filters (Zone)
+                if (typesChecked.length > 0) {
+                    // Si plusieurs cochées, garder seulement la dernière cliquée
+                    url.searchParams.set('type', typesChecked[typesChecked.length - 1]);
+                } else {
+                    url.searchParams.delete('type');
+                }
+
+                // Handle Checkbox Filters (Zone) - Exclusive behavior
                 const zonesChecked = Array.from(document.querySelectorAll('input[name="zone"]:checked')).map(cb => cb.value);
-                if (zonesChecked.length === 1) url.searchParams.set('zone', zonesChecked[0]);
-                else url.searchParams.delete('zone');
+                if (zonesChecked.length > 0) {
+                    // Si plusieurs cochées, garder seulement la dernière cliquée
+                    url.searchParams.set('zone', zonesChecked[zonesChecked.length - 1]);
+                } else {
+                    url.searchParams.delete('zone');
+                }
 
                 // Handle Select Filter (Completeness)
-                const completVal = document.getElementById('filter-complet').value;
-                if (completVal !== 'all') {
-                    url.searchParams.set('complet', completVal);
+                const completVal = document.getElementById('filter-complet');
+                if (completVal && completVal.value !== 'all') {
+                    url.searchParams.set('complet', completVal.value);
                 } else {
                     url.searchParams.delete('complet');
                 }
 
                 // Handle Date Filters
-                const dateDebut = document.getElementById('date-debut').value;
-                if (dateDebut) url.searchParams.set('date_debut', dateDebut);
-                else url.searchParams.delete('date_debut');
+                const dateDebut = document.getElementById('date-debut');
+                if (dateDebut && dateDebut.value) {
+                    url.searchParams.set('date_debut', dateDebut.value);
+                } else {
+                    url.searchParams.delete('date_debut');
+                }
 
-                const dateFin = document.getElementById('date-fin').value;
-                if (dateFin) url.searchParams.set('date_fin', dateFin);
-                else url.searchParams.delete('date_fin');
+                const dateFin = document.getElementById('date-fin');
+                if (dateFin && dateFin.value) {
+                    url.searchParams.set('date_fin', dateFin.value);
+                } else {
+                    url.searchParams.delete('date_fin');
+                }
 
-                // Reset to page 1
+                // Reset to page 1 when applying filters
                 url.searchParams.set('p', 1);
 
                 window.location.href = url.toString();
-            }        
+            }
+
+
         </script>
         <footer>
             <p>&copy; 2025 - Aix-Marseille Université.</p>
@@ -278,24 +389,23 @@ class FoldersPageAdmin
      */
     private function renderStudentsList(): void
     {
-        $etudiants = Folder::getAll();
-        $filtered = $this->applyFilters($etudiants);
+        //ici
+        // ✅ CORRECTION : Utiliser directement les données paginées du Model
+        $etudiants = $this->paginatedData;
+        $total = $this->totalCount;
+        $totalPages = $this->totalPages;
 
-        $total = count($filtered);
-        $totalPages = ceil($total / $this->perPage);
-        $offset = ($this->page - 1) * $this->perPage;
-        $paginated = array_slice($filtered, $offset, $this->perPage);
         ?>
         <h1><?= $this->t(['fr' => 'Liste des étudiants','en' => 'Students List']) ?></h1>
-        
+
         <?php if (!empty($this->message)) : ?>
-            <div class="message"><?= htmlspecialchars($this->message) ?></div>
-        <?php endif; ?>
+        <div class="message"><?= htmlspecialchars($this->message) ?></div>
+    <?php endif; ?>
 
         <div class="student-toolbar">
             <div class="search-container-toolbar">
                 <label for="search" class="search-label"><?= $this->t(['fr' => 'Rechercher','en' => 'Search']) ?></label>
-                <input type="text" id="search" name="search" placeholder="Nom, prénom, email..." value="<?= htmlspecialchars($this->filters['search']) ?>" onkeyup="filtrerEtudiants()">
+                <input type="text" id="search" name="search" placeholder="Nom, prénom, email..." value="<?= htmlspecialchars($this->filters['search'] ?? '') ?>" onkeyup="filtrerEtudiants()" onchange="rechercherEtRevenirPage1()">
             </div>
             <div>
                 <button id="btn-creer-dossier" onclick="window.location.href='<?= $this->buildUrl('/folders-admin', ['action' => 'create']) ?>'">
@@ -306,14 +416,14 @@ class FoldersPageAdmin
 
         <div class="filters-container" style="background: #f4f4f4; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
             <p style="margin-top: 0; font-weight: bold;"><?= $this->t(['fr' => 'Filtres','en' => 'Filters']) ?></p>
-            
+
             <div class="filters" style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
-                
+
                 <div class="filter-group">
                     <label><input type="checkbox" name="entrant_sortant" value="entrant" <?= ($this->filters['type'] ?? '') === 'entrant' ? 'checked' : '' ?>><?= $this->t(['fr' => 'Entrant','en' => 'Incoming']) ?></label>
                     <label><input type="checkbox" name="entrant_sortant" value="sortant" <?= ($this->filters['type'] ?? '') === 'sortant' ? 'checked' : '' ?>><?= $this->t(['fr' => 'Sortant','en' => 'Outgoing']) ?></label>
                 </div>
-                
+
                 <div class="filter-group">
                     <label><input type="checkbox" name="zone" value="europe" <?= ($this->filters['zone'] ?? '') === 'europe' ? 'checked' : '' ?>><?= $this->t(['fr' => 'Europe','en' => 'Europe']) ?></label>
                     <label><input type="checkbox" name="zone" value="hors_europe" <?= ($this->filters['zone'] ?? '') === 'hors_europe' ? 'checked' : '' ?>><?= $this->t(['fr' => 'Hors-Europe','en' => 'Non-Europe']) ?></label>
@@ -329,11 +439,7 @@ class FoldersPageAdmin
                 </div>
 
                 <div class="filter-group">
-                    <label><?= $this->t(['fr' => 'Né(e) entre :','en' => 'Born between:']) ?></label>
-                    <input type="date" id="date-debut" value="<?= htmlspecialchars($this->filters['date_debut'] ?? '') ?>" onchange="appliquerFiltres()" style="padding: 4px;">
-                    <span><?= $this->t(['fr' => 'et','en' => 'and']) ?></span>
-                    <input type="date" id="date-fin" value="<?= htmlspecialchars($this->filters['date_fin'] ?? '') ?>" onchange="appliquerFiltres()" style="padding: 4px;">
-                </div>
+
 
                 <?php if ($this->hasActiveFilters()) : ?>
                     <a href="<?= $this->buildUrl('/folders-admin') ?>" class="btn-reset" style="color: red; text-decoration: underline; margin-left: auto;">
@@ -344,30 +450,30 @@ class FoldersPageAdmin
         </div>
 
         <p class="results-count"><?= $total ?> <?= $this->t(['fr' => 'étudiant(s) trouvé(s)','en' => 'student(s) found']) ?></p>
-        
+
         <table id="table-etudiants">
             <thead>
-                <tr>
-                    <th><?= $this->t(['fr' => 'Nom','en' => 'Last Name']) ?></th>
-                    <th><?= $this->t(['fr' => 'Prénom','en' => 'First Name']) ?></th>
-                    <th><?= $this->t(['fr' => 'Né(e) le','en' => 'Birth Date']) ?></th> 
-                    <th><?= $this->t(['fr' => 'Type','en' => 'Type']) ?></th>
-                    <th><?= $this->t(['fr' => 'Zone','en' => 'Zone']) ?></th>
-                    <th><?= $this->t(['fr' => 'Mobilité', 'en' => 'Mobility']) ?></th>
-                    <th><?= $this->t(['fr' => 'Statut','en' => 'Status']) ?></th> 
-                </tr>
+            <tr>
+                <th><?= $this->t(['fr' => 'Nom','en' => 'Last Name']) ?></th>
+                <th><?= $this->t(['fr' => 'Prénom','en' => 'First Name']) ?></th>
+                <th><?= $this->t(['fr' => 'Né(e) le','en' => 'Birth Date']) ?></th>
+                <th><?= $this->t(['fr' => 'Type','en' => 'Type']) ?></th>
+                <th><?= $this->t(['fr' => 'Zone','en' => 'Zone']) ?></th>
+                <th><?= $this->t(['fr' => 'Mobilité', 'en' => 'Mobility']) ?></th>
+                <th><?= $this->t(['fr' => 'Statut','en' => 'Status']) ?></th>
+            </tr>
             </thead>
             <tbody>
-            <?php foreach ($paginated as $etudiant) : ?>
+            <?php foreach ($etudiants as $etudiant) : ?>
                 <?php
-                    // Determine Mobility Type (Stage/Etudes) based on existing files in JSON
-                    $pieces = json_decode($etudiant['PiecesJustificatives'] ?? '{}', true);
-                    $mobilityType = '-';
-                    if (!empty($pieces['convention'])) {
-                        $mobilityType = $this->t(['fr' => 'Stage', 'en' => 'Internship']);
-                    } elseif (!empty($pieces['lettre_motivation'])) {
-                        $mobilityType = $this->t(['fr' => 'Études', 'en' => 'Studies']);
-                    }
+                // Determine Mobility Type (Stage/Etudes) based on existing files in JSON
+                $pieces = json_decode($etudiant['PiecesJustificatives'] ?? '{}', true);
+                $mobilityType = '-';
+                if (!empty($pieces['convention'])) {
+                    $mobilityType = $this->t(['fr' => 'Stage', 'en' => 'Internship']);
+                } elseif (!empty($pieces['lettre_motivation'])) {
+                    $mobilityType = $this->t(['fr' => 'Études', 'en' => 'Studies']);
+                }
                 ?>
                 <tr onclick="ouvrirFicheEtudiant('<?= htmlspecialchars($etudiant['NumEtu'] ?? '') ?>')" style="cursor: pointer;">
                     <td><?= htmlspecialchars($etudiant['Nom']) ?></td>
@@ -378,8 +484,8 @@ class FoldersPageAdmin
                     <td><?= htmlspecialchars($mobilityType) ?></td>
                     <td>
                         <?= ($etudiant['IsComplete'] ?? 0) == 1
-                            ? '<span style="color:green">✔ Complet</span>'
-                            : '<span style="color:orange">⚠️ Incomplet</span>' ?>
+                                ? '<span style="color:green">✔ Complet</span>'
+                                : '<span style="color:orange">⚠️ Incomplet</span>' ?>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -388,25 +494,25 @@ class FoldersPageAdmin
 
         <?php if ($totalPages > 0) : ?>
         <div class="pagination">
-                <?php if ($this->page > 1) : ?>
+            <?php if ($this->page > 1) : ?>
                 <button onclick="window.location.href='<?= $this->buildPaginationUrl(1) ?>'">«</button>
                 <button onclick="window.location.href='<?= $this->buildPaginationUrl($this->page - 1) ?>'">‹</button>
-                <?php else : ?>
+            <?php else : ?>
                 <button disabled>«</button>
                 <button disabled>‹</button>
-                <?php endif; ?>
-                <?php for ($i = max(1, $this->page - 2); $i <= min($totalPages, $this->page + 2); $i++) : ?>
+            <?php endif; ?>
+            <?php for ($i = max(1, $this->page - 2); $i <= min($totalPages, $this->page + 2); $i++) : ?>
                 <button class="<?= $i === $this->page ? 'active' : '' ?>" onclick="window.location.href='<?= $this->buildPaginationUrl($i) ?>'"><?= $i ?></button>
-                <?php endfor; ?>
-                <?php if ($this->page < $totalPages) : ?>
+            <?php endfor; ?>
+            <?php if ($this->page < $totalPages) : ?>
                 <button onclick="window.location.href='<?= $this->buildPaginationUrl($this->page + 1) ?>'">›</button>
                 <button onclick="window.location.href='<?= $this->buildPaginationUrl($totalPages) ?>'">»</button>
-                <?php else : ?>
+            <?php else : ?>
                 <button disabled>›</button>
                 <button disabled>»</button>
-                <?php endif; ?>
+            <?php endif; ?>
         </div>
-        <?php endif; ?>
+    <?php endif; ?>
         <?php
     }
 
@@ -464,10 +570,10 @@ class FoldersPageAdmin
                     <option value="europe"><?= $this->t(['fr' => 'Europe','en' => 'Europe']) ?></option>
                     <option value="hors_europe"><?= $this->t(['fr' => 'Hors Europe','en' => 'Non-Europe']) ?></option>
                 </select>
-                
+
                 <label for="photo"><?= $this->t(['fr' => 'Photo','en' => 'Photo']) ?></label>
                 <input type="file" name="photo" id="photo" accept="image/*">
-                
+
                 <label for="cv"><?= $this->t(['fr' => 'CV','en' => 'CV']) ?></label>
                 <input type="file" name="cv" id="cv" accept=".pdf,.doc,.docx">
 
@@ -478,7 +584,7 @@ class FoldersPageAdmin
                     <option value="etudes"><?= $this->t(['fr' => 'Études','en' => 'Studies']) ?></option>
                 </select>
             </div>
-            
+
             <div class="fichier-obligatoire" id="justificatif_convention" style="display: none;">
                 <label><?= $this->t(['fr' => 'Convention de stage','en' => 'Internship Agreement']) ?></label>
                 <input type="file" name="convention" accept=".pdf,.doc,.docx">
@@ -509,7 +615,7 @@ class FoldersPageAdmin
         }
 
         $student = $this->studentData;
-        
+
         // --- AUTO-DETECT MOBILITY TYPE ---
         // Determine if it is 'stage' or 'studies' based on existing files.
         $detectedType = '';
@@ -525,7 +631,7 @@ class FoldersPageAdmin
                 ← <?= $this->t(['fr' => 'Retour à la liste','en' => 'Back to List']) ?>
             </button>
         </div>
-        
+
         <form method="post" action="index.php?page=update_student&lang=<?= htmlspecialchars($this->lang) ?>" enctype="multipart/form-data" class="creation-form">
             <div class="form-section">
                 <label for="numetu"><?= $this->t(['fr' => 'NumÉtu *','en' => 'Student ID *']) ?></label>
@@ -593,19 +699,19 @@ class FoldersPageAdmin
 
             <div class="form-section" style="margin-top: 30px;">
                 <h2><?= $this->t(['fr' => 'Pièces Justificatives','en' => 'Supporting Documents']) ?></h2>
-                
+
                 <div style="margin-bottom: 20px;">
                     <label><?= $this->t(['fr' => 'Photo','en' => 'Photo']) ?></label>
                     <?php if (!empty($student['pieces']['photo'])) : ?>
                         <div style="margin-top: 10px;">
-                            <img src="data:image/jpeg;base64,<?= $student['pieces']['photo'] ?>" 
-                                alt="Photo" 
-                                style="max-width: 200px; max-height: 200px; border: 1px solid #ccc; border-radius: 5px;">
+                            <img src="data:image/jpeg;base64,<?= $student['pieces']['photo'] ?>"
+                                 alt="Photo"
+                                 style="max-width: 200px; max-height: 200px; border: 1px solid #ccc; border-radius: 5px;">
                             <br>
-                            <a href="data:image/jpeg;base64,<?= $student['pieces']['photo'] ?>" 
-                            download="photo_<?= htmlspecialchars($student['NumEtu']) ?>.jpg" 
-                            class="btn-secondary" 
-                            style="margin-top: 10px; display: inline-block;">
+                            <a href="data:image/jpeg;base64,<?= $student['pieces']['photo'] ?>"
+                               download="photo_<?= htmlspecialchars($student['NumEtu']) ?>.jpg"
+                               class="btn-secondary"
+                               style="margin-top: 10px; display: inline-block;">
                                 <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
                             </a>
                         </div>
@@ -620,9 +726,9 @@ class FoldersPageAdmin
                     <?php if (!empty($student['pieces']['cv'])) : ?>
                         <div style="margin-top: 10px;">
                             <p>✅ <?= $this->t(['fr' => 'CV disponible','en' => 'CV available']) ?></p>
-                            <a href="data:application/pdf;base64,<?= $student['pieces']['cv'] ?>" 
-                            download="cv_<?= htmlspecialchars($student['NumEtu']) ?>.pdf" 
-                            class="btn-secondary">
+                            <a href="data:application/pdf;base64,<?= $student['pieces']['cv'] ?>"
+                               download="cv_<?= htmlspecialchars($student['NumEtu']) ?>.pdf"
+                               class="btn-secondary">
                                 <?= $this->t(['fr' => '📥 Télécharger le CV','en' => '📥 Download CV']) ?>
                             </a>
                         </div>
@@ -634,13 +740,13 @@ class FoldersPageAdmin
 
                 <div id="justificatif_convention" style="margin-bottom: 20px; display: none;">
                     <label><?= $this->t(['fr' => 'Convention de stage','en' => 'Internship Agreement']) ?></label>
-                    
+
                     <?php if (!empty($student['pieces']['convention'])) : ?>
                         <div style="margin-top: 10px;">
                             <p>✅ <?= $this->t(['fr' => 'Convention disponible','en' => 'Agreement available']) ?></p>
-                            <a href="data:application/pdf;base64,<?= $student['pieces']['convention'] ?>" 
-                            download="convention_<?= htmlspecialchars($student['NumEtu']) ?>.pdf" 
-                            class="btn-secondary">
+                            <a href="data:application/pdf;base64,<?= $student['pieces']['convention'] ?>"
+                               download="convention_<?= htmlspecialchars($student['NumEtu']) ?>.pdf"
+                               class="btn-secondary">
                                 <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
                             </a>
                         </div>
@@ -653,13 +759,13 @@ class FoldersPageAdmin
 
                 <div id="lettre_motivation" style="margin-bottom: 20px; display: none;">
                     <label><?= $this->t(['fr' => 'Lettre de motivation','en' => 'Motivation Letter']) ?></label>
-                    
+
                     <?php if (!empty($student['pieces']['lettre_motivation'])) : ?>
                         <div style="margin-top: 10px;">
                             <p>✅ <?= $this->t(['fr' => 'Lettre disponible','en' => 'Letter available']) ?></p>
-                            <a href="data:application/pdf;base64,<?= $student['pieces']['lettre_motivation'] ?>" 
-                            download="lettre_<?= htmlspecialchars($student['NumEtu']) ?>.pdf" 
-                            class="btn-secondary">
+                            <a href="data:application/pdf;base64,<?= $student['pieces']['lettre_motivation'] ?>"
+                               download="lettre_<?= htmlspecialchars($student['NumEtu']) ?>.pdf"
+                               class="btn-secondary">
                                 <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
                             </a>
                         </div>
@@ -668,21 +774,21 @@ class FoldersPageAdmin
                     <?php endif; ?>
 
                     <input type="file" name="lettre_motivation" id="lettre_motivation_file" accept=".pdf,.doc,.docx" disabled style="background-color: #e0e0e0; color: #666; margin-top: 10px;">
-                </div>  
+                </div>
 
                 <div style="margin-top: 20px; padding: 15px; background-color: <?= ($student['IsComplete'] ?? 0) ? '#d4edda' : '#fff3cd' ?>; border-radius: 5px;">
                     <strong><?= $this->t(['fr' => 'Statut du dossier :','en' => 'Folder status:']) ?></strong>
                     <?= ($student['IsComplete'] ?? 0)
-                        ? $this->t(['fr' => '✅ Complet','en' => '✅ Complete'])
-                        : $this->t(['fr' => '⚠️ Incomplet','en' => '⚠️ Incomplete']) ?>
+                            ? $this->t(['fr' => '✅ Complet','en' => '✅ Complete'])
+                            : $this->t(['fr' => '⚠️ Incomplet','en' => '⚠️ Incomplete']) ?>
                     <br><br>
-                    <button type="button" 
+                    <button type="button"
                             onclick="window.location.href='index.php?page=toggle_complete&numetu=<?= urlencode($student['NumEtu'] ?? '') ?>&lang=<?= htmlspecialchars($this->lang) ?>'"
                             class="btn-secondary"
                             style="margin-top: 10px;">
                         <?= ($student['IsComplete'] ?? 0)
-                            ? $this->t(['fr' => 'Marquer comme incomplet','en' => 'Mark as incomplete'])
-                            : $this->t(['fr' => 'Marquer comme complet','en' => 'Mark as complete']) ?>
+                                ? $this->t(['fr' => 'Marquer comme incomplet','en' => 'Mark as incomplete'])
+                                : $this->t(['fr' => 'Marquer comme complet','en' => 'Mark as complete']) ?>
                     </button>
                 </div>
             </div>
@@ -709,53 +815,6 @@ class FoldersPageAdmin
     }
 
     /**
-     * Applies filters (PHP side) to the list of students before pagination.
-     * Note: Ideally, this should be done in SQL (Model), but kept here for compatibility with existing structure.
-     *
-     * @param array $etudiants Full list of students.
-     * @return array Filtered list.
-     */
-    private function applyFilters(array $etudiants): array
-    {
-        $filtered = $etudiants;
-
-        if (($this->filters['type'] ?? 'all') !== 'all') {
-            $filtered = array_filter($filtered, fn($e) => ($e['Type'] ?? '') === $this->filters['type']);
-        }
-
-        if (($this->filters['zone'] ?? 'all') !== 'all') {
-            $filtered = array_filter($filtered, fn($e) => ($e['Zone'] ?? '') === $this->filters['zone']);
-        }
-
-        if (isset($this->filters['complet']) && $this->filters['complet'] !== 'all') {
-            $wantComplete = $this->filters['complet'] == '1';
-            $filtered = array_filter($filtered, function ($e) use ($wantComplete) {
-                $isComplete = !empty($e['IsComplete']) && $e['IsComplete'] == 1;
-                return $isComplete === $wantComplete;
-            });
-        }
-
-        if (!empty($this->filters['date_debut'])) {
-            $filtered = array_filter($filtered, fn($e) => ($e['DateNaissance'] ?? '') >= $this->filters['date_debut']);
-        }
-        if (!empty($this->filters['date_fin'])) {
-            $filtered = array_filter($filtered, fn($e) => ($e['DateNaissance'] ?? '') <= $this->filters['date_fin']);
-        }
-
-        if (!empty($this->filters['search'])) {
-            $search = strtolower($this->filters['search']);
-            $filtered = array_filter($filtered, function ($e) use ($search) {
-                return strpos(strtolower($e['Nom'] ?? ''), $search) !== false
-                        || strpos(strtolower($e['Prenom'] ?? ''), $search) !== false
-                        || strpos(strtolower($e['EmailPersonnel'] ?? ''), $search) !== false
-                        || strpos(strtolower($e['NumEtu'] ?? ''), $search) !== false;
-            });
-        }
-
-        return array_values($filtered);
-    }
-
-    /**
      * Builds pagination URL preserving current filters.
      *
      * @param int $page Target page number.
@@ -764,8 +823,8 @@ class FoldersPageAdmin
     private function buildPaginationUrl(int $page): string
     {
         $params = array_merge($this->filters, [
-            'p' => $page,
-            'page' => 'folders-admin'
+                'p' => $page,
+                'page' => 'folders-admin'
         ]);
         return 'index.php?' . http_build_query($params);
     }
@@ -778,10 +837,10 @@ class FoldersPageAdmin
     private function hasActiveFilters(): bool
     {
         return ($this->filters['type'] ?? 'all') !== 'all'
-            || ($this->filters['zone'] ?? 'all') !== 'all'
-            || ($this->filters['complet'] ?? 'all') !== 'all'
-            || !empty($this->filters['date_debut'])
-            || !empty($this->filters['date_fin'])
-            || !empty($this->filters['search']);
+                || ($this->filters['zone'] ?? 'all') !== 'all'
+                || ($this->filters['complet'] ?? 'all') !== 'all'
+                || !empty($this->filters['date_debut'])
+                || !empty($this->filters['date_fin'])
+                || !empty($this->filters['search']);
     }
 }

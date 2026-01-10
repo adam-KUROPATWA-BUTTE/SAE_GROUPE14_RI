@@ -11,9 +11,8 @@ use Model\Folder\FolderStudent;
  * Controller for managing student folders (student side).
  *
  * Responsibilities:
- * - Display the student's folder information
- * - Create a new folder if none exists
- * - Update personal information
+ *  - Display the student's folder information
+ *  - Update personal information
  */
 class FoldersControllerStudent implements ControllerInterface
 {
@@ -26,11 +25,18 @@ class FoldersControllerStudent implements ControllerInterface
      */
     public static function support(string $page, string $method): bool
     {
-        return in_array($page, ['folders-student', 'update_student', 'create_folder']);
+        return $page === 'folders-student' || $page === 'update_student';
     }
 
     /**
      * Main control method to handle the application flow.
+     *
+     * Actions:
+     *  - Starts session if needed
+     *  - Checks if the student is logged in
+     *  - Processes folder update if POST request
+     *  - Retrieves student information
+     *  - Renders the appropriate view
      */
     public function control(): void
     {
@@ -47,18 +53,11 @@ class FoldersControllerStudent implements ControllerInterface
 
         $numetu = $_SESSION['numetu'];
         $lang = $_GET['lang'] ?? 'fr';
-        $page = $_GET['page'] ?? '';
 
-        // --- Routing Actions ---
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if ($page === 'update_student') {
-                $this->updateStudent($numetu, $lang);
-                return;
-            }
-            if ($page === 'create_folder') {
-                $this->createFolder($numetu, $lang);
-                return;
-            }
+        // --- Case: folder update ---
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_GET['page'] ?? '') === 'update_student') {
+            $this->updateStudent($numetu, $lang);
+            return;
         }
 
         // --- Get student folder details ---
@@ -74,77 +73,16 @@ class FoldersControllerStudent implements ControllerInterface
     }
 
     /**
-     * Creates a new folder for the student.
-     */
-    private function createFolder(string $numetu, string $lang): void
-    {
-        // Check if folder already exists (Constraint: Single application)
-        if (FolderStudent::getStudentDetails($numetu)) {
-            $_SESSION['message'] = ($lang === 'fr') 
-                ? "Vous avez déjà déposé un dossier." 
-                : "You have already submitted an application.";
-            header('Location: index.php?page=folders-student&lang=' . $lang);
-            exit;
-        }
-
-        // Collect Data
-        $data = [
-            'NumEtu' => $numetu,
-            'Nom' => $_POST['nom'] ?? '',
-            'Prenom' => $_POST['prenom'] ?? '',
-            'DateNaissance' => $_POST['naissance'] ?? null,
-            'Sexe' => $_POST['sexe'] ?? null,
-            'Adresse' => $_POST['adresse'] ?? null,
-            'CodePostal' => $_POST['cp'] ?? null,
-            'Ville' => $_POST['ville'] ?? null,
-            'EmailPersonnel' => $_POST['email_perso'] ?? '',
-            'EmailAMU' => $_POST['email_amu'] ?? null,
-            'Telephone' => $_POST['telephone'] ?? '',
-            'CodeDepartement' => $_POST['departement'] ?? null,
-            'Type' => $_POST['type'] ?? null,
-            'Zone' => $_POST['zone'] ?? null
-        ];
-
-        // Validations
-        $errors = [];
-        if (empty($data['Nom']) || empty($data['Prenom'])) {
-            $errors[] = $lang === 'fr' ? "Nom et Prénom requis." : "Name and Firstname required.";
-        }
-        if (empty($data['Type']) || empty($data['Zone'])) {
-            $errors[] = $lang === 'fr' ? "Type et Zone requis." : "Type and Zone required.";
-        }
-
-        if (!empty($errors)) {
-            $_SESSION['message'] = implode(' ', $errors);
-            header('Location: index.php?page=folders-student&lang=' . $lang);
-            exit;
-        }
-
-        // Handle Files
-        $photoData = $this->getFileData('photo');
-        $cvData = $this->getFileData('cv');
-        $conventionData = $this->getFileData('convention');
-        $lettreData = $this->getFileData('lettre_motivation');
-
-        // Create in DB
-        $success = FolderStudent::createDossier($data, $photoData, $cvData, $conventionData, $lettreData);
-
-        $_SESSION['message'] = $success
-            ? ($lang === 'fr' ? 'Votre demande a été déposée avec succès.' : 'Application submitted successfully.')
-            : ($lang === 'fr' ? 'Erreur lors du dépôt de la demande.' : 'Error submitting application.');
-
-        header('Location: index.php?page=folders-student&lang=' . $lang);
-        exit;
-    }
-
-    /**
      * Updates the student's folder information.
+     *
+     * @param string $numetu Student number (unique identifier, not editable)
+     * @param string $lang   Language for messages (fr or en)
      */
     private function updateStudent(string $numetu, string $lang): void
     {
-        // --- Prepare updated data ---
+        // --- Prepare updated data (some fields are not editable) ---
         $data = [
-            'NumEtu'         => $numetu,
+            'NumEtu'         => $numetu, // locked
             'Adresse'        => $_POST['adresse'] ?? null,
             'CodePostal'     => $_POST['cp'] ?? null,
             'Ville'          => $_POST['ville'] ?? null,
@@ -157,6 +95,9 @@ class FoldersControllerStudent implements ControllerInterface
         if (empty($data['EmailPersonnel'])) {
             $errors[] = $lang === 'fr' ? "L'email personnel est requis." : "Personal email is required.";
         }
+        if (empty($data['Telephone'])) {
+            $errors[] = $lang === 'fr' ? "Le téléphone est requis." : "Phone number is required.";
+        }
 
         if (!empty($errors)) {
             $_SESSION['message'] = implode(' ', $errors);
@@ -165,13 +106,16 @@ class FoldersControllerStudent implements ControllerInterface
         }
 
         // --- Handle uploaded files ---
-        $photoData = $this->getFileData('photo');
-        $cvData = $this->getFileData('cv');
-        $conventionData = $this->getFileData('convention');
-        $lettreData = $this->getFileData('lettre_motivation');
+        $photoData = isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK
+            ? file_get_contents($_FILES['photo']['tmp_name'])
+            : null;
+
+        $cvData = isset($_FILES['cv']) && $_FILES['cv']['error'] === UPLOAD_ERR_OK
+            ? file_get_contents($_FILES['cv']['tmp_name'])
+            : null;
 
         // --- Update the student folder ---
-        $success = FolderStudent::updateDossier($data, $photoData, $cvData, $conventionData, $lettreData);
+        $success = FolderStudent::updateDossier($data, $photoData, $cvData);
 
         // --- Flash message and redirect to student page ---
         $_SESSION['message'] = $success
@@ -180,15 +124,5 @@ class FoldersControllerStudent implements ControllerInterface
 
         header('Location: index.php?page=folders-student&lang=' . $lang);
         exit;
-    }
-
-    /**
-     * Helper to retrieve file content if uploaded correctly
-     */
-    private function getFileData(string $inputName): ?string {
-        if (isset($_FILES[$inputName]) && $_FILES[$inputName]['error'] === UPLOAD_ERR_OK) {
-            return file_get_contents($_FILES[$inputName]['tmp_name']);
-        }
-        return null;
     }
 }

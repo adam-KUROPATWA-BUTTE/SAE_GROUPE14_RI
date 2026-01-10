@@ -630,4 +630,100 @@ class FolderAdmin
             return [];
         }
     }
+    /**
+     * Search folders with SQL-based pagination for better performance
+     *
+     * @param array $filters Search filters
+     * @param int $page Current page number (1-indexed)
+     * @param int $perPage Items per page
+     * @return array ['data' => array, 'total' => int, 'totalPages' => int]
+     */
+    public static function rechercherAvecPagination(array $filters, int $page = 1, int $perPage = 10): array
+    {
+        $pdo = self::getConnection();
+        $params = [];
+
+        $sql = "
+            SELECT 
+                NumEtu, Nom, Prenom, EmailPersonnel as email, Telephone,
+                Type, Zone, DateNaissance, Sexe, Adresse, CodePostal, Ville,
+                EmailAMU, CodeDepartement, IsComplete, PiecesJustificatives
+            FROM dossiers
+            WHERE 1=1
+        ";
+
+        // --- Filter: Completeness Status ---
+        if (isset($filters['complet']) && $filters['complet'] !== 'all') {
+            if ($filters['complet'] == '1') {
+                $sql .= " AND IsComplete = 1";
+            } else {
+                // Incomplete includes 0 and NULL
+                $sql .= " AND (IsComplete = 0 OR IsComplete IS NULL)";
+            }
+        }
+
+        // --- Filter: Type (Case insensitive) ---
+        if (!empty($filters['type']) && $filters['type'] !== 'all') {
+            $sql .= " AND LOWER(Type) = LOWER(:type)";
+            $params[':type'] = $filters['type'];
+        }
+
+        // --- Filter: Zone (Case insensitive) ---
+        if (!empty($filters['zone']) && $filters['zone'] !== 'all') {
+            $sql .= " AND LOWER(Zone) = LOWER(:zone)";
+            $params[':zone'] = $filters['zone'];
+        }
+
+        // --- Text Search (Name, Email, Student ID) ---
+        if (!empty($filters['search'])) {
+            $sql .= " AND (Nom LIKE :search OR Prenom LIKE :search OR NumEtu LIKE :search OR EmailPersonnel LIKE :search)";
+            $params[':search'] = '%' . $filters['search'] . '%';
+        }
+
+        // --- Get total count BEFORE pagination ---
+        $countSql = "SELECT COUNT(*) as total FROM (" . $sql . ") as subquery";
+        try {
+            $countStmt = $pdo->prepare($countSql);
+            $countStmt->execute($params);
+            $totalCount = (int) $countStmt->fetch(\PDO::FETCH_ASSOC)['total'];
+        } catch (\PDOException $e) {
+            error_log("Error counting folders: " . $e->getMessage());
+            $totalCount = 0;
+        }
+
+        // --- Apply sorting and pagination ---
+        $sql .= " ORDER BY Nom ASC, Prenom ASC";
+
+        $offset = ($page - 1) * $perPage;
+        $sql .= " LIMIT :limit OFFSET :offset";
+        $params[':limit'] = $perPage;
+        $params[':offset'] = $offset;
+
+        // --- Execute paginated query ---
+        try {
+            $stmt = $pdo->prepare($sql);
+
+            // Bind integer parameters separately for LIMIT/OFFSET
+            foreach ($params as $key => $value) {
+                if ($key === ':limit' || $key === ':offset') {
+                    $stmt->bindValue($key, $value, \PDO::PARAM_INT);
+                } else {
+                    $stmt->bindValue($key, $value);
+                }
+            }
+
+            $stmt->execute();
+            $data = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            return [
+                'data' => $data,
+                'total' => $totalCount,
+                'totalPages' => ($totalCount > 0) ? ceil($totalCount / $perPage) : 0
+            ];
+        } catch (\PDOException $e) {
+            error_log("Error searching folders with pagination: " . $e->getMessage());
+            return ['data' => [], 'total' => 0, 'totalPages' => 0];
+        }
+    }
+
 }
