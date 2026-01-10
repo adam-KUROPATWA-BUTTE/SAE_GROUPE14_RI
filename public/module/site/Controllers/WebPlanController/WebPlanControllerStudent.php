@@ -3,7 +3,7 @@
 namespace Controllers\WebPlanController;
 
 use Controllers\ControllerInterface;
-use View\WebPlan\WebPlanPageStudent;
+use View\WebPlan\WebPLanPageStudent;
 use Model\WebPlan;
 
 class WebPlanControllerStudent implements ControllerInterface

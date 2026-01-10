@@ -1,11 +1,29 @@
+:root {
+    --primary-color: #00558B;
+    --secondary-color: #EBC55E;
+    --text-color: #ffffff;
+    --background-color: #EBC55E;
+    --accent-color: #2B91BB;
+    --hero-bg-color: #00558B;
+}
+
+body.tritanopie {
+    --primary-color: #005C45;
+    --secondary-color: #FF9100;
+    --text-color: #ffffff;
+    --background-color: #FF9100;
+    --accent-color: #009b73;
+    --hero-bg-color: #005C45;
+}
 
 main {
-    background: #ffffff;
     width: 80%;
+    max-width: 1200px;
     margin: 40px auto;
-    padding: 60px;
+    padding: 50px 40px;
+    background: #ffffff;
     border-radius: 12px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 .progress-container {
     position: relative;
@@ -21,27 +39,29 @@ main {
     content: "";
     position: absolute;
     top: 50%;
-    left: 0;
-    transform: translateY(-50%);
-    width: 100%;
+    left: calc(100% / 6);
+    width: calc(100% * 2 / 3);
     height: 3px;
     background-color: #dcdcdc;
+    transform: translateY(-50%);
     border-radius: 2px;
     z-index: 0;
 }
+
 
 /* Ligne bleue de progression */
 .progress-line {
     position: absolute;
     top: 50%;
-    left: 0;
-    transform: translateY(-50%);
+    left: calc(100% / 6);
     height: 4px;
     background-color: #006694;
+    transform: translateY(-50%);
     border-radius: 2px;
     transition: width 0.4s ease;
     z-index: 1;
 }
+
 
 .progress-step {
     display: flex;
@@ -49,18 +69,28 @@ main {
     align-items: center;
     position: relative;
 }
+
+
+
 .progress-circle {
-    width: 10px;
-    height: 10px;
+    width: 14px;
+    height: 14px;
     background-color: #dcdcdc;
     border-radius: 50%;
-    margin-top: 4px;
-    transition: background-color 0.3s;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
 }
 
-/* Cercle coloré quand l’étape est active */
+/* Point actif */
 .progress-step.active .progress-circle {
     background-color: #006694;
+}
+
+.progress-step {
+    flex: 1;
+    align-items: center;
 }
 
 
@@ -70,7 +100,7 @@ main {
     justify-content: center;
     align-items: center;
     height: 70px;
-    margin-bottom: 15px;
+    margin-bottom: 35px;
 }
 
 .progress-icon img {
@@ -79,6 +109,16 @@ main {
     object-fit: contain;
     display: block;
 }
+/* Icônes actives */
+.progress-step.active .progress-icon img {
+    filter:
+            brightness(1.1)
+            saturate(1.15)
+            drop-shadow(0 0 4px rgba(43, 145, 187, 0.6));
+    transform: scale(1.03);
+    transition: all 0.25s ease;
+}
+
 
 /* Texte */
 .progress-step span {
@@ -90,6 +130,38 @@ main {
     font-weight: bold;
     color: var(--accent-color);
 }
+.contact-info-box {
+    background-color: #f2f2f2;
+    border-radius: 12px;
+    padding: 25px 30px;
+    margin: 40px auto 0;
+    max-width: 700px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.contact-info-box p {
+    margin: 10px 0;
+    color: #333;
+    font-size: 15px;
+}
+
+.contact-title {
+    font-weight: bold;
+    font-size: 17px;
+    color: var(--primary-color);
+}
+
+.contact-email a {
+    font-weight: bold;
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+.contact-email a:hover {
+    text-decoration: underline;
+}
+
 
 
 .dashboard-container {
@@ -281,4 +353,44 @@ main {
         border: none;
         cursor: pointer;
     }
+}
+.filters-container {
+    background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px;
+    border: 1px solid #e9ecef;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+.filters-container input, .filters-container select {
+    width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;
+}
+.btn-filter {
+    grid-column: 1 / -1; margin-top: 10px; padding: 10px 20px;
+    background-color: #003366; color: white; border: none; border-radius: 4px; cursor: pointer;
+    width: 100%;
+}
+.btn-filter:hover { background-color: #002244; }
+
+/* --- COLOR CODE FIX --- */
+.status-badge {
+    padding: 5px 10px; border-radius: 15px; color: white; font-weight: bold; font-size: 0.85em;
+    text-align: center; display:inline-block; min-width: 70px;
+}
+/* These names now MATCH the PHP logic below */
+.bg-success { background-color: #28a745 !important; } /* Vert */
+.bg-warning { background-color: #ffc107 !important; color: #333 !important; } /* Orange */
+.bg-danger  { background-color: #dc3545 !important; } /* Rouge */
+
+h2 { color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-top: 40px; }
+
+.btn-relance {
+    text-decoration: none;
+    font-size: 1.2em;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    display: inline-block;
+}
+.btn-relance:hover {
+    transform: scale(1.2);
 }
