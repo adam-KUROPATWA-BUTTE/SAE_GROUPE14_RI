@@ -71,6 +71,14 @@ class PartnersPageAdmin
 
         <main>
             <h1><?= htmlspecialchars($this->titre) ?></h1>
+            <?php if (isset($_GET['success'])): ?>
+                <p class="success-message">
+                    <?= $this->t(['fr' => 'Partenaire ajouté avec succès.', 'en' => 'Partner successfully added.']) ?>
+                </p>
+            <?php elseif (!empty($this->errorMessage)): ?>
+                <p class="error-message"><?= htmlspecialchars($this->errorMessage) ?></p>
+            <?php endif; ?>
+
             <div class="partners-actions">
                 <button class="btn-add-partner">
                     <span class="btn-plus">+</span>

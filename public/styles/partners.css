@@ -177,6 +177,23 @@ a {
     text-align: right;
 }
 
+.success-message {
+    padding: 10px;
+    background-color: #d4edda;
+    color: #155724;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.error-message {
+    padding: 10px;
+    background-color: #f8d7da;
+    color: #721c24;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+
 @media (max-width: 810px) {
     main {
         width: 95%;
