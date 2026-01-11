@@ -92,7 +92,16 @@ class FoldersControllerAdmin
         // Déterminer la page courante
         $currentPage = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
 
+
+
+
         // 🔍 DEBUG - Commence ici
+
+
+        $startTime = microtime(true);  // ← AJOUTE CETTE LIGNE
+
+
+
         error_log("=== FOLDERS CONTROLLER DEBUG ===");
         error_log("URL: " . ($_SERVER['REQUEST_URI'] ?? 'N/A'));
         error_log("GET params: " . print_r($_GET, true));
@@ -114,6 +123,12 @@ class FoldersControllerAdmin
         $result = FolderAdmin::rechercherAvecPagination($filters, $currentPage, $perPage);
 
         error_log("Result from Model: total=" . $result['total'] . ", totalPages=" . $result['totalPages'] . ", data count=" . count($result['data']));
+
+        $endTime = microtime(true);  // ← AJOUTE CETTE LIGNE
+        $executionTime = round(($endTime - $startTime) * 1000, 2);  // ← AJOUTE CETTE LIGNE
+        error_log("⏱️ TEMPS D'EXÉCUTION: " . $executionTime . "ms");  // ← AJOUTE CETTE LIGNE
+
+
         error_log("=== END DEBUG ===\n");
         // 🔍 DEBUG - Fin
 

@@ -204,6 +204,18 @@ class FoldersPageAdmin
 
             window.location.href = url.toString();
             }
+            /**
+             * Recherche avec debounce (attend 300ms après la dernière frappe)
+             */
+            let rechercheTimeout;
+            function rechercherAvecDebounce() {
+                clearTimeout(rechercheTimeout);
+                rechercheTimeout = setTimeout(() => {
+                    rechercherEtRevenirPage1();
+                }, 300);
+            }
+
+
 
             /**
              * Toggles visibility of specific document fields based on mobility type.
@@ -399,7 +411,7 @@ class FoldersPageAdmin
         <div class="student-toolbar">
             <div class="search-container-toolbar">
                 <label for="search" class="search-label"><?= $this->t(['fr' => 'Rechercher','en' => 'Search']) ?></label>
-                <input type="text" id="search" name="search" placeholder="Nom, prénom, email..." value="<?= htmlspecialchars($this->filters['search'] ?? '') ?>" onkeyup="filtrerEtudiants()" onchange="rechercherEtRevenirPage1()">
+                <input type="text" id="search" name="search" placeholder="Nom, prénom, email..." value="<?= htmlspecialchars($this->filters['search'] ?? '') ?>" oninput="rechercherAvecDebounce()">
             </div>
             <div>
                 <button id="btn-creer-dossier" onclick="window.location.href='<?= $this->buildUrl('/folders-admin', ['action' => 'create']) ?>'">
