@@ -101,8 +101,9 @@ class DashboardPageAdmin
             
             <link rel="stylesheet" href="styles/folders.css">
             <link rel="stylesheet" href="styles/dashboard.css">
-            <link rel="stylesheet" href="styles/chatbot.css">
             <link rel="stylesheet" href="styles/index.css">
+            <link rel="stylesheet" href="styles/chatbot.css">
+
 
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
@@ -273,8 +274,6 @@ class DashboardPageAdmin
             </div>
         </main>
 
-        <footer><p>&copy; 2025 - AMU</p></footer>
-
         <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
         <div id="help-popup" class="chat-popup">
             <div class="help-popup-header">
@@ -283,7 +282,6 @@ class DashboardPageAdmin
             </div>
             <div id="chat-messages" class="chat-messages"></div>
             <div id="quick-actions" class="quick-actions"></div>
-            </div>
         </div>
 
         <script>
@@ -292,10 +290,17 @@ class DashboardPageAdmin
                 role: '<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>'
             };
         </script>
-        <script src="js/dashboard.js"></script>
         <script src="js/chatbot.js"></script>
+
+        <footer>
+            <p>&copy; 2026 - Aix-Marseille Université.</p>
+            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
+                <img class="insta" src="img/instagram.png" alt="Instagram">
+            </a>
+        </footer>
         </body>
-        </html>
+
+    </html>
         <?php
     }
 }

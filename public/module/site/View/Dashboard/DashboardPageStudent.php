@@ -59,6 +59,10 @@ class DashboardPageStudent
      */
     public function render(): void
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         // Determine current status and progress percentage
         $status = $this->dossier['status'] ?? 'depot';
         $steps = ['depot', 'instruction', 'decision'];
@@ -166,11 +170,7 @@ class DashboardPageStudent
 
         </main>
 
-        <footer>
-            <p>&copy; 2025 - Aix-Marseille Université.</p>
-            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
-                <img class="insta" src="img/instagram.png" alt="Instagram">
-            </a>
+
             <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
 
             <div id="help-popup" class="chat-popup">
@@ -202,8 +202,14 @@ class DashboardPageStudent
             </script>
 
             <script src="js/chatbot.js"></script>
-
+        <footer>
+            <p>&copy; 2026 - Aix-Marseille Université.</p>
+            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
+                <img class="insta" src="img/instagram.png" alt="Instagram">
+            </a>
+        </footer>
         </body>
+
         </html>
         <?php
     }
