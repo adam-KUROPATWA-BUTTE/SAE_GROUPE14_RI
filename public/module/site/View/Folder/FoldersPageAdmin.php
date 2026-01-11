@@ -493,8 +493,8 @@ class FoldersPageAdmin
                     <td><?= htmlspecialchars($mobilityType) ?></td>
                     <td>
                         <?= ($etudiant['IsComplete'] ?? 0) == 1
-                                ? '<span style="color:green">✔ Complet</span>'
-                                : '<span style="color:orange">⚠️ Incomplet</span>' ?>
+                                ? '<span style="color:green">Complet</span>'
+                                : '<span style="color:orange">Incomplet</span>' ?>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -720,7 +720,7 @@ class FoldersPageAdmin
                                download="photo_<?= htmlspecialchars($student['NumEtu']) ?>.jpg"
                                class="btn-secondary"
                                style="margin-top: 10px; display: inline-block;">
-                                <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
+                                <?= $this->t(['fr' => 'Télécharger','en' => 'Download']) ?>
                             </a>
                         </div>
                     <?php else : ?>
@@ -733,11 +733,11 @@ class FoldersPageAdmin
                     <label><?= $this->t(['fr' => 'CV','en' => 'CV']) ?></label>
                     <?php if (!empty($student['pieces']['cv'])) : ?>
                         <div style="margin-top: 10px;">
-                            <p>✅ <?= $this->t(['fr' => 'CV disponible','en' => 'CV available']) ?></p>
+                            <p style="color: #008000FF;"> <?= $this->t(['fr' => 'CV disponible','en' => 'CV available']) ?></p>
                             <a href="data:application/pdf;base64,<?= $student['pieces']['cv'] ?>"
                                download="cv_<?= htmlspecialchars($student['NumEtu']) ?>.pdf"
                                class="btn-secondary">
-                                <?= $this->t(['fr' => '📥 Télécharger le CV','en' => '📥 Download CV']) ?>
+                                <?= $this->t(['fr' => 'Télécharger le CV','en' => 'Download CV']) ?>
                             </a>
                         </div>
                     <?php else : ?>
@@ -751,11 +751,11 @@ class FoldersPageAdmin
 
                     <?php if (!empty($student['pieces']['convention'])) : ?>
                         <div style="margin-top: 10px;">
-                            <p>✅ <?= $this->t(['fr' => 'Convention disponible','en' => 'Agreement available']) ?></p>
+                            <p style="color: #008000FF;"> <?= $this->t(['fr' => 'Convention disponible','en' => 'Agreement available']) ?></p>
                             <a href="data:application/pdf;base64,<?= $student['pieces']['convention'] ?>"
                                download="convention_<?= htmlspecialchars($student['NumEtu']) ?>.pdf"
                                class="btn-secondary">
-                                <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
+                                <?= $this->t(['fr' => 'Télécharger','en' => 'Download']) ?>
                             </a>
                         </div>
                     <?php else : ?>
@@ -784,11 +784,17 @@ class FoldersPageAdmin
                     <input type="file" name="lettre_motivation" id="lettre_motivation_file" accept=".pdf,.doc,.docx" disabled style="background-color: #e0e0e0; color: #666; margin-top: 10px;">
                 </div>
 
+
+
                 <div style="margin-top: 20px; padding: 15px; background-color: <?= ($student['IsComplete'] ?? 0) ? '#d4edda' : '#fff3cd' ?>; border-radius: 5px;">
                     <strong><?= $this->t(['fr' => 'Statut du dossier :','en' => 'Folder status:']) ?></strong>
-                    <?= ($student['IsComplete'] ?? 0)
-                            ? $this->t(['fr' => '✅ Complet','en' => '✅ Complete'])
-                            : $this->t(['fr' => '⚠️ Incomplet','en' => '⚠️ Incomplete']) ?>
+                    <span style="color: <?= ($student['IsComplete'] ?? 0) ? '#008000FF' : '#FFA500FF' ?>;">
+                        <?= ($student['IsComplete'] ?? 0)
+                                ? $this->t(['fr' => 'Complet','en' => 'Complete'])
+                                : $this->t(['fr' => 'Incomplet','en' => 'Incomplete']) ?>
+                    </span>
+                </div>
+
                     <br><br>
                     <button type="button"
                             onclick="window.location.href='index.php?page=toggle_complete&numetu=<?= urlencode($student['NumEtu'] ?? '') ?>&lang=<?= htmlspecialchars($this->lang) ?>'"
