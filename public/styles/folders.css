@@ -413,3 +413,56 @@ tr:nth-child(even) {
         cursor: pointer;
     }
 }
+
+
+
+
+table#table-etudiants {
+    table-layout: fixed;
+    width: 100%;
+}
+
+
+table#table-etudiants th,
+table#table-etudiants td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Définir les largeurs de chaque colonne */
+table#table-etudiants th:nth-child(1),
+table#table-etudiants td:nth-child(1) {
+    width: 15%; /* Nom */
+}
+
+table#table-etudiants th:nth-child(2),
+table#table-etudiants td:nth-child(2) {
+    width: 15%; /* Prénom */
+}
+
+table#table-etudiants th:nth-child(3),
+table#table-etudiants td:nth-child(3) {
+    width: 12%; /* Date naissance */
+}
+
+table#table-etudiants th:nth-child(4),
+table#table-etudiants td:nth-child(4) {
+    width: 12%; /* Type */
+}
+
+table#table-etudiants th:nth-child(5),
+table#table-etudiants td:nth-child(5) {
+    width: 15%; /* Zone */
+}
+
+table#table-etudiants th:nth-child(6),
+table#table-etudiants td:nth-child(6) {
+    width: 13%; /* Mobilité */
+}
+
+table#table-etudiants th:nth-child(7),
+table#table-etudiants td:nth-child(7) {
+    width: 18%; /* Statut */
+}
+
