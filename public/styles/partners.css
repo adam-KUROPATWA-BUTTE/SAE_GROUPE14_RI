@@ -154,6 +154,12 @@ a {
     display: none;
 }
 
+.partner-form input:focus{
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 5px rgba(0, 86, 179, 0.5);
+}
+
 .form-group {
     display: flex;
     flex-direction: column;

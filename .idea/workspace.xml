@@ -4,9 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e4dbe818-91e3-4dc7-9532-5ab684ba46d8" name="Changes" comment="formulaire d'ajout, sans connection à la base de donnée">
+    <list default="true" id="e4dbe818-91e3-4dc7-9532-5ab684ba46d8" name="Changes" comment="formulaire d'ajout avec connexion sans design">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/module/site/Controllers/PartnersController/PartnersControllerAdmin.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/module/site/Controllers/PartnersController/PartnersControllerAdmin.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/public/module/site/View/Partners/PartnersPageAdmin.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/module/site/View/Partners/PartnersPageAdmin.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/public/styles/partners.css" beforeDir="false" afterPath="$PROJECT_DIR$/public/styles/partners.css" afterDir="false" />
     </list>
@@ -256,7 +255,15 @@
       <option name="project" value="LOCAL" />
       <updated>1768129883037</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="formulaire d'ajout avec connexion sans design">
+      <option name="closed" value="true" />
+      <created>1768131030463</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1768131030463</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -270,6 +277,7 @@
     <MESSAGE value="Merge branch 'task_daltonien'" />
     <MESSAGE value="nouvelle image" />
     <MESSAGE value="formulaire d'ajout, sans connection à la base de donnée" />
-    <option name="LAST_COMMIT_MESSAGE" value="formulaire d'ajout, sans connection à la base de donnée" />
+    <MESSAGE value="formulaire d'ajout avec connexion sans design" />
+    <option name="LAST_COMMIT_MESSAGE" value="formulaire d'ajout avec connexion sans design" />
   </component>
 </project>

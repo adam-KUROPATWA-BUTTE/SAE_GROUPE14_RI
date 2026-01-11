@@ -72,7 +72,7 @@ class PartnersPageAdmin
         <main>
             <h1><?= htmlspecialchars($this->titre) ?></h1>
             <?php if (isset($_GET['success'])): ?>
-                <p class="success-message">
+                <p id="success-message" class="success-message">
                     <?= $this->t(['fr' => 'Partenaire ajouté avec succès.', 'en' => 'Partner successfully added.']) ?>
                 </p>
             <?php elseif (!empty($this->errorMessage)): ?>
@@ -87,29 +87,27 @@ class PartnersPageAdmin
                 <div id="partner-form-container" class="partner-form hidden">
                     <form method="post" action="">
                         <div class="form-group">
-                            <label for="name"><?= $this->t(['fr' => 'Continent', 'en' => 'MainLand']) ?></label>
-                            <input type="text" id="name" name="name" required>
+                            <label for="name"><?= $this->t(['fr' => 'Continent', 'en' => 'Continent']) ?></label>
+                            <input type="text" id="name" name="name" required placeholder="<?= $this->t(['fr' => 'Ex: Europe', 'en' => 'Ex: Europe']) ?>">
                         </div>
 
                         <div class="form-group">
                             <label for="country"><?= $this->t(['fr' => 'Pays', 'en' => 'Country']) ?></label>
-                            <input type="text" id="country" name="country" required>
+                            <input type="text" id="country" name="country" required placeholder="<?= $this->t(['fr' => 'Ex: France', 'en' => 'Ex: France']) ?>">
                         </div>
 
                         <div class="form-group">
                             <label for="city"><?= $this->t(['fr' => 'Ville', 'en' => 'City']) ?></label>
-                            <input type="text" id="city" name="city" required>
+                            <input type="text" id="city" name="city" required placeholder="<?= $this->t(['fr' => 'Ex: Marseille', 'en' => 'Ex: Marseille']) ?>">
                         </div>
 
                         <div class="form-group">
                             <label for="institution">
-                                <?= $this->t([
-                                        'fr' => 'Universités et institutions',
-                                        'en' => 'Universities and institutions'
-                                ]) ?>
+                                <?= $this->t(['fr' => 'Universités et institutions', 'en' => 'Universities and institutions']) ?>
                             </label>
-                            <input type="text" id="institution" name="institution" required>
+                            <input type="text" id="institution" name="institution" required placeholder="<?= $this->t(['fr' => 'Ex: Aix-Marseille Université', 'en' => 'Ex: Aix-Marseille University']) ?>">
                         </div>
+
 
                         <div class="form-actions">
                             <button type="submit" class="btn-save">
@@ -219,6 +217,15 @@ class PartnersPageAdmin
                 // Réafficher le bouton Ajouter
                 addPartnerBtn.style.display = 'inline-flex';
             });
+
+            const successMsg = document.getElementById('success-message');
+            if (successMsg) {
+                setTimeout(() => {
+                    successMsg.style.transition = 'opacity 0.5s ease';
+                    successMsg.style.opacity = '0';
+                    setTimeout(() => successMsg.remove(), 500);
+                }, 3000);
+            }
         </script>
 
         </body>
