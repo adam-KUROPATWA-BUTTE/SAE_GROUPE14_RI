@@ -205,14 +205,14 @@ class FoldersPageAdmin
             window.location.href = url.toString();
             }
             /**
-             * Recherche avec debounce (attend 300ms après la dernière frappe)
+             * Recherche avec debounce (attend 800ms après la dernière frappe)
              */
             let rechercheTimeout;
             function rechercherAvecDebounce() {
                 clearTimeout(rechercheTimeout);
                 rechercheTimeout = setTimeout(() => {
                     rechercherEtRevenirPage1();
-                }, 300);
+                }, 3000);
             }
 
 
@@ -409,9 +409,12 @@ class FoldersPageAdmin
     <?php endif; ?>
 
         <div class="student-toolbar">
-            <div class="search-container-toolbar">
+            <div class="search-container-toolbar" style="display: flex; align-items: center; gap: 10px;">
                 <label for="search" class="search-label"><?= $this->t(['fr' => 'Rechercher','en' => 'Search']) ?></label>
-                <input type="text" id="search" name="search" placeholder="Nom, prénom, email..." value="<?= htmlspecialchars($this->filters['search'] ?? '') ?>" oninput="rechercherAvecDebounce()">
+                <input type="text" id="search" name="search" placeholder="Nom, prénom, email..." value="<?= htmlspecialchars($this->filters['search'] ?? '') ?>" oninput="rechercherAvecDebounce()" onkeypress="if(event.key === 'Enter') rechercherEtRevenirPage1()">
+                <button type="button" onclick="rechercherEtRevenirPage1()" style="padding: 7px; cursor: pointer; background: #2b91bb; color: white; border: none; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                    <img src="img/loupe.png" style="width: 20px; height: 20px;">
+                </button>
             </div>
             <div>
                 <button id="btn-creer-dossier" onclick="window.location.href='<?= $this->buildUrl('/folders-admin', ['action' => 'create']) ?>'">
@@ -472,7 +475,7 @@ class FoldersPageAdmin
             <tbody>
             <?php foreach ($etudiants as $etudiant) : ?>
                 <?php
-                // Determine Mobility Type (Stage/Etudes) based on existing files in JSON
+                // Determine Mobility Type (Stage/études) based on existing files in JSON
                 $pieces = json_decode($etudiant['PiecesJustificatives'] ?? '{}', true);
                 $mobilityType = '-';
                 if (!empty($pieces['convention'])) {
