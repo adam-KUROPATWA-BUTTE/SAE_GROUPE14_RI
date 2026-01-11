@@ -687,7 +687,7 @@ class FolderAdmin
 
         // --- Text Search (Name, Email, Student ID) ---
         if (!empty($filters['search'])) {
-            $searchValue = '%' . $filters['search'] . '%';
+            $searchValue = $filters['search'] . '%';
             $whereConditions .= " AND (Nom LIKE :search1 OR Prenom LIKE :search2 OR NumEtu LIKE :search3 OR EmailPersonnel LIKE :search4)";
             $params['search1'] = $searchValue;
             $params['search2'] = $searchValue;
