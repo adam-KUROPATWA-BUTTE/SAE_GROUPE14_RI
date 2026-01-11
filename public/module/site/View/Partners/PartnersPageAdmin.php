@@ -76,6 +76,45 @@ class PartnersPageAdmin
                     <span class="btn-plus">+</span>
                     <?= $this->t(['fr' => 'Ajouter', 'en' => 'Add']) ?>
                 </button>
+                <div id="partner-form-container" class="partner-form hidden">
+                    <form method="post" action="">
+                        <div class="form-group">
+                            <label for="name"><?= $this->t(['fr' => 'Continent', 'en' => 'MainLand']) ?></label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="country"><?= $this->t(['fr' => 'Pays', 'en' => 'Country']) ?></label>
+                            <input type="text" id="country" name="country" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="city"><?= $this->t(['fr' => 'Ville', 'en' => 'City']) ?></label>
+                            <input type="text" id="city" name="city" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="institution">
+                                <?= $this->t([
+                                        'fr' => 'Universités et institutions',
+                                        'en' => 'Universities and institutions'
+                                ]) ?>
+                            </label>
+                            <input type="text" id="institution" name="institution" required>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-save">
+                                <?= $this->t(['fr' => 'Enregistrer', 'en' => 'Save']) ?>
+                            </button>
+
+                            <button type="button" class="btn-cancel">
+                                <?= $this->t(['fr' => 'Annuler', 'en' => 'Cancel']) ?>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
             </div>
 
             <p>
@@ -152,7 +191,28 @@ class PartnersPageAdmin
                     navMenu.classList.toggle('active');
                 });
             });
+
+            const addPartnerBtn = document.querySelector('.btn-add-partner');
+            const partnerForm = document.getElementById('partner-form-container');
+            const cancelBtn = document.querySelector('.btn-cancel');
+
+            addPartnerBtn.addEventListener('click', () => {
+                // Cacher le bouton Ajouter
+                addPartnerBtn.style.display = 'none';
+
+                // Afficher le formulaire
+                partnerForm.classList.remove('hidden');
+            });
+
+            cancelBtn.addEventListener('click', () => {
+                // Cacher le formulaire
+                partnerForm.classList.add('hidden');
+
+                // Réafficher le bouton Ajouter
+                addPartnerBtn.style.display = 'inline-flex';
+            });
         </script>
+
         </body>
         </html>
         <?php
