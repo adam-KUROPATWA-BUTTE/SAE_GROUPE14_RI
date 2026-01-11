@@ -61,9 +61,9 @@ class PartnersPageStudent
             </div>
             <nav class="menu">
                 <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Accueil','en' => 'Home']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-student') ?>'"><?= $this->t(['fr' => 'Tableau de bord','en' => 'Dashboard']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-student') ?>'"><?= $this->t(['fr' => 'Mon Tableau de bord','en' => 'My Dashboard']) ?></button>
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('/partners-student') ?>'"><?= $this->t(['fr' => 'Partenaires','en' => 'Partners']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/folders-student') ?>'"><?= $this->t(['fr' => 'Dossiers','en' => 'Folders']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/folders-student') ?>'"><?= $this->t(['fr' => 'Mon Dossier','en' => 'My Folder']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-student') ?>'"><?= $this->t(['fr' => 'Plan du site','en' => 'Sitemap']) ?></button>
             </nav>
 
@@ -90,12 +90,7 @@ class PartnersPageStudent
 
         </main>
 
-        <footer>
-            <p>&copy; 2025 - Aix-Marseille Université.</p>
-            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
-                <img class="insta" src="img/instagram.png" alt="Instagram">
-            </a>
-        </footer>
+
 
         <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
             <div id="help-popup" class="chat-popup">
@@ -147,6 +142,12 @@ class PartnersPageStudent
                 });
             });
         </script>
+        <footer>
+            <p>&copy; 2026 - Aix-Marseille Université.</p>
+            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
+                <img class="insta" src="img/instagram.png" alt="Instagram">
+            </a>
+        </footer>
         </body>
         </html>
         <?php

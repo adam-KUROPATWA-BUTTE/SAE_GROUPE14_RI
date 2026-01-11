@@ -127,8 +127,14 @@ button {
 }
 
 button:hover {
-    background-color: var(--secondary-color);
+    background-color: var(--accent-color);
+    color: var(--text-color);
 }
+body.tritanopie button:hover {
+    background-color: var(--hover-color);
+    color: #fff;
+}
+
 
 main {
     flex: 1;

@@ -96,12 +96,7 @@ class PartnersPageAdmin
 
         </main>
 
-        <footer>
-            <p>&copy; 2025 - Aix-Marseille Université.</p>
-            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
-                <img class="insta" src="img/instagram.png" alt="Instagram">
-            </a>
-        </footer>
+
 
         <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
             <div id="help-popup" class="chat-popup">
@@ -153,6 +148,12 @@ class PartnersPageAdmin
                 });
             });
         </script>
+        <footer>
+            <p>&copy; 2026 - Aix-Marseille Université.</p>
+            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
+                <img class="insta" src="img/instagram.png" alt="Instagram">
+            </a>
+        </footer>
         </body>
         </html>
         <?php

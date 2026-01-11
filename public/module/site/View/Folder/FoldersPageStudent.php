@@ -107,13 +107,13 @@ class FoldersPageStudent
                     <?= $this->t(['fr' => 'Accueil', 'en' => 'Home']) ?>
                 </button>
                 <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'dashboard-student']) ?>'">
-                    <?= $this->t(['fr' => 'Tableau de bord', 'en' => 'Dashboard']) ?>
+                    <?= $this->t(['fr' => 'Mon Tableau de bord', 'en' => 'My Dashboard']) ?>
                 </button>
                 <button onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'partners-student']) ?>'">
                     <?= $this->t(['fr' => 'Partenaires', 'en' => 'Partners']) ?>
                 </button>
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders-student']) ?>'">
-                    <?= $this->t(['fr' => 'Dossiers', 'en' => 'Folders']) ?>
+                    <?= $this->t(['fr' => 'Mon Dossier', 'en' => 'My Folder']) ?>
                 </button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-student') ?>'"><?= $this->t(['fr' => 'Plan du site','en' => 'Sitemap']) ?></button>
 
@@ -340,7 +340,10 @@ class FoldersPageStudent
             });
         </script>
         <footer>
-            <p>&copy; 2025 - Aix-Marseille Université</p>
+            <p>&copy; 2026 - Aix-Marseille Université.</p>
+            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
+                <img class="insta" src="img/instagram.png" alt="Instagram">
+            </a>
         </footer>
         </body>
         </html>

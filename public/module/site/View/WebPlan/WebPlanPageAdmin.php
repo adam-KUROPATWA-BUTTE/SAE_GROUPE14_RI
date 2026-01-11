@@ -112,7 +112,7 @@ class WebPlanPageAdmin
 
         </script>
         <footer>
-            <p>&copy; 2025 - Aix-Marseille Université.</p>
+            <p>&copy; 2026 - Aix-Marseille Université.</p>
             <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
                 <img class="insta" src="img/instagram.png" alt="Instagram">
             </a>
@@ -130,7 +130,7 @@ class WebPlanPageAdmin
         $map = [
             'Accueil' => 'Home',
             'Tableau de bord' => 'Dashboard',
-            'Partenaires' => 'Partners-admin',
+            'Partenaires' => 'Partners',
             'Dossiers' => 'Folders',
             'Connexion / Inscription' => 'Login / Register',
         ];

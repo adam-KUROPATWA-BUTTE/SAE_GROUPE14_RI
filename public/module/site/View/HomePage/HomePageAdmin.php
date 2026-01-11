@@ -117,10 +117,12 @@ class HomePageAdmin
 
         <!-- PUBLICITÉ -->
         <section class="pub-section">
-            <img id="pub_amu" src="img/image_etudiants.png" alt="Publicité AMU">
+            <img id="pub_amu"
+                 src="<?= (!empty($_SESSION['tritanopia']) && $_SESSION['tritanopia']) ? 'img/etudiants_daltoniens.png' : 'img/image_etudiants.png' ?>"
+                 alt="Publicité AMU">
             <div class="pub-text"><?= $this->t([
-                    'fr' => '« Aix-Marseille Université, une université ouverte sur le monde »',
-                    'en' => '“Aix-Marseille University, a university open to the world”'
+                    'fr' => 'Aix-Marseille Université, une université ouverte sur le monde',
+                    'en' => 'Aix-Marseille University, a university open to the world'
                 ]) ?></div>
         </section>
 
@@ -159,13 +161,6 @@ class HomePageAdmin
 
 
 
-        <!-- FOOTER -->
-        <footer>
-            <p>&copy; 2025 - Aix-Marseille Université.</p>
-            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
-                <img class="insta" src="img/instagram.png" alt="Instagram">
-            </a>
-        </footer>
 
 
         <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
@@ -230,6 +225,12 @@ class HomePageAdmin
 
 
         </script>
+        <footer>
+            <p>&copy; 2026 - Aix-Marseille Université.</p>
+            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
+                <img class="insta" src="img/instagram.png" alt="Instagram">
+            </a>
+        </footer>
         </body>
         </html>
         <?php

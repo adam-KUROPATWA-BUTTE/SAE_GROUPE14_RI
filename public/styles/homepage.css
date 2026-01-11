@@ -154,9 +154,12 @@
     font-weight: bold;
 }
 
+/* === PUB TEXT TRITANOPIE === */
+body.tritanopie .pub-text {
+    color: #002c15;
+}
 
-
-/* === BOUTON TRITANOPIE (interrupteur) === */
+/* === BOUTON TRITANOPIE=== */
 #theme-toggle {
     background: none;
     padding: 0;

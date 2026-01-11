@@ -3,7 +3,6 @@
 namespace View\Folder;
 
 use Model\Folder\FolderAdmin as Folder;
-
 /**
  * Class FoldersPageAdmin
  *
@@ -83,6 +82,7 @@ class FoldersPageAdmin
             <title><?= $this->t(['fr' => 'Gestion des dossiers','en' => 'Folders Management']) ?></title>
             <link rel="stylesheet" href="styles/index.css">
             <link rel="stylesheet" href="styles/folders.css">
+            <link rel="stylesheet" href="styles/chatbot.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
         <body class="<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true ? 'tritanopie' : '' ?>">
@@ -247,12 +247,13 @@ class FoldersPageAdmin
             }
         </script>
         <footer>
-            <p>&copy; 2025 - Aix-Marseille Université.</p>
+            <p>&copy; 2026 - Aix-Marseille Université.</p>
             <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
                 <img class="insta" src="img/instagram.png" alt="Instagram">
             </a>
         </footer>
         </body>
+
         </html>
         <?php
     }

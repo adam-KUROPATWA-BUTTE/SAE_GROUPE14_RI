@@ -54,7 +54,7 @@ class LoginPage
 
                 <div class="info-section warning">
                     <p>
-                        ⚠️ Pour des raisons de sécurité, déconnectez-vous et fermez votre navigateur après utilisation.
+                        Pour des raisons de sécurité, déconnectez-vous et fermez votre navigateur après utilisation.
                     </p>
                 </div>
 

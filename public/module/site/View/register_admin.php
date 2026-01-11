@@ -37,7 +37,7 @@ class RegisterAdminPage
 
         <body>
             <div class="admin-header">
-                <h1>⚠️ Espace Administrateur</h1>
+                <h1>Espace Administrateur</h1>
                 <p>Création d'un nouveau compte administrateur</p>
             </div>
 
@@ -56,7 +56,7 @@ class RegisterAdminPage
                     </div>
                 <?php endif; ?>
 
-                <h2>🔐 Créer un compte administrateur</h2>
+                <h2>Créer un compte administrateur</h2>
                 <p style="text-align: center; color: #e74c3c; margin-bottom: 20px;">
                     <strong>Attention :</strong> Ce compte aura accès à toutes les fonctionnalités d'administration.
                 </p>

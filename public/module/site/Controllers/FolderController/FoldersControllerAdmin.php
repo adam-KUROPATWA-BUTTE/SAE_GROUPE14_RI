@@ -53,9 +53,9 @@ class FoldersControllerAdmin
             if ($numetu) {
                 $numetu = urldecode($numetu);
                 $success = FolderAdmin::toggleCompleteStatus($numetu);
-                
-                $_SESSION['message'] = $success 
-                    ? (($lang === 'fr') ? "Statut mis à jour." : "Status updated.") 
+
+                $_SESSION['message'] = $success
+                    ? (($lang === 'fr') ? "Statut mis à jour." : "Status updated.")
                     : (($lang === 'fr') ? "Erreur mise à jour." : "Update error.");
 
                 header('Location: index.php?page=folders-admin&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
@@ -126,11 +126,11 @@ class FoldersControllerAdmin
                 $prenom     = $etudiant['Prenom'] ?? 'Étudiant';
 
                 // Préparation du message
-                $subject = ($lang === 'fr') 
-                    ? "Action requise : Votre dossier de mobilité est incomplet" 
+                $subject = ($lang === 'fr')
+                    ? "Action requise : Votre dossier de mobilité est incomplet"
                     : "Action required: Your mobility folder is incomplete";
 
-                $messageContent = ($lang === 'fr') 
+                $messageContent = ($lang === 'fr')
                     ? "Bonjour $prenom,\n\nVotre dossier est incomplet. Merci de fournir les pièces manquantes.\n\nCordialement,\nRelations Internationales."
                     : "Hello $prenom,\n\nYour folder is incomplete. Please provide documents.\n\nRegards,\nInternational Relations.";
 
@@ -148,12 +148,12 @@ class FoldersControllerAdmin
 
                 // Message de succès ou d'avertissement
                 if ($sentCount > 0) {
-                    $_SESSION['message'] = ($lang === 'fr') 
-                        ? "Relance envoyée avec succès !" 
+                    $_SESSION['message'] = ($lang === 'fr')
+                        ? "Relance envoyée avec succès !"
                         : "Reminder sent successfully!";
                 } else {
-                    $_SESSION['message'] = ($lang === 'fr') 
-                        ? "Relance enregistrée en base (mais l'envoi mail a échoué)." 
+                    $_SESSION['message'] = ($lang === 'fr')
+                        ? "Relance enregistrée en base (mais l'envoi mail a échoué)."
                         : "Reminder logged in DB (but email sending failed).";
                 }
 

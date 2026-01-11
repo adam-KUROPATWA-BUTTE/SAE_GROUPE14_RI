@@ -114,7 +114,7 @@ class WebPLanPageStudent
 
         </script>
         <footer>
-            <p>&copy; 2025 - Aix-Marseille Université.</p>
+            <p>&copy; 2026 - Aix-Marseille Université.</p>
             <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
                 <img class="insta" src="img/instagram.png" alt="Instagram">
             </a>
@@ -131,10 +131,10 @@ class WebPLanPageStudent
     {
         $map = [
             'Accueil' => 'Home',
-            'Tableau de bord' => 'Dashboard',
+            'Mon Tableau de bord' => 'My Dashboard',
             'Partenaires' => 'Partners',
-            'Dossiers' => 'Folders',
-            'Connexion / Inscription' => 'Login / Register',
+            'Mon Dossier' => 'My Folder',
+            'Déconnexion' => 'Log Out',
         ];
 
         return $map[$label] ?? $label;
