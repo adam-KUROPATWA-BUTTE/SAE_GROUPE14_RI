@@ -135,13 +135,13 @@ class DashboardPageAdmin
             <h1 class="suivi-global"><?= $this->t(['fr' => 'Suivi Global des Mobilités', 'en' => 'Global Mobility Tracking']) ?></h1>
 
             <?php if (isset($_SESSION['message'])): ?>
-                <div class="message" style="background: #e7f3fe; border-left: 6px solid #2196F3; margin-bottom: 15px; padding: 10px; clear: both;">
-                    <?= htmlspecialchars($_SESSION['message']) ?>
-                    <?php unset($_SESSION['message']); ?>
+                <div class="message">
+                    <?= htmlspecialchars($_SESSION['message']); unset($_SESSION['message']); ?>
                 </div>
+
             <?php endif; ?>
 
-            <form class="filters-container" method="GET" action="index.php" style="clear:both;">
+            <form class="filters-container" method="GET" action="index.php">
                 <input type="hidden" name="page" value="dashboard-admin">
                 <input type="hidden" name="lang" value="<?= $this->lang ?>">
                 <input type="text" name="student" placeholder="<?= $this->t(['fr' => 'Rechercher...', 'en' => 'Search...']) ?>" value="<?= htmlspecialchars($searchStudent) ?>">
@@ -172,7 +172,7 @@ class DashboardPageAdmin
             <h2><?= $this->t(['fr' => 'Sortants', 'en' => 'Outgoing']) ?></h2>
             <div class="table-responsive">
                 <?php if (empty($outgoing)) : ?>
-                    <p style="text-align:center; color:#666;"><?= $this->t(['fr' => 'Aucun dossier.', 'en' => 'No files.']) ?></p>
+                    <p class="no-files"><?= $this->t(['fr' => 'Aucun dossier.', 'en' => 'No files.']) ?></p>
                 <?php else : ?>
                     <table>
                         <thead>

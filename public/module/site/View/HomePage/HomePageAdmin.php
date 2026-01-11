@@ -119,8 +119,7 @@ class HomePageAdmin
         <section class="pub-section">
             <img id="pub_amu"
                  src="<?= (!empty($_SESSION['tritanopia']) && $_SESSION['tritanopia']) ? 'img/etudiants_daltoniens.png' : 'img/image_etudiants.png' ?>"
-                 alt="Publicité AMU">
-            <div class="pub-text"><?= $this->t([
+                 alt="Publicité AMU">            <div class="pub-text"><?= $this->t([
                     'fr' => 'Aix-Marseille Université, une université ouverte sur le monde',
                     'en' => 'Aix-Marseille University, a university open to the world'
                 ]) ?></div>

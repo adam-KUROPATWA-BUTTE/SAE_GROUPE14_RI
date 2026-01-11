@@ -115,12 +115,12 @@ class DashboardPageStudent
 
         <main>
 
-            <h1 style="text-align:center; margin-top:40px;">
+            <h1>
                 <?= $this->t(['fr' => 'Suivi du dossier', 'en' => 'File Tracking']) ?>
             </h1>
 
             <div class="progress-container">
-                <div class="progress-line" style="width: <?= $progressWidth ?>;"></div>
+                <div class="progress-line" <?= $progressWidth ?>></div>
 
                 <div class="progress-step <?= in_array($status, ['depot', 'instruction', 'decision']) ? 'active' : '' ?>">
                     <div class="progress-icon">
