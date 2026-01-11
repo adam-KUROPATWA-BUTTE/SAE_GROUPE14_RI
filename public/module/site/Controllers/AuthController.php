@@ -183,7 +183,7 @@ class AuthController implements ControllerInterface
         }
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            require_once ROOT_PATH . '/public/module/site/View/register_admin.php';
+            require_once ROOT_PATH . '/public/module/site/View/RegisterAdmin.php';
             return;
         }
 
