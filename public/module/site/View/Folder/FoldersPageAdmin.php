@@ -1,8 +1,11 @@
 <?php
 
+// phpcs:disable Generic.Files.LineLength
+
 namespace View\Folder;
 
 use Model\Folder\FolderAdmin as Folder;
+
 /**
  * Class FoldersPageAdmin
  *
@@ -34,16 +37,16 @@ class FoldersPageAdmin
      * @param array|null $studentData Data of a specific student (for view/edit mode).
      */
     public function __construct(
-            string $action,
-            array $filters,
-            int $page,
-            int $perPage,
-            string $message,
-            string $lang,
-            ?array $studentData = null,
-            array $paginatedData = [],
-            int $totalCount = 0,
-            int $totalPages = 0
+        string $action,
+        array $filters,
+        int $page,
+        int $perPage,
+        string $message,
+        string $lang,
+        ?array $studentData = null,
+        array $paginatedData = [],
+        int $totalCount = 0,
+        int $totalPages = 0
     ) {
         $this->action = $action;
         $this->filters = $filters;
@@ -327,7 +330,7 @@ class FoldersPageAdmin
 
         <?php if (!empty($this->message)) : ?>
         <div class="message"><?= htmlspecialchars($this->message) ?></div>
-    <?php endif; ?>
+        <?php endif; ?>
 
         <div class="student-toolbar">
             <div class="search-container-toolbar">
@@ -439,7 +442,7 @@ class FoldersPageAdmin
                 <button disabled>»</button>
             <?php endif; ?>
         </div>
-    <?php endif; ?>
+        <?php endif; ?>
         <?php
     }
 
