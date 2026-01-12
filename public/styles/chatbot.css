@@ -3,7 +3,7 @@
    Main stylesheet for the floating chatbot
    ========================================= */
 
-/* === CSS CONFLICT FIX === 
+/* === CSS CONFLICT FIX ===
    Cette règle écrase les styles structurels de .message venant de 'folders.css'
    (animation, bordures, etc.) pour éviter que les messages ne disparaissent.
 */

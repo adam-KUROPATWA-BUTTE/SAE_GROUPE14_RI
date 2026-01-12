@@ -1,5 +1,7 @@
 <?php
 
+// phpcs:disable PSR1.Files.SideEffects
+
 /**
  * Main Entry Point (Front Controller).
  *

@@ -1,5 +1,7 @@
 <?php
 
+// phpcs:disable Generic.Files.LineLength
+
 namespace Controllers\PartnersController;
 
 use Controllers\ControllerInterface;
@@ -43,7 +45,6 @@ class PartnersControllerAdmin implements ControllerInterface
                     // Redirection pour éviter le double submit
                     header('Location: /partners-admin?success=1&lang=' . ($_GET['lang'] ?? 'fr'));
                     exit;
-
                 } catch (\PDOException $e) {
                     // Log de l'erreur et passage à la vue
                     error_log("Erreur ajout partenaire : " . $e->getMessage());

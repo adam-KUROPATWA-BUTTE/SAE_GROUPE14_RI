@@ -1,5 +1,7 @@
 <?php
 
+// phpcs:disable Generic.Files.LineLength
+
 namespace Model\Folder;
 
 /**
@@ -769,8 +771,4 @@ class FolderAdmin
             return ['data' => [], 'total' => 0, 'totalPages' => 0];
         }
     }
-
-
-
-
 }

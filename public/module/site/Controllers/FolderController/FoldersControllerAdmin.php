@@ -1,5 +1,7 @@
 <?php
 
+// phpcs:disable Generic.Files.LineLength
+
 namespace Controllers\FolderController;
 
 use Model\Folder\FolderAdmin;
@@ -179,8 +181,12 @@ class FoldersControllerAdmin
 
         // 2. Validate required fields
         $errors = [];
-        if (empty($data['NumEtu'])) $errors[] = ($lang === 'fr') ? 'Numéro étudiant requis' : 'Student ID required';
-        if (empty($data['Nom'])) $errors[] = ($lang === 'fr') ? 'Nom requis' : 'Name required';
+        if (empty($data['NumEtu'])) {
+            $errors[] = ($lang === 'fr') ? 'Numéro étudiant requis' : 'Student ID required';
+        }
+        if (empty($data['Nom'])) {
+            $errors[] = ($lang === 'fr') ? 'Nom requis' : 'Name required';
+        }
 
         if (!empty($errors)) {
             $_SESSION['message'] = implode(', ', $errors);

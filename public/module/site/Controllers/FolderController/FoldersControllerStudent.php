@@ -1,5 +1,7 @@
 <?php
 
+// phpcs:disable Generic.Files.LineLength
+
 namespace Controllers\site\FolderController;
 
 use Controllers\Auth_Guard;

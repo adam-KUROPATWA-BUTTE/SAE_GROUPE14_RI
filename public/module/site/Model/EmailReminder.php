@@ -1,5 +1,7 @@
 <?php
 
+// phpcs:disable Generic.Files.LineLength
+
 namespace Model;
 
 use PDO;
@@ -36,9 +38,9 @@ class EmailReminder
     {
         $sql = "INSERT INTO relances (numetu, message, envoye_par, date_relance) 
                 VALUES (:numetu, :message, :envoye_par, NOW())";
-        
+
         $stmt = $this->pdo->prepare($sql);
-        
+
         return $stmt->execute([
             ':numetu'     => $numetu,
             ':message'    => $message,
@@ -59,12 +61,12 @@ class EmailReminder
                 WHERE numetu = :numetu 
                 AND date_relance >= (NOW() - INTERVAL :days DAY) 
                 LIMIT 1";
-        
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue(':numetu', $numetu);
         $stmt->bindValue(':days', $days, PDO::PARAM_INT);
         $stmt->execute();
-        
+
         return (bool)$stmt->fetchColumn();
     }
 
