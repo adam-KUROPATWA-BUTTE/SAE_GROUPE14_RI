@@ -61,7 +61,6 @@ h2 {
 
 .btn-secondary:hover {
     transition:0.3s;
-    background-color:#2b91bb;
 }
 
 .nav-buttons {
@@ -191,7 +190,7 @@ tr:nth-child(even) {
 }
 
 .pagination button {
-    background: #004080;
+
     color: white;
     border: none;
     padding: 8px 12px;
@@ -201,12 +200,10 @@ tr:nth-child(even) {
     transition: background 0.3s ease;
 }
 
-.pagination button:hover:not(:disabled) {
-    background: #00558B;
-}
+
 
 .pagination button.active {
-    background: #00558B;
+
     font-weight: bold;
 }
 
@@ -475,28 +472,21 @@ table#table-etudiants td:nth-child(7) {
 }
 
 .btn-search {
-    padding: 7px;
-    cursor: pointer;
-    background: #2b91bb;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 5px 10px;
 }
-
 .btn-search img {
     width: 20px;
     height: 20px;
 }
 
 .btn-search:hover {
-    background: #0099d5;
+    background: var(--accent-color);
 }
 
+
+
 #btn-creer-dossier:hover {
-    background-color: #2b91bb;
+    background-color: var(--accent-color);
     color: white;
     transition: 0.5s;
 }
