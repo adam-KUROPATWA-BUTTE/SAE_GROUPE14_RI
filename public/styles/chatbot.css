@@ -4,8 +4,8 @@
    ========================================= */
 
 /* === CSS CONFLICT FIX === 
-   Cette règle écrase spécifiquement les styles de .message venant de 'folders.css'.
-   On applique ici le fond bleu demandé et le texte blanc pour garantir la lisibilité.
+   Cette règle écrase les styles structurels de .message venant de 'folders.css'
+   (animation, bordures, etc.) pour éviter que les messages ne disparaissent.
 */
 .chat-messages .message {
     animation: none !important;       /* Bloque l'animation de disparition */
@@ -15,10 +15,7 @@
     height: auto !important;          /* Annule la réduction de hauteur */
     margin-bottom: 0 !important;      /* Annule la marge des alertes */
     box-shadow: none !important;      /* Retire les ombres parasites */
-    
-    /* FIX: Couleur de fond et de texte forcées pour éviter le "blanc sur blanc" */
-    background-color: #003366 !important; 
-    color: white !important;
+    /* Pas de couleur de fond ici pour permettre la distinction Bot/User */
 }
 
 /* --- Floating Chat Bubble Icon --- */
@@ -42,7 +39,7 @@
 }
 
 #help-bubble:hover {
-    transform: scale(1.1); /* Slight zoom on hover */
+    transform: scale(1.1);
 }
 
 /* --- Main Chat Window Container --- */
@@ -50,10 +47,10 @@
     position: fixed;
     bottom: 90px;
     right: 20px;
-    width: min(90vw, 400px); /* Responsive width */
+    width: min(90vw, 400px);
     height: 500px;
     display: flex;
-    flex-direction: column; /* Stacks header, messages, and input vertically */
+    flex-direction: column;
     background-color: white;
     box-shadow: 0 5px 20px rgba(0,0,0,0.2);
     border-radius: 12px;
@@ -72,7 +69,7 @@
     align-items: center;
     font-weight: bold;
     font-size: 1.1em;
-    flex-shrink: 0; /* Prevents header from shrinking */
+    flex-shrink: 0;
 }
 
 .help-popup-header button {
@@ -85,9 +82,9 @@
 
 /* --- Message Scroll Area --- */
 .chat-messages {
-    flex: 1; /* Takes up all available remaining height */
+    flex: 1;
     padding: 15px;
-    overflow-y: auto; /* Enables vertical scrolling */
+    overflow-y: auto;
     background-color: #f5f7fa;
     display: flex;
     flex-direction: column;
@@ -104,29 +101,31 @@
     word-wrap: break-word;
 }
 
-/* Bot specific style (Optionnel : si vous voulez garder le gris pour le bot, retirez le !important ci-dessus) */
-.bot-message {
-    /* background-color: #e9ecef;  <-- Désactivé par le !important global */
-    /* color: #333; */
+/* === COULEURS STANDARD (Force l'écrasement de folders.css) === */
+
+/* Bot : Gris clair / Texte foncé */
+.chat-messages .bot-message {
+    background-color: #e9ecef !important;
+    color: #333 !important;
     align-self: flex-start;
     border-bottom-left-radius: 2px;
 }
 
-/* User specific style */
-.user-message {
-    /* background-color: #003366; <-- Déjà appliqué par le global */
-    /* color: white; */
+/* Utilisateur : Bleu / Texte blanc */
+.chat-messages .user-message {
+    background-color: #003366 !important;
+    color: white !important;
     align-self: flex-end;
     border-bottom-right-radius: 2px;
 }
 
-/* --- Quick Action Buttons (Suggestions) --- */
+/* --- Quick Action Buttons --- */
 .quick-actions {
     padding: 10px;
     background: white;
     display: flex;
     gap: 8px;
-    overflow-x: auto; /* Horizontal scroll */
+    overflow-x: auto;
     border-top: 1px solid #eee;
     flex-shrink: 0;
 }
@@ -158,7 +157,7 @@
 }
 
 .chat-input-area input {
-    flex: 1; /* Input takes remaining width */
+    flex: 1;
     padding: 10px 15px;
     border: 1px solid #ccc;
     border-radius: 25px;
@@ -187,7 +186,7 @@ body.tritanopie #help-bubble {
 
 body.tritanopie .help-popup-header {
     background-color: #ed967f;
-    color: #ffffff;
+    color: #000000; /* Texte noir sur fond orange pour lisibilité */
 }
 
 body.tritanopie .chat-popup {
@@ -199,8 +198,16 @@ body.tritanopie .chat-messages {
     background-color: #ffffff;
 }
 
-body.tritanopie .chat-messages .message {
-    /* Override pour le thème tritanopie si nécessaire */
+/* --- COULEURS TRITANOPIE SPÉCIFIQUES --- */
+
+/* Bot Tritanopie : Gris moyen */
+body.tritanopie .chat-messages .bot-message {
+    background-color: #cccccc !important;
+    color: #000000 !important;
+}
+
+/* Utilisateur Tritanopie : Orange */
+body.tritanopie .chat-messages .user-message {
     background-color: #ed967f !important;
     color: #000000 !important;
 }
@@ -245,8 +252,8 @@ body.tritanopie .chat-input-area button {
     .chat-popup {
         bottom: 80px;
         right: 10px;
-        width: 95vw; /* Almost full width on mobile */
-        height: 70vh; /* Taller on mobile */
+        width: 95vw;
+        height: 70vh;
         border-radius: 16px;
     }
 
