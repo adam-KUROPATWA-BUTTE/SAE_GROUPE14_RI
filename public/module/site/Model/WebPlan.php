@@ -2,10 +2,22 @@
 
 namespace Model;
 
+/**
+ * Class WebPlan
+ *
+ * Model responsible for providing sitemap (website plan)
+ * links depending on the user role (admin or student).
+ */
 class WebPlan
 {
+    /**
+     * Returns the list of sitemap links available for administrators.
+     *
+     * @return array List of admin sitemap links (url + label)
+     */
     public static function getLinksAdmin(): array
     {
+        // Ensure the session is started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -19,8 +31,14 @@ class WebPlan
         ];
     }
 
+    /**
+     * Returns the list of sitemap links available for students.
+     *
+     * @return array List of student sitemap links (url + label)
+     */
     public static function getLinksStudent(): array
     {
+        // Ensure the session is started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
