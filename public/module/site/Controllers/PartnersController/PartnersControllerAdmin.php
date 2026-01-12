@@ -6,61 +6,84 @@ use Controllers\ControllerInterface;
 use View\Partners\PartnersPageAdmin;
 use Database;
 
+/**
+ * Class PartnersControllerAdmin
+ *
+ * Controller responsible for managing partner universities
+ * in the administrator interface.
+ *
+ * Handles:
+ * - Displaying the partners administration page
+ * - Processing the partner creation form
+ */
 class PartnersControllerAdmin implements ControllerInterface
 {
+    /**
+     * Main controller logic.
+     *
+     * - Starts the session if needed
+     * - Processes the POST form submission
+     * - Inserts a new partner into the database
+     * - Redirects after successful insertion
+     * - Displays the administration view
+     *
+     * @return void
+     */
     public function control(): void
     {
+        // Start session if not already started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        // --- TRAITEMENT DU FORMULAIRE ---
+        // --- FORM PROCESSING ---
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Récupération et nettoyage des champs
-            $continent   = trim($_POST['name'] ?? '');
-            $pays        = trim($_POST['country'] ?? '');
-            $ville       = trim($_POST['city'] ?? '');
-            $universite  = trim($_POST['institution'] ?? ''); // correspond à universite_institution en BDD
 
-            if ($continent && $pays && $ville && $universite) {
+            // Retrieve and sanitize form fields
+            $continent   = trim($_POST['name'] ?? '');
+            $country     = trim($_POST['country'] ?? '');
+            $city        = trim($_POST['city'] ?? '');
+            $institution = trim($_POST['institution'] ?? '');
+
+            // Check that all required fields are provided
+            if ($continent && $country && $city && $institution) {
                 try {
-                    // Connexion PDO via ton singleton
+                    // Get PDO connection from the Database singleton
                     $pdo = Database::getInstance()->getConnection();
 
-                    // Préparer et exécuter l'insertion
+                    // Prepare and execute the INSERT query
                     $stmt = $pdo->prepare("
-                INSERT INTO Partenaires (continent, pays, ville, universite_institution)
-                VALUES (:continent, :pays, :ville, :universite)
-            ");
+                        INSERT INTO Partenaires (continent, pays, ville, universite_institution)
+                        VALUES (:continent, :pays, :ville, :universite)
+                    ");
 
                     $stmt->execute([
                         'continent'  => $continent,
-                        'pays'       => $pays,
-                        'ville'      => $ville,
-                        'universite' => $universite
+                        'pays'       => $country,
+                        'ville'      => $city,
+                        'universite' => $institution
                     ]);
 
-                    // Redirection pour éviter le double submit
+                    // Redirect to prevent duplicate form submission
                     header('Location: /partners-admin?success=1&lang=' . ($_GET['lang'] ?? 'fr'));
                     exit;
 
                 } catch (\PDOException $e) {
-                    // Log de l'erreur et passage à la vue
-                    error_log("Erreur ajout partenaire : " . $e->getMessage());
+                    // Log the error and forward it to the view
+                    error_log("Partner insertion error: " . $e->getMessage());
                     $errorMessage = $e->getMessage();
                 }
             }
         }
 
+        // --- Prepare parameters for the view ---
+        $lang  = $_GET['lang'] ?? 'fr';
+        $title = $lang === 'en' ? 'Partner Universities' : 'Universités Partenaires';
 
-        // --- Préparer les paramètres pour la vue ---
-        $lang = $_GET['lang'] ?? 'fr';
-        $titre = $lang === 'en' ? 'Partner Universities' : 'Universités Partenaires';
+        // --- Render the view ---
+        $view = new PartnersPageAdmin($title, $lang);
 
-        // --- Affichage de la vue ---
-        $view = new PartnersPageAdmin($titre, $lang);
-
-        // Passer l'éventuel message d'erreur à la vue
+        // Pass error message to the view if one exists
         if (isset($errorMessage)) {
             $view->errorMessage = $errorMessage;
         }
@@ -68,6 +91,13 @@ class PartnersControllerAdmin implements ControllerInterface
         $view->render();
     }
 
+    /**
+     * Checks whether this controller supports the given page and method.
+     *
+     * @param string $page   Requested page
+     * @param string $method HTTP method
+     * @return bool True if supported, false otherwise
+     */
     public static function support(string $page, string $method): bool
     {
         return $page === 'partners-admin';
