@@ -23,5 +23,4 @@ $loginPage = new LoginPage(
     $token ?? ''
 );
 
-// Affichage de la page
 $loginPage->render();

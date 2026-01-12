@@ -1,8 +1,11 @@
 <?php
 
+// phpcs:disable Generic.Files.LineLength
+
 namespace View\Folder;
 
 use Model\Folder\FolderAdmin as Folder;
+
 /**
  * Class FoldersPageAdmin
  *
@@ -34,16 +37,16 @@ class FoldersPageAdmin
      * @param array|null $studentData Data of a specific student (for view/edit mode).
      */
     public function __construct(
-            string $action,
-            array $filters,
-            int $page,
-            int $perPage,
-            string $message,
-            string $lang,
-            ?array $studentData = null,
-            array $paginatedData = [],
-            int $totalCount = 0,
-            int $totalPages = 0
+        string $action,
+        array $filters,
+        int $page,
+        int $perPage,
+        string $message,
+        string $lang,
+        ?array $studentData = null,
+        array $paginatedData = [],
+        int $totalCount = 0,
+        int $totalPages = 0
     ) {
         $this->action = $action;
         $this->filters = $filters;
@@ -118,7 +121,7 @@ class FoldersPageAdmin
                 <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'"><?= $this->t(['fr' => 'Tableau de bord','en' => 'Dashboard']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/partners-admin') ?>'"><?= $this->t(['fr' => 'Partenaire','en' => 'Partners']) ?></button>
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('/folders-admin') ?>'"><?= $this->t(['fr' => 'Dossiers','en' => 'Folders']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan') ?>'"><?= $this->t(['fr' => 'Plan du site','en' => 'Site Map']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-admin') ?>'"><?= $this->t(['fr' => 'Plan du site','en' => 'Site Map']) ?></button>
             </nav>
         </header>
         <main>
@@ -131,41 +134,51 @@ class FoldersPageAdmin
             <?php endif; ?>
         </main>
 
-        <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
-        <div id="help-popup">
+       <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
+        <div id="help-popup" class="chat-popup">
             <div class="help-popup-header">
-                <span><?= $this->t(['fr' => 'Aide', 'en' => 'Help']) ?></span>
+                <span>Assistant</span>
                 <button onclick="toggleHelpPopup()">✖</button>
             </div>
-            <div class="help-popup-body">
-                <p><?= $this->t(['fr' => 'Bienvenue ! Comment pouvons-nous vous aider ?', 'en' => 'Welcome! How can we help you?']) ?></p>
-                <ul>
-                    <li><a href="/help" target="_blank"><?= $this->t(['fr' => 'Page d’aide complète', 'en' => 'Full help page']) ?></a></li>
-                </ul>
-            </div>
+            <div id="chat-messages" class="chat-messages"></div>
+            <div id="quick-actions" class="quick-actions"></div>
         </div>
 
         <script>
+            const CHAT_CONFIG = {
+                lang: '<?= $this->lang ?>',
+                role: '<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>'
+            };
+        </script>
+        
+        <script src="js/chatbot.js?v=<?= time() ?>"></script>
+        
+        <script>
             /**
              * Toggle the help popup visibility.
+             * CORRECTION MAJEURE : Utilise 'flex' au lieu de 'block' pour ne pas casser le CSS.
              */
             function toggleHelpPopup() {
                 const popup = document.getElementById('help-popup');
-                popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
+                // On vérifie si c'est affiché (flex ou block par erreur)
+                const isHidden = (window.getComputedStyle(popup).display === 'none');
+                
+                if (isHidden) {
+                    popup.style.display = 'flex'; // FLEX est obligatoire pour le layout
+                    if (typeof scrollToBottom === 'function') {
+                        scrollToBottom(); // Fonction définie dans chatbot.js
+                    }
+                } else {
+                    popup.style.display = 'none';
+                }
             }
 
-            /**
-             * Change the interface language.
-             */
             function changeLang(lang) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('lang', lang);
                 window.location.href = url.toString();
             }
 
-            /**
-             * Redirect to student details view.
-             */
             function ouvrirFicheEtudiant(numetu) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('action', 'view');
@@ -173,9 +186,6 @@ class FoldersPageAdmin
                 window.location.href = url.toString();
             }
 
-            /**
-             * Client-side search filtering (simple table filter).
-             */
             function filtrerEtudiants() {
                 let input = document.getElementById("search");
                 let filter = input.value.toLowerCase();
@@ -186,27 +196,20 @@ class FoldersPageAdmin
                 });
             }
 
-                    /**
-            * Effectue une recherche côté serveur et revient à la page 1
-            */
             function rechercherEtRevenirPage1() {
-            const searchInput = document.getElementById('search');
-            if (!searchInput) return;
+                const searchInput = document.getElementById('search');
+                if (!searchInput) return;
 
-            const url = new URL(window.location.href);
-
-            if (searchInput.value.trim() !== '') {
-                url.searchParams.set('search', searchInput.value.trim());
-                url.searchParams.set('p', 1);
-            } else {
-                url.searchParams.delete('search');
+                const url = new URL(window.location.href);
+                if (searchInput.value.trim() !== '') {
+                    url.searchParams.set('search', searchInput.value.trim());
+                    url.searchParams.set('p', 1);
+                } else {
+                    url.searchParams.delete('search');
+                }
+                window.location.href = url.toString();
             }
 
-            window.location.href = url.toString();
-            }
-            /**
-             * Recherche avec debounce (attend 800ms après la dernière frappe)
-             */
             let rechercheTimeout;
             function rechercherAvecDebounce() {
                 clearTimeout(rechercheTimeout);
@@ -215,171 +218,91 @@ class FoldersPageAdmin
                 }, 3000);
             }
 
-
-
-            /**
-             * Toggles visibility of specific document fields based on mobility type.
-             * Shows 'Convention' for Internships, 'Motivation Letter' for Studies.
-             */
             function changerTypeMobilite(type) {
-                // Hide both by default
                 const conventionBlock = document.getElementById('justificatif_convention');
                 const lettreBlock = document.getElementById('lettre_motivation');
 
                 if(conventionBlock) conventionBlock.style.display = 'none';
                 if(lettreBlock) lettreBlock.style.display = 'none';
 
-                // Show appropriate block
                 if (type === 'stage') {
-                    if(conventionBlock) conventionBlock.style.display = 'block';
+                    if(conventionBlock) conventionBlock.style.display = 'block'; 
                 } else if (type === 'etudes') {
                     if(lettreBlock) lettreBlock.style.display = 'block';
                 }
             }
 
-            /**
-             * Enables input fields for editing in the View form.
-             */
             function activerModification() {
                 document.querySelectorAll('.creation-form input, .creation-form select').forEach(field => {
-                    // Do not enable NumEtu visually as it is the primary key, but ensure it is sent via hidden field
                     if (field.id !== 'numetu') {
                         field.disabled = false;
                         field.style.backgroundColor = 'white';
                         field.style.color = 'black';
                     }
                 });
-
-                // Toggle action buttons
                 document.getElementById('btn-modifier').style.display = 'none';
                 document.getElementById('btn-enregistrer').style.display = 'inline-block';
                 document.getElementById('btn-annuler').style.display = 'inline-block';
             }
 
-            // Initialize scripts on page load
             window.addEventListener('DOMContentLoaded', (event) => {
-                // Initialize mobility type display
                 const sel = document.getElementById('mobilite_type');
                 if (sel) changerTypeMobilite(sel.value);
 
                 const typeCheckboxes = document.querySelectorAll('input[name="entrant_sortant"]');
                 typeCheckboxes.forEach(checkbox => {
                     checkbox.addEventListener('click', function(e) {
-                        // Empêcher le comportement par défaut temporairement
                         const wasChecked = this.checked;
-
-                        // Décocher toutes les autres checkboxes du même groupe AVANT
-                        typeCheckboxes.forEach(other => {
-                            if (other !== this) {
-                                other.checked = false;
-                            }
-                        });
-
-                        // Si on clique sur une case déjà cochée, la décocher
-                        if (!wasChecked && this.checked) {
-                            // Ne rien faire, elle est déjà cochée
-                        }
-
-                        // Appliquer les filtres après avoir géré l'exclusivité
+                        typeCheckboxes.forEach(other => { if (other !== this) other.checked = false; });
                         appliquerFiltres();
                     });
                 });
 
-
                 const zoneCheckboxes = document.querySelectorAll('input[name="zone"]');
                 zoneCheckboxes.forEach(checkbox => {
                     checkbox.addEventListener('click', function(e) {
-                        // Empêcher le comportement par défaut temporairement
                         const wasChecked = this.checked;
-
-                        // Décocher toutes les autres checkboxes du même groupe AVANT
-                        zoneCheckboxes.forEach(other => {
-                            if (other !== this) {
-                                other.checked = false;
-                            }
-                        });
-
-                        // Appliquer les filtres après avoir géré l'exclusivité
+                        zoneCheckboxes.forEach(other => { if (other !== this) other.checked = false; });
                         appliquerFiltres();
                     });
                 });
 
                 const filterComplet = document.getElementById('filter-complet');
-                if (filterComplet) {
-                    filterComplet.addEventListener('change', function() {
-                        appliquerFiltres();
-                    });
-                }
+                if (filterComplet) filterComplet.addEventListener('change', appliquerFiltres);
 
                 const dateDebut = document.getElementById('date-debut');
-                if (dateDebut) {
-                    dateDebut.addEventListener('change', function() {
-                        appliquerFiltres();
-                    });
-                }
+                if (dateDebut) dateDebut.addEventListener('change', appliquerFiltres);
 
                 const dateFin = document.getElementById('date-fin');
-                if (dateFin) {
-                    dateFin.addEventListener('change', function() {
-                        appliquerFiltres();
-                    });
-                }
+                if (dateFin) dateFin.addEventListener('change', appliquerFiltres);
             });
 
-            /**
-             * Applies filters by reloading the page with query parameters.
-             */
             function appliquerFiltres() {
                 const url = new URL(window.location.href);
 
-                // Handle Checkbox Filters (Type) - Exclusive behavior
                 const typesChecked = Array.from(document.querySelectorAll('input[name="entrant_sortant"]:checked')).map(cb => cb.value);
-                if (typesChecked.length > 0) {
-                    // Si plusieurs cochées, garder seulement la dernière cliquée
-                    url.searchParams.set('type', typesChecked[typesChecked.length - 1]);
-                } else {
-                    url.searchParams.delete('type');
-                }
+                if (typesChecked.length > 0) url.searchParams.set('type', typesChecked[typesChecked.length - 1]);
+                else url.searchParams.delete('type');
 
-                // Handle Checkbox Filters (Zone) - Exclusive behavior
                 const zonesChecked = Array.from(document.querySelectorAll('input[name="zone"]:checked')).map(cb => cb.value);
-                if (zonesChecked.length > 0) {
-                    // Si plusieurs cochées, garder seulement la dernière cliquée
-                    url.searchParams.set('zone', zonesChecked[zonesChecked.length - 1]);
-                } else {
-                    url.searchParams.delete('zone');
-                }
+                if (zonesChecked.length > 0) url.searchParams.set('zone', zonesChecked[zonesChecked.length - 1]);
+                else url.searchParams.delete('zone');
 
-                // Handle Select Filter (Completeness)
                 const completVal = document.getElementById('filter-complet');
-                if (completVal && completVal.value !== 'all') {
-                    url.searchParams.set('complet', completVal.value);
-                } else {
-                    url.searchParams.delete('complet');
-                }
+                if (completVal && completVal.value !== 'all') url.searchParams.set('complet', completVal.value);
+                else url.searchParams.delete('complet');
 
-                // Handle Date Filters
                 const dateDebut = document.getElementById('date-debut');
-                if (dateDebut && dateDebut.value) {
-                    url.searchParams.set('date_debut', dateDebut.value);
-                } else {
-                    url.searchParams.delete('date_debut');
-                }
+                if (dateDebut && dateDebut.value) url.searchParams.set('date_debut', dateDebut.value);
+                else url.searchParams.delete('date_debut');
 
                 const dateFin = document.getElementById('date-fin');
-                if (dateFin && dateFin.value) {
-                    url.searchParams.set('date_fin', dateFin.value);
-                } else {
-                    url.searchParams.delete('date_fin');
-                }
+                if (dateFin && dateFin.value) url.searchParams.set('date_fin', dateFin.value);
+                else url.searchParams.delete('date_fin');
 
-                // Reset to page 1 when applying filters
                 url.searchParams.set('p', 1);
-
                 window.location.href = url.toString();
             }
-
-
         </script>
         <footer>
             <p>&copy; 2026 - Aix-Marseille Université.</p>
@@ -407,7 +330,7 @@ class FoldersPageAdmin
 
         <?php if (!empty($this->message)) : ?>
         <div class="message"><?= htmlspecialchars($this->message) ?></div>
-    <?php endif; ?>
+        <?php endif; ?>
 
         <div class="student-toolbar">
             <div class="search-container-toolbar">
@@ -519,7 +442,7 @@ class FoldersPageAdmin
                 <button disabled>»</button>
             <?php endif; ?>
         </div>
-    <?php endif; ?>
+        <?php endif; ?>
         <?php
     }
 

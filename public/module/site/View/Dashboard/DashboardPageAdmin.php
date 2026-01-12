@@ -1,5 +1,7 @@
 <?php
 
+// phpcs:disable Generic.Files.LineLength
+
 namespace View\Dashboard;
 
 /**
@@ -57,13 +59,25 @@ class DashboardPageAdmin
             // --- Filter Logic ---
             if ($searchStudent) {
                 $fullName = strtolower("$nom $prenom $numEtu");
-                if (strpos($fullName, $searchStudent) === false) continue;
+                if (strpos($fullName, $searchStudent) === false) {
+                    continue;
+                }
             }
-            if ($filterDept && $dept !== $filterDept) continue;
-            if ($filterType && $type !== $filterType) continue;
-            if ($filterYear && $annee !== $filterYear) continue;
-            if ($filterDest && strpos(strtolower($zone), strtolower($filterDest)) === false) continue;
-            if ($filterCamp && $campagne !== $filterCamp) continue;
+            if ($filterDept && $dept !== $filterDept) {
+                continue;
+            }
+            if ($filterType && $type !== $filterType) {
+                continue;
+            }
+            if ($filterYear && $annee !== $filterYear) {
+                continue;
+            }
+            if ($filterDest && strpos(strtolower($zone), strtolower($filterDest)) === false) {
+                continue;
+            }
+            if ($filterCamp && $campagne !== $filterCamp) {
+                continue;
+            }
 
             // --- Status Logic ---
             $isComplete = $d['IsComplete'] ?? 0;
@@ -77,7 +91,9 @@ class DashboardPageAdmin
                 $percentage = 100;
             } else {
                 $percentage = ($totalRequired > 0) ? round(($countProvided / $totalRequired) * 100) : 0;
-                if ($percentage > 100) $percentage = 100;
+                if ($percentage > 100) {
+                    $percentage = 100;
+                }
             }
 
             $d['calc_percentage'] = $percentage;
@@ -134,9 +150,10 @@ class DashboardPageAdmin
         <main>
             <h1 class="suivi-global"><?= $this->t(['fr' => 'Suivi Global des Mobilités', 'en' => 'Global Mobility Tracking']) ?></h1>
 
-            <?php if (isset($_SESSION['message'])): ?>
+            <?php if (isset($_SESSION['message'])) : ?>
                 <div class="message">
-                    <?= htmlspecialchars($_SESSION['message']); unset($_SESSION['message']); ?>
+                    <?= htmlspecialchars($_SESSION['message']);
+                    unset($_SESSION['message']); ?>
                 </div>
 
             <?php endif; ?>
@@ -188,10 +205,14 @@ class DashboardPageAdmin
                         <tbody>
                         <?php foreach ($outgoing as $d) :
                             $pct = $d['calc_percentage'];
-                            if ($pct >= 100) $badgeClass = 'bg-success';
-                            elseif ($pct > 50) $badgeClass = 'bg-warning';
-                            else $badgeClass = 'bg-danger';
-                            
+                            if ($pct >= 100) {
+                                $badgeClass = 'bg-success';
+                            } elseif ($pct > 50) {
+                                $badgeClass = 'bg-warning';
+                            } else {
+                                $badgeClass = 'bg-danger';
+                            }
+
                             $label = ($pct >= 100) ? 'Validé' : $pct . '%';
                             $detailUrl = "index.php?page=folders-admin&action=view&numetu=" . urlencode($d['NumEtu'] ?? '') . "&lang=" . urlencode($this->lang);
                             ?>
@@ -240,10 +261,14 @@ class DashboardPageAdmin
                         <tbody>
                         <?php foreach ($incoming as $d) :
                             $pct = $d['calc_percentage'];
-                            if ($pct >= 100) $badgeClass = 'bg-success';
-                            elseif ($pct > 50) $badgeClass = 'bg-warning';
-                            else $badgeClass = 'bg-danger';
-                            
+                            if ($pct >= 100) {
+                                $badgeClass = 'bg-success';
+                            } elseif ($pct > 50) {
+                                $badgeClass = 'bg-warning';
+                            } else {
+                                $badgeClass = 'bg-danger';
+                            }
+
                             $label = ($pct >= 100) ? 'Validé' : $pct . '%';
                             $detailUrl = "index.php?page=folders-admin&action=view&numetu=" . urlencode($d['NumEtu'] ?? '') . "&lang=" . urlencode($this->lang);
                             ?>

@@ -1,5 +1,7 @@
 <?php
 
+// phpcs:disable Generic.Files.LineLength
+
 namespace Controllers\WebPlanController;
 
 use Controllers\ControllerInterface;

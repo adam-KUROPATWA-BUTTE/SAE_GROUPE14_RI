@@ -1,5 +1,7 @@
 <?php
 
+// phpcs:disable Generic.Files.LineLength
+
 namespace View\Partners;
 
 /**
@@ -115,13 +117,11 @@ class PartnersPageAdmin
         <!-- MAIN CONTENT -->
         <main>
             <h1><?= htmlspecialchars($this->titre) ?></h1>
-
-            <!-- Success or error message -->
-            <?php if (isset($_GET['success'])): ?>
+            <?php if (isset($_GET['success'])) : ?>
                 <p id="success-message" class="success-message">
                     <?= $this->t(['fr' => 'Partenaire ajouté avec succès.', 'en' => 'Partner successfully added.']) ?>
                 </p>
-            <?php elseif (!empty($this->errorMessage)): ?>
+            <?php elseif (!empty($this->errorMessage)) : ?>
                 <p class="error-message"><?= htmlspecialchars($this->errorMessage) ?></p>
             <?php endif; ?>
 

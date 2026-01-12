@@ -64,20 +64,27 @@ document.addEventListener("DOMContentLoaded", () => {
     generateQuickActions();
 });
 
-function toggleHelpPopup() {
+function toggleHelpPopup()
+{
     const popup = document.getElementById('help-popup');
     const isVisible = popup.style.display === 'flex';
     popup.style.display = isVisible ? 'none' : 'flex';
-    if (!isVisible) document.getElementById('user-input').focus();
+    if (!isVisible) {
+        document.getElementById('user-input').focus();
+    }
 }
 
-function handleKeyPress(e) {
-    if (e.key === 'Enter') sendMessage();
+function handleKeyPress(e)
+{
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
 }
 
 
 
-function addMessage(text, sender) {
+function addMessage(text, sender)
+{
     const chatContainer = document.getElementById('chat-messages');
     const msgDiv = document.createElement('div');
     msgDiv.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
@@ -86,10 +93,11 @@ function addMessage(text, sender) {
     chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-function getBotResponse(input) {
+function getBotResponse(input)
+{
     const lowerInput = input.toLowerCase();
     const roleDict = knowledgeBase[userRole][currentLang]['keywords'];
-    
+
     for (const key in roleDict) {
         if (key !== 'default' && lowerInput.includes(key)) {
             return roleDict[key];
@@ -98,12 +106,15 @@ function getBotResponse(input) {
     return roleDict['default'];
 }
 
-function generateQuickActions() {
+function generateQuickActions()
+{
     const container = document.getElementById('quick-actions');
     const roleDict = knowledgeBase[userRole][currentLang]['keywords'];
-    
+
     for (const key in roleDict) {
-        if (key === 'default') continue;
+        if (key === 'default') {
+            continue;
+        }
         const btn = document.createElement('button');
         btn.innerText = key.charAt(0).toUpperCase() + key.slice(1);
         btn.onclick = () => {
