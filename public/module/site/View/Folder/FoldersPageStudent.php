@@ -67,7 +67,7 @@ class FoldersPageStudent
 
         // --- Determine View Mode: CREATE or UPDATE ---
         $isCreateMode = empty($this->dossier);
-        $formAction = $isCreateMode ? 'create_folder' : 'update_student';
+        $formAction = $isCreateMode ? 'create_folder' : 'update_my_folder';
 
         // Auto-detect mobility type for display logic (only if updating)
         $detectedType = '';
@@ -216,7 +216,7 @@ class FoldersPageStudent
                                 <a href="data:application/octet-stream;base64,<?= $this->dossier['pieces'][$key] ?>"
                                    download="<?= $key ?>_<?= htmlspecialchars($this->studentId) ?>.<?= $key === 'photo' ? 'jpg' : 'pdf' ?>"
                                    class="btn-secondary">
-                                   <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
+                                   <?= $this->t(['fr' => 'Télécharger','en' => 'Download']) ?>
                                 </a>
                             </div>
                         <?php else : ?>
@@ -231,7 +231,7 @@ class FoldersPageStudent
                         <?php if (!empty($this->dossier['pieces']['convention'])) : ?>
                              <div style="margin-top: 10px;">
                                 <a href="data:application/pdf;base64,<?= $this->dossier['pieces']['convention'] ?>" download="convention.pdf" class="btn-secondary">
-                                    <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
+                                    <?= $this->t(['fr' => 'Télécharger','en' => 'Download']) ?>
                                 </a>
                             </div>
                         <?php endif; ?>
@@ -243,7 +243,7 @@ class FoldersPageStudent
                         <?php if (!empty($this->dossier['pieces']['lettre_motivation'])) : ?>
                              <div style="margin-top: 10px;">
                                 <a href="data:application/pdf;base64,<?= $this->dossier['pieces']['lettre_motivation'] ?>" download="lettre.pdf" class="btn-secondary">
-                                    <?= $this->t(['fr' => '📥 Télécharger','en' => '📥 Download']) ?>
+                                    <?= $this->t(['fr' => 'Télécharger','en' => 'Download']) ?>
                                 </a>
                             </div>
                         <?php endif; ?>
