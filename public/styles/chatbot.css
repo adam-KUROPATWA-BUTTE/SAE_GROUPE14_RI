@@ -1,5 +1,27 @@
-/* --- CHATBOT STYLES --- */
+/* =========================================
+   CHATBOT STYLES
+   Main stylesheet for the floating chatbot
+   ========================================= */
 
+/* === CSS CONFLICT FIX === 
+   Cette règle écrase spécifiquement les styles de .message venant de 'folders.css'.
+   On applique ici le fond bleu demandé et le texte blanc pour garantir la lisibilité.
+*/
+.chat-messages .message {
+    animation: none !important;       /* Bloque l'animation de disparition */
+    opacity: 1 !important;            /* Force le message à rester visible */
+    border: none !important;          /* Retire la bordure verte d'alerte */
+    overflow: visible !important;     /* Empêche le texte d'être coupé */
+    height: auto !important;          /* Annule la réduction de hauteur */
+    margin-bottom: 0 !important;      /* Annule la marge des alertes */
+    box-shadow: none !important;      /* Retire les ombres parasites */
+    
+    /* FIX: Couleur de fond et de texte forcées pour éviter le "blanc sur blanc" */
+    background-color: #003366 !important; 
+    color: white !important;
+}
+
+/* --- Floating Chat Bubble Icon --- */
 #help-bubble {
     position: fixed;
     bottom: 20px;
@@ -20,19 +42,18 @@
 }
 
 #help-bubble:hover {
-    transform: scale(1.1);
+    transform: scale(1.1); /* Slight zoom on hover */
 }
 
+/* --- Main Chat Window Container --- */
 .chat-popup {
     position: fixed;
     bottom: 90px;
     right: 20px;
-
-    width: min(90vw, 2000px);
+    width: min(90vw, 400px); /* Responsive width */
     height: 500px;
-
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Stacks header, messages, and input vertically */
     background-color: white;
     box-shadow: 0 5px 20px rgba(0,0,0,0.2);
     border-radius: 12px;
@@ -41,8 +62,7 @@
     border: 1px solid #e0e0e0;
 }
 
-
-
+/* --- Chat Header --- */
 .help-popup-header {
     background-color: #003366;
     color: white;
@@ -52,6 +72,7 @@
     align-items: center;
     font-weight: bold;
     font-size: 1.1em;
+    flex-shrink: 0; /* Prevents header from shrinking */
 }
 
 .help-popup-header button {
@@ -62,16 +83,18 @@
     cursor: pointer;
 }
 
+/* --- Message Scroll Area --- */
 .chat-messages {
-    flex: 1;
+    flex: 1; /* Takes up all available remaining height */
     padding: 15px;
-    overflow-y: auto;
+    overflow-y: auto; /* Enables vertical scrolling */
     background-color: #f5f7fa;
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
+/* --- Individual Message Bubbles --- */
 .message {
     max-width: 85%;
     padding: 10px 14px;
@@ -81,27 +104,31 @@
     word-wrap: break-word;
 }
 
+/* Bot specific style (Optionnel : si vous voulez garder le gris pour le bot, retirez le !important ci-dessus) */
 .bot-message {
-    background-color: #e9ecef;
-    color: #333;
+    /* background-color: #e9ecef;  <-- Désactivé par le !important global */
+    /* color: #333; */
     align-self: flex-start;
     border-bottom-left-radius: 2px;
 }
 
+/* User specific style */
 .user-message {
-    background-color: #003366;
-    color: white;
+    /* background-color: #003366; <-- Déjà appliqué par le global */
+    /* color: white; */
     align-self: flex-end;
     border-bottom-right-radius: 2px;
 }
 
+/* --- Quick Action Buttons (Suggestions) --- */
 .quick-actions {
     padding: 10px;
     background: white;
     display: flex;
     gap: 8px;
-    overflow-x: auto;
+    overflow-x: auto; /* Horizontal scroll */
     border-top: 1px solid #eee;
+    flex-shrink: 0;
 }
 
 .quick-actions button {
@@ -121,15 +148,17 @@
     color: white;
 }
 
+/* --- Text Input Area --- */
 .chat-input-area {
     display: flex;
     padding: 10px;
     border-top: 1px solid #ddd;
     background: white;
+    flex-shrink: 0;
 }
 
 .chat-input-area input {
-    flex: 1;
+    flex: 1; /* Input takes remaining width */
     padding: 10px 15px;
     border: 1px solid #ccc;
     border-radius: 25px;
@@ -145,16 +174,20 @@
     margin-left: 10px;
     cursor: pointer;
 }
-/* tritanopie for chatBot */
+
+/* =========================================
+   ACCESSIBILITY: TRITANOPIA THEME
+   Overrides colors for Tritanopia (Blue-Yellow color blindness)
+   ========================================= */
 
 body.tritanopie #help-bubble {
     background-color: #01351b;
-    color: #01351b;
+    color: #ffffff;
 }
 
 body.tritanopie .help-popup-header {
     background-color: #ed967f;
-    color: #e2eaff;
+    color: #ffffff;
 }
 
 body.tritanopie .chat-popup {
@@ -164,17 +197,12 @@ body.tritanopie .chat-popup {
 
 body.tritanopie .chat-messages {
     background-color: #ffffff;
-
 }
 
-body.tritanopie .bot-message {
-    background-color: #cccccc;
-    color: #000000;
-}
-
-body.tritanopie .user-message {
-    background-color: #ed967f;
-    color: #000000;
+body.tritanopie .chat-messages .message {
+    /* Override pour le thème tritanopie si nécessaire */
+    background-color: #ed967f !important;
+    color: #000000 !important;
 }
 
 body.tritanopie .quick-actions button {
@@ -201,12 +229,11 @@ body.tritanopie .chat-input-area button {
     color: #ed967f;
 }
 
-/* =========================
-   CHATBOT RESPONSIVE
-   ========================= */
+/* =========================================
+   RESPONSIVE DESIGN (Mobile)
+   ========================================= */
 
 @media (max-width: 600px) {
-
     #help-bubble {
         width: 55px;
         height: 55px;
@@ -218,8 +245,8 @@ body.tritanopie .chat-input-area button {
     .chat-popup {
         bottom: 80px;
         right: 10px;
-        width: 95vw;
-        height: 80vh;
+        width: 95vw; /* Almost full width on mobile */
+        height: 70vh; /* Taller on mobile */
         border-radius: 16px;
     }
 
