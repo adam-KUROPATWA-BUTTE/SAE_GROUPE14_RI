@@ -40,7 +40,6 @@ class PartnersControllerAdmin implements ControllerInterface
 
         // --- FORM PROCESSING ---
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
             // Retrieve and sanitize form fields
             $continent   = trim($_POST['name'] ?? '');
             $country     = trim($_POST['country'] ?? '');
