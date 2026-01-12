@@ -122,6 +122,23 @@ main {
     transition: all 0.25s ease;
 }
 
+/* Daltonisme tritanopie */
+body.tritanopie .progress-line {
+    background-color: #009b73;
+}
+
+body.tritanopie .progress-step.active .progress-circle {
+    background-color: #009b73;
+}
+
+body.tritanopie .progress-step.active .progress-icon img {
+    filter:
+            brightness(1.15)
+            saturate(1.2)
+            drop-shadow(0 0 6px rgba(0, 155, 115, 0.8));
+}
+
+
 
 /* Texte */
 .progress-step span {
