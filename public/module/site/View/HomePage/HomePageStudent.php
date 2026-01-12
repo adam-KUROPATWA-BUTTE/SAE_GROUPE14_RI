@@ -101,7 +101,8 @@ class HomePageStudent
         </section>
 
 
-      <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
+
+        <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
         <div id="help-popup" class="chat-popup">
             <div class="help-popup-header">
                 <span>Assistant</span>
@@ -149,16 +150,15 @@ class HomePageStudent
                 }
 
                 themeToggle.addEventListener('click', function() {
-                    const isTritanopie = document.body.classList.toggle('tritanopie');
+                    document.body.classList.toggle('tritanopie');
                     this.classList.toggle('active');
 
-                    fetch('save_preferences.php', {
-                        method: 'POST',
-                        headers: {'Content-Type':'application/json'},
-                        body: JSON.stringify({tritanopia: isTritanopie ? 1 : 0})
-                    });
-                });
+                    const isTritanopie = document.body.classList.contains('tritanopie');
 
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('tritanopia', isTritanopie ? '1' : '0');
+                    window.location.href = url.toString();
+                });
             });
 
 
