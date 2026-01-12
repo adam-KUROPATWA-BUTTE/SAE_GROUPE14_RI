@@ -340,7 +340,7 @@ class FoldersPageStudent
             });
         </script>
         <footer>
-            <p>&copy; 2025 - Aix-Marseille Université</p>
+            <p>&copy; 2026 - Aix-Marseille Université</p>
         </footer>
         </body>
         </html>
