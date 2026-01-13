@@ -31,6 +31,7 @@ class WebPlan
             ['url' => 'index.php?page=folders-admin', 'label' => 'Dossier'],
             ['url' => 'index.php?page=logout', 'label' => 'Déconnexion'],
         ];
+        return $links;
         
     }
     /**
