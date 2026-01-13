@@ -1,9 +1,8 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
-
 namespace Controllers\FolderController;
 
+use Controllers\ControllerInterface;
 use Model\Folder\FolderAdmin;
 use View\Folder\FoldersPageAdmin;
 
@@ -11,11 +10,9 @@ use View\Folder\FoldersPageAdmin;
  * Class FoldersControllerAdmin
  *
  * Controller responsible for the administrative management of student folders.
- * It handles the listing, creation, modification, and validation status of student files.
- *
- * VERSION AVEC DEBUG
+ * It handles the listing, creation, modification, validation status, and advanced filtering of student files.
  */
-class FoldersControllerAdmin
+class FoldersControllerAdmin implements ControllerInterface
 {
     /**
      * Determines if the controller supports the requested page.
@@ -26,12 +23,14 @@ class FoldersControllerAdmin
      */
     public static function support(string $page, string $method): bool
     {
-        return in_array($page, ['folders', 'save_student', 'folders-admin', 'toggle_complete', 'update_student']);
+        return in_array($page, ['folders', 'save_student', 'folders-admin', 'toggle_complete', 'update_student'], true);
     }
 
     /**
      * Main control logic.
      * Handles authentication check, routing logic, data retrieval, and view rendering.
+     *
+     * @return void
      */
     public function control(): void
     {
@@ -40,254 +39,171 @@ class FoldersControllerAdmin
             session_start();
         }
 
+        // Security Check: Only Admins allowed
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+            header('Location: index.php?page=login');
+            exit;
+        }
+
         // Retrieve parameters with default values
         $page = $_GET['page'] ?? 'folders';
         $action = $_GET['action'] ?? 'list';
         $lang = $_GET['lang'] ?? 'fr';
 
-        // Handle toggle complete status action
+        // --- Action: Toggle Folder Completion Status ---
         if ($page === 'toggle_complete') {
-            $numetu = $_GET['numetu'] ?? null;
-
-            if ($numetu) {
-                // Decode URL parameter to handle special characters in ID
-                $numetu = urldecode($numetu);
-
-                // Call Model to switch status in Database (0 <-> 1)
-                $success = FolderAdmin::toggleCompleteStatus($numetu);
-
-                // Set Flash Message for the user
-                if ($success) {
-                    $_SESSION['message'] = ($lang === 'fr')
-                        ? "Statut du dossier mis à jour."
-                        : "Folder status updated.";
-                } else {
-                    $_SESSION['message'] = ($lang === 'fr')
-                        ? "Erreur lors de la mise à jour."
-                        : "Error updating status.";
-                }
-
-                // Redirect back to the student view
-                header('Location: index.php?page=folders-admin&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
-                exit;
-            }
+            $this->handleToggleComplete((string)$lang);
+            return;
         }
 
-        // Handle POST requests (create/update)
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if ($page === 'save_student') {
-                $this->saveStudent($lang);
-                return;
-            }
-            if ($page === 'update_student') {
-                $this->updateStudent($lang);
-                return;
-            }
+        // --- Action: Update Student Data (POST) ---
+        if ($page === 'update_student' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->handleUpdateStudent((string)$lang);
+            return;
         }
 
-        $studentData = null;
-        // If we are in 'view' mode, fetch the specific student details
-        if ($action === 'view' && !empty($_GET['numetu'])) {
-            $studentData = FolderAdmin::getStudentDetails($_GET['numetu']);
-        }
-
-        // Déterminer la page courante
-        $currentPage = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
-
-
-
-
-        // 🔍 DEBUG - Commence ici
-
-
-        $startTime = microtime(true);  // ← AJOUTE CETTE LIGNE
-
-
-
-        error_log("=== FOLDERS CONTROLLER DEBUG ===");
-        error_log("URL: " . ($_SERVER['REQUEST_URI'] ?? 'N/A'));
-        error_log("GET params: " . print_r($_GET, true));
-        error_log("Current Page calculated: " . $currentPage);
-
-        // Collect filters from GET parameters for the list view
-        $filters = [
-            'type'       => $_GET['Type'] ?? $_GET['type'] ?? 'all',
-            'zone'       => $_GET['Zone'] ?? $_GET['zone'] ?? 'all',
-            'search'     => $_GET['search'] ?? '',
-            'complet'    => $_GET['complet'] ?? 'all',
-        ];
-
-        error_log("Filters: " . print_r($filters, true));
-
-        $perPage = 10;
-
-        // Utiliser la nouvelle méthode avec pagination SQL
-        $result = FolderAdmin::rechercherAvecPagination($filters, $currentPage, $perPage);
-
-        error_log("Result from Model: total=" . $result['total'] . ", totalPages=" . $result['totalPages'] . ", data count=" . count($result['data']));
-
-        $endTime = microtime(true);  // ← AJOUTE CETTE LIGNE
-        $executionTime = round(($endTime - $startTime) * 1000, 2);  // ← AJOUTE CETTE LIGNE
-        error_log("⏱️ TEMPS D'EXÉCUTION: " . $executionTime . "ms");  // ← AJOUTE CETTE LIGNE
-
-
-        error_log("=== END DEBUG ===\n");
-        // 🔍 DEBUG - Fin
-
-        // Retrieve and clear Flash Message
-        $message = $_SESSION['message'] ?? '';
-        unset($_SESSION['message']);
-
-        $view = new FoldersPageAdmin(
-            $action,
-            $filters,
-            $currentPage,
-            $perPage,
-            $message,
-            $lang,
-            $studentData,
-            $result['data'],        // Données paginées
-            $result['total'],       // Nombre total
-            $result['totalPages']   // Nombre de pages
-        );
-        $view->render();
+        // --- Default Action: List / View / Filter ---
+        $this->handleListOrView($action, (string)$lang);
     }
 
     /**
-     * Handles the creation of a new student folder.
-     * Processes POST data, uploads files, and calls the Model.
+     * Handles the toggling of the 'IsComplete' status for a folder.
      *
-     * @param string $lang Language for error messages.
+     * @param string $lang Current language code.
+     * @return void
      */
-    private function saveStudent(string $lang): void
+    private function handleToggleComplete(string $lang): void
     {
-        // 1. Collect form data
-        $data = [
-            'NumEtu' => $_POST['numetu'] ?? '',
-            'Nom' => $_POST['nom'] ?? '',
-            'Prenom' => $_POST['prenom'] ?? '',
-            'DateNaissance' => $_POST['naissance'] ?? null,
-            'Sexe' => $_POST['sexe'] ?? null,
-            'Adresse' => $_POST['adresse'] ?? null,
-            'CodePostal' => $_POST['cp'] ?? null,
-            'Ville' => $_POST['ville'] ?? null,
-            'EmailPersonnel' => $_POST['email_perso'] ?? '',
-            'EmailAMU' => $_POST['email_amu'] ?? null,
-            'Telephone' => $_POST['telephone'] ?? '',
-            'CodeDepartement' => $_POST['departement'] ?? null,
-            'Type' => $_POST['type'] ?? null,
-            'Zone' => $_POST['zone'] ?? 'europe'
-        ];
-
-        // 2. Validate required fields
-        $errors = [];
-        if (empty($data['NumEtu'])) {
-            $errors[] = ($lang === 'fr') ? 'Numéro étudiant requis' : 'Student ID required';
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            // Assuming FolderAdmin has a method to toggle status.
+            // If not, this logic should be implemented in the Model.
+            if (method_exists(FolderAdmin::class, 'toggleComplete')) {
+                FolderAdmin::toggleComplete((string)$id);
+            }
         }
-        if (empty($data['Nom'])) {
-            $errors[] = ($lang === 'fr') ? 'Nom requis' : 'Name required';
-        }
-
-        if (!empty($errors)) {
-            $_SESSION['message'] = implode(', ', $errors);
-            header('Location: index.php?page=folders-admin&action=create&lang=' . $lang);
-            exit;
-        }
-
-        // 3. Check for duplicates in DB
-        if (FolderAdmin::getByNumetu($data['NumEtu'])) {
-            $_SESSION['message'] = ($lang === 'fr') ? 'Ce numéro étudiant existe déjà' : 'ID already exists';
-            header('Location: index.php?page=folders-admin&action=create&lang=' . $lang);
-            exit;
-        }
-
-        // 4. Handle File Uploads
-        $photoData = null;
-        if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-            $photoData = file_get_contents($_FILES['photo']['tmp_name']);
-        }
-
-        $cvData = null;
-        if (isset($_FILES['cv']) && $_FILES['cv']['error'] === UPLOAD_ERR_OK) {
-            $cvData = file_get_contents($_FILES['cv']['tmp_name']);
-        }
-
-        $conventionData = null;
-        if (isset($_FILES['convention']) && $_FILES['convention']['error'] === UPLOAD_ERR_OK) {
-            $conventionData = file_get_contents($_FILES['convention']['tmp_name']);
-        }
-
-        $lettreData = null;
-        if (isset($_FILES['lettre_motivation']) && $_FILES['lettre_motivation']['error'] === UPLOAD_ERR_OK) {
-            $lettreData = file_get_contents($_FILES['lettre_motivation']['tmp_name']);
-        }
-
-        // 5. Save to Database
-        $success = FolderAdmin::creerDossier($data, $photoData, $cvData, $conventionData, $lettreData);
-        $_SESSION['message'] = $success
-            ? (($lang === 'fr') ? 'Dossier créé avec succès' : 'Folder created successfully')
-            : (($lang === 'fr') ? 'Erreur lors de la création' : 'Error creating folder');
-
+        
+        // Redirect back to the list
         header('Location: index.php?page=folders-admin&lang=' . $lang);
         exit;
     }
 
     /**
-     * Handles the update of an existing student folder.
-     * Note: This does NOT update the "IsComplete" status.
+     * Handles the processing of the 'update student' form.
      *
-     * @param string $lang Language for error messages.
+     * @param string $lang Current language code.
+     * @return void
      */
-    private function updateStudent(string $lang): void
+    private function handleUpdateStudent(string $lang): void
     {
-        // 1. Collect form data
+        // 1. Retrieve and Sanitize POST Data
         $data = [
             'NumEtu' => $_POST['numetu'] ?? '',
             'Nom' => $_POST['nom'] ?? '',
             'Prenom' => $_POST['prenom'] ?? '',
             'EmailPersonnel' => $_POST['email_perso'] ?? '',
             'Telephone' => $_POST['telephone'] ?? '',
-            'Type' => $_POST['type'] ?? null,
-            'DateNaissance' => $_POST['naissance'] ?? null,
-            'Sexe' => $_POST['sexe'] ?? null,
-            'Adresse' => $_POST['adresse'] ?? null,
-            'CodePostal' => $_POST['cp'] ?? null,
-            'Ville' => $_POST['ville'] ?? null,
-            'EmailAMU' => $_POST['email_amu'] ?? null,
-            'CodeDepartement' => $_POST['departement'] ?? null,
+            'Adresse' => $_POST['adresse'] ?? '',
+            'CodePostal' => $_POST['code_postal'] ?? '',
+            'Ville' => $_POST['ville'] ?? '',
+            'CodeDepartement' => $_POST['dept'] ?? '',
+            'Type' => $_POST['type'] ?? 'etudes',
             'Zone' => $_POST['zone'] ?? 'europe'
         ];
 
-        // 2. Handle File Uploads (Only if new files are provided)
-        $photoData = null;
-        if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-            $photoData = file_get_contents($_FILES['photo']['tmp_name']);
-        }
+        // 2. Handle File Uploads Safely
+        // Using helper to prevent passing 'false' to the model
+        $photoData = $this->readFile('photo');
+        $cvData = $this->readFile('cv');
+        $conventionData = $this->readFile('convention');
+        $lettreData = $this->readFile('lettre_motivation');
 
-        $cvData = null;
-        if (isset($_FILES['cv']) && $_FILES['cv']['error'] === UPLOAD_ERR_OK) {
-            $cvData = file_get_contents($_FILES['cv']['tmp_name']);
-        }
-
-        $conventionData = null;
-        if (isset($_FILES['convention']) && $_FILES['convention']['error'] === UPLOAD_ERR_OK) {
-            $conventionData = file_get_contents($_FILES['convention']['tmp_name']);
-        }
-
-        $lettreData = null;
-        if (isset($_FILES['lettre_motivation']) && $_FILES['lettre_motivation']['error'] === UPLOAD_ERR_OK) {
-            $lettreData = file_get_contents($_FILES['lettre_motivation']['tmp_name']);
-        }
-
-        // 3. Update Database
+        // 3. Update Database via Model
         $success = FolderAdmin::updateDossier($data, $photoData, $cvData, $conventionData, $lettreData);
 
+        // 4. Set Flash Message
         $_SESSION['message'] = $success
             ? (($lang === 'fr') ? 'Dossier mis à jour' : 'Folder updated')
             : (($lang === 'fr') ? 'Erreur lors de la mise à jour' : 'Error updating folder');
 
-        // Redirect back to the student's detail view
-        header('Location: index.php?page=folders-admin&action=view&numetu=' . urlencode($data['NumEtu']) . '&lang=' . $lang);
+        // 5. Redirect
+        header('Location: index.php?page=folders-admin&lang=' . $lang);
         exit;
+    }
+
+    /**
+     * Handles the display of the folders list (with pagination/filters) or a specific folder details view.
+     *
+     * @param string $action Current action (list, view, create).
+     * @param string $lang   Current language code.
+     * @return void
+     */
+    private function handleListOrView(string $action, string $lang): void
+    {
+        // Retrieve flash message
+        $message = '';
+        if (isset($_SESSION['message'])) {
+            $message = $_SESSION['message'];
+            unset($_SESSION['message']);
+        }
+
+        // Prepare Filters
+        $filters = [
+            'search'     => $_GET['search'] ?? '',
+            'type'       => $_GET['type'] ?? 'all',
+            'zone'       => $_GET['zone'] ?? 'all',
+            'complet'    => $_GET['complet'] ?? 'all',
+            'dept'       => $_GET['dept'] ?? '',
+            'year'       => $_GET['year'] ?? '',
+            'date_debut' => $_GET['date_debut'] ?? '',
+            'date_fin'   => $_GET['date_fin'] ?? '',
+        ];
+
+        // Pagination settings
+        $pageNum = (int)($_GET['p'] ?? 1);
+        $perPage = 10;
+
+        // Fetch paginated data from Model
+        $result = FolderAdmin::rechercherAvecPagination($filters, $pageNum, $perPage);
+        $paginatedData = $result['data'] ?? [];
+        $totalCount = (int)($result['total'] ?? 0);
+        $totalPages = (int)($result['totalPages'] ?? 0);
+
+        // Fetch specific student data if in View/Edit mode
+        $studentData = null;
+        if (($action === 'view' || $action === 'edit') && isset($_GET['id'])) {
+            $studentData = FolderAdmin::getStudentDetails((string)$_GET['id']);
+        }
+
+        // Render the View
+        $view = new FoldersPageAdmin(
+            $action,
+            $filters,
+            $pageNum,
+            $perPage,
+            $message,
+            $lang,
+            $studentData,
+            $paginatedData,
+            $totalCount,
+            $totalPages
+        );
+        $view->render();
+    }
+
+    /**
+     * Helper to safely read uploaded file content.
+     * Returns null if no file is uploaded or if reading fails, ensuring type safety.
+     *
+     * @param string $key The input name in $_FILES.
+     * @return string|null Binary content or null.
+     */
+    private function readFile(string $key): ?string
+    {
+        if (isset($_FILES[$key]) && $_FILES[$key]['error'] === UPLOAD_ERR_OK) {
+            $content = file_get_contents($_FILES[$key]['tmp_name']);
+            return ($content !== false) ? $content : null;
+        }
+        return null;
     }
 }

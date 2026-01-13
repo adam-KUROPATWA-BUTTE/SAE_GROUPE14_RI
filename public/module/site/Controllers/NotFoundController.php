@@ -1,42 +1,59 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
-
 namespace Controllers\site;
 
 use Controllers\ControllerInterface;
 use View\NotFoundPage;
 
 /**
- * NotFoundController
+ * Class NotFoundController
  *
- * Handles 404 pages when a requested route does not exist.
- *
- * Responsibilities:
- *  - Render a "Page Not Found" view
- *  - Does not support any specific route
+ * Handles 404 errors when a requested route does not correspond to any existing controller.
+ * It acts as a fallback controller to display a user-friendly "Page Not Found" view.
  */
 class NotFoundController implements ControllerInterface
 {
     /**
-     * Main control method to render the 404 page.
-     */
-    public function control(): void
-    {
-        $view = new NotFoundPage('Page not found');
-        $view->render();
-    }
-
-    /**
-     * Determines if this controller supports the requested page and method.
+     * Determines if this controller supports the requested page.
      *
-     * @param string $page   Requested page
-     * @param string $method HTTP method
-     * @return bool Always returns false because this controller is a fallback
+     * Since this is a fallback controller used when no other controller matches,
+     * this method always returns false. It is instantiated manually by the Router/Index.
+     *
+     * @param string $page   The requested page name.
+     * @param string $method The HTTP method (GET, POST).
+     * @return bool Always false.
      */
     public static function support(string $page, string $method): bool
     {
-        // This controller does not handle any specific route
         return false;
+    }
+
+    /**
+     * Main control method.
+     * Sets the 404 HTTP header and renders the error view.
+     *
+     * @return void
+     */
+    public function control(): void
+    {
+        // Send proper 404 HTTP header
+        http_response_code(404);
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        // Check if the View class exists before instantiating
+        // This avoids fatal errors if the View file is missing during development
+        if (class_exists('View\NotFoundPage')) {
+            $view = new NotFoundPage('Page Not Found');
+            if (method_exists($view, 'render')) {
+                $view->render();
+            }
+        } else {
+            // Fallback text output
+            echo "<h1>404 - Page Not Found</h1>";
+            echo "<p>The requested resource could not be found.</p>";
+        }
     }
 }

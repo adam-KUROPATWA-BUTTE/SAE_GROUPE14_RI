@@ -1,7 +1,5 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
-
 namespace Controllers\site;
 
 use Controllers\ControllerInterface;
@@ -28,12 +26,14 @@ class DashboardController implements ControllerInterface
      */
     public static function support(string $page, string $method): bool
     {
-        return in_array($page, ['dashboard-admin', 'dashboard-student']) && $method === 'GET';
+        return in_array($page, ['dashboard-admin', 'dashboard-student'], true) && $method === 'GET';
     }
 
     /**
      * Main control method.
      * Starts the session and dispatches the request to the specific dashboard method.
+     *
+     * @return void
      */
     public function control(): void
     {
@@ -42,56 +42,65 @@ class DashboardController implements ControllerInterface
         }
 
         // Determine the page from GET param or URL path
-        $page = $_GET['page'] ?? trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
+        // Fix: cast parse_url result to string to avoid null/false issues
+        $uriPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $page = $_GET['page'] ?? trim((string)$uriPath, '/');
 
         if ($page === 'dashboard-admin') {
             $this->showAdminDashboard();
         } elseif ($page === 'dashboard-student') {
             $this->showStudentDashboard();
         } else {
-            http_response_code(404);
-            echo "Page not found";
+            // Fallback redirection if routing fails
+            header('Location: index.php?page=login');
+            exit;
         }
     }
 
     /**
      * Renders the Admin Dashboard.
-     * * Requirement: User must have 'admin' role.
-     * Data: Fetches ALL folders (complete and incomplete) to provide a global view.
+     * Requirements: User must have 'admin' role.
+     * Data: Fetches ALL folders to provide a global view.
      */
     private function showAdminDashboard(): void
     {
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            header('Location: /login');
+            header('Location: index.php?page=login');
             exit;
         }
 
         $lang = $_GET['lang'] ?? 'fr';
 
+        // Retrieve all folders via the Admin Model
         $folders = FolderAdmin::getAll();
 
-        $page = new DashboardPageAdmin($folders, $lang);
-        $page->render();
+        $view = new DashboardPageAdmin($folders, (string)$lang);
+        $view->render();
     }
 
     /**
      * Renders the Student Dashboard.
-     * * Requirement: User must have 'etudiant' role.
+     * Requirements: User must have 'etudiant' role.
      * Data: Fetches only the connected student's folder.
      */
     private function showStudentDashboard(): void
     {
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'etudiant') {
-            header('Location: /login');
+            header('Location: index.php?page=login');
             exit;
         }
 
         $lang = $_GET['lang'] ?? 'fr';
-        $studentId = $_SESSION['etudiant_id'] ?? 0;
+        
+        // Retrieve NumEtu from session (set during login in UserStudent::login)
+        $numEtu = $_SESSION['numetu'] ?? '';
 
-        $folder = FolderStudent::getMyFolder($studentId);
+        // Fetch student details
+        // Fix: Used getStudentDetails() with numetu instead of getMyFolder($id)
+        // to match the existing FolderStudent model method.
+        $folder = FolderStudent::getStudentDetails((string)$numEtu);
 
-        $page = new DashboardPageStudent($folder, $lang);
-        $page->render();
+        $view = new DashboardPageStudent($folder, (string)$lang);
+        $view->render();
     }
 }

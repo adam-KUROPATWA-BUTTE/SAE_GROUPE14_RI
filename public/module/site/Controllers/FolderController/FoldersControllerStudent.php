@@ -1,15 +1,14 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
+namespace Controllers\FolderController;
 
-namespace Controllers\site\FolderController;
-
-use Controllers\Auth_Guard;
-use View\Folder\FoldersPageStudent;
 use Controllers\ControllerInterface;
 use Model\Folder\FolderStudent;
+use View\Folder\FoldersPageStudent;
 
 /**
+ * Class FoldersControllerStudent
+ *
  * Controller for managing student folders (student side).
  *
  * Responsibilities:
@@ -22,191 +21,134 @@ class FoldersControllerStudent implements ControllerInterface
     /**
      * Checks if this controller supports the given page and method.
      *
-     * Updated to support 'update_my_folder' to avoid routing conflicts with the Admin controller.
-     *
      * @param string $page   Requested page name.
      * @param string $method HTTP method used (GET, POST, etc.).
      * @return bool True if the page is handled by this controller, false otherwise.
      */
     public static function support(string $page, string $method): bool
     {
-        // FIX: Changed 'update_student' to 'update_my_folder' to fix the Admin redirection bug
-        return in_array($page, ['folders-student', 'update_my_folder', 'create_folder']);
+        // Supports both viewing/editing ('folders-student') and specific actions like 'update_my_folder'
+        return in_array($page, ['folders-student', 'update_my_folder', 'create_folder'], true);
     }
 
     /**
      * Main control method to handle the application flow.
      * Manages session, authentication checks, and routing logic.
+     *
+     * @return void
      */
     public function control(): void
     {
-        // --- Start session if not started ---
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        // --- Check if the student is logged in ---
-        if (empty($_SESSION['numetu'])) {
-            header('Location: index.php?page=login&error=not_logged_in');
+        // Security check: User must be a student
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'etudiant') {
+            header('Location: index.php?page=login');
             exit;
         }
 
-        $numetu = $_SESSION['numetu'];
         $lang = $_GET['lang'] ?? 'fr';
-        $page = $_GET['page'] ?? '';
+        // Cast to string to ensure strict typing for the model
+        $numEtu = (string)($_SESSION['numetu'] ?? '');
 
-        // --- Routing Actions (POST) ---
+        // Handle POST requests (Update/Create)
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // FIX: Listen for the unique student action 'update_my_folder'
-            if ($page === 'update_my_folder') {
-                $this->updateStudent($numetu, $lang);
-                return;
-            }
-            if ($page === 'create_folder') {
-                $this->createFolder($numetu, $lang);
-                return;
-            }
+            $this->handlePostRequest($numEtu, (string)$lang);
+            return;
         }
 
-        // --- Get student folder details ---
-        $studentData = FolderStudent::getStudentDetails($numetu) ?: null;
+        // Handle GET requests (View)
+        $this->handleGetRequest($numEtu, (string)$lang);
+    }
 
-        // --- Flash message from session ---
-        $message = $_SESSION['message'] ?? '';
-        unset($_SESSION['message']);
+    /**
+     * Handles the display of the folder page.
+     *
+     * @param string $numEtu Student ID.
+     * @param string $lang   Language code.
+     * @return void
+     */
+    private function handleGetRequest(string $numEtu, string $lang): void
+    {
+        // Fetch folder data from the Model
+        $dossier = FolderStudent::getStudentDetails($numEtu);
 
-        // --- Render the view ---
-        $view = new FoldersPageStudent($studentData, $numetu, 'view', $message, $lang);
+        // Retrieve flash message if any
+        $message = '';
+        if (isset($_SESSION['message'])) {
+            $message = $_SESSION['message'];
+            unset($_SESSION['message']);
+        }
+
+        // Determine action context: if no dossier exists, we treat it as creation
+        $action = $dossier ? 'view' : 'create';
+        if (isset($_GET['action'])) {
+            $action = $_GET['action'];
+        }
+
+        // Render the View
+        $view = new FoldersPageStudent($dossier, $numEtu, $action, $message, $lang);
         $view->render();
     }
 
     /**
-     * Creates a new folder for the student.
-     * Handles form validation, file uploads, and database insertion.
+     * Handles form submissions for updating or creating the folder.
      *
-     * @param string $numetu The student ID.
-     * @param string $lang   The current language.
+     * @param string $numEtu Student ID.
+     * @param string $lang   Language code.
+     * @return void
      */
-    private function createFolder(string $numetu, string $lang): void
+    private function handlePostRequest(string $numEtu, string $lang): void
     {
-        // Check if folder already exists (Constraint: Single application)
-        if (FolderStudent::getStudentDetails($numetu)) {
-            $_SESSION['message'] = ($lang === 'fr')
-                ? "Vous avez déjà déposé un dossier."
-                : "You have already submitted an application.";
-            header('Location: index.php?page=folders-student&lang=' . $lang);
-            exit;
-        }
-
-        // Collect Data
+        // Sanitize and collect form data
+        // We ensure NumEtu comes from the secure session, not the form
         $data = [
-            'NumEtu' => $numetu,
-            'Nom' => $_POST['nom'] ?? '',
-            'Prenom' => $_POST['prenom'] ?? '',
-            'DateNaissance' => $_POST['naissance'] ?? null,
-            'Sexe' => $_POST['sexe'] ?? null,
-            'Adresse' => $_POST['adresse'] ?? null,
-            'CodePostal' => $_POST['cp'] ?? null,
-            'Ville' => $_POST['ville'] ?? null,
+            'NumEtu' => $numEtu,
+            'Nom' => $_SESSION['etudiant_nom'] ?? '',
+            'Prenom' => $_SESSION['etudiant_prenom'] ?? '',
             'EmailPersonnel' => $_POST['email_perso'] ?? '',
-            'EmailAMU' => $_POST['email_amu'] ?? null,
             'Telephone' => $_POST['telephone'] ?? '',
-            'CodeDepartement' => $_POST['departement'] ?? null,
-            'Type' => $_POST['type'] ?? null,
-            'Zone' => $_POST['zone'] ?? null
+            'Adresse' => $_POST['adresse'] ?? '',
+            'CodePostal' => $_POST['code_postal'] ?? '',
+            'Ville' => $_POST['ville'] ?? '',
+            'CodeDepartement' => $_POST['dept'] ?? '',
+            'Type' => $_POST['type'] ?? 'etudes', // Default type
+            'Zone' => $_POST['zone'] ?? 'europe'   // Default zone
         ];
 
-        // Validations
-        $errors = [];
-        if (empty($data['Nom']) || empty($data['Prenom'])) {
-            $errors[] = $lang === 'fr' ? "Nom et Prénom requis." : "Name and Firstname required.";
-        }
-        if (empty($data['Type']) || empty($data['Zone'])) {
-            $errors[] = $lang === 'fr' ? "Type et Zone requis." : "Type and Zone required.";
-        }
-
-        if (!empty($errors)) {
-            $_SESSION['message'] = implode(' ', $errors);
-            header('Location: index.php?page=folders-student&lang=' . $lang);
-            exit;
-        }
-
-        // Handle Files
+        // Retrieve files safely
         $photoData = $this->getFileData('photo');
         $cvData = $this->getFileData('cv');
         $conventionData = $this->getFileData('convention');
         $lettreData = $this->getFileData('lettre_motivation');
 
-        // Create in DB
-        $success = FolderStudent::createDossier($data, $photoData, $cvData, $conventionData, $lettreData);
-
-        $_SESSION['message'] = $success
-            ? ($lang === 'fr' ? 'Votre demande a été déposée avec succès.' : 'Application submitted successfully.')
-            : ($lang === 'fr' ? 'Erreur lors du dépôt de la demande.' : 'Error submitting application.');
-
-        header('Location: index.php?page=folders-student&lang=' . $lang);
-        exit;
-    }
-
-    /**
-     * Updates the student's folder information.
-     * Handles data collection, validation, file updates, and database persistence.
-     *
-     * @param string $numetu The student ID.
-     * @param string $lang   The current language.
-     */
-    private function updateStudent(string $numetu, string $lang): void
-    {
-        // --- Prepare updated data ---
-        $data = [
-            'NumEtu'         => $numetu,
-            'Adresse'        => $_POST['adresse'] ?? null,
-            'CodePostal'     => $_POST['cp'] ?? null,
-            'Ville'          => $_POST['ville'] ?? null,
-            'Telephone'      => $_POST['telephone'] ?? null,
-            'EmailPersonnel' => $_POST['email_perso'] ?? null,
-        ];
-
-        // --- Minimal validation ---
-        $errors = [];
-        if (empty($data['EmailPersonnel'])) {
-            $errors[] = $lang === 'fr' ? "L'email personnel est requis." : "Personal email is required.";
-        }
-
-        if (!empty($errors)) {
-            $_SESSION['message'] = implode(' ', $errors);
-            header('Location: index.php?page=folders-student&lang=' . $lang);
-            exit;
-        }
-
-        // --- Handle uploaded files ---
-        $photoData = $this->getFileData('photo');
-        $cvData = $this->getFileData('cv');
-        $conventionData = $this->getFileData('convention');
-        $lettreData = $this->getFileData('lettre_motivation');
-
-        // --- Update the student folder ---
+        // Update (or create) the folder record via the Model
         $success = FolderStudent::updateDossier($data, $photoData, $cvData, $conventionData, $lettreData);
 
-        // --- Flash message and redirect to student page ---
+        // Set flash message based on result and language
         $_SESSION['message'] = $success
-            ? ($lang === 'fr' ? 'Dossier mis à jour avec succès.' : 'Folder updated successfully.')
-            : ($lang === 'fr' ? 'Erreur lors de la mise à jour du dossier.' : 'Error updating folder.');
+            ? ($lang === 'fr' ? 'Dossier enregistré avec succès.' : 'Folder saved successfully.')
+            : ($lang === 'fr' ? 'Erreur lors de l\'enregistrement.' : 'Error saving folder.');
 
+        // Redirect to the view page
         header('Location: index.php?page=folders-student&lang=' . $lang);
         exit;
     }
 
     /**
-     * Helper to retrieve file content if uploaded correctly.
+     * Helper to retrieve uploaded file content safely.
+     * Returns null if no file is uploaded or if reading fails, preventing type errors.
      *
-     * @param string $inputName The name attribute of the file input.
-     * @return string|null The binary content of the file or null if not uploaded.
+     * @param string $inputName The name attribute of the file input field.
+     * @return string|null The binary content of the file or null.
      */
     private function getFileData(string $inputName): ?string
     {
         if (isset($_FILES[$inputName]) && $_FILES[$inputName]['error'] === UPLOAD_ERR_OK) {
-            return file_get_contents($_FILES[$inputName]['tmp_name']);
+            $content = file_get_contents($_FILES[$inputName]['tmp_name']);
+            return ($content !== false) ? $content : null;
         }
         return null;
     }

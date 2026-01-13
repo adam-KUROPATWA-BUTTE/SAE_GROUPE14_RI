@@ -1,7 +1,5 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
-
 namespace Controllers\PartnersController;
 
 use Controllers\ControllerInterface;
@@ -10,47 +8,48 @@ use View\Partners\PartnersPageStudent;
 /**
  * Class PartnersControllerStudent
  *
- * Controller responsible for displaying the partner universities
- * page for students.
+ * Controller responsible for displaying the partner universities page for students.
+ * This is a read-only view allowing students to browse available international partnerships.
  */
 class PartnersControllerStudent implements ControllerInterface
 {
     /**
-     * Main controller logic.
+     * Determines if this controller supports the current request.
      *
-     * - Starts the session if necessary
-     * - Determines the current language
-     * - Creates and renders the student partners view
+     * @param string $page   The page identifier from the URL.
+     * @param string $method The HTTP method (GET, POST).
+     * @return bool True if this controller should handle the request.
+     */
+    public static function support(string $page, string $method): bool
+    {
+        return $page === 'partners-student';
+    }
+
+    /**
+     * Main control logic.
+     *
+     * Steps:
+     * 1. Start the session if not already active.
+     * 2. Determine the current language.
+     * 3. Instantiate and render the student-specific partners view.
      *
      * @return void
      */
     public function control(): void
     {
-        // Start session if not already started
+        // Ensure session is started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        // Retrieve current language (default: French)
-        $lang = $_GET['lang'] ?? 'fr';
+        // Retrieve current language with strict type casting for PHPStan
+        $lang = (string)($_GET['lang'] ?? 'fr');
 
         // Set page title based on language
-        $title = $lang === 'en' ? 'Partner Universities' : 'Universités Partenaires';
+        $title = ($lang === 'en') ? 'Partner Universities' : 'Universités Partenaires';
 
-        // Instantiate and render the student view
+        // Instantiate and render the view
         $view = new PartnersPageStudent($title, $lang);
         $view->render();
-    }
-
-    /**
-     * Checks whether this controller supports the given page and HTTP method.
-     *
-     * @param string $page   Requested page
-     * @param string $method HTTP method
-     * @return bool True if this controller supports the page, false otherwise
-     */
-    public static function support(string $page, string $method): bool
-    {
-        return $page === 'partners-student';
     }
 }

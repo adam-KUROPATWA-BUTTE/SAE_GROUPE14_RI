@@ -1,32 +1,34 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
-
 namespace Controllers;
 
 /**
- * ControllerInterface
+ * Interface ControllerInterface
  *
- * Defines the basic structure for all controllers.
- *
- * Responsibilities:
- *  - Every controller must implement a `control()` method to handle request logic.
- *  - Every controller must implement a static `support()` method to indicate
- *    whether it can handle a given page/path and HTTP method.
+ * Contract that all controllers must adhere to.
+ * Ensures a consistent structure for handling requests and routing within the application.
  */
 interface ControllerInterface
 {
     /**
-     * Main method to handle the request logic for the controller.
+     * Main method that executes the controller logic.
+     *
+     * This method is responsible for processing the request, interacting with models,
+     * and rendering the appropriate view.
+     *
+     * @return void
      */
-    public function control();
+    public function control(): void;
 
     /**
-     * Determines if the controller supports a given path and HTTP method.
+     * Determines if the controller supports the requested page and HTTP method.
      *
-     * @param string $chemin Requested path/page
-     * @param string $method HTTP method (GET, POST, etc.)
-     * @return bool True if the controller supports handling the path
+     * This static method acts as a router guard, checking if the specific controller
+     * is capable of handling the incoming request based on the URL path and HTTP verb.
+     *
+     * @param string $path   The requested page/route (e.g., 'login', 'dashboard').
+     * @param string $method The HTTP method used (e.g., 'GET', 'POST').
+     * @return bool True if the controller supports the request, false otherwise.
      */
-    public static function support(string $chemin, string $method): bool;
+    public static function support(string $path, string $method): bool;
 }

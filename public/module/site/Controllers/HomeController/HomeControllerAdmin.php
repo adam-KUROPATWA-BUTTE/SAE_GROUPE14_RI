@@ -1,12 +1,9 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
-
 namespace Controllers\site\HomeController;
 
 use Controllers\ControllerInterface;
 use View\HomePage\HomePageAdmin;
-use Database;
 use PDO;
 use PDOException;
 
@@ -16,9 +13,9 @@ use PDOException;
  * Controller responsible for the Administrator Homepage.
  *
  * Responsibilities:
- * - Verify if the user is an Administrator.
- * - Calculate global statistics (completion rate of all folders).
- * - Render the specific Admin Homepage view.
+ * - Check if the user is an Administrator.
+ * - Calculate global statistics (percentage of completed student folders).
+ * - Render the Admin Homepage view.
  */
 class HomeControllerAdmin implements ControllerInterface
 {
@@ -26,9 +23,8 @@ class HomeControllerAdmin implements ControllerInterface
      * Determines if this controller supports the current request.
      *
      * This controller is selected ONLY if:
-     * 1. The requested page is 'home'.
-     * 2. The HTTP method is GET.
-     * 3. An administrator session is active ('user' key exists).
+     * 1. The requested page is 'home-admin'.
+     * 2. The HTTP method is GET (implicitly, as usually only GET is used for home).
      *
      * @param string $page   The page identifier from the URL.
      * @param string $method The HTTP method (GET, POST).
@@ -36,7 +32,6 @@ class HomeControllerAdmin implements ControllerInterface
      */
     public static function support(string $page, string $method): bool
     {
-        // Check for 'home' page AND active admin session
         return $page === 'home-admin';
     }
 
@@ -48,6 +43,8 @@ class HomeControllerAdmin implements ControllerInterface
      * 2. Connect to the database.
      * 3. Compute the percentage of completed student folders.
      * 4. Instantiate and render the Admin View.
+     *
+     * @return void
      */
     public function control(): void
     {
@@ -56,30 +53,41 @@ class HomeControllerAdmin implements ControllerInterface
             session_start();
         }
 
-        $lang = $_GET['lang'] ?? 'fr';
-        $completionPercentage = 0;
+        $lang = (string)($_GET['lang'] ?? 'fr');
+        $completionPercentage = 0.0;
 
         // --- Statistics Calculation Logic ---
         try {
+            // Use global namespace for Database class
             $pdo = \Database::getInstance()->getConnection();
 
             // Query to count total folders and sum completed ones (IsComplete = 1)
             $stmt = $pdo->query("SELECT COUNT(*) as total, SUM(IsComplete) as completed FROM dossiers");
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Avoid division by zero
-            if ($row && $row['total'] > 0) {
-                $completionPercentage = ($row['completed'] / $row['total']) * 100;
+            // Fix PHPStan: query() can return false
+            if ($stmt !== false) {
+                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                // Fix PHPStan: fetch() returns mixed/false. Verify array and cast values.
+                if (is_array($row)) {
+                    $total = (int)($row['total'] ?? 0);
+                    $completed = (int)($row['completed'] ?? 0);
+
+                    // Avoid division by zero
+                    if ($total > 0) {
+                        $completionPercentage = ($completed / $total) * 100;
+                    }
+                }
             }
         } catch (PDOException $e) {
-            // Log error silently and default percentage to 0
+            // Log error silently and default percentage to 0.0
             error_log("HomeControllerAdmin Error: " . $e->getMessage());
-            $completionPercentage = 0;
+            $completionPercentage = 0.0;
         }
 
         // --- Render View ---
-        // Pass 'true' for isLoggedIn (since we are in Admin controller)
-        // Pass the calculated percentage for the dashboard chart
+        // Pass 'true' for isLoggedIn (since we are in Admin controller context)
+        // Pass the calculated percentage (float)
         $view = new HomePageAdmin(true, $lang, $completionPercentage);
         $view->render();
     }

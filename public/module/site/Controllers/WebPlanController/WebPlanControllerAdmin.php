@@ -1,7 +1,5 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
-
 namespace Controllers\WebPlanController;
 
 use Controllers\ControllerInterface;
@@ -17,36 +15,43 @@ use Model\WebPlan;
 class WebPlanControllerAdmin implements ControllerInterface
 {
     /**
+     * Checks whether this controller supports the given page and HTTP method.
+     *
+     * @param string $page   The requested page identifier.
+     * @param string $method The HTTP method (GET, POST).
+     * @return bool True if this controller supports the page.
+     */
+    public static function support(string $page, string $method): bool
+    {
+        return $page === 'web_plan-admin';
+    }
+
+    /**
      * Main controller logic.
      *
-     * - Retrieves the current language
-     * - Fetches admin-specific sitemap links
-     * - Creates and renders the admin sitemap view
+     * Steps:
+     * 1. Ensure the session is started.
+     * 2. Retrieve the current language.
+     * 3. Fetch admin-specific sitemap links from the Model.
+     * 4. Render the admin sitemap view.
      *
      * @return void
      */
     public function control(): void
     {
-        // Retrieve current language (default: French)
-        $lang = $_GET['lang'] ?? 'fr';
+        // Ensure session is started
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
-        // Get sitemap links available for administrators
+        // Retrieve current language (default: French) with strict casting
+        $lang = (string)($_GET['lang'] ?? 'fr');
+
+        // Get sitemap links available for administrators from the Model
         $links = WebPlan::getLinksAdmin();
 
         // Instantiate and render the admin sitemap view
         $view = new WebPlanPageAdmin($links, $lang);
         $view->render();
-    }
-
-    /**
-     * Checks whether this controller supports the given page and HTTP method.
-     *
-     * @param string $page   Requested page
-     * @param string $method HTTP method
-     * @return bool True if this controller supports the page, false otherwise
-     */
-    public static function support(string $page, string $method): bool
-    {
-        return $page === 'web_plan-admin';
     }
 }
