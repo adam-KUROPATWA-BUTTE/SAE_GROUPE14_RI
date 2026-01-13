@@ -3,18 +3,15 @@
    Main stylesheet for the floating chatbot
    ========================================= */
 
-/* === CSS CONFLICT FIX ===
-   Cette règle écrase les styles structurels de .message venant de 'folders.css'
-   (animation, bordures, etc.) pour éviter que les messages ne disparaissent.
-*/
+
 .chat-messages .message {
-    animation: none;       /* Bloque l'animation de disparition */
-    opacity: 1 ;            /* Force le message à rester visible */
-    border: none ;          /* Retire la bordure verte d'alerte */
-    overflow: visible ;     /* Empêche le texte d'être coupé */
-    height: auto ;          /* Annule la réduction de hauteur */
-    margin-bottom: 0 ;      /* Annule la marge des alertes */
-    box-shadow: none ;      /* Retire les ombres parasites */
+    animation: none;
+    opacity: 1 ;
+    border: none ;
+    overflow: visible ;
+    height: auto ;
+    margin-bottom: 0 ;
+    box-shadow: none ;
 }
 
 /* --- Floating Chat Bubble Icon --- */
@@ -185,7 +182,7 @@ body.tritanopie #help-bubble {
 
 body.tritanopie .help-popup-header {
     background-color: #ed967f;
-    color: #000000; /* Texte noir sur fond orange pour lisibilité */
+    color: #ffffff;
 }
 
 body.tritanopie .chat-popup {
@@ -208,12 +205,12 @@ body.tritanopie .chat-messages .bot-message {
 /* Utilisateur Tritanopie : Orange */
 body.tritanopie .chat-messages .user-message {
     background-color: #ed967f ;
-    color: #000000 ;
+    color: #ffffff;
 }
 
 body.tritanopie .quick-actions button {
     background-color: #ed967f;
-    color: #000000;
+    color: #ffffff;
 }
 
 body.tritanopie .quick-actions button:hover {
@@ -222,7 +219,7 @@ body.tritanopie .quick-actions button:hover {
 }
 
 body.tritanopie .chat-input-area {
-    background-color: #000;
+    background-color: #ffffff;
 }
 
 body.tritanopie .chat-input-area input {

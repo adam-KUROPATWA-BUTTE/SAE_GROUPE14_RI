@@ -62,16 +62,15 @@ class HomePageStudent
      */
     public function render(): void
     {
-        // Start session if not started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        // Handle language switch
         if (isset($_GET['lang'])) {
             $_SESSION['lang'] = $_GET['lang'];
         }
-        $this->lang = $_SESSION['lang'] ?? $this->lang;
+
+        $this->lang = $_SESSION['lang'] ?? 'fr';
 
         // Handle tritanopia (color blindness) mode
         if (isset($_GET['tritanopia'])) {

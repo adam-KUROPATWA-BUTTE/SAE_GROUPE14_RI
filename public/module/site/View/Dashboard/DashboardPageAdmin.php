@@ -34,6 +34,15 @@ class DashboardPageAdmin
 
     public function render(): void
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        if (isset($_GET['lang'])) {
+            $_SESSION['lang'] = $_GET['lang'];
+        }
+
+        $this->lang = $_SESSION['lang'] ?? 'fr';
         // --- 1. Retrieve Filters ---
         $searchStudent = strtolower($_GET['student'] ?? '');
         $filterDept    = $_GET['dept'] ?? '';

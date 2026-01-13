@@ -66,6 +66,12 @@ class PartnersPageStudent
             session_start();
         }
 
+        if (isset($_GET['lang'])) {
+            $_SESSION['lang'] = $_GET['lang'];
+        }
+
+        $this->lang = $_SESSION['lang'] ?? 'fr';
+
         // Handle tritanopia (color-blind) mode
         if (isset($_GET['tritanopia'])) {
             $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';

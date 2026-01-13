@@ -62,6 +62,13 @@ class FoldersPageStudent
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+
+        if (isset($_GET['lang'])) {
+            $_SESSION['lang'] = $_GET['lang'];
+        }
+
+        $this->lang = $_SESSION['lang'] ?? 'fr';
+
         if (isset($_GET['tritanopia'])) {
             $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';
         }
