@@ -1,18 +1,17 @@
 :root {
     --primary-color: #00558B;
-    --secondary-color: #EBC55E;
+    --secondary-color: #F9F1D7;
     --text-color: #ffffff;
-    --background-color: #EBC55E;
+    --background-color: #F9F1D7;
     --accent-color: #2B91BB;
     --hero-bg-color: #00558B;
-    --hover-color : #1E6F8C;
 }
 
 body.tritanopie {
     --primary-color: #005C45;
-    --secondary-color: #FF9100;
+    --secondary-color: #FFC099;
     --text-color: #ffffff;
-    --background-color: #FF9100;
+    --background-color: #FFC099;
     --accent-color: #009b73;
     --hero-bg-color: #005C45;
     --hover-color: #008764;
@@ -23,6 +22,11 @@ header {
     border-bottom: 1px solid #ddd;
     padding: 10px 20px;
     position: relative;
+}
+
+button{
+    border-radius: 20px;
+    border-color: white;
 }
 
 .logo_amu {
@@ -50,7 +54,7 @@ body {
 
 .right-buttons {
     display: flex;
-    gap: 10px;
+    gap: 0px;
     align-items: center;
     margin-left :auto;
 }
@@ -63,6 +67,7 @@ body {
 .lang-dropdown {
     position: relative;   /* ✅ correction */
     display: inline-block;
+    margin-right: 10px;
 }
 
 
@@ -102,6 +107,7 @@ nav.menu {
 nav.menu button {
     width: 100%;
     border: solid #ffffff;
+    border-radius: 20px;
     padding: 10px 15px;
     background-color: var(--accent-color);
     color: var(--text-color);
@@ -109,6 +115,8 @@ nav.menu button {
 }
 
 nav.menu button:hover {
+    width: 95%;
+    transition: all 0.5s ease-in-out;
     background-color: var(--primary-color);
 }
 
@@ -125,8 +133,14 @@ button {
 }
 
 button:hover {
-    background-color: var(--secondary-color);
+    background-color: var(--accent-color);
+    color: var(--text-color);
 }
+body.tritanopie button:hover {
+    background-color: var(--hover-color);
+    color: #fff;
+}
+
 
 main {
     flex: 1;
@@ -137,6 +151,7 @@ main {
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     padding: 2em;
 }
+
 
 h1 {
     text-align: center;
@@ -161,166 +176,26 @@ p {
     margin-bottom: 1em;
 }
 
-.hero-section {
-    width: 100%;
-    background: var(--hero-bg-color);
-    padding: 60px 30px;
-    text-align: center;
-    color: white;
-    position: relative;
-    box-sizing: border-box;
-}
-
-.hero-section h1 {
-    font-size: 36px;
-    margin: 0;
-}
-
-.hero_logo{
-    height:80px;
-    position:absolute;
-    top:20px;
-    left:20px;
-}
-
-#hero-img {
-    height: 80px;
-    position: absolute;
-    top: 20px;
-    left: 20px;
-}
-
-.dashboard-container {
-    max-width: 1000px;
-    margin: -50px auto 50px;
-    position: relative;
-    z-index: 2;
-    padding: 0 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    width: 100%;
-}
-
-.card h2 {
-    color: #333;
-    font-size: 24px;
-    margin-bottom: 30px;
-    text-align: center;
-}
-
-.legend {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin-bottom: 40px;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 16px;
-}
-
-.legend-color {
-    width: 20px;
-    height: 20px;
-    border-radius: 3px;
-}
-
-.legend-color.complet {
-    background-color: var(--accent-color);
-}
-
-.legend-color.incomplet {
-    background-color: var(--secondary-color);
-}
-
-* {
-    box-sizing: border-box;
-}
-
-.chart-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
-
-.donut-chart {
-    width: 300px;
-    height: 300px;
-    margin: 0 auto;
-    position: relative;
-}
-
-.donut-chart svg {
-    width: 100%;
-    height: 100%;
-    display: block;
-    transform: rotate(-90deg);
-}
-
-#circle_incomplet{
-    stroke : var(--secondary-color);
-}
-
-#circle_complet{
-    stroke : var(--accent-color);
-}
-
-.chart-center {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-}
-
-.chart-percentage {
-    font-size: 48px;
-    font-weight: bold;
-    color: var(--accent-color);
-    line-height: 1;
-}
-
-.chart-label {
-    font-size: 14px;
-    color: #666;
-    margin-top: 5px;
-}
-
-.pub-section {
-    position: relative;
-    width: 100%;
-    text-align: center;
-}
-
-.pub-section img {
-    width: 100%;
-    height: auto;
-    display: block;
-    margin: 0 auto;
-}
-
-.pub-text {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    transform: none;
-    color: white;
-    font-size: 40px;
-    font-weight: bold;
-}
 
 footer {
     background: var(--primary-color);
     color: var(--text-color);
     text-align: center;
     padding: 2rem 1rem;
+    position: relative;
 }
+
+footer::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 10px;
+    background: linear-gradient(to bottom, var(--secondary-color), var(--primary-color));
+}
+
+
 
 footer p {
     margin: 0;
@@ -330,6 +205,7 @@ footer p {
 
 .insta {
     height:32px;
+    margin-top: 10px;
 }
 
 #help-bubble {
@@ -405,6 +281,8 @@ footer p {
     margin-bottom: 10px;
 }
 
+
+
 li a {
     display: block;
     padding: 1em;
@@ -420,6 +298,8 @@ li a:hover {
     color: #fff;
 }
 
+
+
 #page_complete {
     display: block;
     padding: 1em;
@@ -434,64 +314,6 @@ li a:hover {
     background: var(--primary-color);
     color: #fff;
 }
-
-
-/* === BOUTON TRITANOPIE (interrupteur) === */
-#theme-toggle {
-    background: none;
-    padding: 0;
-    cursor: pointer;
-    outline: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: auto;
-    position : relative;
-    top : -15px;
-    right : 15px;
-    border-radius: 20px;
-    border: 1.5px solid black;
-}
-
-
-
-.toggle-switch {
-    position: relative;
-    width: 60px;
-    height: 30px;
-    background-color: #D46F4D;
-    border-radius: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start; /* le rond commence à gauche */
-    padding: 3px; /* espace intérieur */
-}
-
-
-/* bouton de l'interupteur */
-.toggle-switch::before {
-    content: "";
-    width: 24px;
-    height: 24px;
-    background-color: white;
-    border-radius: 50%;
-    border: 1px solid black;
-    transition: transform 0.3s ease;
-}
-
-#theme-toggle.active .toggle-switch{
-    background-color: var(--primary-color);
-}
-
-#theme-toggle.active .toggle-switch::before {
-    transform: translateX(28px);
-}
-
-
-.menu-toggle {
-    display: none;
-}
-
 
 
 @media (max-width: 810px) {
@@ -510,14 +332,6 @@ li a:hover {
         align-items: center;
     }
 
-    .menu-toggle {
-        display: block;
-        font-size: 28px;
-        color: var(--primary-color);
-        background: none;
-        border: none;
-        cursor: pointer;
-    }
 
     nav.menu {
         display: none;
@@ -525,7 +339,6 @@ li a:hover {
         align-items: stretch;
         gap: 0;
         margin-top: 10px;
-        background-color: var(--accent-color);
         border-radius: 6px;
         overflow: hidden;
         transition: max-height 0.3s ease;
@@ -537,8 +350,6 @@ li a:hover {
 
     nav.menu button {
         border: none;
-        background-color: var(--accent-color);
-        color: var(--text-color);
         padding: 12px;
         text-align: center;
         width: 100%;
@@ -554,7 +365,8 @@ li a:hover {
     }
 
     .right-buttons {
-        display: none;
+        display: flex;
+        gap: 10px;
     }
 
     .menu-right-buttons {
@@ -634,7 +446,6 @@ li a:hover {
     .menu-toggle {
         display: block;
         font-size: 28px;
-        color: var(--primary-color);
         background: none;
         border: none;
         cursor: pointer;
@@ -646,7 +457,6 @@ li a:hover {
         align-items: stretch;
         gap: 0;
         margin-top: 10px;
-        background-color: var(--accent-color);
         border-radius: 6px;
         overflow: hidden;
         transition: max-height 0.3s ease;
@@ -658,8 +468,6 @@ li a:hover {
 
     nav.menu button {
         border: none;
-        background-color: var(--accent-color);
-        color: var(--text-color);
         padding: 12px;
         text-align: center;
         width: 100%;
@@ -670,12 +478,10 @@ li a:hover {
         border-bottom: none;
     }
 
-    nav.menu button:hover {
-        background-color: var(--primary-color);
-    }
 
     .right-buttons {
-        display: none;
+        display: flex;
+        gap: 10px;
     }
 
     .menu-right-buttons {

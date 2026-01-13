@@ -1,4 +1,6 @@
 <?php
+
+// phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
 class Database
 {
     private static $instance = null;
@@ -35,12 +37,11 @@ class Database
             ];
 
             $this->conn = new PDO($dsn, $this->username, $this->password, $options);
-            
+
             // Définir le fuseau horaire MySQL
             $this->conn->exec("SET time_zone = 'Europe/Paris'");
 
             error_log("✅ Connexion à la base de données réussie");
-
         } catch (PDOException $e) {
             error_log("❌ DB Error: " . $e->getMessage());
             die("Erreur de connexion à la base de données. Veuillez réessayer plus tard.");
@@ -60,7 +61,9 @@ class Database
         return $this->conn;
     }
 
-    private function __clone() {}
+    private function __clone()
+    {
+    }
 
     public function __wakeup()
     {

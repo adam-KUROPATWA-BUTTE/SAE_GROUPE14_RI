@@ -1,4 +1,3 @@
-/* Main container */
 main {
     max-width: 900px;
     margin: 2em auto;
@@ -8,7 +7,7 @@ main {
     padding: 2em;
 }
 
-/* Titres */
+
 h1 {
     background-color: var(--primary-color);
     color: white;
@@ -24,7 +23,7 @@ h2 {
     margin-top: 2em;
 }
 
-/* Student toolbar */
+
 .student-toolbar {
     display: flex;
     justify-content: space-between;
@@ -57,6 +56,11 @@ h2 {
 
 .btn-secondary {
     border-radius:5px;
+
+}
+
+.btn-secondary:hover {
+    transition:0.3s;
 }
 
 .nav-buttons {
@@ -77,7 +81,7 @@ h2 {
     font-style: italic;
 }
 
-/* Formulaire étudiant */
+
 .form-section {
     display: grid;
     grid-template-columns: 200px 1fr 120px 1fr;
@@ -106,12 +110,13 @@ h2 {
     margin-top: 20px;
 }
 
-/* Tableaux */
+
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 2em;
     background: #f9f9f9;
+    table-layout: auto;
 }
 
 table th,
@@ -130,18 +135,18 @@ tr:nth-child(even) {
     background: #f0f4ff;
 }
 
-/* Sub-menu */
+
 .sub-menu {
     display: flex;
     gap: 10px;
     margin-top: 20px;
 }
 
-/* Actions voeux */
+
 .voeux-actions {
     margin-top: 10px;
 }
-/* Bouton de succès */
+
 .btn-success {
     background-color: #28a745;
     color: white;
@@ -157,7 +162,7 @@ tr:nth-child(even) {
     background-color: #218838;
 }
 
-/* Amélioration de la zone de statut */
+
 .form-section > div[style*="background-color"] {
     border-left: 4px solid;
 }
@@ -169,8 +174,87 @@ tr:nth-child(even) {
 .form-section > div[style*="#fff3cd"] {
     border-left-color: #ffc107;
 }
-/* --- MEDIA QUERIES --- */
- 
+
+.menu-toggle {
+    display: none;
+}
+
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+
+.pagination button {
+
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    transition: background 0.3s ease;
+}
+
+
+
+.pagination button.active {
+
+    font-weight: bold;
+}
+
+.pagination button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+/* Style pour le message de succès/erreur */
+.message {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+
+    animation: hideMessage 1s ease-in-out 2s forwards;
+    overflow: hidden;
+}
+
+@keyframes hideMessage {
+    to {
+        opacity: 0;
+        height: 0;
+        margin: 0;
+        padding: 0;
+    }
+}
+#search{
+    border-radius: 30px;
+}
+
+
+
 /* Entre 801px et 900px - ajustements légers */
 @media (max-width: 900px) and (min-width: 801px) {
     main {
@@ -189,6 +273,7 @@ tr:nth-child(even) {
 
     table {
         font-size: 0.95rem;
+        table-layout: auto;
     }
 }
 
@@ -201,6 +286,15 @@ tr:nth-child(even) {
 
     .form-section input[type="file"] {
         grid-column: span 2;
+    }
+
+    .menu-toggle {
+        display: block;
+        font-size: 28px;
+        color: var(--primary-color);
+        background: none;
+        border: none;
+        cursor: pointer;
     }
 }
 
@@ -245,10 +339,55 @@ tr:nth-child(even) {
         font-size: 0.85rem;
         overflow-x: auto;
         display: block;
+        table-layout: auto;
     }
 
     .sub-menu {
         flex-direction: column;
+    }
+
+    .menu-toggle {
+        display: block;
+        font-size: 28px;
+        color: var(--primary-color);
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        margin-top: 30px;
+        margin-bottom: 20px;
+    }
+
+    .pagination button {
+        background: #004080;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 0.95rem;
+        transition: background 0.3s ease;
+    }
+
+    .pagination button:hover:not(:disabled) {
+        background: #00558B;
+    }
+
+    .pagination button.active {
+        background: #00558B;
+        font-weight: bold;
+    }
+
+    .pagination button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        opacity: 0.6;
     }
 }
 
@@ -266,97 +405,253 @@ tr:nth-child(even) {
     .student-toolbar input[type="text"] {
         font-size: 0.9rem;
     }
+
+    .menu-toggle {
+        display: block;
+        font-size: 28px;
+        color: var(--primary-color);
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
 }
 
-/* Pagination */
-.pagination {
+table#table-etudiants {
+    table-layout: fixed;
+    width: 100%;
+}
+
+
+table#table-etudiants th,
+table#table-etudiants td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+table#table-etudiants th:nth-child(1),
+table#table-etudiants td:nth-child(1) {
+    width: 15%;
+}
+
+table#table-etudiants th:nth-child(2),
+table#table-etudiants td:nth-child(2) {
+    width: 15%;
+}
+
+table#table-etudiants th:nth-child(3),
+table#table-etudiants td:nth-child(3) {
+    width: 12%;
+}
+
+table#table-etudiants th:nth-child(4),
+table#table-etudiants td:nth-child(4) {
+    width: 12%;
+}
+
+table#table-etudiants th:nth-child(5),
+table#table-etudiants td:nth-child(5) {
+    width: 15%;
+}
+
+table#table-etudiants th:nth-child(6),
+table#table-etudiants td:nth-child(6) {
+    width: 13%;
+}
+
+table#table-etudiants th:nth-child(7),
+table#table-etudiants td:nth-child(7) {
+    width: 18%;
+}
+
+.search-container-toolbar {
     display: flex;
-    justify-content: center;
     align-items: center;
-    gap: 8px;
-    margin-top: 30px;
+    gap: 10px;
+}
+
+.btn-search {
+    padding: 5px 10px;
+}
+.btn-search img {
+    width: 20px;
+    height: 20px;
+}
+
+.btn-search:hover {
+    background: var(--accent-color);
+}
+
+
+
+#btn-creer-dossier:hover {
+    background-color: var(--accent-color);
+    color: white;
+    transition: 0.5s;
+}
+
+
+.filters-container {
+    background: #f4f4f4;
+    padding: 15px;
+    border-radius: 8px;
     margin-bottom: 20px;
 }
 
-.pagination button {
-    background: #004080;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 0.95rem;
-    transition: background 0.3s ease;
-}
-
-.pagination button:hover:not(:disabled) {
-    background: #00558B;
-}
-
-.pagination button.active {
-    background: #00558B;
+.filters-title {
+    margin-top: 0;
     font-weight: bold;
 }
 
-.pagination button:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-    opacity: 0.6;
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: center;
 }
 
-/* Responsive pagination */
-@media (max-width: 600px) {
-    .pagination {
-        gap: 5px;
-    }
-
-    .pagination button {
-        padding: 6px 10px;
-        font-size: 0.85rem;
-    }
-
-    .form-section label {
-        align-self: center;
-        text-align: left;
-    }
+.filter-group select {
+    padding: 5px;
 }
 
-/* ✅ Bouton rouge pour "Modifier" */
-.btn-danger {
-    background-color: #dc3545;
-    color: white;
-    border: none;
-    padding: 10px 20px;
+
+.btn-reset {
+    color: red;
+    text-decoration: underline;
+    margin-left: auto;
+}
+
+
+.status-complete {
+    color: green;
+}
+
+.status-incomplete {
+    color: orange;
+}
+
+
+table#table-etudiants tbody tr {
     cursor: pointer;
-    border-radius: 5px;
-    font-size: 1rem;
 }
 
-.btn-danger:hover {
-    background-color: #c82333;
+table#table-etudiants tbody tr:hover {
+    background-color: #e8f4f8;
 }
 
-/* Style pour le message de succès/erreur */
-.message {
-    padding: 15px;
+
+.form-back-button {
     margin-bottom: 20px;
+}
+
+
+.fichier-obligatoire {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #fff3cd;
     border-radius: 5px;
+    border-left: 4px solid #ffc107;
+    display: none;
+}
+
+.fichier-obligatoire label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.fichier-obligatoire input[type="file"] {
+    width: 100%;
+}
+
+
+.input-disabled {
+    background-color: #e0e0e0;
+    color: #666;
+}
+
+
+.documents-section {
+    margin-top: 30px;
+}
+
+
+.document-block {
+    margin-bottom: 20px;
+}
+
+.document-preview {
+    margin-top: 10px;
+}
+
+
+.photo-preview {
+    max-width: 200px;
+    max-height: 200px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+
+.document-available {
+    color: #008000;
+}
+
+
+.no-document {
+    color: #999;
+}
+
+
+.file-input-margin {
+    margin-top: 10px;
+}
+
+.status-block {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.status-block.status-complete {
     background-color: #d4edda;
-    border: 1px solid #c3e6cb;
-    color: #155724;
-
-    animation: hideMessage 1s ease-in-out 2s forwards;
-    overflow: hidden;
 }
 
-@keyframes hideMessage {
-    to {
-        opacity: 0;
-        height: 0;
-        margin: 0;
-        padding: 0;
-    }
+.status-block.status-incomplete {
+    background-color: #fff3cd;
 }
-#search{
-    border-radius: 30px;
+
+.status-text-complete {
+    color: #008000;
+}
+
+.status-text-incomplete {
+    color: #FFA500;
+}
+
+.btn-toggle-status {
+    margin-top: 10px;
+}
+
+
+.btn-hidden {
+    display: none;
+}
+
+
+#justificatif_convention,
+#lettre_motivation {
+    display: none;
+}
+
+
+.btn-download {
+    margin-top: 10px;
+    display: inline-block;
+}
+
+
+.status-text-incomplete {
+    color: #FFA500;
 }

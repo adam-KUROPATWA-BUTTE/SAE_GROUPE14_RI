@@ -1,4 +1,7 @@
 <?php
+
+// phpcs:disable Generic.Files.LineLength
+
 namespace Controllers\site;
 
 use Controllers\ControllerInterface;
@@ -6,9 +9,9 @@ use View\NotFoundPage;
 
 /**
  * NotFoundController
- * 
+ *
  * Handles 404 pages when a requested route does not exist.
- * 
+ *
  * Responsibilities:
  *  - Render a "Page Not Found" view
  *  - Does not support any specific route

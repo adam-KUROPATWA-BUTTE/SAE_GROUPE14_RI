@@ -1,5 +1,5 @@
 :root {
-    --primary-color: #00558B;
+    --primary-color: #006694;
     --secondary-color: #EBC55E;
     --text-color: #ffffff;
     --background-color: #EBC55E;
@@ -16,15 +16,14 @@ body.tritanopie {
     --hero-bg-color: #005C45;
 }
 
-/* ======= Progress Step Styles ======= */
-
 main {
-    background: white;
     width: 80%;
+    max-width: 1200px;
     margin: 40px auto;
-    padding: 60px;
+    padding: 50px 40px;
+    background: #ffffff;
     border-radius: 12px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 .progress-container {
     position: relative;
@@ -34,49 +33,77 @@ main {
     width: 100%;
     margin: 100px auto;
 }
-
+.dashboard-title {
+    text-align: center;
+    margin-top: 40px;
+}
 /* Ligne grise */
 .progress-container::before {
     content: "";
     position: absolute;
     top: 50%;
-    left: 0;
-    transform: translateY(-50%);
-    width: 100%;
+    left: calc(100% / 6);
+    width: calc(100% * 2 / 3);
     height: 3px;
     background-color: #dcdcdc;
+    transform: translateY(-50%);
     border-radius: 2px;
     z-index: 0;
 }
+
 
 /* Ligne bleue de progression */
 .progress-line {
     position: absolute;
     top: 50%;
-    left: 0;
-    transform: translateY(-50%);
+    left: calc(100% / 6);
     height: 4px;
     background-color: #006694;
+    transform: translateY(-50%);
     border-radius: 2px;
     transition: width 0.4s ease;
     z-index: 1;
 }
 
-/* Étapes */
+
 .progress-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     position: relative;
-    z-index: 2;
-    text-align: center;
-    flex: 1;
 }
+
+
+
+.progress-circle {
+    width: 14px;
+    height: 14px;
+    background-color: #dcdcdc;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+}
+
+/* Point actif */
+.progress-step.active .progress-circle {
+    background-color: #006694;
+}
+
+.progress-step {
+    flex: 1;
+    align-items: center;
+}
+
 
 /* Icônes */
 .progress-icon {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 70px; /* fixe la hauteur commune */
-    margin-bottom: 15px;
+    height: 70px;
+    margin-bottom: 35px;
 }
 
 .progress-icon img {
@@ -85,6 +112,33 @@ main {
     object-fit: contain;
     display: block;
 }
+/* Icônes actives */
+.progress-step.active .progress-icon img {
+    filter:
+            brightness(1.1)
+            saturate(1.15)
+            drop-shadow(0 0 4px rgba(43, 145, 187, 0.6));
+    transform: scale(1.03);
+    transition: all 0.25s ease;
+}
+
+/* Daltonisme tritanopie */
+body.tritanopie .progress-line {
+    background-color: #009b73;
+}
+
+body.tritanopie .progress-step.active .progress-circle {
+    background-color: #009b73;
+}
+
+body.tritanopie .progress-step.active .progress-icon img {
+    filter:
+            brightness(1.15)
+            saturate(1.2)
+            drop-shadow(0 0 6px rgba(0, 155, 115, 0.8));
+}
+
+
 
 /* Texte */
 .progress-step span {
@@ -94,5 +148,309 @@ main {
 
 .progress-step.active span {
     font-weight: bold;
-    color: #006694;
+    color: var(--accent-color);
+}
+.contact-info-box {
+    background-color: #f2f2f2;
+    border-radius: 12px;
+    padding: 25px 30px;
+    margin: 40px auto 0;
+    max-width: 700px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.contact-info-box p {
+    margin: 10px 0;
+    color: #333;
+    font-size: 15px;
+}
+
+.contact-title {
+    font-weight: bold;
+    font-size: 17px;
+    color: var(--primary-color);
+}
+
+.contact-email a {
+    font-weight: bold;
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+.contact-email a:hover {
+    text-decoration: underline;
+}
+
+
+
+.dashboard-container {
+    max-width: 1000px;
+    margin: -50px auto 50px;
+    position: relative;
+    z-index: 2;
+    padding: 0 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+}
+
+.menu-toggle {
+    display: none;
+}
+
+/* ======= RESPONSIVE 810px ======= */
+@media (max-width: 810px) {
+    main {
+        width: 90%;
+        padding: 40px 30px;
+        margin: 30px auto;
+    }
+
+    .progress-container {
+        margin: 60px auto;
+    }
+
+    .progress-icon {
+        height: 60px;
+        margin-bottom: 10px;
+    }
+
+    .progress-icon img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .progress-step span {
+        font-size: 12px;
+    }
+
+    /* Tables responsive */
+    table {
+        font-size: 0.9em;
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    th, td {
+        padding: 10px 8px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    .menu-toggle {
+        display: block;
+        font-size: 28px;
+        color: var(--primary-color);
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+}
+
+/* ======= RESPONSIVE 500px ======= */
+@media (max-width: 500px) {
+    main {
+        width: 95%;
+        padding: 20px 15px;
+        margin: 20px auto;
+    }
+
+    h1 {
+        font-size: 20px;
+        text-align: center;
+    }
+
+    /* Progress bar en vertical pour mobile */
+    .progress-container {
+        flex-direction: column;
+        margin: 40px auto;
+        align-items: stretch;
+    }
+
+    /* Ligne verticale au lieu d'horizontale */
+    .progress-container::before {
+        width: 3px;
+        height: 100%;
+        left: 25px;
+        top: 0;
+        transform: none;
+    }
+
+    .progress-line {
+        width: 4px;
+        height: 0;
+        left: 25px;
+        top: 0;
+        transform: none;
+        transition: height 0.4s ease;
+    }
+
+    .progress-step {
+        display: flex;
+        align-items: center;
+        text-align: left;
+        margin-bottom: 30px;
+        flex: none;
+    }
+
+    .progress-icon {
+        height: 50px;
+        width: 50px;
+        margin-bottom: 0;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    .progress-icon img {
+        width: 35px;
+        height: 35px;
+    }
+
+    .progress-step span {
+        font-size: 13px;
+        flex: 1;
+    }
+
+    /* Tables très petits écrans - s'adapte sans scroll */
+    table {
+        font-size: 0.65em;
+        width: 100%;
+        display: table;
+        overflow-x: visible;
+        white-space: normal;
+    }
+
+    th, td {
+        padding: 5px 2px;
+        word-wrap: break-word;
+        vertical-align: middle;
+    }
+
+    /* Réduire la largeur de la colonne NumEtu */
+    table th:nth-child(1),
+    table td:nth-child(1) {
+        font-size: 0.9em;
+        max-width: 50px;
+    }
+
+    /* Colonne Nom/Prénom */
+    table th:nth-child(2),
+    table td:nth-child(2),
+    table th:nth-child(3),
+    table td:nth-child(3) {
+        max-width: 70px;
+    }
+
+    /* Réduire la colonne Avancement */
+    .progress-bar {
+        min-width: 50px;
+        height: 12px;
+    }
+
+    .progress {
+        font-size: 0.75em;
+        line-height: 12px;
+    }
+
+    /* Colonne Pièces fournies */
+    table th:nth-child(5),
+    table td:nth-child(5) {
+        font-size: 0.85em;
+        white-space: nowrap;
+    }
+
+    .menu-toggle {
+        display: block;
+        font-size: 28px;
+        color: var(--primary-color);
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+}
+.filters-container {
+    background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px;
+    border: 1px solid #e9ecef;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+.filters-container input, .filters-container select {
+    width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;
+}
+.btn-filter {
+    grid-column: 1 / -1; margin-top: 10px; padding: 10px 20px;
+    background-color: #003366; color: white; border: none; border-radius: 4px; cursor: pointer;
+    width: 100%;
+}
+body.tritanopie .btn-filter {
+    background-color: #004e25; /* vert pour daltonien */
+    color: white;
+}
+
+.btn-filter:hover { background-color: #002244; }
+
+/* --- COLOR CODE FIX --- */
+.status-badge {
+    padding: 5px 10px; border-radius: 15px; color: white; font-weight: bold; font-size: 0.85em;
+    text-align: center; display:inline-block; min-width: 70px;
+}
+
+/* These names now MATCH the PHP logic below */
+.bg-success { background-color: #00701a !important; } /* Green */
+.bg-warning { background-color: #f1ae00 !important; color: #ffffff !important; } /* Orange */
+.bg-danger  { background-color: #8f0a19 !important; } /* Red */
+.suivi-global {
+    color: white;
+}
+.message {
+    background: #e7f3fe;
+    border-left: 6px solid #2196F3;
+    margin-bottom: 15px;
+    padding: 10px;
+    clear: both;
+    color: #333;
+    font-size: 0.95rem;
+}
+.filters-container {
+    clear: both;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+    align-items: center;
+}
+.no-files {
+    text-align: center;
+    color: #666;
+}
+
+
+h2 { color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-top: 40px; }
+.clickable-row { cursor: pointer; transition: background 0.2s; }
+.clickable-row:hover { background-color: #e9ecef; }
+
+/* Reminder Button Style */
+.btn-relance {
+    text-decoration: none; font-size: 1.2em; margin-left: 10px; cursor: pointer;
+    display: inline-block; transition: transform 0.2s; border: none; background: none;
+}
+.btn-relance:hover { transform: scale(1.3); }
+
+.btn-relance {
+    text-decoration: none;
+    font-size: 1.2em;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    display: inline-block;
+}
+.btn-relance:hover {
+    transform: scale(1.2);
 }

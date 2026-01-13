@@ -1,7 +1,8 @@
 <?php
-namespace Model;
 
-require_once ROOT_PATH . '/Database.php';
+// phpcs:disable Generic.Files.LineLength
+
+namespace Model\User;
 
 class UserStudent
 {
@@ -49,7 +50,6 @@ class UserStudent
             }
 
             return ['success' => false];
-
         } catch (\PDOException $e) {
             error_log("Student login error: " . $e->getMessage());
             return ['success' => false];
@@ -73,29 +73,29 @@ class UserStudent
     {
         try {
             $db = \Database::getInstance()->getConnection();
-            
+
             // Check if email already exists in admins or students
             $sql = "SELECT id FROM admins WHERE email = :email 
                     UNION 
                     SELECT id FROM etudiants WHERE email = :email";
             $stmt = $db->prepare($sql);
             $stmt->execute(['email' => $email]);
-            
+
             if ($stmt->fetch()) {
                 return false; // Email already used
             }
-            
+
             // Validate student type
             if (!in_array($typeEtudiant, ['entrant', 'sortant'])) {
                 return false;
             }
-            
+
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-            
+
             $sql = "INSERT INTO etudiants (email, password, nom, prenom, type_etudiant) 
                     VALUES (:email, :password, :nom, :prenom, :type_etudiant)";
             $stmt = $db->prepare($sql);
-            
+
             $result = $stmt->execute([
                 'email' => $email,
                 'password' => $hashedPassword,
@@ -103,10 +103,9 @@ class UserStudent
                 'prenom' => $prenom,
                 'type_etudiant' => $typeEtudiant
             ]);
-            
+
             // Do not create folder automatically; student must create it after login
             return $result;
-            
         } catch (\PDOException $e) {
             error_log("Student registration error: " . $e->getMessage());
             return false;
@@ -123,14 +122,13 @@ class UserStudent
     {
         try {
             $db = \Database::getInstance()->getConnection();
-            
+
             $sql = "SELECT COUNT(*) as count FROM dossiers WHERE etudiant_id = :etudiant_id";
             $stmt = $db->prepare($sql);
             $stmt->execute(['etudiant_id' => $etudiantId]);
             $result = $stmt->fetch();
-            
+
             return $result['count'] > 0;
-            
         } catch (\PDOException $e) {
             error_log("checkDossierExists error: " . $e->getMessage());
             return false;
@@ -147,13 +145,12 @@ class UserStudent
     {
         try {
             $db = \Database::getInstance()->getConnection();
-            
+
             $sql = "SELECT * FROM dossiers WHERE etudiant_id = :etudiant_id";
             $stmt = $db->prepare($sql);
             $stmt->execute(['etudiant_id' => $etudiantId]);
-            
+
             return $stmt->fetch();
-            
         } catch (\PDOException $e) {
             error_log("getDossier error: " . $e->getMessage());
             return false;
@@ -170,18 +167,17 @@ class UserStudent
     {
         try {
             $db = \Database::getInstance()->getConnection();
-            
+
             // Check if folder already exists
             if (self::checkDossierExists($etudiantId)) {
                 return false;
             }
-            
+
             $sql = "INSERT INTO dossiers (etudiant_id, statut, date_creation) 
                     VALUES (:etudiant_id, 'en_cours', NOW())";
             $stmt = $db->prepare($sql);
-            
+
             return $stmt->execute(['etudiant_id' => $etudiantId]);
-            
         } catch (\PDOException $e) {
             error_log("createDossier error: " . $e->getMessage());
             return false;
@@ -196,21 +192,25 @@ class UserStudent
      * @return bool True on success, false on failure
      */
     public static function logout(): bool
-    {   
+    {
         try {
             $_SESSION = array();
-            
+
             if (ini_get("session.use_cookies")) {
                 $params = session_get_cookie_params();
-                setcookie(session_name(), '', time() - 42000,
-                    $params["path"], $params["domain"],
-                    $params["secure"], $params["httponly"]
+                setcookie(
+                    session_name(),
+                    '',
+                    time() - 42000,
+                    $params["path"],
+                    $params["domain"],
+                    $params["secure"],
+                    $params["httponly"]
                 );
             }
-            
+
             session_destroy();
             return true;
-            
         } catch (\Exception $e) {
             error_log("Student logout error: " . $e->getMessage());
             return false;
@@ -237,15 +237,14 @@ class UserStudent
     {
         try {
             $db = \Database::getInstance()->getConnection();
-            
+
             $sql = "SELECT id, email, nom, prenom, numetu, type_etudiant, created_at, last_connexion 
                     FROM etudiants WHERE id = :id";
-            
+
             $stmt = $db->prepare($sql);
             $stmt->execute(['id' => $id]);
-            
+
             return $stmt->fetch();
-            
         } catch (\PDOException $e) {
             error_log("getById student error: " . $e->getMessage());
             return false;
