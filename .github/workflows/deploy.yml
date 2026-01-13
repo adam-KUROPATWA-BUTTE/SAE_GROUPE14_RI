@@ -21,8 +21,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 2222
           script: |
-            cd /var/www/ri/SAE_GROUPE_14
-            git config --global --add safe.directory /var/www/ri/SAE_GROUPE_14
+            cd /var/www/ri/SAE_GROUPE14_RI
+            git config --global --add safe.directory /var/www/ri/SAE_GROUPE14_RI
             git fetch origin
             git reset --hard origin/main
             git pull origin main
