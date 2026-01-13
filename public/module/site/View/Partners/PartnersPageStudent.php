@@ -119,11 +119,6 @@ class PartnersPageStudent
         <!-- MAIN CONTENT -->
         <main>
             <h1><?= htmlspecialchars($this->titre) ?></h1>
-            <div class="partners-actions">
-                <button class="btn-add-partner">
-                    <span class="btn-plus">+</span>
-                    <?= $this->t(['fr' => 'Ajouter', 'en' => 'Add']) ?>
-                </button>
 
             </div>
             <p>
