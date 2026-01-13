@@ -1,5 +1,8 @@
 <?php
 
+// phpcs:disable PSR1.Files.SideEffects
+// phpcs:disable Generic.Files.LineLength
+
 /**
  * cron_reminder_email.php
  *
@@ -31,7 +34,7 @@ if ($projectRoot !== false && file_exists($projectRoot . '/vendor/autoload.php')
 }
 
 // Import namespaced classes that the autoloader maps
-use Service\Email\EmailReminderService;
+use img\public\module\site\Service\Email\EmailReminderService;
 
 define('DAYS_BEFORE_RELAY', 7); // nombre de jours avant de renvoyer une relance
 

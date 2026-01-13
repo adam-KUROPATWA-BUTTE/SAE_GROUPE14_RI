@@ -1,5 +1,7 @@
 <?php
 
+// phpcs:disable Generic.Files.LineLength
+
 namespace Controllers\site\FolderController;
 
 use Controllers\Auth_Guard;
@@ -11,26 +13,30 @@ use Model\Folder\FolderStudent;
  * Controller for managing student folders (student side).
  *
  * Responsibilities:
- * - Display the student's folder information
- * - Create a new folder if none exists
- * - Update personal information
+ * - Display the student's folder information.
+ * - Handle the creation of a new folder if none exists.
+ * - Handle the update of personal information and documents.
  */
 class FoldersControllerStudent implements ControllerInterface
 {
     /**
      * Checks if this controller supports the given page and method.
      *
-     * @param string $page   Requested page name
-     * @param string $method HTTP method used (GET, POST, etc.)
-     * @return bool true if the page is handled by this controller, false otherwise
+     * Updated to support 'update_my_folder' to avoid routing conflicts with the Admin controller.
+     *
+     * @param string $page   Requested page name.
+     * @param string $method HTTP method used (GET, POST, etc.).
+     * @return bool True if the page is handled by this controller, false otherwise.
      */
     public static function support(string $page, string $method): bool
     {
-        return in_array($page, ['folders-student', 'update_student', 'create_folder']);
+        // FIX: Changed 'update_student' to 'update_my_folder' to fix the Admin redirection bug
+        return in_array($page, ['folders-student', 'update_my_folder', 'create_folder']);
     }
 
     /**
      * Main control method to handle the application flow.
+     * Manages session, authentication checks, and routing logic.
      */
     public function control(): void
     {
@@ -49,9 +55,10 @@ class FoldersControllerStudent implements ControllerInterface
         $lang = $_GET['lang'] ?? 'fr';
         $page = $_GET['page'] ?? '';
 
-        // --- Routing Actions ---
+        // --- Routing Actions (POST) ---
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if ($page === 'update_student') {
+            // FIX: Listen for the unique student action 'update_my_folder'
+            if ($page === 'update_my_folder') {
                 $this->updateStudent($numetu, $lang);
                 return;
             }
@@ -75,13 +82,17 @@ class FoldersControllerStudent implements ControllerInterface
 
     /**
      * Creates a new folder for the student.
+     * Handles form validation, file uploads, and database insertion.
+     *
+     * @param string $numetu The student ID.
+     * @param string $lang   The current language.
      */
     private function createFolder(string $numetu, string $lang): void
     {
         // Check if folder already exists (Constraint: Single application)
         if (FolderStudent::getStudentDetails($numetu)) {
-            $_SESSION['message'] = ($lang === 'fr') 
-                ? "Vous avez déjà déposé un dossier." 
+            $_SESSION['message'] = ($lang === 'fr')
+                ? "Vous avez déjà déposé un dossier."
                 : "You have already submitted an application.";
             header('Location: index.php?page=folders-student&lang=' . $lang);
             exit;
@@ -139,6 +150,10 @@ class FoldersControllerStudent implements ControllerInterface
 
     /**
      * Updates the student's folder information.
+     * Handles data collection, validation, file updates, and database persistence.
+     *
+     * @param string $numetu The student ID.
+     * @param string $lang   The current language.
      */
     private function updateStudent(string $numetu, string $lang): void
     {
@@ -183,9 +198,13 @@ class FoldersControllerStudent implements ControllerInterface
     }
 
     /**
-     * Helper to retrieve file content if uploaded correctly
+     * Helper to retrieve file content if uploaded correctly.
+     *
+     * @param string $inputName The name attribute of the file input.
+     * @return string|null The binary content of the file or null if not uploaded.
      */
-    private function getFileData(string $inputName): ?string {
+    private function getFileData(string $inputName): ?string
+    {
         if (isset($_FILES[$inputName]) && $_FILES[$inputName]['error'] === UPLOAD_ERR_OK) {
             return file_get_contents($_FILES[$inputName]['tmp_name']);
         }

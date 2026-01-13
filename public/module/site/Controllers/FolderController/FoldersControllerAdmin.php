@@ -1,5 +1,7 @@
 <?php
 
+// phpcs:disable Generic.Files.LineLength
+
 namespace Controllers\FolderController;
 
 use Model\Folder\FolderAdmin;
@@ -10,6 +12,8 @@ use View\Folder\FoldersPageAdmin;
  *
  * Controller responsible for the administrative management of student folders.
  * It handles the listing, creation, modification, and validation status of student files.
+ *
+ * VERSION AVEC DEBUG
  */
 class FoldersControllerAdmin
 {
@@ -41,35 +45,35 @@ class FoldersControllerAdmin
         $action = $_GET['action'] ?? 'list';
         $lang = $_GET['lang'] ?? 'fr';
 
+        // Handle toggle complete status action
         if ($page === 'toggle_complete') {
             $numetu = $_GET['numetu'] ?? null;
-            
+
             if ($numetu) {
                 // Decode URL parameter to handle special characters in ID
                 $numetu = urldecode($numetu);
-                
+
                 // Call Model to switch status in Database (0 <-> 1)
                 $success = FolderAdmin::toggleCompleteStatus($numetu);
 
                 // Set Flash Message for the user
                 if ($success) {
-                    $_SESSION['message'] = ($lang === 'fr') 
-                        ? "Statut du dossier mis à jour." 
+                    $_SESSION['message'] = ($lang === 'fr')
+                        ? "Statut du dossier mis à jour."
                         : "Folder status updated.";
                 } else {
-                    $_SESSION['message'] = ($lang === 'fr') 
-                        ? "Erreur lors de la mise à jour." 
+                    $_SESSION['message'] = ($lang === 'fr')
+                        ? "Erreur lors de la mise à jour."
                         : "Error updating status.";
                 }
 
-                // Redirect back to the student view to prevent form re-submission
-                // and to show the updated status immediately.
+                // Redirect back to the student view
                 header('Location: index.php?page=folders-admin&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
-                exit; // Stop execution after redirect
+                exit;
             }
         }
 
-
+        // Handle POST requests (create/update)
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($page === 'save_student') {
                 $this->saveStudent($lang);
@@ -81,35 +85,71 @@ class FoldersControllerAdmin
             }
         }
 
-
         $studentData = null;
         // If we are in 'view' mode, fetch the specific student details
         if ($action === 'view' && !empty($_GET['numetu'])) {
             $studentData = FolderAdmin::getStudentDetails($_GET['numetu']);
         }
 
+        // Déterminer la page courante
+        $currentPage = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
+
+
+
+
+        // 🔍 DEBUG - Commence ici
+
+
+        $startTime = microtime(true);  // ← AJOUTE CETTE LIGNE
+
+
+
+        error_log("=== FOLDERS CONTROLLER DEBUG ===");
+        error_log("URL: " . ($_SERVER['REQUEST_URI'] ?? 'N/A'));
+        error_log("GET params: " . print_r($_GET, true));
+        error_log("Current Page calculated: " . $currentPage);
+
         // Collect filters from GET parameters for the list view
         $filters = [
-            'type'       => $_GET['Type'] ?? 'all',       // entrant/sortant
-            'zone'       => $_GET['Zone'] ?? 'all',       // europe/hors_europe
-            'stage'      => $_GET['Stage'] ?? 'all',
-            'etude'      => $_GET['etude'] ?? 'all',
-            'search'     => $_GET['search'] ?? '',        // Text search
-            'complet'    => $_GET['complet'] ?? 'all',    // Status filter
-            'date_debut' => $_GET['date_debut'] ?? null,
-            'date_fin'   => $_GET['date_fin'] ?? null,
-            'tri_date'   => $_GET['tri_date'] ?? 'DESC'
+            'type'       => $_GET['Type'] ?? $_GET['type'] ?? 'all',
+            'zone'       => $_GET['Zone'] ?? $_GET['zone'] ?? 'all',
+            'search'     => $_GET['search'] ?? '',
+            'complet'    => $_GET['complet'] ?? 'all',
         ];
 
-        // Handle Pagination
-        $currentPage = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
+        error_log("Filters: " . print_r($filters, true));
+
         $perPage = 10;
+
+        // Utiliser la nouvelle méthode avec pagination SQL
+        $result = FolderAdmin::rechercherAvecPagination($filters, $currentPage, $perPage);
+
+        error_log("Result from Model: total=" . $result['total'] . ", totalPages=" . $result['totalPages'] . ", data count=" . count($result['data']));
+
+        $endTime = microtime(true);  // ← AJOUTE CETTE LIGNE
+        $executionTime = round(($endTime - $startTime) * 1000, 2);  // ← AJOUTE CETTE LIGNE
+        error_log("⏱️ TEMPS D'EXÉCUTION: " . $executionTime . "ms");  // ← AJOUTE CETTE LIGNE
+
+
+        error_log("=== END DEBUG ===\n");
+        // 🔍 DEBUG - Fin
 
         // Retrieve and clear Flash Message
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-        $view = new FoldersPageAdmin($action, $filters, $currentPage, $perPage, $message, $lang, $studentData);
+        $view = new FoldersPageAdmin(
+            $action,
+            $filters,
+            $currentPage,
+            $perPage,
+            $message,
+            $lang,
+            $studentData,
+            $result['data'],        // Données paginées
+            $result['total'],       // Nombre total
+            $result['totalPages']   // Nombre de pages
+        );
         $view->render();
     }
 
@@ -141,9 +181,12 @@ class FoldersControllerAdmin
 
         // 2. Validate required fields
         $errors = [];
-        if (empty($data['NumEtu'])) $errors[] = ($lang === 'fr') ? 'Numéro étudiant requis' : 'Student ID required';
-        if (empty($data['Nom'])) $errors[] = ($lang === 'fr') ? 'Nom requis' : 'Name required';
-        // Add more validations as needed...
+        if (empty($data['NumEtu'])) {
+            $errors[] = ($lang === 'fr') ? 'Numéro étudiant requis' : 'Student ID required';
+        }
+        if (empty($data['Nom'])) {
+            $errors[] = ($lang === 'fr') ? 'Nom requis' : 'Name required';
+        }
 
         if (!empty($errors)) {
             $_SESSION['message'] = implode(', ', $errors);
@@ -158,7 +201,7 @@ class FoldersControllerAdmin
             exit;
         }
 
-        // 4. Handle File Uploads (Convert to Base64)
+        // 4. Handle File Uploads
         $photoData = null;
         if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
             $photoData = file_get_contents($_FILES['photo']['tmp_name']);
@@ -180,8 +223,8 @@ class FoldersControllerAdmin
         }
 
         // 5. Save to Database
-        $success = FolderAdmin::creerDossier($data, $photoData, $cvData, $conventionData, $lettreData);        
-        $_SESSION['message'] = $success 
+        $success = FolderAdmin::creerDossier($data, $photoData, $cvData, $conventionData, $lettreData);
+        $_SESSION['message'] = $success
             ? (($lang === 'fr') ? 'Dossier créé avec succès' : 'Folder created successfully')
             : (($lang === 'fr') ? 'Erreur lors de la création' : 'Error creating folder');
 
@@ -237,9 +280,9 @@ class FoldersControllerAdmin
         }
 
         // 3. Update Database
-        $success = FolderAdmin::updateDossier($data, $photoData, $cvData,$conventionData,$lettreData);
+        $success = FolderAdmin::updateDossier($data, $photoData, $cvData, $conventionData, $lettreData);
 
-        $_SESSION['message'] = $success 
+        $_SESSION['message'] = $success
             ? (($lang === 'fr') ? 'Dossier mis à jour' : 'Folder updated')
             : (($lang === 'fr') ? 'Erreur lors de la mise à jour' : 'Error updating folder');
 

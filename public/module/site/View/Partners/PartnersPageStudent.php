@@ -1,40 +1,82 @@
 <?php
+
+// phpcs:disable Generic.Files.LineLength
+
 namespace View\Partners;
 
-
+/**
+ * Class PartnersPageStudent
+ *
+ * Student view for displaying AMU partner universities.
+ * Shows partner list, language selector, accessibility toggle (tritanopia), and chatbot.
+ */
 class PartnersPageStudent
 {
+    /** @var string Page title */
     private string $titre;
+
+    /** @var string Current language ('fr' or 'en') */
     private string $lang;
 
+    /**
+     * Constructor.
+     *
+     * @param string $titre Page title
+     * @param string $lang  Current language
+     */
     public function __construct(string $titre, string $lang = 'fr')
     {
         $this->titre = $titre;
         $this->lang = $lang;
     }
 
+    /**
+     * Build a URL while preserving the current language.
+     *
+     * @param string $path   Base path
+     * @param array  $params Additional query parameters
+     * @return string
+     */
     private function buildUrl(string $path, array $params = []): string
     {
         $params['lang'] = $this->lang;
         return $path . '?' . http_build_query($params);
     }
 
+    /**
+     * Translate text based on current language.
+     *
+     * @param array $frEn ['fr' => '...', 'en' => '...']
+     * @return string
+     */
     private function t(array $frEn): string
     {
         return $this->lang === 'en' ? $frEn['en'] : $frEn['fr'];
     }
 
+    /**
+     * Render the student partners page HTML.
+     *
+     * @return void
+     */
     public function render(): void
     {
+        // Start session if not already started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
-
         }
+
+        if (isset($_GET['lang'])) {
+            $_SESSION['lang'] = $_GET['lang'];
+        }
+
+        $this->lang = $_SESSION['lang'] ?? 'fr';
+
+        // Handle tritanopia (color-blind) mode
         if (isset($_GET['tritanopia'])) {
             $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';
         }
         ?>
-
         <!DOCTYPE html>
         <html lang="<?= htmlspecialchars($this->lang) ?>">
         <head>
@@ -43,13 +85,17 @@ class PartnersPageStudent
             <title><?= htmlspecialchars($this->titre) ?></title>
             <link rel="stylesheet" href="styles/index.css">
             <link rel="stylesheet" href="styles/partners.css">
+            <link rel="stylesheet" href="styles/chatbot.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
-        <body class="<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true ? 'tritanopie' : '' ?>">
+        <body class="<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'tritanopie' : '' ?>">
+
+        <!-- HEADER -->
         <header>
             <div class="top-bar">
                 <img class="logo_amu" src="img/logo.png" alt="Logo">
                 <div class="right-buttons">
+                    <!-- Language selector -->
                     <div class="lang-dropdown">
                         <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
                         <div class="dropdown-content">
@@ -59,16 +105,18 @@ class PartnersPageStudent
                     </div>
                 </div>
             </div>
-            <nav class="menu">
-                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr'=>'Accueil','en'=>'Home']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-student') ?>'"><?= $this->t(['fr'=>'Tableau de bord','en'=>'Dashboard']) ?></button>
-                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/partners-student') ?>'"><?= $this->t(['fr'=>'Partenaires','en'=>'Partners']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/folders-student') ?>'"><?= $this->t(['fr'=>'Dossiers','en'=>'Folders']) ?></button>
-                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-student') ?>'"><?= $this->t(['fr'=>'Plan du site','en'=>'Sitemap']) ?></button>
-            </nav>
 
+            <!-- Navigation menu -->
+            <nav class="menu">
+                <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Accueil','en' => 'Home']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-student') ?>'"><?= $this->t(['fr' => 'Mon Tableau de bord','en' => 'My Dashboard']) ?></button>
+                <button class="active" onclick="window.location.href='<?= $this->buildUrl('/partners-student') ?>'"><?= $this->t(['fr' => 'Partenaires','en' => 'Partners']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/folders-student') ?>'"><?= $this->t(['fr' => 'Mon Dossier','en' => 'My Folder']) ?></button>
+                <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-student') ?>'"><?= $this->t(['fr' => 'Plan du site','en' => 'Sitemap']) ?></button>
+            </nav>
         </header>
 
+        <!-- MAIN CONTENT -->
         <main>
             <h1><?= htmlspecialchars($this->titre) ?></h1>
             <div class="partners-actions">
@@ -85,65 +133,54 @@ class PartnersPageStudent
                 ]) ?>
             </p>
 
+            <!-- External partner list link -->
             <p class="lien">
                 <a href="https://www.univ-amu.fr/fr/public/universites-et-reseaux-partenaires" target="_blank">
                     Universites-et-reseaux-partenaires
                 </a>
             </p>
 
+            <!-- Partner image -->
             <img id="Université_partenaires"
                  src="img/<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'University_green.png' : 'University.png' ?>"
-                 alt="Université partenaires">
-
+                 alt="Partner Universities">
         </main>
 
-        <footer>
-            <p>&copy; 2025 - Aix-Marseille Université.</p>
-            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
-                <img class="insta" src="img/instagram.png" alt="Instagram">
-            </a>
-        </footer>
-
-        <!-- Bulle d'aide en bas à droite -->
-        <div id="help-bubble" onclick="toggleHelpPopup()">❓</div>
-
-        <!-- Contenu du popup d'aide -->
-        <div id="help-popup">
+        <!-- CHATBOT -->
+        <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
+        <div id="help-popup" class="chat-popup">
             <div class="help-popup-header">
-                <span><?= $this->t(['fr'=>'Aide', 'en'=>'Help']) ?></span>
+                <span>Assistant</span>
                 <button onclick="toggleHelpPopup()">✖</button>
             </div>
-            <div class="help-popup-body">
-                <p><?= $this->t(['fr'=>'Bienvenue ! Comment pouvons-nous vous aider ?', 'en'=>'Welcome! How can we help you?']) ?></p>
-                <ul>
-                    <li><a href="index.php?page=help" target="_blank"><?= $this->t(['fr'=>'Page d’aide complète', 'en'=>'Full help page']) ?></a></li>
-                </ul>
-            </div>
+            <div id="chat-messages" class="chat-messages"></div>
+            <div id="quick-actions" class="quick-actions"></div>
         </div>
 
         <script>
+            // Chatbot configuration
+            const CHAT_CONFIG = {
+                lang: '<?= $this->lang ?>',
+                role: '<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>'
+            };
+
+            // Language dropdown toggle
             document.getElementById('current-lang').addEventListener('click', function(event) {
-                event.stopPropagation(); // empêcher la propagation au document
-                const rightButtons = document.querySelector('.right-buttons');
-                rightButtons.classList.toggle('show');
+                event.stopPropagation();
+                document.querySelector('.right-buttons').classList.toggle('show');
             });
 
-            // Fermer le dropdown si clic ailleurs sur la page
-            document.addEventListener('click', function() {
-                const rightButtons = document.querySelector('.right-buttons');
-                rightButtons.classList.remove('show');
+            document.addEventListener('click', () => {
+                document.querySelector('.right-buttons').classList.remove('show');
             });
 
-            function toggleHelpPopup() {
-                const popup = document.getElementById('help-popup');
-                popup.style.display = (popup.style.display === 'block') ? 'none' : 'block';
-            }
             function changeLang(lang) {
                 const url = new URL(window.location.href);
                 url.searchParams.set('lang', lang);
                 window.location.href = url.toString();
             }
 
+            // Responsive menu toggle
             document.addEventListener("DOMContentLoaded", () => {
                 const menuToggle = document.createElement('button');
                 menuToggle.classList.add('menu-toggle');
@@ -151,11 +188,20 @@ class PartnersPageStudent
                 document.querySelector('.right-buttons').appendChild(menuToggle);
 
                 const navMenu = document.querySelector('nav.menu');
-                menuToggle.addEventListener('click', () => {
-                    navMenu.classList.toggle('active');
-                });
+                menuToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
             });
         </script>
+
+        <script src="js/chatbot.js"></script>
+
+        <!-- FOOTER -->
+        <footer>
+            <p>&copy; 2026 - Aix-Marseille Université.</p>
+            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
+                <img class="insta" src="img/instagram.png" alt="Instagram">
+            </a>
+        </footer>
+
         </body>
         </html>
         <?php

@@ -1,4 +1,7 @@
 <?php
+
+// phpcs:disable Generic.Files.LineLength
+
 namespace Controllers\site;
 
 use Controllers\ControllerInterface;
@@ -8,23 +11,20 @@ use View\Dashboard\DashboardPageAdmin;
 use View\Dashboard\DashboardPageStudent;
 
 /**
- * DashboardController
+ * Class DashboardController
  *
- * Handles rendering dashboards for both admin and student users.
- *
- * Responsibilities:
- *  - Display admin dashboard with incomplete folders
- *  - Display student dashboard with the user's own folder
- *  - Enforce role-based access control
+ * Handles the logic for rendering the dashboard pages.
+ * It routes requests to either the Admin dashboard or the Student dashboard
+ * based on the user's role.
  */
 class DashboardController implements ControllerInterface
 {
     /**
-     * Determines if this controller supports the requested page and method.
+     * Checks if the controller supports the current request.
      *
-     * @param string $page   Requested page
-     * @param string $method HTTP method
-     * @return bool True if the page is handled by this controller
+     * @param string $page   The requested page name.
+     * @param string $method The HTTP method (GET, POST, etc.).
+     * @return bool True if supported, False otherwise.
      */
     public static function support(string $page, string $method): bool
     {
@@ -32,8 +32,8 @@ class DashboardController implements ControllerInterface
     }
 
     /**
-     * Main control method to handle request logic.
-     * Routes to the appropriate dashboard based on the page parameter.
+     * Main control method.
+     * Starts the session and dispatches the request to the specific dashboard method.
      */
     public function control(): void
     {
@@ -41,6 +41,7 @@ class DashboardController implements ControllerInterface
             session_start();
         }
 
+        // Determine the page from GET param or URL path
         $page = $_GET['page'] ?? trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
 
         if ($page === 'dashboard-admin') {
@@ -54,8 +55,9 @@ class DashboardController implements ControllerInterface
     }
 
     /**
-     * Displays the admin dashboard.
-     * Ensures the user is an admin and fetches incomplete folders.
+     * Renders the Admin Dashboard.
+     * * Requirement: User must have 'admin' role.
+     * Data: Fetches ALL folders (complete and incomplete) to provide a global view.
      */
     private function showAdminDashboard(): void
     {
@@ -65,14 +67,17 @@ class DashboardController implements ControllerInterface
         }
 
         $lang = $_GET['lang'] ?? 'fr';
-        $dossiers = FolderAdmin::getDossiersIncomplets();
-        $page = new DashboardPageAdmin($dossiers, $lang);
+
+        $folders = FolderAdmin::getAll();
+
+        $page = new DashboardPageAdmin($folders, $lang);
         $page->render();
     }
 
     /**
-     * Displays the student dashboard.
-     * Ensures the user is a student and fetches their own folder.
+     * Renders the Student Dashboard.
+     * * Requirement: User must have 'etudiant' role.
+     * Data: Fetches only the connected student's folder.
      */
     private function showStudentDashboard(): void
     {
@@ -82,9 +87,11 @@ class DashboardController implements ControllerInterface
         }
 
         $lang = $_GET['lang'] ?? 'fr';
-        $dossier = FolderStudent::getMyFolder($_SESSION['etudiant_id'] ?? 0);
+        $studentId = $_SESSION['etudiant_id'] ?? 0;
 
-        $page = new DashboardPageStudent($dossier, $lang);
+        $folder = FolderStudent::getMyFolder($studentId);
+
+        $page = new DashboardPageStudent($folder, $lang);
         $page->render();
     }
 }

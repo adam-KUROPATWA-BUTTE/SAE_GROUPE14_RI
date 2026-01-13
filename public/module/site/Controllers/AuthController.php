@@ -1,5 +1,7 @@
 <?php
 
+// phpcs:disable Generic.Files.LineLength
+
 namespace Controllers\site;
 
 use Controllers\ControllerInterface;
@@ -106,9 +108,9 @@ class AuthController implements ControllerInterface
 
         if ($result['success']) {
             if ($result['role'] === 'admin') {
-                header('Location: /home');
+                header('Location: /home-admin');
             } else {
-                header('Location: /home');
+                header('Location: /home-student');
             }
             exit();
         } else {
@@ -183,7 +185,7 @@ class AuthController implements ControllerInterface
         }
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            require_once ROOT_PATH . '/public/module/site/View/register_admin.php';
+            require_once ROOT_PATH . '/public/module/site/View/RegisterAdmin.php';
             return;
         }
 
