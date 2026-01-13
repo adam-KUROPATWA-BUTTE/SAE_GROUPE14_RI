@@ -72,16 +72,15 @@ class HomePageAdmin
         $circumference = 2 * pi() * $radius;
         $dashArray = ($this->completionPercentage / 100) * $circumference;
 
-        // Start session if needed
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        // Handle language switch
-        if (isset($_GET['lang'])) {
+        if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en'], true)) {
             $_SESSION['lang'] = $_GET['lang'];
         }
-        $this->lang = $_SESSION['lang'] ?? $this->lang;
+
+        $this->lang = $_SESSION['lang'] ?? 'fr';
 
         // Handle tritanopia (color blindness) mode
         if (isset($_GET['tritanopia'])) {

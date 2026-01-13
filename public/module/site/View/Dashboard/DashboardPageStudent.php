@@ -65,6 +65,12 @@ class DashboardPageStudent
             session_start();
         }
 
+        if (isset($_GET['lang'])) {
+            $_SESSION['lang'] = $_GET['lang'];
+        }
+
+        $this->lang = $_SESSION['lang'] ?? 'fr';
+
         // Determine current status and progress percentage
         $status = $this->dossier['status'] ?? 'depot';
         $steps = ['depot', 'instruction', 'decision'];

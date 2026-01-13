@@ -8,22 +8,22 @@ const knowledgeBase = {
         'fr': {
             'intro': "Bonjour Admin ! Je peux vous aider à gérer les dossiers.",
             'keywords': {
-                'modifier': "Pour <b>modifier un dossier</b> : Cliquez sur le nom de l'étudiant dans sur le tableau de bord ou dans la page dossier.",
-                'ajouter dossier': "Allez dans l'onglet 'Dossiers' et cliquez sur le bouton 'Créer' en haut.",
-                'partenaire': "Allez dans l'onglet 'Partenaires' pour ajouter une entreprise.",
-                'relance': "Les dossiers rouges sont incomplets. Contactez l'étudiant via l'icône Email dans la page du tableau de bord.",
-                'avancement': "Vert = Validé, Orange = En cours, Rouge = Incomplet.",
-                'default': "Aide : modifier, ajouter dossier, partenaire, relance, avancement."
+                'Modifier': "Pour <b>modifier un dossier</b> : Cliquez sur le nom de l'étudiant dans sur le tableau de bord ou dans la page dossier.",
+                'Ajouter dossier': "Allez dans l'onglet 'Dossiers' et cliquez sur le bouton 'Créer' en haut.",
+                'Partenaire': "Allez dans l'onglet 'Partenaires' pour ajouter une entreprise.",
+                'Relance': "Les dossiers rouges sont incomplets. Contactez l'étudiant via l'icône Email dans la page du tableau de bord.",
+                'Avancement': "Vert = Validé, Orange = En cours, Rouge = Incomplet.",
+                'Default': "Aide : modifier, ajouter dossier, partenaire, relance, avancement."
             }
         },
         'en': {
             'intro': "Hello Admin! I can help you manage mobilities.",
             'keywords': {
-                'modifier': "To <b>edit</b>: Click on the student name in the list.",
-                'ajouter dossier': "Go to 'Folders' tab and click 'Create'.",
-                'partenaire': "Go to 'Partners' tab to add a company.",
-                'relance': "Red folders are incomplete. Contact student via Email icon.",
-                'avancement': "Green = Done, Orange = In Progress, Red = Incomplete.",
+                'Modify': "To <b>edit</b>: Click on the student name in the list.",
+                'Add Folder': "Go to 'Folders' tab and click 'Create'.",
+                'Partner': "Go to 'Partners' tab to add a company.",
+                'Relaunch': "Red folders are incomplete. Contact student via Email icon.",
+                'Advancement': "Green = Done, Orange = In Progress, Red = Incomplete.",
                 'default': "Help: edit, add folder, partner, reminder, progress."
             }
         }
@@ -34,21 +34,21 @@ const knowledgeBase = {
         'fr': {
             'intro': "Bonjour, je m'appelle Bob ! Je suis là pour t'aider dans ta mobilité.",
             'keywords': {
-                'déposer': "Va dans 'Mon Dossier' pour téléverser tes fichiers (CV, Lettre...).",
-                'avancé': "Ta progression est indiquée sur ton tableau de bord .",
-                'partenaire': "Consulte l'onglet 'Partenaires' pour voir les entreprises disponibles.",
-                'convention': "La convention doit être signée et uploadée dans 'Pièces Justificatives'.",
-                'default': "Aide : déposer, avancement, partenaire, convention."
+                'Déposer': "Va dans 'Mon Dossier' pour téléverser tes fichiers (CV, Lettre...).",
+                'Avancé': "Ta progression est indiquée sur ton tableau de bord .",
+                'Partenaire': "Consulte l'onglet 'Partenaires' pour voir les entreprises disponibles.",
+                'Convention': "La convention doit être signée et uploadée dans 'Pièces Justificatives'.",
+                'Default': "Aide : déposer, avancement, partenaire, convention."
             }
         },
         'en': {
             'intro': "Hi, my name is Bob ! I'm here to help with your mobility.",
             'keywords': {
-                'déposer': "Go to 'My Folder' to upload documents.",
-                'avancé': "Your progress is shown on your dashboard.",
-                'partenaire': "Check 'Partners' tab for companies.",
-                'convention': "The agreement must be signed and uploaded.",
-                'default': "Help: submit, progress, partner, agreement."
+                'Deposit': "Go to 'My Folder' to upload documents.",
+                'Advance': "Your progress is shown on your dashboard.",
+                'Partner': "Check 'Partners' tab for companies.",
+                'Convention': "The agreement must be signed and uploaded.",
+                'Default': "Help: submit, progress, partner, agreement."
             }
         }
     }

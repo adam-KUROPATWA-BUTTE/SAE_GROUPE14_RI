@@ -85,6 +85,12 @@ class WebPlanPageStudent
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+
+        if (isset($_GET['lang'])) {
+            $_SESSION['lang'] = $_GET['lang'];
+        }
+
+        $this->lang = $_SESSION['lang'] ?? 'fr';
         ?>
         <!DOCTYPE html>
         <html lang="<?= htmlspecialchars($this->lang) ?>">
