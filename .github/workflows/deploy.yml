@@ -22,7 +22,7 @@ jobs:
           port: 2222
           script: |
             cd /var/www/ri/SAE-GROUPE-14
-            git config --global --add safe.directory /var/www/ri/SAE-GROUPE-14
+            git config --global --add safe.directory /var/www/ri/SAE_GROUPE_14
             git fetch origin
             git reset --hard origin/main
             git pull origin main
