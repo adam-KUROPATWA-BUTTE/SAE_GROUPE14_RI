@@ -1,28 +1,29 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
-
 namespace Model\User;
 
+use PDO;
+use PDOException;
+
+/**
+ * Class UserAdmin
+ *
+ * Model responsible for managing administrator accounts.
+ * Handles authentication, registration, session management, and retrieval of admin data.
+ */
 class UserAdmin
 {
     /**
-     * Admin login
+     * Authenticates an administrator.
      *
-     * Verifies admin credentials. On success, sets session variables:
-     * - user_role
-     * - admin_id
-     * - admin_nom
-     * - admin_prenom
-     * - is_super_admin
+     * Verifies credentials against the database. On success, initializes the session
+     * with admin details and updates the last login timestamp.
      *
-     * Updates last_login timestamp in the database.
-     *
-     * @param string $email Admin email
-     * @param string $password Admin password
-     * @return array ['success' => bool, 'role' => 'admin' if success]
+     * @param string $email    Admin email.
+     * @param string $password Admin password.
+     * @return array{success: bool, role?: string} Login result (success status and role).
      */
-    public static function login($email, $password)
+    public static function login(string $email, string $password): array
     {
         try {
             $db = \Database::getInstance()->getConnection();
@@ -30,9 +31,11 @@ class UserAdmin
             $sql = "SELECT id, email, password, nom, prenom, is_super_admin FROM admins WHERE email = :email";
             $stmt = $db->prepare($sql);
             $stmt->execute(['email' => $email]);
-            $user = $stmt->fetch();
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($user && password_verify($password, $user['password'])) {
+            // Verify user exists and password is correct
+            // Cast password to string to ensure type safety for password_verify
+            if ($user && is_array($user) && password_verify($password, (string)($user['password'] ?? ''))) {
                 $_SESSION['user_role'] = 'admin';
                 $_SESSION['admin_id'] = $user['id'];
                 $_SESSION['admin_nom'] = $user['nom'];
@@ -47,41 +50,41 @@ class UserAdmin
             }
 
             return ['success' => false];
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             error_log("Admin login error: " . $e->getMessage());
             return ['success' => false];
         }
     }
 
     /**
-     * Register a new admin (ONLY by an existing admin)
+     * Registers a new administrator.
      *
-     * Checks that the requesting user is an admin, verifies email uniqueness,
-     * hashes the password, and inserts the new admin.
+     * This action is restricted to existing administrators. It checks for email uniqueness
+     * across both admins and students tables before creating the account.
      *
-     * @param string $email Admin email
-     * @param string $password Admin password
-     * @param string $nom Admin last name
-     * @param string $prenom Admin first name
-     * @param int $requestingAdminId ID of the admin making the request
-     * @return bool True on success, false on failure
+     * @param string $email             New admin email.
+     * @param string $password          New admin password.
+     * @param string $nom               Last name.
+     * @param string $prenom            First name.
+     * @param int    $requestingAdminId ID of the admin performing the registration.
+     * @return bool True on success, false on failure.
      */
-    public static function register($email, $password, $nom, $prenom, $requestingAdminId)
+    public static function register(string $email, string $password, string $nom, string $prenom, int $requestingAdminId): bool
     {
         try {
             $db = \Database::getInstance()->getConnection();
 
-            // Verify requester is admin
+            // 1. Verify requester exists and is an admin
             $sql = "SELECT id FROM admins WHERE id = :id";
             $stmt = $db->prepare($sql);
             $stmt->execute(['id' => $requestingAdminId]);
 
             if (!$stmt->fetch()) {
-                error_log("Attempt to create admin by non-admin (ID: $requestingAdminId)");
+                error_log("Security Warning: Attempt to create admin by invalid ID: $requestingAdminId");
                 return false;
             }
 
-            // Check if email already exists in admins or students
+            // 2. Check if email is already taken (in admins or students tables)
             $sql = "SELECT id FROM admins WHERE email = :email 
                     UNION 
                     SELECT id FROM etudiants WHERE email = :email";
@@ -89,13 +92,14 @@ class UserAdmin
             $stmt->execute(['email' => $email]);
 
             if ($stmt->fetch()) {
-                return false; // Email already used
+                return false; // Email already exists
             }
 
+            // 3. Hash password and insert
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-            $sql = "INSERT INTO admins (email, password, nom, prenom, is_super_admin) 
-                    VALUES (:email, :password, :nom, :prenom, 0)";
+            $sql = "INSERT INTO admins (email, password, nom, prenom, is_super_admin, created_at) 
+                    VALUES (:email, :password, :nom, :prenom, 0, NOW())";
             $stmt = $db->prepare($sql);
 
             return $stmt->execute([
@@ -104,28 +108,43 @@ class UserAdmin
                 'nom' => $nom,
                 'prenom' => $prenom
             ]);
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             error_log("Admin registration error: " . $e->getMessage());
             return false;
         }
     }
 
     /**
-     * Admin logout
+     * Initiates a password reset process.
      *
-     * Clears session data and cookies.
+     * Currently a placeholder implementation.
      *
-     * @return bool True on success, false on failure
+     * @param string $email The email address requesting the reset.
+     * @return void
+     */
+    public static function resetPassword(string $email): void
+    {
+        // TODO: Implement token generation and email sending logic
+        error_log("Password reset requested for Admin: " . $email);
+    }
+
+    /**
+     * Logs out the administrator.
+     *
+     * Destroys the session and clears the session cookie.
+     *
+     * @return bool True on success, false on failure.
      */
     public static function logout(): bool
     {
         try {
-            $_SESSION = array();
+            $_SESSION = [];
 
             if (ini_get("session.use_cookies")) {
                 $params = session_get_cookie_params();
+                // Fix: session_name() can technically return false, casting to string satisfies PHPStan
                 setcookie(
-                    session_name(),
+                    (string)session_name(),
                     '',
                     time() - 42000,
                     $params["path"],
@@ -144,32 +163,35 @@ class UserAdmin
     }
 
     /**
-     * Check if the logged-in user is an admin
+     * Checks if the currently logged-in user has the 'admin' role.
      *
-     * @return bool True if admin, false otherwise
+     * @return bool True if admin, false otherwise.
      */
     public static function isAdmin(): bool
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
     }
 
     /**
-     * Check if the logged-in admin is a super admin
+     * Checks if the currently logged-in admin has super-admin privileges.
      *
-     * @return bool True if super admin, false otherwise
+     * @return bool True if super admin, false otherwise.
      */
     public static function isSuperAdmin(): bool
     {
-        return self::isAdmin() && ($_SESSION['is_super_admin'] ?? false);
+        return self::isAdmin() && (!empty($_SESSION['is_super_admin']));
     }
 
     /**
-     * Get admin information by ID
+     * Retrieves admin information by ID.
      *
-     * @param int $id Admin ID
-     * @return array|false Admin data or false on failure
+     * @param int $id Admin ID.
+     * @return array<string, mixed>|null Admin data or null on failure/not found.
      */
-    public static function getById($id)
+    public static function getById(int $id): ?array
     {
         try {
             $db = \Database::getInstance()->getConnection();
@@ -180,25 +202,26 @@ class UserAdmin
             $stmt = $db->prepare($sql);
             $stmt->execute(['id' => $id]);
 
-            return $stmt->fetch();
-        } catch (\PDOException $e) {
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return is_array($result) ? $result : null;
+        } catch (PDOException $e) {
             error_log("Get admin by ID error: " . $e->getMessage());
-            return false;
+            return null;
         }
     }
 
     /**
-     * List all admins (restricted to admins)
+     * Retrieves a list of all administrators.
+     * Restricted to authenticated admins.
      *
-     * @param int $requestingAdminId ID of the admin making the request
-     * @return array|false List of admins or false on failure/not authorized
+     * @return array<int, array<string, mixed>> List of admins. Returns empty array on failure or access denied.
      */
-    public static function getAll($requestingAdminId)
+    public static function getAll(): array
     {
         try {
-            // Verify requester is admin
+            // Verify requester is logged in as admin
             if (!self::isAdmin()) {
-                return false;
+                return [];
             }
 
             $db = \Database::getInstance()->getConnection();
@@ -208,10 +231,11 @@ class UserAdmin
             $stmt = $db->prepare($sql);
             $stmt->execute();
 
-            return $stmt->fetchAll();
-        } catch (\PDOException $e) {
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return is_array($results) ? $results : [];
+        } catch (PDOException $e) {
             error_log("Get all admins error: " . $e->getMessage());
-            return false;
+            return [];
         }
     }
 }

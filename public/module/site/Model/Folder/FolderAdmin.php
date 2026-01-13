@@ -1,774 +1,362 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
-
 namespace Model\Folder;
+
+use PDO;
+use PDOException;
 
 /**
  * Class FolderAdmin
  *
- * Model responsible for managing student folders in the database.
- * Handles CRUD operations, file storage (encoded in JSON), and advanced search filtering.
+ * Model responsible for managing student folders in the database (Administrator context).
+ * Handles CRUD operations, file storage (encoded in JSON/Base64), and advanced search filtering.
  */
 class FolderAdmin
 {
     /**
-     * Get a PDO connection via the Database class.
+     * Get a PDO connection via the Database singleton.
      *
-     * @return \PDO The PDO connection instance.
+     * @return PDO The PDO connection instance.
      */
-    private static function getConnection(): \PDO
+    private static function getConnection(): PDO
     {
         return \Database::getInstance()->getConnection();
     }
 
     /**
-     * Retrieve all folders from the database.
+     * Retrieve all folders from the database sorted by name.
      *
-     * @return array List of all student folders.
+     * @return array<int, array<string, mixed>> List of all student folders.
      */
-    public static function getAll()
+    public static function getAll(): array
     {
         $pdo = self::getConnection();
 
         try {
             $stmt = $pdo->query("
-                SELECT 
-                    NumEtu,
-                    Nom,
-                    Prenom,
-                    EmailPersonnel as email,
-                    Telephone,
-                    Type,
-                    Zone,
-                    DateNaissance,
-                    Sexe,
-                    Adresse,
-                    CodePostal,
-                    Ville,
-                    EmailAMU,
-                    CodeDepartement,
-                    IsComplete,
-                    PiecesJustificatives
+                SELECT *
                 FROM dossiers
                 ORDER BY Nom, Prenom
             ");
 
-            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        } catch (\PDOException $e) {
-            error_log("Error fetching folders: " . $e->getMessage());
+            if ($stmt === false) {
+                return [];
+            }
+
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return is_array($results) ? $results : [];
+        } catch (PDOException $e) {
+            error_log("Error fetching all folders: " . $e->getMessage());
             return [];
         }
     }
 
     /**
-     * Retrieve incomplete folders (where IsComplete is 0 or NULL).
+     * Retrieve a student's folder details by their student ID (NumEtu).
+     * Automatically decodes the JSON 'PiecesJustificatives' column.
      *
-     * @return array List of incomplete folders.
+     * @param string $numetu The student identifier.
+     * @return array<string, mixed>|null The folder data or null if not found.
      */
-    public static function getDossiersIncomplets()
+    public static function getStudentDetails(string $numetu): ?array
     {
         $pdo = self::getConnection();
 
         try {
-            $stmt = $pdo->query("
-                SELECT 
-                    NumEtu,
-                    Nom,
-                    Prenom,
-                    EmailPersonnel as email,
-                    Telephone,
-                    Type,
-                    Zone,
-                    DateNaissance,
-                    Sexe,
-                    Adresse,
-                    CodePostal,
-                    Ville,
-                    EmailAMU,
-                    CodeDepartement,
-                    IsComplete,
-                    PiecesJustificatives
-                FROM dossiers
-                WHERE IsComplete = 0 OR IsComplete IS NULL
-                ORDER BY Nom, Prenom
-            ");
-
-            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        } catch (\PDOException $e) {
-            error_log("Error fetching incomplete folders: " . $e->getMessage());
-            return [];
-        }
-    }
-
-    /**
-     * Create a new folder in the database.
-     *
-     * @param array       $data           Associative array containing student information.
-     * @param string|null $photoData      Binary data of the photo (optional).
-     * @param string|null $cvData         Binary data of the CV (optional).
-     * @param string|null $conventionData Binary data of the Internship Agreement (optional).
-     * @param string|null $lettreData     Binary data of the Motivation Letter (optional).
-     * @return bool True on success, False on failure.
-     */
-    public static function creerDossier($data, $photoData = null, $cvData = null, $conventionData = null, $lettreData = null)
-    {
-        $pdo = self::getConnection();
-
-        try {
-            // Convert empty strings to NULL to keep the database clean
-            foreach ($data as $key => $value) {
-                if ($value === '') {
-                    $data[$key] = null;
-                }
-            }
-
-            // Ensure DateNaissance is NULL or a valid DATE format
-            if (!empty($data['naissance'])) {
-                $date = \DateTime::createFromFormat('Y-m-d', $data['naissance']);
-                if (!$date || $date->format('Y-m-d') !== $data['naissance']) {
-                    $data['naissance'] = null;
-                }
-            }
-
-            $stmt = $pdo->prepare("
-                INSERT INTO dossiers (
-                    NumEtu, Nom, Prenom, DateNaissance, Sexe, Adresse, CodePostal, Ville,
-                    EmailPersonnel, EmailAMU, Telephone, CodeDepartement, Type, Zone,
-                    IsComplete, PiecesJustificatives
-                ) VALUES (
-                    :NumEtu, :Nom, :Prenom, :DateNaissance, :Sexe, :Adresse, :CodePostal, :Ville,
-                    :EmailPersonnel, :EmailAMU, :Telephone, :CodeDepartement, :Type, :Zone,
-                    0, :PiecesJustificatives
-                )
-            ");
-
-            // Prepare justificative files as a JSON object
-            $pieces = [];
-            if ($photoData !== null) {
-                $pieces['photo'] = base64_encode($photoData);
-            }
-            if ($cvData !== null) {
-                $pieces['cv'] = base64_encode($cvData);
-            }
-            // Add Convention if provided
-            if ($conventionData !== null) {
-                $pieces['convention'] = base64_encode($conventionData);
-            }
-            // Add Motivation Letter if provided
-            if ($lettreData !== null) {
-                $pieces['lettre_motivation'] = base64_encode($lettreData);
-            }
-
-            $piecesJson = json_encode($pieces);
-
-            return $stmt->execute([
-                ':NumEtu' => $data['NumEtu'],
-                ':Nom' => $data['Nom'],
-                ':Prenom' => $data['Prenom'],
-                ':DateNaissance' => $data['DateNaissance'],
-                ':Sexe' => $data['Sexe'],
-                ':Adresse' => $data['Adresse'],
-                ':CodePostal' => $data['CodePostal'],
-                ':Ville' => $data['Ville'],
-                ':EmailPersonnel' => $data['EmailPersonnel'],
-                ':EmailAMU' => $data['EmailAMU'],
-                ':Telephone' => $data['Telephone'],
-                ':CodeDepartement' => $data['CodeDepartement'],
-                ':Type' => $data['Type'],
-                ':Zone' => $data['Zone'],
-                ':PiecesJustificatives' => $piecesJson
-            ]);
-        } catch (\PDOException $e) {
-            error_log("Error creating folder: " . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Retrieve a folder by personal email.
-     *
-     * @param string $email The student's personal email.
-     * @return array|null The student data or null if not found.
-     */
-    public static function getByEmail(string $email)
-    {
-        $pdo = self::getConnection();
-
-        try {
-            $stmt = $pdo->prepare("
-                SELECT 
-                    NumEtu,
-                    Nom,
-                    Prenom,
-                    EmailPersonnel as email,
-                    Telephone,
-                    Type,
-                    Zone,
-                    DateNaissance,
-                    Sexe,
-                    Adresse,
-                    CodePostal,
-                    Ville,
-                    EmailAMU,
-                    CodeDepartement,
-                    IsComplete,
-                    PiecesJustificatives
-                FROM dossiers 
-                WHERE EmailPersonnel = :email 
-                LIMIT 1
-            ");
-            $stmt->execute([':email' => $email]);
-            return $stmt->fetch(\PDO::FETCH_ASSOC);
-        } catch (\PDOException $e) {
-            error_log("Error fetching folder by email: " . $e->getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * Retrieve a folder by student number (NumEtu).
-     *
-     * @param string $numetu The student ID number.
-     * @return array|null The student data or null if not found.
-     */
-    public static function getByNumetu(string $numetu)
-    {
-        $pdo = self::getConnection();
-
-        try {
-            $stmt = $pdo->prepare("
-                SELECT 
-                    NumEtu,
-                    Nom,
-                    Prenom,
-                    EmailPersonnel as email,
-                    Telephone,
-                    Type,
-                    Zone,
-                    DateNaissance,
-                    Sexe,
-                    Adresse,
-                    CodePostal,
-                    Ville,
-                    EmailAMU,
-                    CodeDepartement,
-                    IsComplete,
-                    PiecesJustificatives
-                FROM dossiers 
-                WHERE NumEtu = :numetu 
-                LIMIT 1
-            ");
+            $stmt = $pdo->prepare("SELECT * FROM dossiers WHERE NumEtu = :numetu LIMIT 1");
             $stmt->execute([':numetu' => $numetu]);
-            return $stmt->fetch(\PDO::FETCH_ASSOC);
-        } catch (\PDOException $e) {
-            error_log("Error fetching folder by NumEtu: " . $e->getMessage());
-            return null;
-        }
-    }
 
-    /**
-     * Get full student details including decoded justificative files.
-     *
-     * @param string $numetu The student ID number.
-     * @return array|null The student data containing a 'pieces' array, or null.
-     */
-    public static function getStudentDetails(string $numetu)
-    {
-        $pdo = self::getConnection();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        try {
-            $stmt = $pdo->prepare("
-                SELECT 
-                    NumEtu,
-                    Nom,
-                    Prenom,
-                    DateNaissance,
-                    Sexe,
-                    Adresse,
-                    CodePostal,
-                    Ville,
-                    EmailPersonnel,
-                    EmailAMU,
-                    Telephone,
-                    CodeDepartement,
-                    Type,
-                    Zone,
-                    IsComplete,
-                    PiecesJustificatives
-                FROM dossiers 
-                WHERE NumEtu = :numetu 
-                LIMIT 1
-            ");
-            $stmt->execute([':numetu' => $numetu]);
-            $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+            if ($result && is_array($result)) {
+                // Safely handle JSON decoding for documents
+                $rawJson = $result['PiecesJustificatives'] ?? '{}';
+                $jsonString = is_string($rawJson) ? $rawJson : '{}';
 
-            if ($result) {
-                // Decode justificative files JSON into an array
-                $result['pieces'] = !empty($result['PiecesJustificatives'])
-                    ? json_decode($result['PiecesJustificatives'], true) ?? []
-                    : [];
+                $decoded = json_decode($jsonString, true);
+                $result['pieces'] = is_array($decoded) ? $decoded : [];
+                return $result;
             }
 
-            return $result;
-        } catch (\PDOException $e) {
+            return null;
+        } catch (PDOException $e) {
             error_log("Error fetching student details: " . $e->getMessage());
             return null;
         }
     }
 
     /**
-     * Update an existing folder.
+     * Retrieves a folder by Email (used for duplicate checks).
      *
-     * @param array       $data           Associative array containing student information.
-     * @param string|null $photoData      Binary data of the photo (optional).
-     * @param string|null $cvData         Binary data of the CV (optional).
-     * @param string|null $conventionData Binary data of the Internship Agreement (optional).
-     * @param string|null $lettreData     Binary data of the Motivation Letter (optional).
-     * @return bool True on success, False on failure.
+     * @param string $email The email to search for.
+     * @return array<string, mixed>|null The folder data or null.
      */
-    public static function updateDossier($data, $photoData = null, $cvData = null, $conventionData = null, $lettreData = null)
+    public static function getByEmail(string $email): ?array
+    {
+        $pdo = self::getConnection();
+        try {
+            $stmt = $pdo->prepare("SELECT * FROM dossiers WHERE EmailPersonnel = :email LIMIT 1");
+            $stmt->execute([':email' => $email]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return (is_array($result)) ? $result : null;
+        } catch (PDOException $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves a folder by NumEtu (alias for getStudentDetails).
+     *
+     * @param string $numetu
+     * @return array<string, mixed>|null
+     */
+    public static function getByNumetu(string $numetu): ?array
+    {
+        return self::getStudentDetails($numetu);
+    }
+
+    /**
+     * Create a new student folder.
+     *
+     * @param array<string, mixed> $data           Student data (Nom, Prenom, etc.).
+     * @param string|null          $photoData      Binary content of photo.
+     * @param string|null          $cvData         Binary content of CV.
+     * @param string|null          $conventionData Binary content of convention.
+     * @param string|null          $lettreData     Binary content of motivation letter.
+     * @return bool True on success, false on failure.
+     */
+    public static function creerDossier(array $data, ?string $photoData = null, ?string $cvData = null, ?string $conventionData = null, ?string $lettreData = null): bool
     {
         $pdo = self::getConnection();
 
         try {
-            // Retrieve old justificative files to preserve existing ones if not replaced
-            $existing = self::getByNumetu($data['NumEtu']);
-            $oldPieces = [];
-            if ($existing && !empty($existing['PiecesJustificatives'])) {
-                $oldPieces = json_decode($existing['PiecesJustificatives'], true) ?? [];
-            }
+            // Encode files to Base64
+            $pieces = [];
+            if ($photoData !== null) $pieces['photo'] = base64_encode($photoData);
+            if ($cvData !== null) $pieces['cv'] = base64_encode($cvData);
+            if ($conventionData !== null) $pieces['convention'] = base64_encode($conventionData);
+            if ($lettreData !== null) $pieces['lettre_motivation'] = base64_encode($lettreData);
 
-            // Update files only if new data is provided
-            if ($photoData !== null) {
-                $oldPieces['photo'] = base64_encode($photoData);
-            }
-            if ($cvData !== null) {
-                $oldPieces['cv'] = base64_encode($cvData);
-            }
-            if ($conventionData !== null) {
-                $oldPieces['convention'] = base64_encode($conventionData);
-            }
-            if ($lettreData !== null) {
-                $oldPieces['lettre_motivation'] = base64_encode($lettreData);
-            }
+            $piecesJson = json_encode($pieces) ?: '{}';
 
-            $piecesJson = json_encode($oldPieces);
+            $sql = "INSERT INTO dossiers (
+                        NumEtu, Nom, Prenom, EmailPersonnel, Type, Zone,
+                        Adresse, CodePostal, Ville, Telephone, EmailAMU, CodeDepartement,
+                        DateNaissance, Sexe, PiecesJustificatives, IsComplete
+                    ) VALUES (
+                        :numetu, :nom, :prenom, :email, :type, :zone,
+                        :adresse, :cp, :ville, :tel, :email_amu, :dept,
+                        :date_nais, :sexe, :pieces, 0
+                    )";
 
-            $stmt = $pdo->prepare("
-                UPDATE dossiers
-                SET 
-                    Nom = :Nom,
-                    Prenom = :Prenom,
-                    DateNaissance = :DateNaissance,
-                    Sexe = :Sexe,
-                    Adresse = :Adresse,
-                    CodePostal = :CodePostal,
-                    Ville = :Ville,
-                    EmailPersonnel = :EmailPersonnel,
-                    EmailAMU = :EmailAMU,
-                    Telephone = :Telephone,
-                    CodeDepartement = :CodeDepartement,
-                    Type = :Type,
-                    Zone = :Zone,
-                    PiecesJustificatives = :PiecesJustificatives
-                WHERE NumEtu = :NumEtu
-            ");
+            $stmt = $pdo->prepare($sql);
 
             return $stmt->execute([
-                ':NumEtu' => $data['NumEtu'],
-                ':Nom' => $data['Nom'],
-                ':Prenom' => $data['Prenom'],
-                ':DateNaissance' => $data['DateNaissance'],
-                ':Sexe' => $data['Sexe'],
-                ':Adresse' => $data['Adresse'],
-                ':CodePostal' => $data['CodePostal'],
-                ':Ville' => $data['Ville'],
-                ':EmailPersonnel' => $data['EmailPersonnel'],
-                ':EmailAMU' => $data['EmailAMU'],
-                ':Telephone' => $data['Telephone'],
-                ':CodeDepartement' => $data['CodeDepartement'],
-                ':Type' => $data['Type'],
-                ':Zone' => $data['Zone'],
-                ':PiecesJustificatives' => $piecesJson
+                ':numetu'    => $data['NumEtu'],
+                ':nom'       => $data['Nom'],
+                ':prenom'    => $data['Prenom'],
+                ':email'     => $data['EmailPersonnel'],
+                ':type'      => $data['Type'],
+                ':zone'      => $data['Zone'],
+                ':adresse'   => $data['Adresse'],
+                ':cp'        => $data['CodePostal'],
+                ':ville'     => $data['Ville'],
+                ':tel'       => $data['Telephone'],
+                ':email_amu' => $data['EmailAMU'],
+                ':dept'      => $data['CodeDepartement'],
+                ':date_nais' => $data['DateNaissance'],
+                ':sexe'      => $data['Sexe'],
+                ':pieces'    => $piecesJson
             ]);
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
+            error_log("Error creating folder: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Update an existing student folder.
+     *
+     * @param array<string, mixed> $data           Updated data.
+     * @param string|null          $photoData      New photo content (optional).
+     * @param string|null          $cvData         New CV content (optional).
+     * @param string|null          $conventionData New convention content (optional).
+     * @param string|null          $lettreData     New letter content (optional).
+     * @return bool True on success.
+     */
+    public static function updateDossier(array $data, ?string $photoData = null, ?string $cvData = null, ?string $conventionData = null, ?string $lettreData = null): bool
+    {
+        $pdo = self::getConnection();
+
+        try {
+            // 1. Retrieve existing JSON to preserve unchecked files
+            $currentData = self::getStudentDetails((string)$data['NumEtu']);
+            $pieces = $currentData['pieces'] ?? [];
+
+            // 2. Update specific files if provided
+            if ($photoData !== null) $pieces['photo'] = base64_encode($photoData);
+            if ($cvData !== null) $pieces['cv'] = base64_encode($cvData);
+            if ($conventionData !== null) $pieces['convention'] = base64_encode($conventionData);
+            if ($lettreData !== null) $pieces['lettre_motivation'] = base64_encode($lettreData);
+
+            $piecesJson = json_encode($pieces) ?: '{}';
+
+            // 3. Update Record
+            $sql = "UPDATE dossiers SET
+                        Nom = :nom, Prenom = :prenom, EmailPersonnel = :email,
+                        Telephone = :tel, Adresse = :adresse, CodePostal = :cp,
+                        Ville = :ville, CodeDepartement = :dept, Type = :type, Zone = :zone,
+                        PiecesJustificatives = :pieces
+                    WHERE NumEtu = :numetu";
+
+            $stmt = $pdo->prepare($sql);
+
+            return $stmt->execute([
+                ':nom'    => $data['Nom'],
+                ':prenom' => $data['Prenom'],
+                ':email'  => $data['EmailPersonnel'],
+                ':tel'    => $data['Telephone'],
+                ':adresse'=> $data['Adresse'],
+                ':cp'     => $data['CodePostal'],
+                ':ville'  => $data['Ville'],
+                ':dept'   => $data['CodeDepartement'],
+                ':type'   => $data['Type'],
+                ':zone'   => $data['Zone'],
+                ':pieces' => $piecesJson,
+                ':numetu' => $data['NumEtu']
+            ]);
+        } catch (PDOException $e) {
             error_log("Error updating folder: " . $e->getMessage());
             return false;
         }
     }
 
     /**
-     * Delete a folder by student ID.
+     * Toggles the completion status of a folder.
      *
-     * @param string $numetu The student ID number.
-     * @return bool True on success, False on failure.
+     * @param string $numetu
+     * @return bool
      */
-    public static function supprimerDossier($numetu)
+    public static function toggleComplete(string $numetu): bool
     {
         $pdo = self::getConnection();
+        $sql = "UPDATE dossiers SET IsComplete = NOT IsComplete WHERE NumEtu = :numetu";
+        $stmt = $pdo->prepare($sql);
+        return $stmt->execute([':numetu' => $numetu]);
+    }
 
-        try {
-            $stmt = $pdo->prepare("DELETE FROM dossiers WHERE NumEtu = :numetu");
-            return $stmt->execute([':numetu' => $numetu]);
-        } catch (\PDOException $e) {
-            error_log("Error deleting folder: " . $e->getMessage());
+    /**
+     * Upload specific photo (Helper method).
+     */
+    public static function uploadPhoto(string $numetu, array $file): bool
+    {
+        if (!isset($file['tmp_name']) || !file_exists($file['tmp_name'])) {
             return false;
         }
+        $content = file_get_contents($file['tmp_name']);
+        return ($content !== false) ? self::updatePieceJustificative($numetu, 'photo', $content) : false;
     }
 
     /**
-     * Add a reminder.
-     * (Placeholder method, currently logic is empty).
-     *
-     * @param int    $dossierId The folder database ID.
-     * @param string $message   The reminder message.
-     * @param int    $adminId   The ID of the admin creating the reminder.
-     * @return bool Always returns true for now.
+     * Upload specific CV (Helper method).
      */
-    public static function ajouterRelance($dossierId, $message, $adminId)
+    public static function uploadCV(string $numetu, array $file): bool
     {
-        return true;
+        if (!isset($file['tmp_name']) || !file_exists($file['tmp_name'])) {
+            return false;
+        }
+        $content = file_get_contents($file['tmp_name']);
+        return ($content !== false) ? self::updatePieceJustificative($numetu, 'cv', $content) : false;
     }
 
     /**
-     * Validate a folder (Sets IsComplete to 1).
+     * Updates a single document in the JSON blob.
      *
-     * @param string   $numetu  The student ID number.
-     * @param int|null $adminId The admin ID performing the validation (optional).
-     * @return bool True on success, False on failure.
+     * @param string $numetu
+     * @param string $key     Document key (photo, cv, convention, etc.)
+     * @param string $content Binary content
+     * @return bool
      */
-    public static function valider($numetu, $adminId = null)
+    private static function updatePieceJustificative(string $numetu, string $key, string $content): bool
     {
+        $current = self::getStudentDetails($numetu);
+        if (!$current) return false;
+
+        $pieces = $current['pieces'] ?? [];
+        $pieces[$key] = base64_encode($content);
+
         $pdo = self::getConnection();
-
-        try {
-            $stmt = $pdo->prepare("
-                UPDATE dossiers 
-                SET IsComplete = 1
-                WHERE NumEtu = :numetu
-            ");
-            return $stmt->execute([':numetu' => $numetu]);
-        } catch (\PDOException $e) {
-            error_log("Error validating folder: " . $e->getMessage());
-            return false;
-        }
+        $stmt = $pdo->prepare("UPDATE dossiers SET PiecesJustificatives = :json WHERE NumEtu = :numetu");
+        return $stmt->execute([
+            ':json' => json_encode($pieces),
+            ':numetu' => $numetu
+        ]);
     }
 
     /**
-     * Toggle the complete/incomplete status of a folder.
+     * Search with pagination and filters.
      *
-     * @param string $numetu The student ID number.
-     * @return bool True on success, False on failure.
-     */
-    public static function toggleCompleteStatus(string $numetu): bool
-    {
-        $pdo = self::getConnection();
-
-        try {
-            // Retrieve current status
-            $stmt = $pdo->prepare("
-                SELECT IsComplete 
-                FROM dossiers 
-                WHERE NumEtu = :numetu
-            ");
-            $stmt->execute([':numetu' => $numetu]);
-            $current = $stmt->fetch(\PDO::FETCH_ASSOC);
-
-            if (!$current) {
-                return false;
-            }
-
-            // Toggle logic: 0/NULL becomes 1, 1 becomes 0
-            $newStatus = ($current['IsComplete'] == 1) ? 0 : 1;
-
-            $stmt = $pdo->prepare("
-                UPDATE dossiers 
-                SET IsComplete = :status
-                WHERE NumEtu = :numetu
-            ");
-            return $stmt->execute([':status' => $newStatus, ':numetu' => $numetu]);
-        } catch (\PDOException $e) {
-            error_log("Error toggling folder status: " . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Upload a photo and update the 'PiecesJustificatives' JSON column.
-     *
-     * @param string $numetu The student ID number.
-     * @param array  $file   The uploaded file array from $_FILES.
-     * @return bool True on success, False on failure.
-     */
-    public static function uploadPhoto($numetu, $file)
-    {
-        if (!file_exists($file['tmp_name'])) {
-            return false;
-        }
-        $photoData = file_get_contents($file['tmp_name']);
-        return self::updatePieceJustificative($numetu, 'photo', $photoData);
-    }
-
-    /**
-     * Upload a CV and update the 'PiecesJustificatives' JSON column.
-     *
-     * @param string $numetu The student ID number.
-     * @param array  $file   The uploaded file array from $_FILES.
-     * @return bool True on success, False on failure.
-     */
-    public static function uploadCV($numetu, $file)
-    {
-        if (!file_exists($file['tmp_name'])) {
-            return false;
-        }
-        $cvData = file_get_contents($file['tmp_name']);
-        return self::updatePieceJustificative($numetu, 'cv', $cvData);
-    }
-
-    /**
-     * Private helper method to update a specific file inside the PiecesJustificatives JSON.
-     *
-     * @param string $numetu The student ID number.
-     * @param string $type   The key/type of the document (e.g., 'photo', 'cv').
-     * @param string $data   The binary data of the file.
-     * @return bool True on success, False on failure.
-     */
-    private static function updatePieceJustificative(string $numetu, string $type, string $data)
-    {
-        $pdo = self::getConnection();
-
-        try {
-            $existing = self::getByNumetu($numetu);
-            $pieces = [];
-            if ($existing && !empty($existing['PiecesJustificatives'])) {
-                $pieces = json_decode($existing['PiecesJustificatives'], true) ?? [];
-            }
-
-            // Update or add the new file (Base64 encoded)
-            $pieces[$type] = base64_encode($data);
-            $piecesJson = json_encode($pieces);
-
-            $stmt = $pdo->prepare("
-                UPDATE dossiers
-                SET PiecesJustificatives = :pieces
-                WHERE NumEtu = :numetu
-            ");
-            return $stmt->execute([':pieces' => $piecesJson, ':numetu' => $numetu]);
-        } catch (\PDOException $e) {
-            error_log("Error updating justificative file ($type): " . $e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * Search folders using advanced filters.
-     *
-     * @param array $filters Associative array of filters (type, zone, search, dates, completeness).
-     * @return array List of folders matching the filters.
-     */
-    public static function rechercher(array $filters)
-    {
-        $pdo = self::getConnection();
-        $params = [];
-
-        $sql = "
-            SELECT 
-                NumEtu, Nom, Prenom, EmailPersonnel as email, Telephone,
-                Type, Zone, DateNaissance, Sexe, Adresse, CodePostal, Ville,
-                EmailAMU, CodeDepartement, IsComplete, PiecesJustificatives
-            FROM dossiers
-            WHERE 1=1
-        ";
-
-        // --- Filter: Completeness Status ---
-        if (isset($filters['complet']) && $filters['complet'] !== 'all') {
-            if ($filters['complet'] == '1') {
-                $sql .= " AND IsComplete = 1";
-            } else {
-                // Incomplete includes 0 and NULL
-                $sql .= " AND (IsComplete = 0 OR IsComplete IS NULL)";
-            }
-        }
-
-        // --- Filter: Date Range (Birth Date) ---
-        if (!empty($filters['date_debut'])) {
-            $sql .= " AND DateNaissance >= :date_debut";
-            $params[':date_debut'] = $filters['date_debut'];
-        }
-
-        if (!empty($filters['date_fin'])) {
-            $sql .= " AND DateNaissance <= :date_fin";
-            $params[':date_fin'] = $filters['date_fin'];
-        }
-
-
-
-
-
-
-// --- Filter: Type (Case insensitive) ---
-        if (!empty($filters['type']) && $filters['type'] !== 'all') {
-            $sql .= " AND Type = :type";
-            $params[':type'] = $filters['type'];
-        }
-
-// --- Filter: Zone (Case insensitive) ---
-        if (!empty($filters['zone']) && $filters['zone'] !== 'all') {
-            $sql .= " AND Zone = :zone";
-            $params[':zone'] = $filters['zone'];
-        }
-
-// --- Text Search (Name, Email, Student ID) ---
-        if (!empty($filters['search'])) {
-            $sql .= " AND (Nom LIKE :search OR Prenom LIKE :search OR NumEtu LIKE :search OR EmailPersonnel LIKE :search)";
-            $params[':search'] = '%' . $filters['search'] . '%';
-        }
-
-
-
-
-
-
-
-        // --- Sorting ---
-        $orderDirection = (isset($filters['tri_date']) && strtoupper($filters['tri_date']) === 'ASC') ? 'ASC' : 'DESC';
-        $sql .= " ORDER BY DateNaissance $orderDirection, Nom ASC";
-
-        try {
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute($params);
-            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        } catch (\PDOException $e) {
-            error_log("Error searching folders: " . $e->getMessage());
-            return [];
-        }
-    }
-
-
-
-
-
-    /**
-     * Search folders with SQL-based pagination for better performance
-     *
-     * @param array $filters Search filters
-     * @param int $page Current page number (1-indexed)
-     * @param int $perPage Items per page
-     * @return array ['data' => array, 'total' => int, 'totalPages' => int]
+     * @param array<string, mixed> $filters
+     * @param int                  $page
+     * @param int                  $perPage
+     * @return array{data: array, total: int, totalPages: int}
      */
     public static function rechercherAvecPagination(array $filters, int $page = 1, int $perPage = 10): array
     {
         $pdo = self::getConnection();
         $params = [];
+        $where = ["1=1"];
 
-        // --- Base SQL pour les conditions WHERE ---
-        $whereConditions = " WHERE 1=1";
-
-        // --- Filter: Completeness Status ---
-        if (isset($filters['complet']) && $filters['complet'] !== 'all') {
-            if ($filters['complet'] == '1') {
-                $whereConditions .= " AND IsComplete = 1";
-            } else {
-                // Incomplete includes 0 and NULL
-                $whereConditions .= " AND (IsComplete = 0 OR IsComplete IS NULL)";
-            }
+        // Build conditions
+        if (!empty($filters['search'])) {
+            $where[] = "(Nom LIKE :search OR Prenom LIKE :search OR NumEtu LIKE :search)";
+            $params['search'] = '%' . $filters['search'] . '%';
         }
-
-        // --- Filter: Type (Case insensitive) ---
         if (!empty($filters['type']) && $filters['type'] !== 'all') {
-            $whereConditions .= " AND LOWER(Type) = LOWER(:type)";
+            $where[] = "Type = :type";
             $params['type'] = $filters['type'];
         }
-
-        // --- Filter: Zone (Case insensitive) ---
         if (!empty($filters['zone']) && $filters['zone'] !== 'all') {
-            $whereConditions .= " AND LOWER(Zone) = LOWER(:zone)";
+            $where[] = "Zone = :zone";
             $params['zone'] = $filters['zone'];
         }
-
-        // --- Text Search (Name, Email, Student ID) ---
-        if (!empty($filters['search'])) {
-            $searchValue = $filters['search'] . '%';
-            $whereConditions .= " AND (Nom LIKE :search1 OR Prenom LIKE :search2 OR NumEtu LIKE :search3 OR EmailPersonnel LIKE :search4)";
-            $params['search1'] = $searchValue;
-            $params['search2'] = $searchValue;
-            $params['search3'] = $searchValue;
-            $params['search4'] = $searchValue;
+        if (!empty($filters['complet']) && $filters['complet'] !== 'all') {
+            $where[] = "IsComplete = :complet";
+            $params['complet'] = ($filters['complet'] === '1') ? 1 : 0;
         }
 
+        $whereSql = implode(' AND ', $where);
 
-
-
-
-        // --- Get total count BEFORE pagination ---
-        $countSql = "SELECT COUNT(*) as total FROM dossiers" . $whereConditions;
-
-// 🔍 DEBUG ULTIME
-        error_log("=== DEBUG COUNT SQL ===");
-        error_log("SQL: " . $countSql);
-        error_log("Params: " . print_r($params, true));
-
-        try {
-            $countStmt = $pdo->prepare($countSql);
-            // Bind parameters for count query
-            foreach ($params as $key => $value) {
-                error_log("Binding :" . $key . " => " . $value);
-                $countStmt->bindValue(':' . $key, $value);
-            }
-            $countStmt->execute();
-            $totalCount = (int) $countStmt->fetch(\PDO::FETCH_ASSOC)['total'];
-            error_log(" Total count: " . $totalCount);
-        } catch (\PDOException $e) {
-            error_log(" Error counting folders: " . $e->getMessage());
-            $totalCount = 0;
+        // Count total
+        $countSql = "SELECT COUNT(*) FROM dossiers WHERE $whereSql";
+        $stmtCount = $pdo->prepare($countSql);
+        foreach ($params as $k => $v) {
+            $stmtCount->bindValue(":$k", $v);
         }
-        error_log("=== END DEBUG ===");
+        $stmtCount->execute();
+        $totalCount = (int)$stmtCount->fetchColumn();
 
-
-
-
-
-
-        // --- Build main query with all columns ---
-        $sql = "
-            SELECT 
-                NumEtu, Nom, Prenom, EmailPersonnel as email, Telephone,
-                Type, Zone, DateNaissance, Sexe, Adresse, CodePostal, Ville,
-                EmailAMU, CodeDepartement, IsComplete, PiecesJustificatives
-            FROM dossiers
-        " . $whereConditions;
-
-        // --- Apply sorting and pagination ---
-        $sql .= " ORDER BY Nom ASC, Prenom ASC";
-
+        // Fetch Data
         $offset = ($page - 1) * $perPage;
-        $sql .= " LIMIT :limit OFFSET :offset";
+        $sql = "SELECT * FROM dossiers WHERE $whereSql ORDER BY Nom, Prenom LIMIT :limit OFFSET :offset";
+        $stmt = $pdo->prepare($sql);
 
-        // --- Execute paginated query ---
-        try {
-            $stmt = $pdo->prepare($sql);
-
-            // Bind filter parameters
-            foreach ($params as $key => $value) {
-                $stmt->bindValue(':' . $key, $value);
-            }
-
-            // Bind pagination parameters (IMPORTANT: these are INT)
-            $stmt->bindValue(':limit', $perPage, \PDO::PARAM_INT);
-            $stmt->bindValue(':offset', $offset, \PDO::PARAM_INT);
-
-            $stmt->execute();
-            $data = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-            return [
-                'data' => $data,
-                'total' => $totalCount,
-                'totalPages' => ($totalCount > 0) ? ceil($totalCount / $perPage) : 0
-            ];
-        } catch (\PDOException $e) {
-            error_log("Error searching folders with pagination: " . $e->getMessage());
-            return ['data' => [], 'total' => 0, 'totalPages' => 0];
+        foreach ($params as $k => $v) {
+            $stmt->bindValue(":$k", $v);
         }
+        // Strict typing for Limit/Offset
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+        $stmt->execute();
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return [
+            'data' => is_array($data) ? $data : [],
+            'total' => $totalCount,
+            'totalPages' => ($totalCount > 0) ? (int)ceil($totalCount / $perPage) : 0
+        ];
     }
 }

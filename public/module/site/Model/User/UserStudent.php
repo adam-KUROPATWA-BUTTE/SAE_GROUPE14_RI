@@ -1,29 +1,26 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
-
 namespace Model\User;
 
+use PDO;
+use PDOException;
+
+/**
+ * Class UserStudent
+ *
+ * Model responsible for managing student accounts.
+ * Handles authentication, registration, folder checks, and data retrieval.
+ */
 class UserStudent
 {
     /**
-     * Student login (via student number)
+     * Authenticates a student using their student number (NumEtu).
      *
-     * Verifies credentials and sets session variables on success:
-     * - user_role
-     * - etudiant_id
-     * - etudiant_nom
-     * - etudiant_prenom
-     * - numetu
-     * - type_etudiant
-     *
-     * Updates last_connexion timestamp in the database.
-     *
-     * @param string $numetu Student number
-     * @param string $password Student password
-     * @return array ['success' => bool, 'role' => 'etudiant' if success]
+     * @param string $numetu   The student identifier.
+     * @param string $password The student password.
+     * @return array{success: bool, role?: string} Authentication result.
      */
-    public static function login($numetu, $password)
+    public static function login(string $numetu, string $password): array
     {
         try {
             $db = \Database::getInstance()->getConnection();
@@ -32,9 +29,11 @@ class UserStudent
                     FROM etudiants WHERE numetu = :numetu";
             $stmt = $db->prepare($sql);
             $stmt->execute(['numetu' => $numetu]);
-            $user = $stmt->fetch();
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($user && password_verify($password, $user['password'])) {
+            // Verify password safely (cast to string to avoid null issues)
+            if ($user && is_array($user) && password_verify($password, (string)($user['password'] ?? ''))) {
+                // Initialize Session
                 $_SESSION['user_role'] = 'etudiant';
                 $_SESSION['etudiant_id'] = $user['id'];
                 $_SESSION['etudiant_nom'] = $user['nom'];
@@ -42,7 +41,7 @@ class UserStudent
                 $_SESSION['numetu'] = $user['numetu'];
                 $_SESSION['type_etudiant'] = $user['type_etudiant'];
 
-                // Update last login timestamp
+                // Update last connection timestamp
                 $db->prepare("UPDATE etudiants SET last_connexion = NOW() WHERE id = :id")
                    ->execute(['id' => $user['id']]);
 
@@ -50,31 +49,28 @@ class UserStudent
             }
 
             return ['success' => false];
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             error_log("Student login error: " . $e->getMessage());
             return ['success' => false];
         }
     }
 
     /**
-     * Student registration (public)
+     * Registers a new student (Public registration).
      *
-     * Checks email uniqueness and validates student type ('entrant' or 'sortant').
-     * Password is hashed before storing.
-     *
-     * @param string $email Student email
-     * @param string $password Student password
-     * @param string $nom Student last name
-     * @param string $prenom Student first name
-     * @param string $typeEtudiant 'entrant' or 'sortant'
-     * @return bool True on success, false on failure
+     * @param string $email        Student email.
+     * @param string $password     Password (will be hashed).
+     * @param string $nom          Last name.
+     * @param string $prenom       First name.
+     * @param string $typeEtudiant Type ('entrant' or 'sortant').
+     * @return bool True on success, false on failure or duplicates.
      */
-    public static function register($email, $password, $nom, $prenom, $typeEtudiant)
+    public static function register(string $email, string $password, string $nom, string $prenom, string $typeEtudiant): bool
     {
         try {
             $db = \Database::getInstance()->getConnection();
 
-            // Check if email already exists in admins or students
+            // 1. Check for existing email in both admins and students tables
             $sql = "SELECT id FROM admins WHERE email = :email 
                     UNION 
                     SELECT id FROM etudiants WHERE email = :email";
@@ -82,43 +78,54 @@ class UserStudent
             $stmt->execute(['email' => $email]);
 
             if ($stmt->fetch()) {
-                return false; // Email already used
+                return false; // Email already in use
             }
 
-            // Validate student type
-            if (!in_array($typeEtudiant, ['entrant', 'sortant'])) {
+            // 2. Validate Student Type
+            if (!in_array($typeEtudiant, ['entrant', 'sortant'], true)) {
                 return false;
             }
 
+            // 3. Hash Password and Insert
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-            $sql = "INSERT INTO etudiants (email, password, nom, prenom, type_etudiant) 
-                    VALUES (:email, :password, :nom, :prenom, :type_etudiant)";
+            $sql = "INSERT INTO etudiants (email, password, nom, prenom, type_etudiant, created_at) 
+                    VALUES (:email, :password, :nom, :prenom, :type_etudiant, NOW())";
             $stmt = $db->prepare($sql);
 
-            $result = $stmt->execute([
+            return $stmt->execute([
                 'email' => $email,
                 'password' => $hashedPassword,
                 'nom' => $nom,
                 'prenom' => $prenom,
                 'type_etudiant' => $typeEtudiant
             ]);
-
-            // Do not create folder automatically; student must create it after login
-            return $result;
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             error_log("Student registration error: " . $e->getMessage());
             return false;
         }
     }
 
     /**
-     * Check if a student has a folder
+     * Initiates a password reset process.
+     * Placeholder implementation.
      *
-     * @param int $etudiantId Student ID
-     * @return bool True if folder exists, false otherwise
+     * @param string $email The email address.
+     * @return void
      */
-    public static function checkDossierExists($etudiantId)
+    public static function resetPassword(string $email): void
+    {
+        error_log("Password reset requested for Student: " . $email);
+        // TODO: Implement actual reset logic
+    }
+
+    /**
+     * Checks if a folder already exists for this student.
+     *
+     * @param int $etudiantId The internal student ID.
+     * @return bool True if folder exists.
+     */
+    public static function checkDossierExists(int $etudiantId): bool
     {
         try {
             $db = \Database::getInstance()->getConnection();
@@ -126,49 +133,53 @@ class UserStudent
             $sql = "SELECT COUNT(*) as count FROM dossiers WHERE etudiant_id = :etudiant_id";
             $stmt = $db->prepare($sql);
             $stmt->execute(['etudiant_id' => $etudiantId]);
-            $result = $stmt->fetch();
-
-            return $result['count'] > 0;
-        } catch (\PDOException $e) {
+            
+            // fetchColumn is safer for single value results
+            $count = $stmt->fetchColumn();
+            
+            return $count > 0;
+        } catch (PDOException $e) {
             error_log("checkDossierExists error: " . $e->getMessage());
             return false;
         }
     }
 
     /**
-     * Retrieve a student's folder
+     * Retrieves the student's folder data.
      *
-     * @param int $etudiantId Student ID
-     * @return array|false Folder data or false on failure
+     * @param int $etudiantId The internal student ID.
+     * @return array<string, mixed>|null Folder data or null on failure.
      */
-    public static function getDossier($etudiantId)
+    public static function getDossier(int $etudiantId): ?array
     {
         try {
             $db = \Database::getInstance()->getConnection();
 
-            $sql = "SELECT * FROM dossiers WHERE etudiant_id = :etudiant_id";
+            $sql = "SELECT * FROM dossiers WHERE etudiant_id = :etudiant_id LIMIT 1";
             $stmt = $db->prepare($sql);
             $stmt->execute(['etudiant_id' => $etudiantId]);
 
-            return $stmt->fetch();
-        } catch (\PDOException $e) {
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return is_array($result) ? $result : null;
+        } catch (PDOException $e) {
             error_log("getDossier error: " . $e->getMessage());
-            return false;
+            return null;
         }
     }
 
     /**
-     * Create a folder for a student (manually after login)
+     * Creates a new folder for the student.
+     * Fails if one already exists.
      *
-     * @param int $etudiantId Student ID
-     * @return bool True on success, false if folder exists or on error
+     * @param int $etudiantId The internal student ID.
+     * @return bool True on success.
      */
-    public static function createDossier($etudiantId)
+    public static function createDossier(int $etudiantId): bool
     {
         try {
             $db = \Database::getInstance()->getConnection();
 
-            // Check if folder already exists
+            // Prevent duplicate folders
             if (self::checkDossierExists($etudiantId)) {
                 return false;
             }
@@ -178,28 +189,28 @@ class UserStudent
             $stmt = $db->prepare($sql);
 
             return $stmt->execute(['etudiant_id' => $etudiantId]);
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             error_log("createDossier error: " . $e->getMessage());
             return false;
         }
     }
 
     /**
-     * Student logout
+     * Logs out the student.
      *
-     * Clears session data and cookies.
+     * Clears session and cookies.
      *
-     * @return bool True on success, false on failure
+     * @return bool True on success.
      */
     public static function logout(): bool
     {
         try {
-            $_SESSION = array();
+            $_SESSION = [];
 
             if (ini_get("session.use_cookies")) {
                 $params = session_get_cookie_params();
                 setcookie(
-                    session_name(),
+                    (string)session_name(), // Cast to string for strict typing
                     '',
                     time() - 42000,
                     $params["path"],
@@ -218,22 +229,25 @@ class UserStudent
     }
 
     /**
-     * Check if the logged-in user is a student
+     * Checks if the current user is logged in as a student.
      *
-     * @return bool True if student, false otherwise
+     * @return bool True if student, false otherwise.
      */
     public static function isStudent(): bool
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
         return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'etudiant';
     }
 
     /**
-     * Get student information by ID
+     * Retrieves student profile by ID.
      *
-     * @param int $id Student ID
-     * @return array|false Student data or false on failure
+     * @param int $id The internal student ID.
+     * @return array<string, mixed>|null Student profile data or null.
      */
-    public static function getById($id)
+    public static function getById(int $id): ?array
     {
         try {
             $db = \Database::getInstance()->getConnection();
@@ -244,10 +258,11 @@ class UserStudent
             $stmt = $db->prepare($sql);
             $stmt->execute(['id' => $id]);
 
-            return $stmt->fetch();
-        } catch (\PDOException $e) {
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return is_array($result) ? $result : null;
+        } catch (PDOException $e) {
             error_log("getById student error: " . $e->getMessage());
-            return false;
+            return null;
         }
     }
 }

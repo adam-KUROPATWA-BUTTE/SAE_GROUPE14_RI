@@ -1,21 +1,21 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
-
 namespace Model;
 
+/**
+ * Class Help
+ *
+ * Model responsible for providing help and support data,
+ * such as Frequently Asked Questions (FAQ).
+ */
 class Help
 {
     /**
-     * Return a list of frequently asked questions (FAQ)
+     * Retrieves the list of frequently asked questions.
      *
-     * Each FAQ item contains:
-     * - question: string The question text
-     * - answer: string The answer text, may contain HTML
-     *
-     * @return array List of FAQ items
+     * @return array<int, array{question: string, answer: string}> List of FAQ items.
      */
-    public static function getFaq()
+    public static function getFaq(): array
     {
         return [
             [
