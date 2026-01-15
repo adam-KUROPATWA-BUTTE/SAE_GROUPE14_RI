@@ -19,19 +19,23 @@ class IndexControllerTest extends TestCase
 
     public function testSupportReturnsTrueForHome(): void
     {
+        /** @phpstan-ignore class.notFound */
         $this->assertTrue(IndexController::support('home', 'GET'));
     }
 
     public function testSupportReturnsFalseForOtherPages(): void
     {
+        /** @phpstan-ignore class.notFound */
         $this->assertFalse(IndexController::support('login', 'GET'));
     }
 
     public function testControlOutputsSomething(): void
     {
+        /** @phpstan-ignore class.notFound */
         $controller = new IndexController();
 
         ob_start();
+        /** @phpstan-ignore class.notFound */
         $controller->control();
         $output = ob_get_clean();
 

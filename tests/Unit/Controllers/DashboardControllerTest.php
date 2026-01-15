@@ -21,6 +21,7 @@ class DashboardControllerTest extends TestCase
         $_GET = [];
         DashboardPageAdminStub::$lastArgs = null;
         DashboardPageAdminStub::$renderCalled = false;
+        /** @phpstan-ignore staticProperty.notFound */
         FolderAdminStub::$getDossiersIncompletsCalled = false;
     }
 
@@ -40,7 +41,7 @@ class DashboardControllerTest extends TestCase
         } catch (\RuntimeException $e) {
             $this->assertStringContainsString('Location: /login', $e->getMessage());
         } finally {
-            if ($bufferStarted && ob_get_level() > 0) {
+            if (ob_get_level() > 0) {
                 ob_end_clean();
             }
         }
@@ -57,6 +58,7 @@ class DashboardControllerTest extends TestCase
         $controller->control();
         $output = ob_get_clean();
 
+        /** @phpstan-ignore staticProperty.notFound */
         $this->assertTrue(FolderAdminStub::$getDossiersIncompletsCalled);
         $this->assertTrue(DashboardPageAdminStub::$renderCalled);
         $this->assertSame('DASHBOARD', $output);

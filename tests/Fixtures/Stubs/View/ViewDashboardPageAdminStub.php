@@ -4,10 +4,14 @@ namespace View\Dashboard;
 
 class DashboardPageAdmin
 {
-    public static $lastArgs = null;
-    public static $renderCalled = false;
+    /** @var array<int, mixed>|null */
+    public static ?array $lastArgs = null;
+    public static bool $renderCalled = false;
 
-    public function __construct($dossiers, $lang)
+    /**
+     * @param array<int, mixed> $dossiers
+     */
+    public function __construct(array $dossiers, string $lang)
     {
         self::$lastArgs = [$dossiers, $lang];
     }

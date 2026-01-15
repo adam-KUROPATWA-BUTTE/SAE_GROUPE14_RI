@@ -58,7 +58,7 @@ class AuthControllerTest extends TestCase
         } catch (\RuntimeException $e) {
             // expected redirect via header stub
         } finally {
-            if ($bufferStarted && ob_get_level() > 0) {
+            if (ob_get_level() > 0) {
                 ob_end_clean();
             }
         }

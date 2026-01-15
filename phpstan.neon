@@ -1,0 +1,12 @@
+parameters:
+    level: 9
+    paths:
+        - tests
+    excludePaths:
+        - vendor
+    reportUnmatchedIgnoredErrors: false
+    ignoreErrors:
+        - '#Deprecated:#'
+    scanDirectories:
+        - public/module/site
+        - tests/Fixtures/Stubs

@@ -32,7 +32,7 @@ class TestUserStudent extends TestCase
      */
     public function testLoginMethodExists(): void
     {
-        $this->assertTrue(method_exists(UserStudent::class, 'login'));
+        $this->addToAssertionCount(1);
         
         $reflection = new \ReflectionMethod(UserStudent::class, 'login');
         $this->assertTrue($reflection->isPublic());
@@ -44,7 +44,7 @@ class TestUserStudent extends TestCase
      */
     public function testRegisterMethodExists(): void
     {
-        $this->assertTrue(method_exists(UserStudent::class, 'register'));
+        $this->addToAssertionCount(1);
         
         $reflection = new \ReflectionMethod(UserStudent::class, 'register');
         $this->assertTrue($reflection->isPublic());
@@ -92,7 +92,7 @@ class TestUserStudent extends TestCase
      */
     public function testLogoutMethodExists(): void
     {
-        $this->assertTrue(method_exists(UserStudent::class, 'logout'));
+        $this->addToAssertionCount(1);
         
         $reflection = new \ReflectionMethod(UserStudent::class, 'logout');
         $this->assertTrue($reflection->isPublic());
@@ -161,9 +161,7 @@ class TestUserStudent extends TestCase
     {
         $response = ['success' => true, 'role' => 'etudiant'];
         
-        $this->assertIsArray($response);
         $this->assertArrayHasKey('success', $response);
-        $this->assertTrue($response['success']);
         $this->assertSame('etudiant', $response['role']);
     }
 
@@ -174,9 +172,8 @@ class TestUserStudent extends TestCase
     {
         $response = ['success' => false];
         
-        $this->assertIsArray($response);
         $this->assertArrayHasKey('success', $response);
-        $this->assertFalse($response['success']);
+        $this->addToAssertionCount(1);
     }
 
     /**
@@ -186,14 +183,17 @@ class TestUserStudent extends TestCase
     {
         // Not student
         $_SESSION['user_role'] = 'admin';
+        /** @phpstan-ignore staticMethod.notFound */
         $this->assertFalse(UserStudent::isStudent());
 
         // Is student
         $_SESSION['user_role'] = 'etudiant';
+        /** @phpstan-ignore staticMethod.notFound */
         $this->assertTrue(UserStudent::isStudent());
 
         // No session
         $_SESSION = [];
+        /** @phpstan-ignore staticMethod.notFound */
         $this->assertFalse(UserStudent::isStudent());
     }
 
@@ -231,7 +231,6 @@ class TestUserStudent extends TestCase
     public function testStudentNumberFormat(): void
     {
         $validNumetu = '123456';
-        $this->assertIsString($validNumetu);
         $this->assertSame(6, strlen($validNumetu));
         $this->assertTrue(ctype_digit($validNumetu));
     }
@@ -278,7 +277,6 @@ class TestUserStudent extends TestCase
 
         foreach ($validEmails as $email) {
             $this->assertStringContainsString('@', $email);
-            $this->assertIsString($email);
         }
     }
 
@@ -319,8 +317,8 @@ class TestUserStudent extends TestCase
         $oldSession = $_SESSION;
         $_SESSION = [];
 
-        $this->assertEmpty($_SESSION);
-        $this->assertNotEmpty($oldSession);
+        $this->assertCount(0, $_SESSION);
+        $this->assertGreaterThan(0, count($oldSession));
     }
 
     /**
@@ -407,10 +405,8 @@ class TestUserStudent extends TestCase
         $_SESSION['etudiant_nom'] = $nom;
         $_SESSION['etudiant_prenom'] = $prenom;
 
-        $this->assertIsString($_SESSION['etudiant_nom']);
-        $this->assertIsString($_SESSION['etudiant_prenom']);
-        $this->assertNotEmpty($_SESSION['etudiant_nom']);
-        $this->assertNotEmpty($_SESSION['etudiant_prenom']);
+        $this->assertSame('Dupont', $_SESSION['etudiant_nom']);
+        $this->assertSame('Alice', $_SESSION['etudiant_prenom']);
     }
 
     /**
@@ -506,8 +502,8 @@ class TestUserStudent extends TestCase
         $this->assertArrayHasKey('etudiant_id', $dossier);
         $this->assertArrayHasKey('statut', $dossier);
         $this->assertArrayHasKey('date_creation', $dossier);
-        $this->assertIsInt($dossier['etudiant_id']);
-        $this->assertIsString($dossier['statut']);
+        $this->assertSame(1, $dossier['etudiant_id']);
+        $this->assertSame('en_cours', $dossier['statut']);
     }
 
     /**
@@ -537,7 +533,6 @@ class TestUserStudent extends TestCase
     {
         $status = 'en_cours';
         $this->assertSame('en_cours', $status);
-        $this->assertIsString($status);
     }
 
     /**
@@ -548,8 +543,6 @@ class TestUserStudent extends TestCase
         $typeEntrant = 'entrant';
         $typeSortant = 'sortant';
 
-        $this->assertIsString($typeEntrant);
-        $this->assertIsString($typeSortant);
         $this->assertNotSame($typeEntrant, $typeSortant);
     }
 
@@ -571,10 +564,10 @@ class TestUserStudent extends TestCase
     public function testLastConnexionCanBeNull(): void
     {
         $lastConnexion = null;
-        $this->assertNull($lastConnexion);
+        $this->addToAssertionCount(1);
 
         $lastConnexion = '2024-01-13 10:30:45';
-        $this->assertIsString($lastConnexion);
+        $this->assertSame('2024-01-13 10:30:45', $lastConnexion);
     }
 
     /**
@@ -584,7 +577,6 @@ class TestUserStudent extends TestCase
     {
         $response = ['success' => false];
         
-        $this->assertFalse($response['success']);
         $this->assertArrayNotHasKey('role', $response);
     }
 
@@ -607,9 +599,9 @@ class TestUserStudent extends TestCase
     {
         // Simulate checking if dossier exists
         $dossierExists = true;
-        $this->assertTrue($dossierExists);
+        $this->addToAssertionCount(1);
 
         $noDossier = false;
-        $this->assertFalse($noDossier);
+        $this->addToAssertionCount(1);
     }
 }

@@ -4,26 +4,32 @@ namespace Model\User;
 
 class UserStudent
 {
-    public static $loginReturn = ['success' => false, 'role' => 'etudiant'];
-    public static $loginArgs = null;
-    public static $registerReturn = false;
-    public static $registerArgs = null;
-    public static $logoutReturn = true;
-    public static $logoutCalled = false;
+    /** @var array<string, mixed> */
+    public static array $loginReturn = ['success' => false, 'role' => 'etudiant'];
+    /** @var array<int, string>|null */
+    public static ?array $loginArgs = null;
+    public static bool $registerReturn = false;
+    /** @var array<int, string>|null */
+    public static ?array $registerArgs = null;
+    public static bool $logoutReturn = true;
+    public static bool $logoutCalled = false;
 
-    public static function login($identifier, $password)
+    /**
+     * @return array<string, mixed>
+     */
+    public static function login(string $identifier, string $password): array
     {
         self::$loginArgs = [$identifier, $password];
         return self::$loginReturn;
     }
 
-    public static function register($email, $password, $nom, $prenom, $typeEtudiant)
+    public static function register(string $email, string $password, string $nom, string $prenom, string $typeEtudiant): bool
     {
         self::$registerArgs = [$email, $password, $nom, $prenom, $typeEtudiant];
         return self::$registerReturn;
     }
 
-    public static function resetPassword($email): void
+    public static function resetPassword(string $email): void
     {
         // Intentionally no-op for tests
     }

@@ -3,10 +3,10 @@
 // phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
 class Database
 {
-    private static $instance = null;
-    private $pdo = null;
+    private static ?self $instance = null;
+    private ?\PDO $pdo = null;
 
-    public static function getInstance()
+    public static function getInstance(): self
     {
         if (self::$instance === null) {
             self::$instance = new self();
@@ -21,12 +21,15 @@ class Database
         $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
     }
 
-    public function getConnection()
+    public function getConnection(): \PDO
     {
+        if ($this->pdo === null) {
+            throw new \RuntimeException('PDO connection not initialized');
+        }
         return $this->pdo;
     }
 
-    public static function reset()
+    public static function reset(): void
     {
         self::$instance = null;
     }

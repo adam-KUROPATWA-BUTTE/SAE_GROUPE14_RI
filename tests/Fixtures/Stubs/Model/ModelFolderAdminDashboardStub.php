@@ -4,9 +4,12 @@ namespace Model\Folder;
 
 class FolderAdmin
 {
-    public static $getDossiersIncompletsCalled = false;
+    public static bool $getDossiersIncompletsCalled = false;
 
-    public static function getDossiersIncomplets()
+    /**
+     * @return array<int, mixed>
+     */
+    public static function getDossiersIncomplets(): array
     {
         self::$getDossiersIncompletsCalled = true;
         return [];

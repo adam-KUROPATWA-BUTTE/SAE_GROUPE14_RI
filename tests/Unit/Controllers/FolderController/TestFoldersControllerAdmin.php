@@ -162,12 +162,13 @@ class TestFoldersControllerAdmin extends TestCase
 		} catch (\RuntimeException $e) {
 			// Expected: header() stub throws to avoid real exit/redirect
 		} finally {
-			if ($bufferStarted && ob_get_level() > 0) {
+			if (ob_get_level() > 0) {
 				ob_end_clean();
 			}
 		}
 
 		$this->assertNotEmpty($_SESSION['message']);
+		$this->assertIsString($_SESSION['message']);
 		$this->assertStringContainsString('requis', $_SESSION['message']);
 	}
     

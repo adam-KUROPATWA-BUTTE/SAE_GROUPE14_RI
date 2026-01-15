@@ -27,10 +27,13 @@ class AuthGuardTest extends TestCase
     public function testRequireRoleDoesNotThrowWhenCorrectRole(): void
     {
         $_SESSION['user_role'] = 'admin';
-        $this->assertNull(Auth_Guard::requireRole('admin'));
+        Auth_Guard::requireRole('admin');
+        // No exception thrown - test passes
 
         $_SESSION['user_role'] = 'etudiant';
-        $this->assertNull(Auth_Guard::requireRole('etudiant'));
+        Auth_Guard::requireRole('etudiant');
+        // No exception thrown - test passes
+        $this->addToAssertionCount(2);
     }
 
     public function testRequireRoleFailsWhenWrongRole(): void

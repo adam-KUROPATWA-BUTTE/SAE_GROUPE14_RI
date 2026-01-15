@@ -4,9 +4,10 @@ namespace View;
 
 class HomePage
 {
-    public static $lastArgs = null;
+    /** @var array<int, mixed>|null */
+    public static ?array $lastArgs = null;
 
-    public function __construct($isLoggedIn, $lang, $completion)
+    public function __construct(bool $isLoggedIn, string $lang, int|float $completion)
     {
         self::$lastArgs = [$isLoggedIn, $lang, $completion];
     }

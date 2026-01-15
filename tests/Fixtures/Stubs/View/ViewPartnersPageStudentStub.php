@@ -4,6 +4,7 @@ namespace View\Partners;
 
 class PartnersPageStudent
 {
+    /** @var array<int, mixed> */
     public static array $lastArgs = [];
 
     public function __construct(string $titre, string $lang)

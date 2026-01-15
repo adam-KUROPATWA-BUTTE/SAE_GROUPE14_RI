@@ -51,6 +51,7 @@ class EmailReminderServiceTest extends TestCase
         $result = $method->invoke(null, $dossierId, $studentName, $itemsToComplete);
 
         // Vérifier que le script est échappé
+        $this->assertIsString($result);
         $this->assertStringNotContainsString('<script>', $result);
         $this->assertStringContainsString('&lt;script&gt;', $result);
         
@@ -74,6 +75,7 @@ class EmailReminderServiceTest extends TestCase
         $result = $method->invoke(null, $dossierId, $studentName, $itemsToComplete);
 
         // Vérifier les éléments essentiels
+        $this->assertIsString($result);
         $this->assertStringContainsString('Test Student', $result);
         $this->assertStringContainsString('999', $result);
         $this->assertStringContainsString('Document 1', $result);
@@ -98,6 +100,7 @@ class EmailReminderServiceTest extends TestCase
         $result = $method->invoke(null, $dossierId, $studentName, $itemsToComplete);
 
         // Vérifier qu'il y a un message par défaut
+        $this->assertIsString($result);
         $this->assertStringContainsString('compléter les pièces manquantes', $result);
         
         // Vérifier qu'il n'y a pas de liste <ul>
@@ -140,6 +143,7 @@ class EmailReminderServiceTest extends TestCase
         $result = $method->invoke(null, $dossierId, $studentName, $itemsToComplete);
 
         // Vérifier que les caractères spéciaux dans l'URL sont encodés
+        $this->assertIsString($result);
         $this->assertStringContainsString('id=123%26test%3Dvalue', $result);
     }
 
@@ -154,6 +158,7 @@ class EmailReminderServiceTest extends TestCase
 
         $result = $method->invoke(null, 1, 'Test', []);
 
+        $this->assertIsString($result);
         $this->assertStringContainsString('<meta charset="utf-8">', $result);
         $this->assertStringContainsString('lang="fr"', $result);
     }
@@ -174,6 +179,7 @@ class EmailReminderServiceTest extends TestCase
         $result = $method->invoke(null, $dossierId, $studentName, $itemsToComplete);
 
         // Vérifier que les caractères accentués sont préservés
+        $this->assertIsString($result);
         $this->assertStringContainsString('François Müller', $result);
         $this->assertStringContainsString('Pièce d', $result);
     }
