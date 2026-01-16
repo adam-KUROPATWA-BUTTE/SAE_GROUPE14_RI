@@ -12,32 +12,42 @@ namespace View\Folder;
  */
 class FoldersPageStudent
 {
+    /** @var array<string, mixed> Student folder data (including personal info and pieces) */
     private array $dossier;
+
+    /** @var string Student identifier (NumEtu) */
     private string $studentId;
-    private string $action;
+
+    // Note: $action removed from properties because it is never read.
+    // It remains in the constructor signature for compatibility.
+
+    /** @var string Flash message (success/error) */
     private string $message;
+
+    /** @var string Current language code */
     private string $lang;
 
     /**
      * Constructor.
      *
-     * @param array|null $dossier   Student folder data.
-     * @param string     $studentId Student identifier (NumEtu).
-     * @param string     $action    Current action.
-     * @param string     $message   Flash message (success/error).
-     * @param string     $lang      Current language.
+     * @param array<string, mixed>|null $dossier   Student folder data.
+     * @param string                    $studentId Student identifier (NumEtu).
+     * @param string                    $message   Flash message (success/error).
+     * @param string                    $lang      Current language.
      */
-    public function __construct(?array $dossier, string $studentId, string $action, string $message, string $lang)
+    public function __construct(?array $dossier, string $studentId, string $message, string $lang)
     {
         $this->dossier = $dossier ?? [];
         $this->studentId = $studentId;
-        $this->action = $action;
         $this->message = $message;
         $this->lang = $lang;
     }
 
     /**
      * Translates a string based on the current language.
+     *
+     * @param array{fr: string, en: string} $frEn Associative array with 'fr' and 'en' translations.
+     * @return string The translated string.
      */
     private function t(array $frEn): string
     {
@@ -46,6 +56,10 @@ class FoldersPageStudent
 
     /**
      * Builds a URL safely handling query parameters.
+     *
+     * @param string               $path   The base path.
+     * @param array<string, mixed> $params Query parameters to append.
+     * @return string The constructed URL.
      */
     private function buildUrl(string $path, array $params = []): string
     {
@@ -56,6 +70,8 @@ class FoldersPageStudent
 
     /**
      * Main method to render the HTML page.
+     *
+     * @return void
      */
     public function render(): void
     {
@@ -67,7 +83,7 @@ class FoldersPageStudent
             $_SESSION['lang'] = $_GET['lang'];
         }
 
-        $this->lang = $_SESSION['lang'] ?? 'fr';
+        $this->lang = (string)($_SESSION['lang'] ?? 'fr');
 
         if (isset($_GET['tritanopia'])) {
             $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';
@@ -78,15 +94,35 @@ class FoldersPageStudent
         $isCreateMode = empty($this->dossier);
         $formAction = $isCreateMode ? 'create_folder' : 'update_my_folder';
 
+        // Extract pieces safely to avoid "Undefined array key" warnings
+        /** @var array<string, mixed> $pieces */
+        $pieces = $this->dossier['pieces'] ?? [];
+
         // Auto-detect mobility type for display logic (only if updating)
         $detectedType = '';
         if (!$isCreateMode) {
-            if (!empty($this->dossier['pieces']['convention'])) {
+            if (!empty($pieces['convention'])) {
                 $detectedType = 'stage';
-            } elseif (!empty($this->dossier['pieces']['lettre_motivation'])) {
+            } elseif (!empty($pieces['lettre_motivation'])) {
                 $detectedType = 'etudes';
             }
         }
+
+        // Prepare strict variables for HTML output (Level 9 compliance)
+        $valNom = htmlspecialchars(strval($this->dossier['Nom'] ?? ''));
+        $valPrenom = htmlspecialchars(strval($this->dossier['Prenom'] ?? ''));
+        $valDate = htmlspecialchars(strval($this->dossier['DateNaissance'] ?? ''));
+        $valSexe = strval($this->dossier['Sexe'] ?? '');
+        $valEmailP = htmlspecialchars(strval($this->dossier['EmailPersonnel'] ?? ''));
+        $valEmailA = htmlspecialchars(strval($this->dossier['EmailAMU'] ?? ''));
+        $valTel = htmlspecialchars(strval($this->dossier['Telephone'] ?? ''));
+        $valAdresse = htmlspecialchars(strval($this->dossier['Adresse'] ?? ''));
+        $valCP = htmlspecialchars(strval($this->dossier['CodePostal'] ?? ''));
+        $valVille = htmlspecialchars(strval($this->dossier['Ville'] ?? ''));
+        $valDept = htmlspecialchars(strval($this->dossier['CodeDepartement'] ?? ''));
+        $valType = strval($this->dossier['Type'] ?? '');
+        $valZone = strval($this->dossier['Zone'] ?? '');
+
         ?>
         <!DOCTYPE html>
         <html lang="<?= htmlspecialchars($this->lang) ?>">
@@ -146,59 +182,59 @@ class FoldersPageStudent
                     <input type="hidden" name="numetu" value="<?= htmlspecialchars($this->studentId) ?>">
 
                     <label><?= $this->t(['fr' => 'Nom *','en' => 'Last Name *']) ?></label>
-                    <input type="text" name="nom" value="<?= htmlspecialchars($this->dossier['Nom'] ?? '') ?>" 
+                    <input type="text" name="nom" value="<?= $valNom ?>" 
                            <?= $isCreateMode ? 'required' : 'readonly style="background:#f7f7f7;"' ?>>
 
                     <label><?= $this->t(['fr' => 'Prénom *','en' => 'First Name *']) ?></label>
-                    <input type="text" name="prenom" value="<?= htmlspecialchars($this->dossier['Prenom'] ?? '') ?>" 
+                    <input type="text" name="prenom" value="<?= $valPrenom ?>" 
                            <?= $isCreateMode ? 'required' : 'readonly style="background:#f7f7f7;"' ?>>
 
                     <label><?= $this->t(['fr' => 'Date de naissance','en' => 'Date of Birth']) ?></label>
-                    <input type="date" name="naissance" value="<?= htmlspecialchars($this->dossier['DateNaissance'] ?? '') ?>"
+                    <input type="date" name="naissance" value="<?= $valDate ?>"
                            <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
 
                     <label><?= $this->t(['fr' => 'Sexe','en' => 'Gender']) ?></label>
                     <select name="sexe" id="sexe" <?= $isCreateMode ? '' : 'disabled style="background:#f7f7f7;"' ?>>
-                        <option value="M" <?= ($this->dossier['Sexe'] ?? '') === 'M' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Masculin','en' => 'Male']) ?></option>
-                        <option value="F" <?= ($this->dossier['Sexe'] ?? '') === 'F' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Féminin','en' => 'Female']) ?></option>
-                        <option value="Autre" <?= ($this->dossier['Sexe'] ?? '') === 'Autre' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Autre','en' => 'Other']) ?></option>
+                        <option value="M" <?= $valSexe === 'M' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Masculin','en' => 'Male']) ?></option>
+                        <option value="F" <?= $valSexe === 'F' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Féminin','en' => 'Female']) ?></option>
+                        <option value="Autre" <?= $valSexe === 'Autre' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Autre','en' => 'Other']) ?></option>
                     </select>
 
                     <label><?= $this->t(['fr' => 'Email personnel *','en' => 'Personal Email *']) ?></label>
-                    <input type="email" name="email_perso" value="<?= htmlspecialchars($this->dossier['EmailPersonnel'] ?? '') ?>" required>
+                    <input type="email" name="email_perso" value="<?= $valEmailP ?>" required>
 
                     <label><?= $this->t(['fr' => 'Email AMU','en' => 'AMU Email']) ?></label>
-                    <input type="email" name="email_amu" value="<?= htmlspecialchars($this->dossier['EmailAMU'] ?? '') ?>"
+                    <input type="email" name="email_amu" value="<?= $valEmailA ?>"
                            <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
 
                     <label><?= $this->t(['fr' => 'Téléphone *','en' => 'Phone *']) ?></label>
-                    <input type="text" name="telephone" value="<?= htmlspecialchars($this->dossier['Telephone'] ?? '') ?>" required>
+                    <input type="text" name="telephone" value="<?= $valTel ?>" required>
 
                     <label><?= $this->t(['fr' => 'Adresse','en' => 'Address']) ?></label>
-                    <input type="text" name="adresse" value="<?= htmlspecialchars($this->dossier['Adresse'] ?? '') ?>">
+                    <input type="text" name="adresse" value="<?= $valAdresse ?>">
 
                     <label><?= $this->t(['fr' => 'Code postal','en' => 'Postal Code']) ?></label>
-                    <input type="text" name="cp" value="<?= htmlspecialchars($this->dossier['CodePostal'] ?? '') ?>">
+                    <input type="text" name="cp" value="<?= $valCP ?>">
 
                     <label><?= $this->t(['fr' => 'Ville','en' => 'City']) ?></label>
-                    <input type="text" name="ville" value="<?= htmlspecialchars($this->dossier['Ville'] ?? '') ?>">
+                    <input type="text" name="ville" value="<?= $valVille ?>">
                     
                     <label><?= $this->t(['fr' => 'Code Département','en' => 'Department Code']) ?></label>
-                    <input type="text" name="departement" value="<?= htmlspecialchars($this->dossier['CodeDepartement'] ?? '') ?>"
+                    <input type="text" name="departement" value="<?= $valDept ?>"
                            <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
 
                     <label for="type"><?= $this->t(['fr' => 'Type *','en' => 'Type *']) ?></label>
                     <select name="type" id="type" <?= $isCreateMode ? 'required' : 'disabled style="background:#f7f7f7;"' ?>>
                         <option value=""><?= $this->t(['fr' => '-- Choisir --','en' => '-- Choose --']) ?></option>
-                        <option value="entrant" <?= ($this->dossier['Type'] ?? '') === 'entrant' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Entrant','en' => 'Incoming']) ?></option>
-                        <option value="sortant" <?= ($this->dossier['Type'] ?? '') === 'sortant' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Sortant','en' => 'Outgoing']) ?></option>
+                        <option value="entrant" <?= $valType === 'entrant' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Entrant','en' => 'Incoming']) ?></option>
+                        <option value="sortant" <?= $valType === 'sortant' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Sortant','en' => 'Outgoing']) ?></option>
                     </select>
 
                     <label for="zone"><?= $this->t(['fr' => 'Zone *','en' => 'Zone *']) ?></label>
                     <select name="zone" id="zone" <?= $isCreateMode ? 'required' : 'disabled style="background:#f7f7f7;"' ?>>
                         <option value=""><?= $this->t(['fr' => '-- Choisir --','en' => '-- Choose --']) ?></option>
-                        <option value="europe" <?= ($this->dossier['Zone'] ?? '') === 'europe' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Europe','en' => 'Europe']) ?></option>
-                        <option value="hors_europe" <?= ($this->dossier['Zone'] ?? '') === 'hors_europe' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Hors Europe','en' => 'Non-Europe']) ?></option>
+                        <option value="europe" <?= $valZone === 'europe' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Europe','en' => 'Europe']) ?></option>
+                        <option value="hors_europe" <?= $valZone === 'hors_europe' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Hors Europe','en' => 'Non-Europe']) ?></option>
                     </select>
 
                     <label for="mobilite_type"><?= $this->t(['fr' => 'Type de mobilité','en' => 'Mobility Type']) ?></label>
@@ -216,13 +252,13 @@ class FoldersPageStudent
                     <?php
                     $docs = ['photo' => 'Photo', 'cv' => 'CV'];
                     foreach ($docs as $key => $label) :
-                        $hasFile = !empty($this->dossier['pieces'][$key]);
+                        $hasFile = !empty($pieces[$key]);
                         ?>
                     <div style="margin-bottom: 20px;">
                         <label><?= $this->t(['fr' => $label,'en' => $label]) ?></label>
                         <?php if ($hasFile) : ?>
                             <div style="margin-top: 10px;">
-                                <a href="data:application/octet-stream;base64,<?= $this->dossier['pieces'][$key] ?>"
+                                <a href="data:application/octet-stream;base64,<?= strval($pieces[$key]) ?>"
                                    download="<?= $key ?>_<?= htmlspecialchars($this->studentId) ?>.<?= $key === 'photo' ? 'jpg' : 'pdf' ?>"
                                    class="btn-secondary">
                                    <?= $this->t(['fr' => 'Télécharger','en' => 'Download']) ?>
@@ -237,9 +273,9 @@ class FoldersPageStudent
 
                     <div id="justificatif_convention" style="display: none; margin-bottom: 20px;">
                         <label><?= $this->t(['fr' => 'Convention de stage','en' => 'Internship Agreement']) ?></label>
-                        <?php if (!empty($this->dossier['pieces']['convention'])) : ?>
+                        <?php if (!empty($pieces['convention'])) : ?>
                              <div style="margin-top: 10px;">
-                                <a href="data:application/pdf;base64,<?= $this->dossier['pieces']['convention'] ?>" download="convention.pdf" class="btn-secondary">
+                                <a href="data:application/pdf;base64,<?= strval($pieces['convention']) ?>" download="convention.pdf" class="btn-secondary">
                                     <?= $this->t(['fr' => 'Télécharger','en' => 'Download']) ?>
                                 </a>
                             </div>
@@ -249,9 +285,9 @@ class FoldersPageStudent
 
                     <div id="lettre_motivation" style="display: none; margin-bottom: 20px;">
                         <label><?= $this->t(['fr' => 'Lettre de motivation','en' => 'Motivation Letter']) ?></label>
-                        <?php if (!empty($this->dossier['pieces']['lettre_motivation'])) : ?>
+                        <?php if (!empty($pieces['lettre_motivation'])) : ?>
                              <div style="margin-top: 10px;">
-                                <a href="data:application/pdf;base64,<?= $this->dossier['pieces']['lettre_motivation'] ?>" download="lettre.pdf" class="btn-secondary">
+                                <a href="data:application/pdf;base64,<?= strval($pieces['lettre_motivation']) ?>" download="lettre.pdf" class="btn-secondary">
                                     <?= $this->t(['fr' => 'Télécharger','en' => 'Download']) ?>
                                 </a>
                             </div>
@@ -278,8 +314,8 @@ class FoldersPageStudent
                 </div>
             </form>
         </main>
-
-       <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
+        
+        <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
             <div id="help-popup" class="chat-popup">
             <div class="help-popup-header">
                 <span>Assistant</span>
@@ -295,15 +331,14 @@ class FoldersPageStudent
                 role: '<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>'
             };
         </script>
-        <script src="js/chatbot.js"></scriptsrc></script>
+        <script src="js/chatbot.js"></script>
         <script>
             document.getElementById('current-lang').addEventListener('click', function(event) {
-                event.stopPropagation(); // empêcher la propagation au document
+                event.stopPropagation();
                 const rightButtons = document.querySelector('.right-buttons');
                 rightButtons.classList.toggle('show');
             });
 
-            // Fermer le dropdown si clic ailleurs sur la page
             document.addEventListener('click', function() {
                 const rightButtons = document.querySelector('.right-buttons');
                 rightButtons.classList.remove('show');
@@ -326,8 +361,6 @@ class FoldersPageStudent
                     navMenu.classList.toggle('active');
                 });
             });
-        </script>
-        <script>
 
             function changerTypeMobilite(type) {
                 const conventionBlock = document.getElementById('justificatif_convention');

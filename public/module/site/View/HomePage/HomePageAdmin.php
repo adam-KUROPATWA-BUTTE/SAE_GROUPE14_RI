@@ -39,7 +39,7 @@ class HomePageAdmin
     /**
      * Returns the translated string based on the current language.
      *
-     * @param array $frEn ['fr' => '...', 'en' => '...']
+     * @param array{fr: string, en: string} $frEn ['fr' => '...', 'en' => '...']
      * @return string
      */
     private function t(array $frEn): string
@@ -50,8 +50,8 @@ class HomePageAdmin
     /**
      * Builds a URL while preserving the current language.
      *
-     * @param string $path   Base path
-     * @param array  $params Additional query parameters
+     * @param string               $path   Base path
+     * @param array<string, mixed> $params Additional query parameters
      * @return string
      */
     private function buildUrl(string $path, array $params = []): string
@@ -67,7 +67,7 @@ class HomePageAdmin
      */
     public function render(): void
     {
-        // Donut chart calculations
+        // Donut chart calculations (typed as float/int implicitly)
         $radius = 130;
         $circumference = 2 * pi() * $radius;
         $dashArray = ($this->completionPercentage / 100) * $circumference;
@@ -76,16 +76,25 @@ class HomePageAdmin
             session_start();
         }
 
-        if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en'], true)) {
-            $_SESSION['lang'] = $_GET['lang'];
+        // Correction Level 9: Strict handling of $_GET mixed types
+        if (isset($_GET['lang'])) {
+            $langParam = strval($_GET['lang']);
+            if (in_array($langParam, ['fr', 'en'], true)) {
+                $_SESSION['lang'] = $langParam;
+            }
         }
 
-        $this->lang = $_SESSION['lang'] ?? 'fr';
+        // Correction Level 9: Strict assignment from mixed $_SESSION
+        $this->lang = isset($_SESSION['lang']) ? strval($_SESSION['lang']) : 'fr';
 
         // Handle tritanopia (color blindness) mode
         if (isset($_GET['tritanopia'])) {
-            $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';
+            $tritaParam = strval($_GET['tritanopia']);
+            $_SESSION['tritanopia'] = ($tritaParam === '1');
         }
+
+        // Prepare strict boolean for view to avoid mixed access in template
+        $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
         ?>
         <!DOCTYPE html>
         <html lang="<?= htmlspecialchars($this->lang) ?>">
@@ -109,14 +118,12 @@ class HomePageAdmin
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
 
-        <body class="<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'tritanopie' : '' ?>">
-        <!-- HEADER -->
+        <body class="<?= $isTritanopia ? 'tritanopie' : '' ?>">
         <header>
             <div class="top-bar">
                 <img class="logo_amu" src="img/logo.png" alt="AMU Logo">
 
                 <div class="right-buttons">
-                    <!-- Language selector -->
                     <div class="lang-dropdown">
                         <button class="dropbtn"><?= htmlspecialchars($this->lang) ?></button>
                         <div class="dropdown-content">
@@ -125,7 +132,6 @@ class HomePageAdmin
                         </div>
                     </div>
 
-                    <!-- Login / Logout -->
                     <?php if ($this->isLoggedIn) : ?>
                         <button onclick="window.location.href='<?= $this->buildUrl('/logout') ?>'">
                             <?= $this->t(['fr' => 'Se déconnecter','en' => 'Log out']) ?>
@@ -136,14 +142,12 @@ class HomePageAdmin
                         </button>
                     <?php endif; ?>
 
-                    <!-- Tritanopia toggle -->
                     <button id="theme-toggle" title="Enable tritanopia accessibility mode">
                         <span class="toggle-switch"></span>
                     </button>
                 </div>
             </div>
 
-            <!-- Navigation menu -->
             <nav class="menu">
                 <button class="active" onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Accueil','en' => 'Home']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'"><?= $this->t(['fr' => 'Tableau de bord','en' => 'Dashboard']) ?></button>
@@ -153,15 +157,13 @@ class HomePageAdmin
             </nav>
         </header>
 
-        <!-- HERO SECTION -->
         <section class="hero-section">
             <img class="hero_logo" src="img/amu.png" alt="AMU Logo">
         </section>
 
-        <!-- PROMOTIONAL SECTION -->
         <section class="pub-section">
             <img id="pub_amu"
-                 src="<?= (!empty($_SESSION['tritanopia']) && $_SESSION['tritanopia']) ? 'img/etudiants_daltoniens.png' : 'img/image_etudiants.png' ?>"
+                 src="<?= $isTritanopia ? 'img/etudiants_daltoniens.png' : 'img/image_etudiants.png' ?>"
                  alt="AMU Promotion">
             <div class="pub-text">
                 <?= $this->t([
@@ -171,7 +173,6 @@ class HomePageAdmin
             </div>
         </section>
 
-        <!-- MAIN CONTENT -->
         <main>
             <div class="dashboard-container">
                 <div class="card">
@@ -193,7 +194,7 @@ class HomePageAdmin
                             </svg>
 
                             <div class="chart-center">
-                                <div class="chart-percentage"><?= round($this->completionPercentage) ?>%</div>
+                                <div class="chart-percentage"><?= (int)round($this->completionPercentage) ?>%</div>
                                 <div class="chart-label"><?= $this->t(['fr' => 'Complet','en' => 'Complete']) ?></div>
                             </div>
                         </div>
@@ -202,7 +203,6 @@ class HomePageAdmin
             </div>
         </main>
 
-        <!-- Chatbot -->
         <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
 
         <div id="help-popup" class="chat-popup">
@@ -214,7 +214,6 @@ class HomePageAdmin
             <div id="quick-actions" class="quick-actions"></div>
         </div>
 
-        <!-- Chatbot configuration -->
         <script>
             const CHAT_CONFIG = {
                 lang: '<?= $this->lang ?>',
@@ -224,7 +223,6 @@ class HomePageAdmin
 
         <script src="js/chatbot.js"></script>
 
-        <!-- Language & accessibility scripts -->
         <script>
             function changeLang(lang) {
                 const url = new URL(window.location.href);

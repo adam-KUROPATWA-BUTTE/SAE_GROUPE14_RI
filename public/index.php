@@ -1,5 +1,6 @@
 <?php
 
+// phpcs:disable Generic.Files.LineLength
 // phpcs:disable PSR1.Files.SideEffects
 
 /**
@@ -57,7 +58,6 @@ Autoloader::register();
 
 use Controllers\site\AuthController;
 use Controllers\site\DashboardController;
-use Controllers\site\HelpController;
 use Controllers\site\NotFoundController;
 use Controllers\site\SaveStudentController;
 
@@ -105,14 +105,19 @@ $controllers = [
 
     // Generic Controllers
     new DashboardController(),
-    new HelpController(),
     new SaveStudentController(),
 ];
 
 // --- 6. Routing Logic ---
 
-// Retrieve the 'page' parameter from the URL, or default to empty string
-$page = $_GET['page'] ?? trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
+// PHPStan Fix: Secure parsing of URL to ensure string type for trim()
+$requestUri = $_SERVER['REQUEST_URI'] ?? '';
+$parsedPath = parse_url($requestUri, PHP_URL_PATH);
+// If parse_url returns false or null, default to empty string
+$cleanPath = is_string($parsedPath) ? $parsedPath : '';
+
+// Retrieve the 'page' parameter from the URL, or default to the cleaned path
+$page = $_GET['page'] ?? trim($cleanPath, '/');
 
 /**
  * Root Path Redirection Logic.

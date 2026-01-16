@@ -37,8 +37,8 @@ class PartnersPageAdmin
     /**
      * Build a URL while preserving the current language.
      *
-     * @param string $path   Base path
-     * @param array  $params Additional query parameters
+     * @param string               $path   Base path
+     * @param array<string, mixed> $params Additional query parameters
      * @return string
      */
     private function buildUrl(string $path, array $params = []): string
@@ -50,7 +50,7 @@ class PartnersPageAdmin
     /**
      * Translate text based on current language.
      *
-     * @param array $frEn ['fr' => '...', 'en' => '...']
+     * @param array{fr: string, en: string} $frEn ['fr' => '...', 'en' => '...']
      * @return string
      */
     private function t(array $frEn): string
@@ -69,17 +69,26 @@ class PartnersPageAdmin
             session_start();
         }
 
-        if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en'], true)) {
-            $_SESSION['lang'] = $_GET['lang'];
+        // Correction Level 9: Strict handling of mixed $_GET
+        if (isset($_GET['lang'])) {
+            $langParam = strval($_GET['lang']);
+            if (in_array($langParam, ['fr', 'en'], true)) {
+                $_SESSION['lang'] = $langParam;
+            }
         }
 
-        $this->lang = $_SESSION['lang'] ?? 'fr';
-
+        // Correction Level 9: Strict assignment from mixed $_SESSION
+        $this->lang = isset($_SESSION['lang']) ? strval($_SESSION['lang']) : 'fr';
 
         // Handle tritanopia (color-blind) mode
         if (isset($_GET['tritanopia'])) {
-            $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';
+            $tritaParam = strval($_GET['tritanopia']);
+            $_SESSION['tritanopia'] = ($tritaParam === '1');
         }
+
+        // Prepare strict boolean for view to avoid mixed access in template
+        $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
+
         ?>
         <!DOCTYPE html>
         <html lang="<?= htmlspecialchars($this->lang) ?>">
@@ -92,14 +101,12 @@ class PartnersPageAdmin
             <link rel="stylesheet" href="styles/chatbot.css">
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
         </head>
-        <body class="<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'tritanopie' : '' ?>">
+        <body class="<?= $isTritanopia ? 'tritanopie' : '' ?>">
 
-        <!-- HEADER -->
         <header>
             <div class="top-bar">
                 <img class="logo_amu" src="img/logo.png" alt="Logo">
                 <div class="right-buttons">
-                    <!-- Language selector -->
                     <div class="lang-dropdown">
                         <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
                         <div class="dropdown-content">
@@ -110,7 +117,6 @@ class PartnersPageAdmin
                 </div>
             </div>
 
-            <!-- Navigation menu -->
             <nav class="menu">
                 <button onclick="window.location.href='<?= $this->buildUrl('/') ?>'"><?= $this->t(['fr' => 'Accueil','en' => 'Home']) ?></button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/dashboard-admin') ?>'"><?= $this->t(['fr' => 'Tableau de bord','en' => 'Dashboard']) ?></button>
@@ -120,7 +126,6 @@ class PartnersPageAdmin
             </nav>
         </header>
 
-        <!-- MAIN CONTENT -->
         <main>
             <h1><?= htmlspecialchars($this->titre) ?></h1>
             <?php if (isset($_GET['success'])) : ?>
@@ -131,7 +136,6 @@ class PartnersPageAdmin
                 <p class="error-message"><?= htmlspecialchars($this->errorMessage) ?></p>
             <?php endif; ?>
 
-            <!-- Add partner form -->
             <div class="partners-actions">
                 <button class="btn-add-partner">
                     <span class="btn-plus">+</span>
@@ -167,7 +171,6 @@ class PartnersPageAdmin
                 </div>
             </div>
 
-            <!-- External partner list link -->
             <p><?= $this->t([
                     'fr' => 'Veuillez trouver la liste des partenaires d’AMU en cliquant sur ce lien :',
                     'en' => 'Please find the list of AMU\'s partners by clicking on this link:'
@@ -178,14 +181,12 @@ class PartnersPageAdmin
                 </a>
             </p>
 
-            <!-- Partner image -->
             <img id="Université_partenaires"
-                 src="img/<?= !empty($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'University_green.png' : 'University.png' ?>"
+                 src="img/<?= $isTritanopia ? 'University_green.png' : 'University.png' ?>"
                  alt="Partner Universities">
 
         </main>
 
-        <!-- FOOTER -->
         <footer>
             <p>&copy; 2026 - Aix-Marseille Université.</p>
             <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
@@ -193,7 +194,6 @@ class PartnersPageAdmin
             </a>
         </footer>
 
-        <!-- CHATBOT -->
         <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
         <div id="help-popup" class="chat-popup">
             <div class="help-popup-header">
