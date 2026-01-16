@@ -112,11 +112,7 @@ class DashboardPageStudent
                     <?= $this->t(['fr' => 'Plan du site','en' => 'Sitemap']) ?>
                 </button>
             </nav>
-<<<<<<< HEAD
 
-
-=======
->>>>>>> pbChatBot
         </header>
 
         <main>
