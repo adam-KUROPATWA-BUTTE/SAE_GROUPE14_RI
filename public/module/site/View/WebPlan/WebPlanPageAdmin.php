@@ -13,7 +13,7 @@ namespace View\WebPlan;
  */
 class WebPlanPageAdmin
 {
-    /** @var array List of links (each link: ['url' => string, 'label' => string]) */
+    /** @var array<int, array{url: string, label: string}> List of links */
     private array $links;
 
     /** @var string Current language ('fr' or 'en') */
@@ -22,8 +22,8 @@ class WebPlanPageAdmin
     /**
      * Constructor.
      *
-     * @param array $links Array of links for the site map
-     * @param string $lang Current language
+     * @param array<int, array{url: string, label: string}> $links Array of links for the site map
+     * @param string                                        $lang Current language
      */
     public function __construct(array $links = [], string $lang = 'fr')
     {
@@ -34,7 +34,7 @@ class WebPlanPageAdmin
     /**
      * Translate text based on current language.
      *
-     * @param array $frEn ['fr' => '...', 'en' => '...']
+     * @param array{fr: string, en: string} $frEn ['fr' => '...', 'en' => '...']
      * @return string
      */
     private function t(array $frEn): string
@@ -85,11 +85,25 @@ class WebPlanPageAdmin
             session_start();
         }
 
-        if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en'], true)) {
-            $_SESSION['lang'] = $_GET['lang'];
+        // Correction Level 9: Strict handling of mixed $_GET
+        if (isset($_GET['lang'])) {
+            $langParam = strval($_GET['lang']);
+            if (in_array($langParam, ['fr', 'en'], true)) {
+                $_SESSION['lang'] = $langParam;
+            }
         }
 
-        $this->lang = $_SESSION['lang'] ?? 'fr';
+        // Correction Level 9: Strict assignment from mixed $_SESSION
+        $this->lang = isset($_SESSION['lang']) ? strval($_SESSION['lang']) : 'fr';
+
+        // Handle tritanopia (color-blind) mode
+        if (isset($_GET['tritanopia'])) {
+            $tritaParam = strval($_GET['tritanopia']);
+            $_SESSION['tritanopia'] = ($tritaParam === '1');
+        }
+
+        // Prepare strict boolean for view
+        $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
 
         ?>
         <!DOCTYPE html>
@@ -103,14 +117,12 @@ class WebPlanPageAdmin
             <link rel="icon" type="image/png" href="img/favicon.webp"/>
             <title><?= $this->t(['fr' => 'Plan du site', 'en' => 'Site Map']) ?></title>
         </head>
-        <body class="<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'tritanopie' : '' ?>">
+        <body class="<?= $isTritanopia ? 'tritanopie' : '' ?>">
 
-        <!-- HEADER -->
         <header>
             <div class="top-bar">
                 <img class="logo_amu" src="img/logo.png" alt="Logo AMU">
                 <div class="right-buttons">
-                    <!-- Language selector -->
                     <div class="lang-dropdown">
                         <button class="dropbtn"><?= htmlspecialchars($this->lang) ?></button>
                         <div class="dropdown-content">
@@ -122,16 +134,18 @@ class WebPlanPageAdmin
             </div>
         </header>
 
-        <!-- MAIN CONTENT -->
         <main>
             <h1><?= $this->t(['fr' => 'Plan du site', 'en' => 'Site Map']) ?></h1>
             <ul>
-                <?php foreach ($this->links as $link) : ?>
+                <?php foreach ($this->links as $link) :
+                    $url = strval($link['url']);
+                    $label = strval($link['label']);
+                    ?>
                     <li>
-                        <a href="<?= htmlspecialchars($this->buildUrl($link['url'])) ?>">
+                        <a href="<?= htmlspecialchars($this->buildUrl($url)) ?>">
                             <?= htmlspecialchars($this->t([
-                                'fr' => $link['label'],
-                                'en' => $this->translateLabel($link['label'])
+                                'fr' => $label,
+                                'en' => $this->translateLabel($label)
                             ])) ?>
                         </a>
                     </li>
@@ -139,7 +153,6 @@ class WebPlanPageAdmin
             </ul>
         </main>
 
-        <!-- CHATBOT -->
         <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
         <div id="help-popup" class="chat-popup">
             <div class="help-popup-header">
@@ -177,7 +190,6 @@ class WebPlanPageAdmin
 
         <script src="js/chatbot.js"></script>
 
-        <!-- FOOTER -->
         <footer>
             <p>&copy; 2026 - Aix-Marseille Université.</p>
             <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">

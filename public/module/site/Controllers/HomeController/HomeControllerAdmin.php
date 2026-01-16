@@ -11,8 +11,6 @@ use PDO;
 use PDOException;
 
 /**
- * Class HomeControllerAdmin
- *
  * Controller responsible for the Administrator Homepage.
  *
  * Responsibilities:
@@ -25,33 +23,23 @@ class HomeControllerAdmin implements ControllerInterface
     /**
      * Determines if this controller supports the current request.
      *
-     * This controller is selected ONLY if:
-     * 1. The requested page is 'home'.
-     * 2. The HTTP method is GET.
-     * 3. An administrator session is active ('user' key exists).
-     *
      * @param string $page   The page identifier from the URL.
-     * @param string $method The HTTP method (GET, POST).
-     * @return bool True if this controller should handle the request.
+     * @param string $method The HTTP method (GET, POST, etc.).
+     * @return bool True if the controller should handle the request.
      */
     public static function support(string $page, string $method): bool
     {
-        // Check for 'home' page AND active admin session
-        return $page === 'home-admin';
+        return $page === 'home-admin' && $method === 'GET';
     }
 
     /**
      * Main control logic for the Admin Homepage.
      *
-     * Steps:
-     * 1. Start the session if not already started.
-     * 2. Connect to the database.
-     * 3. Compute the percentage of completed student folders.
-     * 4. Instantiate and render the Admin View.
+     * Fetches statistics from the database and renders the view.
+     * Handles potential database connection or query errors gracefully.
      */
     public function control(): void
     {
-        // Ensure session is active
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -59,27 +47,34 @@ class HomeControllerAdmin implements ControllerInterface
         $lang = $_GET['lang'] ?? 'fr';
         $completionPercentage = 0;
 
-        // --- Statistics Calculation Logic ---
         try {
-            $pdo = \Database::getInstance()->getConnection();
+            $pdo = Database::getInstance()->getConnection();
 
-            // Query to count total folders and sum completed ones (IsComplete = 1)
-            $stmt = $pdo->query("SELECT COUNT(*) as total, SUM(IsComplete) as completed FROM dossiers");
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            // Execute the query to get total dossiers and completed dossiers
+            $stmt = $pdo->query("SELECT COUNT(*) AS total, SUM(IsComplete) AS completed FROM dossiers");
 
-            // Avoid division by zero
-            if ($row && $row['total'] > 0) {
-                $completionPercentage = ($row['completed'] / $row['total']) * 100;
+            // PHPStan Fix: Verify $stmt is not false before calling fetch()
+            if ($stmt !== false) {
+                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                // PHPStan Fix: Verify $row is an array before accessing offsets
+                if (is_array($row)) {
+                    // PHPStan Fix: Safely cast mixed values to int using null coalescing
+                    $total = (int)($row['total'] ?? 0);
+                    $completed = (int)($row['completed'] ?? 0);
+
+                    // Avoid division by zero
+                    if ($total > 0) {
+                        $completionPercentage = ($completed / $total) * 100;
+                    }
+                }
             }
         } catch (PDOException $e) {
-            // Log error silently and default percentage to 0
+            // Log the error for debugging without breaking the user experience
             error_log("HomeControllerAdmin Error: " . $e->getMessage());
             $completionPercentage = 0;
         }
 
-        // --- Render View ---
-        // Pass 'true' for isLoggedIn (since we are in Admin controller)
-        // Pass the calculated percentage for the dashboard chart
         $view = new HomePageAdmin(true, $lang, $completionPercentage);
         $view->render();
     }

@@ -4,28 +4,21 @@
 
 namespace Controllers\site;
 
-use Model\Folder;
+use Model\Folder\FolderAdmin;
 
 /**
  * SaveStudentController
  *
  * Handles the creation of a new student folder.
- *
- * Responsibilities:
- *  - Validate submitted student data
- *  - Check for existing student ID or email
- *  - Create a new student folder
- *  - Handle file uploads (photo and CV)
- *  - Provide feedback via session messages
  */
 class SaveStudentController
 {
     /**
      * Determines if this controller supports the requested page and method.
      *
-     * @param string $page   Requested page
-     * @param string $method HTTP method
-     * @return bool True if this controller handles POST requests to 'save_student'
+     * @param string $page
+     * @param string $method
+     * @return bool
      */
     public static function support(string $page, string $method): bool
     {
@@ -37,53 +30,53 @@ class SaveStudentController
      */
     public function control(): void
     {
-        // Start session if not already started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        // Get language parameter (default to French)
         $lang = $_GET['lang'] ?? 'fr';
 
-        // Prepare student data from POST request
+        // --- Collect POST data safely ---
         $data = [
-            'numetu' => $_POST['numetu'] ?? '',
-            'nom' => $_POST['nom'] ?? '',
-            'prenom' => $_POST['prenom'] ?? '',
-            'email' => $_POST['email_perso'] ?? '', // Personal email used as primary
-            'telephone' => $_POST['telephone'] ?? '',
-            'type' => $_POST['type'] ?? null,
-            'password' => 'default123' // Default password
+            'numetu' => (string) ($_POST['numetu'] ?? ''),
+            'nom' => (string) ($_POST['nom'] ?? ''),
+            'prenom' => (string) ($_POST['prenom'] ?? ''),
+            'email' => (string) ($_POST['email_perso'] ?? ''),
+            'telephone' => (string) ($_POST['telephone'] ?? ''),
+            'type' => (string) ($_POST['type'] ?? ''),
+            'password' => 'default123',
         ];
 
-        // Basic validation
+        // --- Basic validation ---
         $errors = [];
-        if (empty($data['numetu'])) {
+        if ($data['numetu'] === '') {
             $errors[] = $lang === 'fr' ? 'Le numéro étudiant est requis' : 'Student ID is required';
         }
-        if (empty($data['nom'])) {
+        if ($data['nom'] === '') {
             $errors[] = $lang === 'fr' ? 'Le nom est requis' : 'Last name is required';
         }
-        if (empty($data['prenom'])) {
+        if ($data['prenom'] === '') {
             $errors[] = $lang === 'fr' ? 'Le prénom est requis' : 'First name is required';
         }
-        if (empty($data['email'])) {
+        if ($data['email'] === '') {
             $errors[] = $lang === 'fr' ? 'L\'email est requis' : 'Email is required';
         }
-        if (empty($data['telephone'])) {
+        if ($data['telephone'] === '') {
             $errors[] = $lang === 'fr' ? 'Le téléphone est requis' : 'Phone is required';
         }
 
-        // If there are errors, redirect back with error message
         if (!empty($errors)) {
             $_SESSION['message'] = implode(', ', $errors);
             header('Location: index.php?page=folders&action=create&lang=' . $lang);
             exit;
         }
 
-        // Check if student ID already exists
-        $existing = Folder::getByNumetu($data['numetu']);
-        if ($existing) {
+        // --- Check for existing student ---
+
+        /** @var array<string, mixed>|null $existing */
+        $existing = FolderAdmin::getByNumetu($data['numetu']);
+
+        if ($existing !== null) {
             $_SESSION['message'] = $lang === 'fr'
                 ? 'Un étudiant avec ce numéro existe déjà'
                 : 'A student with this ID already exists';
@@ -91,9 +84,10 @@ class SaveStudentController
             exit;
         }
 
-        // Check if email already exists
-        $existingEmail = Folder::getByEmail($data['email']);
-        if ($existingEmail) {
+        /** @var array<string, mixed>|null $existingEmail */
+        $existingEmail = FolderAdmin::getByEmail($data['email']);
+
+        if ($existingEmail !== null) {
             $_SESSION['message'] = $lang === 'fr'
                 ? 'Un étudiant avec cet email existe déjà'
                 : 'A student with this email already exists';
@@ -101,18 +95,13 @@ class SaveStudentController
             exit;
         }
 
-        // Create the student folder
-        $success = Folder::creerDossier($data);
+        // --- Create the student folder ---
+
+        $success = FolderAdmin::creerDossier($data);
 
         if ($success) {
-            // Handle uploaded files (photo and CV)
-            if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-                Folder::uploadPhoto($data['numetu'], $_FILES['photo']);
-            }
-
-            if (isset($_FILES['cv']) && $_FILES['cv']['error'] === UPLOAD_ERR_OK) {
-                Folder::uploadCV($data['numetu'], $_FILES['cv']);
-            }
+            $this->handleFileUpload($data['numetu'], 'photo', 'uploadPhoto');
+            $this->handleFileUpload($data['numetu'], 'cv', 'uploadCV');
 
             $_SESSION['message'] = $lang === 'fr'
                 ? 'Dossier créé avec succès'
@@ -123,8 +112,26 @@ class SaveStudentController
                 : 'Error creating folder';
         }
 
-        // Redirect to the folders list
         header('Location: index.php?page=folders&lang=' . $lang);
         exit;
+    }
+
+    /**
+     * Handle file upload safely.
+     *
+     * @param string $numetu
+     * @param string $inputName
+     * @param string $uploadMethod
+     * @return void
+     */
+    private function handleFileUpload(string $numetu, string $inputName, string $uploadMethod): void
+    {
+        if (isset($_FILES[$inputName]) && $_FILES[$inputName]['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES[$inputName];
+            if (is_array($file)) {
+                // CORRECTION : Appel de la méthode d'upload sur FolderAdmin
+                FolderAdmin::$uploadMethod($numetu, $file);
+            }
+        }
     }
 }
