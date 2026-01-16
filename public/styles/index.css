@@ -59,11 +59,17 @@ body {
     margin-left :auto;
 }
 
+.lang-dropdown .dropbtn {
+    width: 40px;
+    text-align: center;
+    padding: 10px 0;
+}
 .lang-dropdown {
-    position : relative;
+    position: relative;   /* ✅ correction */
     display: inline-block;
     margin-right: 10px;
 }
+
 
 
 .dropdown-content {

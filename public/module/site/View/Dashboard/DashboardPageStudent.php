@@ -112,6 +112,7 @@ class DashboardPageStudent
                     <?= $this->t(['fr' => 'Plan du site','en' => 'Sitemap']) ?>
                 </button>
             </nav>
+
         </header>
 
         <main>

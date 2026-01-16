@@ -20,15 +20,15 @@ class WebPlan
             session_start();
         }
 
-        return [
+        $links = [
             ['url' => 'index.php?page=home', 'label' => 'Accueil'],
             ['url' => 'index.php?page=dashboard-admin', 'label' => 'Tableau de bord'],
             ['url' => 'index.php?page=partners-admin', 'label' => 'Partenaires'],
             ['url' => 'index.php?page=folders-admin', 'label' => 'Dossier'],
             ['url' => 'index.php?page=logout', 'label' => 'Déconnexion'],
         ];
+        
     }
-
     /**
      * Returns the list of sitemap links available for students.
      *
