@@ -20,16 +20,14 @@ class EmailReminderService
     private static string $fromName = 'IUT Aix - Gestion Dossiers';
 
     /**
-     * Send a reminder email for an incomplete folder
-     *
-     * @param string $toEmail Recipient email address
-     * @param int|string $dossierId Folder ID
-     * @param string $studentName Student's name (optional)
-     * @param array $itemsToComplete List of missing items (optional)
-     * @return bool Returns true on success, false on failure
+     * @param array<string> $itemsToComplete List of missing items (strings)
      */
-    public static function sendRelance(string $toEmail, int|string $dossierId, string $studentName = '', array $itemsToComplete = []): bool
-    {
+    public static function sendRelance(
+        string $toEmail,
+        int|string $dossierId,
+        string $studentName = '',
+        array $itemsToComplete = []
+    ): bool {
         try {
             // Initialize Mailjet client
             $mj = new Client(
@@ -80,12 +78,7 @@ class EmailReminderService
     }
 
     /**
-     * Build the HTML email message for the reminder
-     *
-     * @param int|string $dossierId Folder ID
-     * @param string $studentName Student's name
-     * @param array $itemsToComplete List of missing items
-     * @return string HTML message
+     * @param array<string> $itemsToComplete List of missing items (strings)
      */
     private static function buildMessage(int|string $dossierId, string $studentName, array $itemsToComplete): string
     {

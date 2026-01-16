@@ -31,6 +31,8 @@ class WebPlanControllerAdmin implements ControllerInterface
         $lang = $_GET['lang'] ?? 'fr';
 
         // Get sitemap links available for administrators
+        // PHPStan Fix: Explicitly define the array shape to match the View's constructor requirement
+        /** @var array<int, array{url: string, label: string}> $links */
         $links = WebPlan::getLinksAdmin();
 
         // Instantiate and render the admin sitemap view

@@ -58,6 +58,7 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         ),
         'C' =>
         array (
+            'Controllers\\' => 12,
             'Composer\\XdebugHandler\\' => 23,
             'Composer\\Pcre\\' => 14,
         ),
@@ -161,6 +162,10 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         array (
             0 => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy',
         ),
+        'Controllers\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/public/module',
+        ),
         'Composer\\XdebugHandler\\' =>
         array (
             0 => __DIR__ . '/..' . '/composer/xdebug-handler/src',
@@ -190,7 +195,9 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
 
     public static $classMap = array (
         'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
+        'Autoloader' => __DIR__ . '/../..' . '/Autoloader.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'Database' => __DIR__ . '/../..' . '/Database.php',
         'DateError' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateError.php',
         'DateException' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateException.php',
         'DateInvalidOperationException' => __DIR__ . '/..' . '/symfony/polyfill-php83/Resources/stubs/DateInvalidOperationException.php',

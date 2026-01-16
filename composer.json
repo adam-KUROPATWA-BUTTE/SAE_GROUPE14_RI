@@ -13,5 +13,14 @@
         "lint": "phpcs --standard=PSR12 src",
         "analyse": "phpstan analyse src",
         "test": "phpunit"
+    },
+    "autoload": {
+        "classmap": [
+            "Database.php",
+            "Autoloader.php"
+        ],
+        "psr-4": {
+            "Controllers\\": "public/module/"
+        }
     }
 }

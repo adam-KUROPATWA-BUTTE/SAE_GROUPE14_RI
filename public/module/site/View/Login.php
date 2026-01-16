@@ -1,19 +1,21 @@
 <?php
 
-// Fichier View/Login.php
-// Instanciation et affichage de la page de connexion / login
+// phpcs:disable Generic.Files.LineLength
+
+// File View/Login.php
+// Instantiation and rendering of the login/registration page
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'LoginPage.php';
 
 use View\LoginPage;
 
 /**
- * Paramètres possibles :
- * @var string $message Message à afficher (erreur, info)
- * @var bool $isTokenReset Indique si on est en phase de réinitialisation de mot de passe
- * @var bool $isLogin Indique si la page est affichée pour login (true) ou inscription (false)
- * @var bool $isReset Indique si on est en mode reset (formulaire de réinitialisation)
- * @var string $token Token pour réinitialisation
+ * Possible parameters passed from the controller:
+ * @var string|null $message      Message to display (error, info)
+ * @var bool|null   $isTokenReset Indicates if we are in the password reset phase
+ * @var bool|null   $isLogin      Indicates if the page is for login (true) or registration (false)
+ * @var bool|null   $isReset      Indicates if we are in reset mode (reset form)
+ * @var string|null $token        Token for password reset
  */
 $loginPage = new LoginPage(
     $message ?? '',
