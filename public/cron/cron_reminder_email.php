@@ -7,46 +7,57 @@
  * cron_reminder_email.php
  *
  * Exécuter en CLI :
- *   php public/cron/cron_reminder_email.php        # envoi réel
- *   php public/cron/cron_reminder_email.php --dry-run   # simulation (pas d'envoi)
- *
- * Placez ce fichier dans le dossier public/cron/ de votre projet.
+ * php cron/cron_reminder_email.php        # envoi réel
+ * php cron/cron_reminder_email.php --dry-run   # simulation (pas d'envoi)
  */
 
-// require project autoloader and Database class (paths relative to this file)
-require_once __DIR__ . '/../../Autoloader.php';
-require_once __DIR__ . '/../../Database.php';
+// Calcul de la racine
+$projectRoot = realpath(__DIR__ . '/..');
 
-// try to load vendor/autoload (to use vlucas/phpdotenv if present)
-$projectRoot = realpath(__DIR__ . '/../../');
-if ($projectRoot !== false && file_exists($projectRoot . '/vendor/autoload.php')) {
+// CORRECTION PHPSTAN : Si realpath échoue (renvoie false), on arrête tout de suite.
+// Cela garantit que $projectRoot est une "string" pour la suite du code.
+if ($projectRoot === false) {
+    die("Erreur critique : Impossible de localiser la racine du projet.\n");
+}
+
+// On charge la classe Database
+require_once $projectRoot . '/Database.php';
+
+// On charge l'autoloader de Composer
+if (file_exists($projectRoot . '/vendor/autoload.php')) {
     require_once $projectRoot . '/vendor/autoload.php';
 
-    // load ..env into $_ENV for CLI if present
+    // Chargement du .env si nécessaire
     if (file_exists($projectRoot . '/.env')) {
         try {
+            // $projectRoot est maintenant garanti d'être une string
             $dot = Dotenv\Dotenv::createImmutable($projectRoot);
             $dot->load();
         } catch (Exception $e) {
-            error_log("Unable to load ..env: " . $e->getMessage());
+            error_log("Unable to load .env: " . $e->getMessage());
         }
     }
 }
 
-// Import namespaced classes that the autoloader maps
-use img\public\module\site\Service\Email\EmailReminderService;
+use Service\Email\EmailReminderService;
 
-define('DAYS_BEFORE_RELAY', 7); // nombre de jours avant de renvoyer une relance
+define('DAYS_BEFORE_RELAY', 7);
 
 $dryRun = (isset($argv) && in_array('--dry-run', $argv, true));
 
 try {
-    // Create DB connection via your singleton Database class
     $pdo = Database::getInstance()->getConnection();
 
-    // Lire les dossiers incomplets depuis la table `dossiers`
+    // Lire les dossiers incomplets
     $sql  = "SELECT NumEtu, Nom, Prenom, EmailAMU, EmailPersonnel FROM dossiers WHERE IsComplete = 0";
     $stmt = $pdo->query($sql);
+
+    // Vérification retour SQL
+    if ($stmt === false) {
+        echo "[" . date('Y-m-d H:i:s') . "] Erreur SQL lors de la récupération des dossiers.\n";
+        exit(1);
+    }
+
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     if (empty($rows)) {
@@ -55,7 +66,7 @@ try {
     }
 
     foreach ($rows as $r) {
-        $numEtu      = $r['NumEtu']; // reste string (ex: 'k2025002')
+        $numEtu      = (string)$r['NumEtu'];
         $studentName = trim(($r['Prenom'] ?? '') . ' ' . ($r['Nom'] ?? ''));
         $email       = $r['EmailAMU'] ?: $r['EmailPersonnel'] ?: null;
 
@@ -64,7 +75,7 @@ try {
             continue;
         }
 
-        // Vérifier s'il y a eu une relance pour ce NumEtu dans les derniers DAYS_BEFORE_RELAY jours
+        // Vérifier s'il y a eu une relance récemment
         $checkSql = "SELECT 1 FROM relances WHERE dossier_id = :dossier_id AND date_relance >= (NOW() - INTERVAL :days DAY) LIMIT 1";
         $checkStmt = $pdo->prepare($checkSql);
         $checkStmt->bindValue(':dossier_id', $numEtu, PDO::PARAM_STR);
@@ -73,11 +84,10 @@ try {
         $already = (bool) $checkStmt->fetchColumn();
 
         if ($already) {
-            error_log("cron_relances: dossier {$numEtu} - relance déjà envoyée dans les " . DAYS_BEFORE_RELAY . " derniers jours, skip.");
+            error_log("cron_relances: dossier {$numEtu} - relance déjà envoyée récemment, skip.");
             continue;
         }
 
-        // Construire la liste des pièces manquantes si vous avez la logique (laisser vide sinon)
         $itemsToComplete = [];
 
         if ($dryRun) {
@@ -85,10 +95,8 @@ try {
             continue;
         }
 
-        // Envoi du mail (numEtu passé en string)
         $sent = EmailReminderService::sendRelance($email, $numEtu, $studentName, $itemsToComplete);
 
-        // --- Remplacer par ce bloc (insertion avec dossier_id = NULL) ---
         if ($sent) {
             $message = "Relance automatique envoyée à {$email} pour NumEtu={$numEtu}";
 
@@ -105,8 +113,7 @@ try {
             echo "[" . date('Y-m-d H:i:s') . "] Failed to send to {$email} (NumEtu: {$numEtu})\n";
         }
 
-        // Optionnel : pause courte pour ne pas surcharger le relay
-        usleep(150000); // 150ms
+        usleep(150000); // 150ms pause
     }
 
     echo "[" . date('Y-m-d H:i:s') . "] Traitement terminé.\n";

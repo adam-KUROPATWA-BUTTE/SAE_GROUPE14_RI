@@ -15,7 +15,7 @@ class AuthGuard
     /**
      * Ensures that an admin user is logged in.
      *
-     * If the user is not an admin, they are redirected to the login page.
+     * Redirects to login page if not authenticated as admin.
      */
     public static function requireAdmin(): void
     {
@@ -23,7 +23,7 @@ class AuthGuard
             session_start();
         }
 
-        if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
             header('Location: /login');
             exit;
         }
@@ -32,7 +32,7 @@ class AuthGuard
     /**
      * Ensures that a student user is logged in.
      *
-     * If the user is not a student, they are redirected to the login page.
+     * Redirects to login page if not authenticated as student.
      */
     public static function requireStudent(): void
     {
@@ -40,7 +40,7 @@ class AuthGuard
             session_start();
         }
 
-        if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'etudiant') {
             header('Location: /login');
             exit;
         }
@@ -57,7 +57,7 @@ class AuthGuard
             session_start();
         }
 
-        if (!isset($_SESSION['user_id'])) {
+        if (!isset($_SESSION['user_role'])) {
             header('Location: /login');
             exit;
         }
@@ -66,7 +66,7 @@ class AuthGuard
     /**
      * Ensures that the user has a specific role.
      *
-     * @param string $role Role to check (e.g., 'admin', 'student')
+     * @param string $role Role to check (e.g., 'admin', 'etudiant')
      */
     public static function requireRole(string $role): void
     {
@@ -75,8 +75,7 @@ class AuthGuard
         }
 
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== $role) {
-            $loginPage = $role === 'admin' ? '/login' : '/login';
-            header('Location: ' . $loginPage);
+            header('Location: /login');
             exit;
         }
     }
@@ -98,7 +97,7 @@ class AuthGuard
      */
     public static function isStudent(): bool
     {
-        return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'student';
+        return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'etudiant';
     }
 
     /**
@@ -110,8 +109,10 @@ class AuthGuard
     {
         if (self::isAdmin()) {
             header('Location: /dashboard-admin');
-        } else {
+        } elseif (self::isStudent()) {
             header('Location: /dashboard-student');
+        } else {
+            header('Location: /login');
         }
         exit;
     }

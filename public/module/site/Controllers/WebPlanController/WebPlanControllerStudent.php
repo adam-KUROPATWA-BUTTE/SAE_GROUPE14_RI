@@ -5,7 +5,7 @@
 namespace Controllers\WebPlanController;
 
 use Controllers\ControllerInterface;
-use View\WebPlan\WebPLanPageStudent;
+use View\WebPlan\WebPlanPageStudent;
 use Model\WebPlan;
 
 /**
@@ -31,7 +31,8 @@ class WebPlanControllerStudent implements ControllerInterface
         $lang = $_GET['lang'] ?? 'fr';
 
         // Get sitemap links available for students
-        // You can further filter links here if needed
+        // PHPStan Fix: Explicitly define the array shape to match the View's constructor requirement
+        /** @var array<int, array{url: string, label: string}> $links */
         $links = WebPlan::getLinksStudent();
 
         // Instantiate and render the student sitemap view

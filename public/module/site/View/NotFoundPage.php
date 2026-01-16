@@ -11,6 +11,7 @@ namespace View;
  */
 class NotFoundPage
 {
+    /** @var string Title of the page */
     private string $titre;
 
     /**
@@ -25,12 +26,18 @@ class NotFoundPage
 
     /**
      * Render the 404 page.
+     *
+     * @return void
      */
     public function render(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+
+        // Correction Level 9: Strict boolean check for mixed session value
+        $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
+
         ?>
         <!DOCTYPE html>
         <html lang="fr">
@@ -40,7 +47,7 @@ class NotFoundPage
             <link rel="stylesheet" href="styles/404.css">
             <title><?= htmlspecialchars($this->titre) ?> - 404</title>
         </head>
-        <body class="<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true ? 'tritanopie' : '' ?>">
+        <body class="<?= $isTritanopia ? 'tritanopie' : '' ?>">
         <div class="notfound-container">
             <h1>404</h1>
             <p>La page que vous recherchez n’existe pas.</p>
