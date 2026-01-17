@@ -36,6 +36,8 @@ class ResetPasswordPage
 
     /**
      * Render the password reset page.
+     *
+     * @return void
      */
     public function render(): void
     {
@@ -43,6 +45,10 @@ class ResetPasswordPage
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+
+        // Correction Level 9: Strict boolean check for mixed session value
+        $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
+
         ?>
         <!DOCTYPE html>
         <html lang="fr">
@@ -54,27 +60,24 @@ class ResetPasswordPage
             <link rel="stylesheet" href="/styles/login.css">
             <link rel="icon" type="image/png" href="/img/favicon.webp"/>
         </head>
-        <body class="<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true ? 'tritanopie' : '' ?>">
+        <body class="<?= $isTritanopia ? 'tritanopie' : '' ?>">
         <div class="login-container">
             <div class="login-card">
                 <h1>New Password</h1>
 
-                <?php if ($this->error) : ?>
-                    <!-- Display error message if present -->
+                <?php if (!empty($this->error)) : ?>
                     <div class="error-message">
-                        <?= htmlspecialchars($this->error) ?>
+                        <?= htmlspecialchars(strval($this->error)) ?>
                     </div>
                 <?php endif; ?>
 
-                <?php if ($this->success) : ?>
-                    <!-- Display success message and link to login -->
+                <?php if (!empty($this->success)) : ?>
                     <div class="success-message">
-                        <?= htmlspecialchars($this->success) ?>
+                        <?= htmlspecialchars(strval($this->success)) ?>
                         <br><br>
                         <a href="/index.php?page=login" class="btn-primary">Log in</a>
                     </div>
                 <?php else : ?>
-                    <!-- Password reset form -->
                     <form method="POST" action="">
                         <input type="hidden" name="token" value="<?= htmlspecialchars($this->token ?? '') ?>">
 
@@ -103,7 +106,6 @@ class ResetPasswordPage
                         </button>
                     </form>
 
-                    <!-- Link back to login page -->
                     <div class="login-links">
                         <a href="/index.php?page=login">Back to Login</a>
                     </div>

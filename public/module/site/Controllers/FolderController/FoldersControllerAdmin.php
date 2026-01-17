@@ -12,8 +12,6 @@ use View\Folder\FoldersPageAdmin;
  *
  * Controller responsible for the administrative management of student folders.
  * It handles the listing, creation, modification, and validation status of student files.
- *
- * VERSION AVEC DEBUG
  */
 class FoldersControllerAdmin
 {
@@ -54,6 +52,7 @@ class FoldersControllerAdmin
                 $numetu = urldecode($numetu);
 
                 // Call Model to switch status in Database (0 <-> 1)
+                // NOTE: Assurez-vous d'avoir ajouté cette méthode dans FolderAdmin.php !
                 $success = FolderAdmin::toggleCompleteStatus($numetu);
 
                 // Set Flash Message for the user
@@ -91,48 +90,21 @@ class FoldersControllerAdmin
             $studentData = FolderAdmin::getStudentDetails($_GET['numetu']);
         }
 
-        // Déterminer la page courante
+        // Determine current page
         $currentPage = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
-
-
-
-
-        // 🔍 DEBUG - Commence ici
-
-
-        $startTime = microtime(true);  // ← AJOUTE CETTE LIGNE
-
-
-
-        error_log("=== FOLDERS CONTROLLER DEBUG ===");
-        error_log("URL: " . ($_SERVER['REQUEST_URI'] ?? 'N/A'));
-        error_log("GET params: " . print_r($_GET, true));
-        error_log("Current Page calculated: " . $currentPage);
 
         // Collect filters from GET parameters for the list view
         $filters = [
-            'type'       => $_GET['Type'] ?? $_GET['type'] ?? 'all',
-            'zone'       => $_GET['Zone'] ?? $_GET['zone'] ?? 'all',
-            'search'     => $_GET['search'] ?? '',
-            'complet'    => $_GET['complet'] ?? 'all',
+            'type'      => $_GET['Type'] ?? $_GET['type'] ?? 'all',
+            'zone'      => $_GET['Zone'] ?? $_GET['zone'] ?? 'all',
+            'search'    => $_GET['search'] ?? '',
+            'complet'   => $_GET['complet'] ?? 'all',
         ];
-
-        error_log("Filters: " . print_r($filters, true));
 
         $perPage = 10;
 
-        // Utiliser la nouvelle méthode avec pagination SQL
+        // Use pagination method from Model
         $result = FolderAdmin::rechercherAvecPagination($filters, $currentPage, $perPage);
-
-        error_log("Result from Model: total=" . $result['total'] . ", totalPages=" . $result['totalPages'] . ", data count=" . count($result['data']));
-
-        $endTime = microtime(true);  // ← AJOUTE CETTE LIGNE
-        $executionTime = round(($endTime - $startTime) * 1000, 2);  // ← AJOUTE CETTE LIGNE
-        error_log("⏱️ TEMPS D'EXÉCUTION: " . $executionTime . "ms");  // ← AJOUTE CETTE LIGNE
-
-
-        error_log("=== END DEBUG ===\n");
-        // 🔍 DEBUG - Fin
 
         // Retrieve and clear Flash Message
         $message = $_SESSION['message'] ?? '';
@@ -142,7 +114,6 @@ class FoldersControllerAdmin
             $action,
             $filters,
             $currentPage,
-            $perPage,
             $message,
             $lang,
             $studentData,
@@ -201,29 +172,23 @@ class FoldersControllerAdmin
             exit;
         }
 
-        // 4. Handle File Uploads
-        $photoData = null;
+        // 4. Handle File Uploads & Pack into $data
         if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-            $photoData = file_get_contents($_FILES['photo']['tmp_name']);
+            $data['photo'] = file_get_contents($_FILES['photo']['tmp_name']);
         }
-
-        $cvData = null;
         if (isset($_FILES['cv']) && $_FILES['cv']['error'] === UPLOAD_ERR_OK) {
-            $cvData = file_get_contents($_FILES['cv']['tmp_name']);
+            $data['cv'] = file_get_contents($_FILES['cv']['tmp_name']);
         }
-
-        $conventionData = null;
         if (isset($_FILES['convention']) && $_FILES['convention']['error'] === UPLOAD_ERR_OK) {
-            $conventionData = file_get_contents($_FILES['convention']['tmp_name']);
+            $data['convention'] = file_get_contents($_FILES['convention']['tmp_name']);
         }
-
-        $lettreData = null;
         if (isset($_FILES['lettre_motivation']) && $_FILES['lettre_motivation']['error'] === UPLOAD_ERR_OK) {
-            $lettreData = file_get_contents($_FILES['lettre_motivation']['tmp_name']);
+            $data['lettre_motivation'] = file_get_contents($_FILES['lettre_motivation']['tmp_name']);
         }
 
-        // 5. Save to Database
-        $success = FolderAdmin::creerDossier($data, $photoData, $cvData, $conventionData, $lettreData);
+        // 5. Save to Database - PHPStan Fix: Pass only 1 argument ($data array containing files)
+        $success = FolderAdmin::creerDossier($data);
+
         $_SESSION['message'] = $success
             ? (($lang === 'fr') ? 'Dossier créé avec succès' : 'Folder created successfully')
             : (($lang === 'fr') ? 'Erreur lors de la création' : 'Error creating folder');
@@ -258,29 +223,22 @@ class FoldersControllerAdmin
             'Zone' => $_POST['zone'] ?? 'europe'
         ];
 
-        // 2. Handle File Uploads (Only if new files are provided)
-        $photoData = null;
+        // 2. Handle File Uploads (Only if new files are provided) & Pack into $data
         if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-            $photoData = file_get_contents($_FILES['photo']['tmp_name']);
+            $data['photo'] = file_get_contents($_FILES['photo']['tmp_name']);
         }
-
-        $cvData = null;
         if (isset($_FILES['cv']) && $_FILES['cv']['error'] === UPLOAD_ERR_OK) {
-            $cvData = file_get_contents($_FILES['cv']['tmp_name']);
+            $data['cv'] = file_get_contents($_FILES['cv']['tmp_name']);
         }
-
-        $conventionData = null;
         if (isset($_FILES['convention']) && $_FILES['convention']['error'] === UPLOAD_ERR_OK) {
-            $conventionData = file_get_contents($_FILES['convention']['tmp_name']);
+            $data['convention'] = file_get_contents($_FILES['convention']['tmp_name']);
         }
-
-        $lettreData = null;
         if (isset($_FILES['lettre_motivation']) && $_FILES['lettre_motivation']['error'] === UPLOAD_ERR_OK) {
-            $lettreData = file_get_contents($_FILES['lettre_motivation']['tmp_name']);
+            $data['lettre_motivation'] = file_get_contents($_FILES['lettre_motivation']['tmp_name']);
         }
 
-        // 3. Update Database
-        $success = FolderAdmin::updateDossier($data, $photoData, $cvData, $conventionData, $lettreData);
+        // 3. Update Database - PHPStan Fix: Pass only 1 argument
+        $success = FolderAdmin::updateDossier($data);
 
         $_SESSION['message'] = $success
             ? (($lang === 'fr') ? 'Dossier mis à jour' : 'Folder updated')
