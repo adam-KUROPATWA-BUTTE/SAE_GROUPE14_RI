@@ -1,6 +1,5 @@
 <?php
 
-// phpcs:disable PSR1.Files.SideEffects
 // phpcs:disable Generic.Files.LineLength
 
 namespace View;
@@ -12,12 +11,26 @@ namespace View;
  */
 class RegisterAdmin
 {
+    /** @var string Feedback message (success, error, info) */
+    private string $message;
+
+    /**
+     * Constructor.
+     *
+     * @param string $message Feedback message to display.
+     */
+    public function __construct(string $message = '')
+    {
+        $this->message = $message;
+    }
+
     /**
      * Render the registration page.
+     *
+     * @return void
      */
     public function render(): void
     {
-        // Start of HTML output
         ?>
         <!DOCTYPE html>
         <html lang="fr">
@@ -31,7 +44,6 @@ class RegisterAdmin
         </head>
 
         <body>
-        <!-- Admin header section -->
         <div class="admin-header">
             <h1>Administrator Area</h1>
             <p>Create a new administrator account</p>
@@ -39,21 +51,21 @@ class RegisterAdmin
 
         <div class="container">
             <?php
-            // Display message if set (success, error, info)
-            if (!empty($message)) :
+            // Display message if set
+            if ($this->message !== '') :
                 $messageType = 'info';
-                if (strpos($message, 'success') !== false) {
+                // Strict check with strpos returning int|false
+                if (strpos($this->message, 'success') !== false) {
                     $messageType = 'success';
-                } elseif (strpos($message, 'Error') !== false || strpos($message, 'invalid') !== false) {
+                } elseif (strpos($this->message, 'Error') !== false || strpos($this->message, 'invalid') !== false) {
                     $messageType = 'error';
                 }
                 ?>
-                <div class="message <?= $messageType ?>">
-                    <?= htmlspecialchars($message) ?>
+                <div class="message <?= htmlspecialchars($messageType) ?>">
+                    <?= htmlspecialchars($this->message) ?>
                 </div>
             <?php endif; ?>
 
-            <!-- Registration form -->
             <h2 class="register-title">Create Administrator Account</h2>
             <p class="warning-text">
                 <strong>Warning:</strong> This account will have access to all administration functionalities.
@@ -62,7 +74,6 @@ class RegisterAdmin
             <form class="register-form" method="POST" action="index.php?page=register_admin">
                 <input type="hidden" name="action" value="register_admin">
 
-                <!-- Admin details -->
                 <input type="text" name="nom" placeholder="Last Name" required>
                 <input type="text" name="prenom" placeholder="First Name" required>
                 <input type="email" name="email" placeholder="Administrator Email" required>
@@ -71,18 +82,12 @@ class RegisterAdmin
                 <button type="submit" class="btn-submit">Create Administrator</button>
             </form>
 
-            <!-- Link back to dashboard -->
             <div class="toggle">
                 <a href="index.php?page=dashboard" class="back-link">← Back to Dashboard</a>
             </div>
         </div>
         </body>
         </html>
-
         <?php
     }
 }
-
-// Instantiate and render the page
-$page = new RegisterAdmin();
-$page->render();

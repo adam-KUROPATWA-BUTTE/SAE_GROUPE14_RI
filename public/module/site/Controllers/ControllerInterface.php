@@ -18,8 +18,10 @@ interface ControllerInterface
 {
     /**
      * Main method to handle the request logic for the controller.
+     *
+     * @return void
      */
-    public function control();
+    public function control(): void;
 
     /**
      * Determines if the controller supports a given path and HTTP method.

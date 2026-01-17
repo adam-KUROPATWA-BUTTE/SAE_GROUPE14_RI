@@ -14,8 +14,7 @@ use View\Dashboard\DashboardPageStudent;
  * Class DashboardController
  *
  * Handles the logic for rendering the dashboard pages.
- * It routes requests to either the Admin dashboard or the Student dashboard
- * based on the user's role.
+ * Routes requests to Admin or Student dashboards based on the user's role.
  */
 class DashboardController implements ControllerInterface
 {
@@ -28,12 +27,11 @@ class DashboardController implements ControllerInterface
      */
     public static function support(string $page, string $method): bool
     {
-        return in_array($page, ['dashboard-admin', 'dashboard-student']) && $method === 'GET';
+        return in_array($page, ['dashboard-admin', 'dashboard-student'], true) && $method === 'GET';
     }
 
     /**
      * Main control method.
-     * Starts the session and dispatches the request to the specific dashboard method.
      */
     public function control(): void
     {
@@ -41,23 +39,28 @@ class DashboardController implements ControllerInterface
             session_start();
         }
 
-        // Determine the page from GET param or URL path
-        $page = $_GET['page'] ?? trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
+        // Récupère la page depuis GET ou depuis l'URL
+        $page = $_GET['page'] ?? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $page = is_string($page) ? trim($page, '/') : '';
 
-        if ($page === 'dashboard-admin') {
-            $this->showAdminDashboard();
-        } elseif ($page === 'dashboard-student') {
-            $this->showStudentDashboard();
-        } else {
-            http_response_code(404);
-            echo "Page not found";
+        switch ($page) {
+            case 'dashboard-admin':
+                $this->showAdminDashboard();
+                break;
+
+            case 'dashboard-student':
+                $this->showStudentDashboard();
+                break;
+
+            default:
+                http_response_code(404);
+                echo "Page not found";
+                break;
         }
     }
 
     /**
      * Renders the Admin Dashboard.
-     * * Requirement: User must have 'admin' role.
-     * Data: Fetches ALL folders (complete and incomplete) to provide a global view.
      */
     private function showAdminDashboard(): void
     {
@@ -67,8 +70,12 @@ class DashboardController implements ControllerInterface
         }
 
         $lang = $_GET['lang'] ?? 'fr';
+        $lang = is_string($lang) ? $lang : 'fr';
 
         $folders = FolderAdmin::getAll();
+        if (!is_array($folders)) {
+            $folders = [];
+        }
 
         $page = new DashboardPageAdmin($folders, $lang);
         $page->render();
@@ -76,8 +83,6 @@ class DashboardController implements ControllerInterface
 
     /**
      * Renders the Student Dashboard.
-     * * Requirement: User must have 'etudiant' role.
-     * Data: Fetches only the connected student's folder.
      */
     private function showStudentDashboard(): void
     {
@@ -87,9 +92,13 @@ class DashboardController implements ControllerInterface
         }
 
         $lang = $_GET['lang'] ?? 'fr';
-        $studentId = $_SESSION['etudiant_id'] ?? 0;
+        $lang = is_string($lang) ? $lang : 'fr';
 
-        $folder = FolderStudent::getMyFolder($studentId);
+        $studentId = $_SESSION['etudiant_id'] ?? 0;
+        $folder = FolderStudent::getMyFolder((int)$studentId);
+        if (!is_array($folder)) {
+            $folder = [];
+        }
 
         $page = new DashboardPageStudent($folder, $lang);
         $page->render();
