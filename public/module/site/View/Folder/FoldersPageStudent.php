@@ -8,33 +8,14 @@ namespace View\Folder;
  * Class FoldersPageStudent
  *
  * View responsible for displaying the student's personal folder page.
- * Includes the form to view and edit personal information and documents.
  */
 class FoldersPageStudent
 {
-    /** @var array<string, mixed> Student folder data (including personal info and pieces) */
     private array $dossier;
-
-    /** @var string Student identifier (NumEtu) */
     private string $studentId;
-
-    // Note: $action removed from properties because it is never read.
-    // It remains in the constructor signature for compatibility.
-
-    /** @var string Flash message (success/error) */
     private string $message;
-
-    /** @var string Current language code */
     private string $lang;
 
-    /**
-     * Constructor.
-     *
-     * @param array<string, mixed>|null $dossier   Student folder data.
-     * @param string                    $studentId Student identifier (NumEtu).
-     * @param string                    $message   Flash message (success/error).
-     * @param string                    $lang      Current language.
-     */
     public function __construct(?array $dossier, string $studentId, string $message, string $lang)
     {
         $this->dossier = $dossier ?? [];
@@ -43,24 +24,11 @@ class FoldersPageStudent
         $this->lang = $lang;
     }
 
-    /**
-     * Translates a string based on the current language.
-     *
-     * @param array{fr: string, en: string} $frEn Associative array with 'fr' and 'en' translations.
-     * @return string The translated string.
-     */
     private function t(array $frEn): string
     {
         return $this->lang === 'en' ? $frEn['en'] : $frEn['fr'];
     }
 
-    /**
-     * Builds a URL safely handling query parameters.
-     *
-     * @param string               $path   The base path.
-     * @param array<string, mixed> $params Query parameters to append.
-     * @return string The constructed URL.
-     */
     private function buildUrl(string $path, array $params = []): string
     {
         $params['lang'] = $this->lang;
@@ -68,11 +36,6 @@ class FoldersPageStudent
         return $path . $separator . http_build_query($params);
     }
 
-    /**
-     * Main method to render the HTML page.
-     *
-     * @return void
-     */
     public function render(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -90,15 +53,10 @@ class FoldersPageStudent
         }
         $tritanopia = !empty($_SESSION['tritanopia']);
 
-        // --- Determine View Mode: CREATE or UPDATE ---
         $isCreateMode = empty($this->dossier);
         $formAction = $isCreateMode ? 'create_folder' : 'update_my_folder';
-
-        // Extract pieces safely to avoid "Undefined array key" warnings
-        /** @var array<string, mixed> $pieces */
         $pieces = $this->dossier['pieces'] ?? [];
 
-        // Auto-detect mobility type for display logic (only if updating)
         $detectedType = '';
         if (!$isCreateMode) {
             if (!empty($pieces['convention'])) {
@@ -108,7 +66,6 @@ class FoldersPageStudent
             }
         }
 
-        // Prepare strict variables for HTML output (Level 9 compliance)
         $valNom = htmlspecialchars(strval($this->dossier['Nom'] ?? ''));
         $valPrenom = htmlspecialchars(strval($this->dossier['Prenom'] ?? ''));
         $valDate = htmlspecialchars(strval($this->dossier['DateNaissance'] ?? ''));
@@ -142,8 +99,8 @@ class FoldersPageStudent
                 <div class="lang-dropdown">
                     <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
                     <div class="dropdown-content">
-                        <a href="#" onclick="changeLang('fr'); return false;">Français</a>
-                        <a href="#" onclick="changeLang('en'); return false;">English</a>
+                        <a href="#">Français</a>
+                        <a href="#">English</a>
                     </div>
                 </div>
             </div>
@@ -161,9 +118,9 @@ class FoldersPageStudent
                     <?= $this->t(['fr' => 'Mon Dossier', 'en' => 'My Folder']) ?>
                 </button>
                 <button onclick="window.location.href='<?= $this->buildUrl('/web_plan-student') ?>'"><?= $this->t(['fr' => 'Plan du site','en' => 'Sitemap']) ?></button>
-
             </nav>
         </header>
+
         <main>
             <h1><?= $this->t(['fr' => 'Mon dossier étudiant','en' => 'My Student Folder']) ?></h1>
 
@@ -238,7 +195,7 @@ class FoldersPageStudent
                     </select>
 
                     <label for="mobilite_type"><?= $this->t(['fr' => 'Type de mobilité','en' => 'Mobility Type']) ?></label>
-                    <select name="mobilite_type" id="mobilite_type" onchange="changerTypeMobilite(this.value)" 
+                    <select name="mobilite_type" id="mobilite_type" 
                         <?= $isCreateMode ? '' : 'disabled style="background:#f7f7f7;"' ?>>
                         <option value=""><?= $this->t(['fr' => '-- Choisir --','en' => '-- Choose --']) ?></option>
                         <option value="stage" <?= $detectedType === 'stage' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Stage','en' => 'Internship']) ?></option>
@@ -294,7 +251,6 @@ class FoldersPageStudent
                         <?php endif; ?>
                         <input type="file" name="lettre_motivation" accept=".pdf,.doc,.docx">
                     </div>
-
                 </div>
 
                 <div class="form-actions">
@@ -315,72 +271,26 @@ class FoldersPageStudent
             </form>
         </main>
         
-        <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
-            <div id="help-popup" class="chat-popup">
+        <div id="help-bubble">💬</div>
+        <div id="help-popup" class="chat-popup">
             <div class="help-popup-header">
                 <span>Assistant</span>
-                <button onclick="toggleHelpPopup()">✖</button>
+                <button>✖</button>
             </div>
             <div id="chat-messages" class="chat-messages"></div>
             <div id="quick-actions" class="quick-actions"></div>
         </div>
 
-        <script>
-            const CHAT_CONFIG = {
-                lang: '<?= $this->lang ?>',
-                role: '<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>'
-            };
-        </script>
+        <div id="app-config" 
+             data-lang="<?= htmlspecialchars($this->lang) ?>" 
+             data-role="student"
+             style="display:none;">
+        </div>
+
+        <script src="js/main.js"></script>
         <script src="js/chatbot.js"></script>
-        <script>
-            document.getElementById('current-lang').addEventListener('click', function(event) {
-                event.stopPropagation();
-                const rightButtons = document.querySelector('.right-buttons');
-                rightButtons.classList.toggle('show');
-            });
+        <script src="js/folders.js"></script>
 
-            document.addEventListener('click', function() {
-                const rightButtons = document.querySelector('.right-buttons');
-                rightButtons.classList.remove('show');
-            });
-
-            function changeLang(lang) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('lang', lang);
-                window.location.href = url.toString();
-            }
-
-            document.addEventListener("DOMContentLoaded", () => {
-                const menuToggle = document.createElement('button');
-                menuToggle.classList.add('menu-toggle');
-                menuToggle.innerHTML = '☰';
-                document.querySelector('.right-buttons').appendChild(menuToggle);
-
-                const navMenu = document.querySelector('nav.menu');
-                menuToggle.addEventListener('click', () => {
-                    navMenu.classList.toggle('active');
-                });
-            });
-
-            function changerTypeMobilite(type) {
-                const conventionBlock = document.getElementById('justificatif_convention');
-                const lettreBlock = document.getElementById('lettre_motivation');
-
-                if(conventionBlock) conventionBlock.style.display = 'none';
-                if(lettreBlock) lettreBlock.style.display = 'none';
-
-                if (type === 'stage') {
-                    if(conventionBlock) conventionBlock.style.display = 'block'; 
-                } else if (type === 'etudes') {
-                    if(lettreBlock) lettreBlock.style.display = 'block';
-                }
-            }
-
-            window.addEventListener('DOMContentLoaded', (event) => {
-                const sel = document.getElementById('mobilite_type');
-                if (sel) changerTypeMobilite(sel.value);
-            });
-        </script>
         <footer>
             <p>&copy; 2026 - Aix-Marseille Université.</p>
             <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">

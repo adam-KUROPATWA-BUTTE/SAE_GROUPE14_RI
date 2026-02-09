@@ -156,20 +156,7 @@ class DashboardPageStudent
             <div id="quick-actions" class="quick-actions"></div>
         </div>
 
-        <script>
-            function changeLang(lang) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('lang', lang);
-                window.location.href = url.toString();
-            }
-        </script>
-        
-        <script>
-            const CHAT_CONFIG = {
-                lang: '<?= $this->lang ?>',
-                role: 'student'
-            };
-        </script>
+        <script src="js/main.js"></script>
         <script src="js/chatbot.js"></script>
 
         <footer>

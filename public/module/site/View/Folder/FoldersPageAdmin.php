@@ -8,58 +8,24 @@ namespace View\Folder;
  * Class FoldersPageAdmin
  *
  * Handles the HTML rendering for the administrative folder management page.
- * Includes lists, creation forms, and view/edit details forms.
+ * Logic is now separated: PHP for structure/data, JS (folders.js) for interactivity.
  */
 class FoldersPageAdmin
 {
-    /** @var string Current action (list, create, view) */
     private string $action;
-
-    /** @var array<string, mixed> Active filters for the list */
     private array $filters;
-
-    /** @var int Current page number */
     private int $page;
-
-    // Note: $perPage removed as property because it was unused in logic,
-    // but kept in constructor for compatibility.
-
-    /** @var string Flash message to display */
     private string $message;
-
-    /** @var string Current language code */
     private string $lang;
-
-    /** @var array<string, mixed>|null Data of a specific student */
     private ?array $studentData;
-
-    /** @var array<int, array<string, mixed>> List of paginated students */
     private array $paginatedData;
-
-    /** @var int Total number of records */
     private int $totalCount;
-
-    /** @var int Total number of pages */
     private int $totalPages;
 
-    /**
-     * Constructor.
-     *
-     * @param string                           $action        Current action.
-     * @param array<string, mixed>             $filters       Active filters.
-     * @param int                              $page          Current page.
-     * @param string                           $message       Flash message.
-     * @param string                           $lang          Language code.
-     * @param array<string, mixed>|null        $studentData   Specific student data.
-     * @param array<int, array<string, mixed>> $paginatedData List of students for the current page.
-     * @param int                              $totalCount    Total records.
-     * @param int                              $totalPages    Total pages.
-     */
     public function __construct(
         string $action,
         array $filters,
         int $page,
-        // $perPage a été supprimé ici
         string $message,
         string $lang,
         ?array $studentData = null,
@@ -78,24 +44,11 @@ class FoldersPageAdmin
         $this->totalPages = $totalPages;
     }
 
-    /**
-     * Helper to translate strings based on the current language.
-     *
-     * @param array{fr: string, en: string} $frEn Array containing translations.
-     * @return string The translated string.
-     */
     private function t(array $frEn): string
     {
         return ($this->lang === 'en') ? $frEn['en'] : $frEn['fr'];
     }
 
-    /**
-     * Builds a URL with current parameters and language.
-     *
-     * @param string               $path   Base path.
-     * @param array<string, mixed> $params Query parameters.
-     * @return string The complete URL.
-     */
     private function buildUrl(string $path, array $params = []): string
     {
         $params['lang'] = $this->lang;
@@ -103,11 +56,6 @@ class FoldersPageAdmin
         return $path . $separator . http_build_query($params);
     }
 
-    /**
-     * Main render method. Outputs the HTML structure.
-     *
-     * @return void
-     */
     public function render(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -133,8 +81,8 @@ class FoldersPageAdmin
                 <div class="lang-dropdown">
                     <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
                     <div class="dropdown-content">
-                        <a href="#" onclick="changeLang('fr'); return false;">Français</a>
-                        <a href="#" onclick="changeLang('en'); return false;">English</a>
+                        <a href="#">Français</a>
+                        <a href="#">English</a>
                     </div>
                 </div>
             </div>
@@ -167,163 +115,26 @@ class FoldersPageAdmin
             <?php endif; ?>
         </main>
 
-        <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
+        <div id="help-bubble">💬</div>
         <div id="help-popup" class="chat-popup">
             <div class="help-popup-header">
                 <span>Assistant</span>
-                <button onclick="toggleHelpPopup()">✖</button>
+                <button>✖</button>
             </div>
             <div id="chat-messages" class="chat-messages"></div>
             <div id="quick-actions" class="quick-actions"></div>
         </div>
 
-        <script>
-            const CHAT_CONFIG = {
-                lang: '<?= $this->lang ?>',
-                role: '<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>'
-            };
-        </script>
-        
-        <script src="js/chatbot.js?v=<?= time() ?>"></script>
-        
-        <script>
-            function toggleHelpPopup() {
-                const popup = document.getElementById('help-popup');
-                const isHidden = (window.getComputedStyle(popup).display === 'none');
-                
-                if (isHidden) {
-                    popup.style.display = 'flex';
-                    if (typeof scrollToBottom === 'function') {
-                        scrollToBottom();
-                    }
-                } else {
-                    popup.style.display = 'none';
-                }
-            }
+        <div id="app-config" 
+             data-lang="<?= htmlspecialchars($this->lang) ?>" 
+             data-role="admin"
+             style="display:none;">
+        </div>
 
-            function changeLang(lang) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('lang', lang);
-                window.location.href = url.toString();
-            }
+        <script src="js/main.js"></script>
+        <script src="js/chatbot.js"></script>
+        <script src="js/folders.js"></script>
 
-            function ouvrirFicheEtudiant(numetu) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('action', 'view');
-                url.searchParams.set('numetu', numetu);
-                window.location.href = url.toString();
-            }
-
-            function rechercherEtRevenirPage1() {
-                const searchInput = document.getElementById('search');
-                if (!searchInput) return;
-
-                const url = new URL(window.location.href);
-                if (searchInput.value.trim() !== '') {
-                    url.searchParams.set('search', searchInput.value.trim());
-                    url.searchParams.set('p', 1);
-                } else {
-                    url.searchParams.delete('search');
-                }
-                window.location.href = url.toString();
-            }
-
-            let rechercheTimeout;
-            function rechercherAvecDebounce() {
-                clearTimeout(rechercheTimeout);
-                rechercheTimeout = setTimeout(() => {
-                    rechercherEtRevenirPage1();
-                }, 3000);
-            }
-
-            function changerTypeMobilite(type) {
-                const conventionBlock = document.getElementById('justificatif_convention');
-                const lettreBlock = document.getElementById('lettre_motivation');
-
-                if(conventionBlock) conventionBlock.style.display = 'none';
-                if(lettreBlock) lettreBlock.style.display = 'none';
-
-                if (type === 'stage') {
-                    if(conventionBlock) conventionBlock.style.display = 'block'; 
-                } else if (type === 'etudes') {
-                    if(lettreBlock) lettreBlock.style.display = 'block';
-                }
-            }
-
-            function activerModification() {
-                document.querySelectorAll('.creation-form input, .creation-form select').forEach(field => {
-                    if (field.id !== 'numetu' && field.id !== 'numetu_display') {
-                        field.disabled = false;
-                        field.style.backgroundColor = 'white';
-                        field.style.color = 'black';
-                    }
-                });
-                const btnMod = document.getElementById('btn-modifier');
-                const btnSave = document.getElementById('btn-enregistrer');
-                const btnCancel = document.getElementById('btn-annuler');
-                
-                if(btnMod) btnMod.style.display = 'none';
-                if(btnSave) btnSave.style.display = 'inline-block';
-                if(btnCancel) btnCancel.style.display = 'inline-block';
-            }
-
-            window.addEventListener('DOMContentLoaded', () => {
-                const sel = document.getElementById('mobilite_type');
-                if (sel) changerTypeMobilite(sel.value);
-
-                const typeCheckboxes = document.querySelectorAll('input[name="entrant_sortant"]');
-                typeCheckboxes.forEach(checkbox => {
-                    checkbox.addEventListener('click', function() {
-                        typeCheckboxes.forEach(other => { if (other !== this) other.checked = false; });
-                        appliquerFiltres();
-                    });
-                });
-
-                const zoneCheckboxes = document.querySelectorAll('input[name="zone"]');
-                zoneCheckboxes.forEach(checkbox => {
-                    checkbox.addEventListener('click', function() {
-                        zoneCheckboxes.forEach(other => { if (other !== this) other.checked = false; });
-                        appliquerFiltres();
-                    });
-                });
-
-                const filterComplet = document.getElementById('filter-complet');
-                if (filterComplet) filterComplet.addEventListener('change', appliquerFiltres);
-
-                const dateDebut = document.getElementById('date-debut');
-                if (dateDebut) dateDebut.addEventListener('change', appliquerFiltres);
-
-                const dateFin = document.getElementById('date-fin');
-                if (dateFin) dateFin.addEventListener('change', appliquerFiltres);
-            });
-
-            function appliquerFiltres() {
-                const url = new URL(window.location.href);
-
-                const typesChecked = Array.from(document.querySelectorAll('input[name="entrant_sortant"]:checked')).map(cb => cb.value);
-                if (typesChecked.length > 0) url.searchParams.set('type', typesChecked[typesChecked.length - 1]);
-                else url.searchParams.delete('type');
-
-                const zonesChecked = Array.from(document.querySelectorAll('input[name="zone"]:checked')).map(cb => cb.value);
-                if (zonesChecked.length > 0) url.searchParams.set('zone', zonesChecked[zonesChecked.length - 1]);
-                else url.searchParams.delete('zone');
-
-                const completVal = document.getElementById('filter-complet');
-                if (completVal && completVal.value !== 'all') url.searchParams.set('complet', completVal.value);
-                else url.searchParams.delete('complet');
-
-                const dateDebut = document.getElementById('date-debut');
-                if (dateDebut && dateDebut.value) url.searchParams.set('date_debut', dateDebut.value);
-                else url.searchParams.delete('date_debut');
-
-                const dateFin = document.getElementById('date-fin');
-                if (dateFin && dateFin.value) url.searchParams.set('date_fin', dateFin.value);
-                else url.searchParams.delete('date_fin');
-
-                url.searchParams.set('p', 1);
-                window.location.href = url.toString();
-            }
-        </script>
         <footer>
             <p>&copy; 2026 - Aix-Marseille Université.</p>
             <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
@@ -335,17 +146,11 @@ class FoldersPageAdmin
         <?php
     }
 
-    /**
-     * Renders the list of students (Table view).
-     *
-     * @return void
-     */
     private function renderStudentsList(): void
     {
         $etudiants = $this->paginatedData;
         $total = $this->totalCount;
         $totalPages = $this->totalPages;
-
         ?>
         <h1><?= $this->t(['fr' => 'Liste des étudiants','en' => 'Students List']) ?></h1>
 
@@ -357,10 +162,8 @@ class FoldersPageAdmin
             <div class="search-container-toolbar">
                 <label for="search" class="search-label"><?= $this->t(['fr' => 'Rechercher','en' => 'Search']) ?></label>
                 <input type="text" id="search" name="search" placeholder="Nom, prénom, email..." 
-                       value="<?= htmlspecialchars(strval($this->filters['search'] ?? '')) ?>" 
-                       oninput="rechercherAvecDebounce()" 
-                       onkeypress="if(event.key === 'Enter') rechercherEtRevenirPage1()">
-                <button type="button" class="btn-search" onclick="rechercherEtRevenirPage1()">
+                       value="<?= htmlspecialchars(strval($this->filters['search'] ?? '')) ?>">
+                <button type="button" class="btn-search">
                     <img src="img/loupe.png" alt="Rechercher">
                 </button>
             </div>
@@ -399,7 +202,7 @@ class FoldersPageAdmin
 
                 <div class="filter-group">
                     <label for="filter-complet"><?= $this->t(['fr' => 'Statut :','en' => 'Status:']) ?></label>
-                    <select id="filter-complet" onchange="appliquerFiltres()">
+                    <select id="filter-complet">
                         <option value="all" <?= (strval($this->filters['complet'] ?? 'all')) === 'all' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Tous','en' => 'All']) ?></option>
                         <option value="1" <?= (strval($this->filters['complet'] ?? '')) === '1' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Complet','en' => 'Complete']) ?></option>
                         <option value="0" <?= (strval($this->filters['complet'] ?? '')) === '0' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Incomplet','en' => 'Incomplete']) ?></option>
@@ -433,12 +236,8 @@ class FoldersPageAdmin
             <tbody>
             <?php foreach ($etudiants as $etudiant) : ?>
                 <?php
-                // Safe JSON decoding
                 $rawPieces = strval($etudiant['PiecesJustificatives'] ?? '{}');
                 $decoded = json_decode($rawPieces, true);
-
-                // Explicit type hint to ensure PHPStan knows this is an array
-                /** @var array<string, mixed> $pieces */
                 $pieces = is_array($decoded) ? $decoded : [];
 
                 $mobilityType = '-';
@@ -453,10 +252,9 @@ class FoldersPageAdmin
                 $prenom = strval($etudiant['Prenom'] ?? '');
                 $type = strval($etudiant['Type'] ?? '');
                 $zone = strval($etudiant['Zone'] ?? '');
-                // Correction Level 9: intval casting
                 $isComplete = intval($etudiant['IsComplete'] ?? 0);
                 ?>
-                <tr onclick="ouvrirFicheEtudiant('<?= htmlspecialchars($numEtu) ?>')">
+                <tr class="clickable-row" data-numetu="<?= htmlspecialchars($numEtu) ?>">
                     <td><?= htmlspecialchars($nom) ?></td>
                     <td><?= htmlspecialchars($prenom) ?></td>
                     <td><?= htmlspecialchars(strval($etudiant['DateNaissance'] ?? '')) ?></td>
@@ -499,11 +297,6 @@ class FoldersPageAdmin
         <?php
     }
 
-    /**
-     * Renders the form to create a new student folder.
-     *
-     * @return void
-     */
     private function renderCreateForm(): void
     {
         ?>
@@ -576,7 +369,7 @@ class FoldersPageAdmin
                 <input type="file" name="cv" id="cv" accept=".pdf,.doc,.docx">
 
                 <label for="mobilite_type"><?= $this->t(['fr' => 'Type de mobilité','en' => 'Mobility Type']) ?></label>
-                <select name="mobilite_type" id="mobilite_type" onchange="changerTypeMobilite(this.value)">
+                <select name="mobilite_type" id="mobilite_type">
                     <option value=""><?= $this->t(['fr' => '-- Choisir --','en' => '-- Choose --']) ?></option>
                     <option value="stage"><?= $this->t(['fr' => 'Stage','en' => 'Internship']) ?></option>
                     <option value="etudes"><?= $this->t(['fr' => 'Études','en' => 'Studies']) ?></option>
@@ -602,11 +395,6 @@ class FoldersPageAdmin
         <?php
     }
 
-    /**
-     * Renders the detailed view of a student folder (Edit Mode).
-     *
-     * @return void
-     */
     private function renderViewForm(): void
     {
         if (!$this->studentData) {
@@ -615,14 +403,8 @@ class FoldersPageAdmin
         }
 
         $student = $this->studentData;
+        $pieces = (isset($student['pieces']) && is_array($student['pieces'])) ? $student['pieces'] : [];
 
-        // Extract pieces safely
-        /** @var array<string, mixed> $pieces */
-        $pieces = (isset($student['pieces']) && is_array($student['pieces']))
-            ? $student['pieces']
-            : [];
-
-        // Determine if it is 'stage' or 'studies' based on existing files.
         $detectedType = '';
         if (isset($pieces['convention']) && !empty($pieces['convention'])) {
             $detectedType = 'stage';
@@ -630,12 +412,10 @@ class FoldersPageAdmin
             $detectedType = 'etudes';
         }
 
-        // CORRECTION LEVEL 9: Preparing strict string values for input values
-        // PHPStan strictly forbids passing mixed to htmlspecialchars.
         $valNom = htmlspecialchars(strval($student['Nom'] ?? ''));
         $valPrenom = htmlspecialchars(strval($student['Prenom'] ?? ''));
         $valDate = htmlspecialchars(strval($student['DateNaissance'] ?? ''));
-        $valSexe = strval($student['Sexe'] ?? ''); // Not htmlspecialchars because used in attributes with known safe values
+        $valSexe = strval($student['Sexe'] ?? '');
         $valAdresse = htmlspecialchars(strval($student['Adresse'] ?? ''));
         $valCP = htmlspecialchars(strval($student['CodePostal'] ?? ''));
         $valVille = htmlspecialchars(strval($student['Ville'] ?? ''));
@@ -712,7 +492,7 @@ class FoldersPageAdmin
                 </select>
 
                 <label for="mobilite_type"><?= $this->t(['fr' => 'Type de mobilité','en' => 'Mobility Type']) ?></label>
-                <select name="mobilite_type" id="mobilite_type" onchange="changerTypeMobilite(this.value)" disabled class="input-disabled">
+                <select name="mobilite_type" id="mobilite_type" disabled class="input-disabled">
                     <option value=""><?= $this->t(['fr' => '-- Choisir --','en' => '-- Choose --']) ?></option>
                     <option value="stage" <?= $detectedType === 'stage' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Stage','en' => 'Internship']) ?></option>
                     <option value="etudes" <?= $detectedType === 'etudes' ? 'selected' : '' ?>><?= $this->t(['fr' => 'Études','en' => 'Studies']) ?></option>
@@ -784,7 +564,6 @@ class FoldersPageAdmin
                 </div>
 
                 <?php
-                // CORRECTION LEVEL 9: intval casting
                 $isComplete = intval($student['IsComplete'] ?? 0);
                 ?>
                 <div class="status-block status-<?= $isComplete ? 'complete' : 'incomplete' ?>">
@@ -804,7 +583,7 @@ class FoldersPageAdmin
             </div>
 
             <div class="form-actions">
-                <button type="button" id="btn-modifier" class="btn-danger" onclick="activerModification()">
+                <button type="button" id="btn-modifier" class="btn-danger">
                     <?= $this->t(['fr' => 'Modifier','en' => 'Edit']) ?>
                 </button>
 
@@ -824,29 +603,17 @@ class FoldersPageAdmin
         <?php
     }
 
-    /**
-     * Builds pagination URL preserving current filters.
-     *
-     * @param int $page Target page number.
-     * @return string URL.
-     */
     private function buildPaginationUrl(int $page): string
     {
         $params = array_merge($this->filters, [
                 'p' => $page,
                 'page' => 'folders-admin'
         ]);
-        // Remove empty filters to keep URL clean
         $params = array_filter($params, fn($v) => !empty($v) || $v === 0 || $v === '0');
 
         return 'index.php?' . http_build_query($params);
     }
 
-    /**
-     * Checks if any filter is currently active.
-     *
-     * @return bool True if filters are active.
-     */
     private function hasActiveFilters(): bool
     {
         return (strval($this->filters['type'] ?? 'all')) !== 'all'
