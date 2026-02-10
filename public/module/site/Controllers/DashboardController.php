@@ -61,7 +61,6 @@ class DashboardController implements ControllerInterface
 
     private function showStudentDashboard(): void
     {
-        // ✅ CORRECTION ICI : 'etudiant' → 'student'
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'student') {
             header('Location: index.php?page=login'); // ✅ Aussi corrigé le chemin
             exit;
@@ -70,7 +69,6 @@ class DashboardController implements ControllerInterface
         $lang = $_GET['lang'] ?? 'fr';
         $lang = is_string($lang) ? $lang : 'fr';
 
-        // ✅ CORRECTION : Utiliser numetu au lieu de etudiant_id
         if (!isset($_SESSION['numetu'])) {
             header('Location: index.php?page=login');
             exit;
