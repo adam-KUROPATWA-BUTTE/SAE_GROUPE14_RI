@@ -10,6 +10,7 @@ use View\HomePage\HomePageStudent;
 /**
  * Controller responsible for the Student and Visitor Homepage.
  *
+
  * Responsibilities:
  * - Handle the 'home-student' route for non-admin users.
  * - Check if a student is logged in to adapt the view content.

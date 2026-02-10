@@ -4,6 +4,7 @@
 
 namespace Model\Folder;
 
+use Model\Repository\FolderRepositoryInterface;
 use PDO;
 use PDOException;
 use DateTime;
@@ -17,6 +18,51 @@ use Database;
  */
 class FolderAdmin
 {
+    private PDO $pdo;
+
+    // ✅ Enlever static, ajouter constructeur
+    public function __construct()
+    {
+        $this->pdo = Database::getInstance()->getConnection();
+    }
+
+    // ✅ Renommer pour correspondre à l'interface
+    public function findByNumEtu(string $numEtu): ?array
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                SELECT * FROM dossiers WHERE NumEtu = :numetu LIMIT 1
+            ");
+            $stmt->execute([':numetu' => $numEtu]);
+
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return is_array($result) ? $result : null;
+        } catch (PDOException $e) {
+            error_log("Error: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function save(array $data): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                INSERT INTO dossiers (NumEtu, Nom, Prenom, EmailPersonnel, Telephone)
+                VALUES (:NumEtu, :Nom, :Prenom, :EmailPersonnel, :Telephone)
+            ");
+
+            return $stmt->execute([
+                ':NumEtu' => $data['NumEtu'] ?? null,
+                ':Nom' => $data['Nom'] ?? null,
+                ':Prenom' => $data['Prenom'] ?? null,
+                ':EmailPersonnel' => $data['EmailPersonnel'] ?? null,
+                ':Telephone' => $data['Telephone'] ?? null,
+            ]);
+        } catch (PDOException $e) {
+            error_log("Error: " . $e->getMessage());
+            return false;
+        }
+    }
     /**
      * Get a PDO connection via the Database class.
      *
