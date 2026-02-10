@@ -1,34 +1,18 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
-
 namespace Controllers\site\FolderController;
 
-use Controllers\Auth_Guard;
-use View\Folder\FoldersPageStudent;
 use Controllers\ControllerInterface;
 use Model\Folder\FolderStudent;
+use View\Folder\FoldersPageStudent;
 
-/**
- * Controller for managing student folders (student side).
- */
 class FoldersControllerStudent implements ControllerInterface
 {
-    /**
-     * Checks if this controller supports the given page and method.
-     *
-     * @param string $page   Requested page name.
-     * @param string $method HTTP method used (GET, POST, etc.).
-     * @return bool True if the page is handled by this controller, false otherwise.
-     */
     public static function support(string $page, string $method): bool
     {
         return in_array($page, ['folders-student', 'update_my_folder', 'create_folder']);
     }
 
-    /**
-     * Main control method to handle the application flow.
-     */
     public function control(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -41,50 +25,54 @@ class FoldersControllerStudent implements ControllerInterface
         }
 
         $numetu = (string)$_SESSION['numetu'];
-        $lang = isset($_GET['lang']) ? (string)$_GET['lang'] : 'fr';
-        $page = isset($_GET['page']) ? (string)$_GET['page'] : '';
+        $lang = $_GET['lang'] ?? 'fr';
+        $page = $_GET['page'] ?? '';
 
-        // --- Routing Actions (POST) ---
+        // Routing POST
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($page === 'update_my_folder') {
-                $this->updateStudent($numetu, $lang);
+                $this->handleUpdateFolder($numetu, $lang);
                 return;
             }
             if ($page === 'create_folder') {
-                $this->createFolder($numetu, $lang);
+                $this->handleCreateFolder($numetu, $lang);
                 return;
             }
         }
 
-        // --- Get student folder details ---
-        $studentData = FolderStudent::getStudentDetails($numetu) ?: null;
+        // Afficher la page
+        $this->displayFolderPage($numetu, $lang);
+    }
 
-        // --- Flash message from session ---
-        $message = isset($_SESSION['message']) ? (string)$_SESSION['message'] : '';
+    /**
+     * Afficher la page du dossier étudiant
+     */
+    private function displayFolderPage(string $numetu, string $lang): void
+    {
+        $studentData = FolderStudent::getStudentDetails($numetu);
+
+        $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-        // --- Render the view ---
-        // CORRECTION: Suppression du paramètre 'view' (argument #3) car le constructeur de la vue en attend 4
         $view = new FoldersPageStudent($studentData, $numetu, $message, $lang);
         $view->render();
     }
 
     /**
-     * Creates a new folder for the student.
-     *
-     * @param string $numetu The student ID.
-     * @param string $lang   The current language.
+     * Créer un nouveau dossier
      */
-    private function createFolder(string $numetu, string $lang): void
+    private function handleCreateFolder(string $numetu, string $lang): void
     {
+        // Vérifier si le dossier existe déjà
         if (FolderStudent::getStudentDetails($numetu)) {
-            $_SESSION['message'] = ($lang === 'fr')
+            $_SESSION['message'] = $lang === 'fr'
                 ? "Vous avez déjà déposé un dossier."
                 : "You have already submitted an application.";
             header('Location: index.php?page=folders-student&lang=' . $lang);
             exit;
         }
 
+        // Récupérer les données du formulaire
         $data = [
             'NumEtu' => $numetu,
             'Nom' => $_POST['nom'] ?? '',
@@ -102,13 +90,8 @@ class FoldersControllerStudent implements ControllerInterface
             'Zone' => $_POST['zone'] ?? null
         ];
 
-        $errors = [];
-        if (empty($data['Nom']) || empty($data['Prenom'])) {
-            $errors[] = $lang === 'fr' ? "Nom et Prénom requis." : "Name and Firstname required.";
-        }
-        if (empty($data['Type']) || empty($data['Zone'])) {
-            $errors[] = $lang === 'fr' ? "Type et Zone requis." : "Type and Zone required.";
-        }
+        // Validation
+        $errors = $this->validateFolderData($data, $lang);
 
         if (!empty($errors)) {
             $_SESSION['message'] = implode(' ', $errors);
@@ -116,12 +99,20 @@ class FoldersControllerStudent implements ControllerInterface
             exit;
         }
 
-        $photoData = $this->getFileData('photo');
-        $cvData = $this->getFileData('cv');
-        $conventionData = $this->getFileData('convention');
-        $lettreData = $this->getFileData('lettre_motivation');
+        // Gérer les fichiers uploadés
+        $photoData = $this->getUploadedFileContent('photo');
+        $cvData = $this->getUploadedFileContent('cv');
+        $conventionData = $this->getUploadedFileContent('convention');
+        $lettreData = $this->getUploadedFileContent('lettre_motivation');
 
-        $success = FolderStudent::createDossier($data, $photoData, $cvData, $conventionData, $lettreData);
+        // Créer le dossier
+        $success = FolderStudent::createDossier(
+            $data,
+            $photoData,
+            $cvData,
+            $conventionData,
+            $lettreData
+        );
 
         $_SESSION['message'] = $success
             ? ($lang === 'fr' ? 'Votre demande a été déposée avec succès.' : 'Application submitted successfully.')
@@ -132,39 +123,42 @@ class FoldersControllerStudent implements ControllerInterface
     }
 
     /**
-     * Updates the student's folder information.
-     *
-     * @param string $numetu The student ID.
-     * @param string $lang   The current language.
+     * Mettre à jour un dossier existant
      */
-    private function updateStudent(string $numetu, string $lang): void
+    private function handleUpdateFolder(string $numetu, string $lang): void
     {
         $data = [
-            'NumEtu'         => $numetu,
-            'Adresse'        => $_POST['adresse'] ?? null,
-            'CodePostal'     => $_POST['cp'] ?? null,
-            'Ville'          => $_POST['ville'] ?? null,
-            'Telephone'      => $_POST['telephone'] ?? null,
+            'NumEtu' => $numetu,
+            'Adresse' => $_POST['adresse'] ?? null,
+            'CodePostal' => $_POST['cp'] ?? null,
+            'Ville' => $_POST['ville'] ?? null,
+            'Telephone' => $_POST['telephone'] ?? null,
             'EmailPersonnel' => $_POST['email_perso'] ?? null,
         ];
 
-        $errors = [];
+        // Validation
         if (empty($data['EmailPersonnel'])) {
-            $errors[] = $lang === 'fr' ? "L'email personnel est requis." : "Personal email is required.";
-        }
-
-        if (!empty($errors)) {
-            $_SESSION['message'] = implode(' ', $errors);
+            $_SESSION['message'] = $lang === 'fr'
+                ? "L'email personnel est requis."
+                : "Personal email is required.";
             header('Location: index.php?page=folders-student&lang=' . $lang);
             exit;
         }
 
-        $photoData = $this->getFileData('photo');
-        $cvData = $this->getFileData('cv');
-        $conventionData = $this->getFileData('convention');
-        $lettreData = $this->getFileData('lettre_motivation');
+        // Gérer les fichiers
+        $photoData = $this->getUploadedFileContent('photo');
+        $cvData = $this->getUploadedFileContent('cv');
+        $conventionData = $this->getUploadedFileContent('convention');
+        $lettreData = $this->getUploadedFileContent('lettre_motivation');
 
-        $success = FolderStudent::updateDossier($data, $photoData, $cvData, $conventionData, $lettreData);
+        // Mettre à jour
+        $success = FolderStudent::updateDossier(
+            $data,
+            $photoData,
+            $cvData,
+            $conventionData,
+            $lettreData
+        );
 
         $_SESSION['message'] = $success
             ? ($lang === 'fr' ? 'Dossier mis à jour avec succès.' : 'Folder updated successfully.')
@@ -175,18 +169,58 @@ class FoldersControllerStudent implements ControllerInterface
     }
 
     /**
-     * Helper to retrieve file content if uploaded correctly.
+     * Valider les données du dossier
      *
-     * @param string $inputName The name attribute of the file input.
-     * @return string|null The binary content of the file or null if not uploaded.
+     * @return array<string> Liste des erreurs
      */
-    private function getFileData(string $inputName): ?string
+    private function validateFolderData(array $data, string $lang): array
     {
-        if (isset($_FILES[$inputName]) && $_FILES[$inputName]['error'] === UPLOAD_ERR_OK) {
-            // CORRECTION: file_get_contents peut renvoyer false
-            $content = file_get_contents($_FILES[$inputName]['tmp_name']);
-            return ($content === false) ? null : $content;
+        $errors = [];
+
+        if (empty($data['Nom']) || empty($data['Prenom'])) {
+            $errors[] = $lang === 'fr'
+                ? "Nom et Prénom requis."
+                : "Name and Firstname required.";
         }
-        return null;
+
+        if (empty($data['EmailPersonnel']) || !filter_var($data['EmailPersonnel'], FILTER_VALIDATE_EMAIL)) {
+            $errors[] = $lang === 'fr'
+                ? "Email personnel valide requis."
+                : "Valid personal email required.";
+        }
+
+        if (empty($data['Telephone'])) {
+            $errors[] = $lang === 'fr'
+                ? "Téléphone requis."
+                : "Phone number required.";
+        }
+
+        if (empty($data['Type']) || empty($data['Zone'])) {
+            $errors[] = $lang === 'fr'
+                ? "Type et Zone requis."
+                : "Type and Zone required.";
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Récupérer le contenu d'un fichier uploadé
+     */
+    private function getUploadedFileContent(string $fieldName): ?string
+    {
+        if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {
+            return null;
+        }
+
+        $tmpName = $_FILES[$fieldName]['tmp_name'];
+
+        if (!is_string($tmpName) || !file_exists($tmpName)) {
+            return null;
+        }
+
+        $content = file_get_contents($tmpName);
+
+        return $content !== false ? $content : null;
     }
 }
