@@ -10,15 +10,22 @@ namespace View\WebPlan;
  */
 class WebPlanPageStudent
 {
+    /** @var array<int, array{url: string, label: string}> */
     private array $links;
     private string $lang;
 
+    /**
+     * @param array<int, array{url: string, label: string}> $links
+     */
     public function __construct(array $links = [], string $lang = 'fr')
     {
         $this->links = $links;
         $this->lang = $lang;
     }
 
+    /**
+     * @param array{fr: string, en: string} $frEn
+     */
     private function t(array $frEn): string
     {
         return $this->lang === 'en' ? $frEn['en'] : $frEn['fr'];

@@ -50,7 +50,7 @@ class EmailReminderTest extends TestCase
 
         $this->assertIsArray($result);
         $this->assertCount(2, $result);
-        
+
         foreach ($result as $dossier) {
             $this->assertArrayHasKey('dossier_id', $dossier);
             $this->assertArrayHasKey('etudiant_id', $dossier);
@@ -137,7 +137,7 @@ class EmailReminderTest extends TestCase
     public function testLastRelanceWithinDaysReturnsFalseWhenOldRelance(): void
     {
         $dossierId = 1;
-        
+
         // Insérer une vieille relance (simuler en modifiant manuellement)
         $this->pdo->exec("
             INSERT INTO relances (dossier_id, message, date_relance) 

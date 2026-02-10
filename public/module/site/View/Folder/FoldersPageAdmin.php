@@ -13,15 +13,23 @@ namespace View\Folder;
 class FoldersPageAdmin
 {
     private string $action;
+    /** @var array<string, mixed> */
     private array $filters;
     private int $page;
     private string $message;
     private string $lang;
+    /** @var array<string, mixed>|null */
     private ?array $studentData;
+    /** @var array<int, array<string, mixed>> */
     private array $paginatedData;
     private int $totalCount;
     private int $totalPages;
 
+    /**
+     * @param array<string, mixed> $filters
+     * @param array<int, array<string, mixed>> $paginatedData
+     * @param array<string, mixed>|null $studentData
+     */
     public function __construct(
         string $action,
         array $filters,
@@ -44,11 +52,18 @@ class FoldersPageAdmin
         $this->totalPages = $totalPages;
     }
 
+    /**
+     * @param array{fr: string, en: string} $frEn
+     */
     private function t(array $frEn): string
     {
         return ($this->lang === 'en') ? $frEn['en'] : $frEn['fr'];
     }
 
+    /**
+     * @param string $path
+     * @param array<string, mixed> $params
+     */
     private function buildUrl(string $path, array $params = []): string
     {
         $params['lang'] = $this->lang;

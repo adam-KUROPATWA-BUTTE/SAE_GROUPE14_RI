@@ -23,5 +23,4 @@ class HelpControllerTest extends TestCase
         $this->assertFalse(HelpController::support('login', 'GET'));
         $this->assertFalse(HelpController::support('dashboard', 'GET'));
     }
-
 }

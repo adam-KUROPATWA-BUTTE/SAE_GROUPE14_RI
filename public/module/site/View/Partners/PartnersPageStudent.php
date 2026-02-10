@@ -21,12 +21,18 @@ class PartnersPageStudent
         $this->lang = $lang;
     }
 
+    /**
+     * @param array<string, mixed> $params
+     */
     private function buildUrl(string $path, array $params = []): string
     {
         $params['lang'] = $this->lang;
         return $path . '?' . http_build_query($params);
     }
 
+    /**
+     * @param array{fr: string, en: string} $frEn
+     */
     private function t(array $frEn): string
     {
         return $this->lang === 'en' ? $frEn['en'] : $frEn['fr'];

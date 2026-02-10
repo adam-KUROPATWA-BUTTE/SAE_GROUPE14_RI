@@ -33,7 +33,7 @@ class TestUserStudent extends TestCase
     public function testLoginMethodExists(): void
     {
         $this->assertTrue(method_exists(UserStudent::class, 'login'));
-        
+
         $reflection = new \ReflectionMethod(UserStudent::class, 'login');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -45,7 +45,7 @@ class TestUserStudent extends TestCase
     public function testRegisterMethodExists(): void
     {
         $this->assertTrue(method_exists(UserStudent::class, 'register'));
-        
+
         $reflection = new \ReflectionMethod(UserStudent::class, 'register');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -57,7 +57,7 @@ class TestUserStudent extends TestCase
     public function testCheckDossierExistsMethodExists(): void
     {
         $this->assertTrue(method_exists(UserStudent::class, 'checkDossierExists'));
-        
+
         $reflection = new \ReflectionMethod(UserStudent::class, 'checkDossierExists');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -69,7 +69,7 @@ class TestUserStudent extends TestCase
     public function testGetDossierMethodExists(): void
     {
         $this->assertTrue(method_exists(UserStudent::class, 'getDossier'));
-        
+
         $reflection = new \ReflectionMethod(UserStudent::class, 'getDossier');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -81,7 +81,7 @@ class TestUserStudent extends TestCase
     public function testCreateDossierMethodExists(): void
     {
         $this->assertTrue(method_exists(UserStudent::class, 'createDossier'));
-        
+
         $reflection = new \ReflectionMethod(UserStudent::class, 'createDossier');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -93,7 +93,7 @@ class TestUserStudent extends TestCase
     public function testLogoutMethodExists(): void
     {
         $this->assertTrue(method_exists(UserStudent::class, 'logout'));
-        
+
         $reflection = new \ReflectionMethod(UserStudent::class, 'logout');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -106,7 +106,7 @@ class TestUserStudent extends TestCase
     public function testIsStudentMethodExists(): void
     {
         $this->assertTrue(method_exists(UserStudent::class, 'isStudent'));
-        
+
         $reflection = new \ReflectionMethod(UserStudent::class, 'isStudent');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -119,7 +119,7 @@ class TestUserStudent extends TestCase
     public function testGetByIdMethodExists(): void
     {
         $this->assertTrue(method_exists(UserStudent::class, 'getById'));
-        
+
         $reflection = new \ReflectionMethod(UserStudent::class, 'getById');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -160,7 +160,7 @@ class TestUserStudent extends TestCase
     public function testLoginReturnStructure(): void
     {
         $response = ['success' => true, 'role' => 'etudiant'];
-        
+
         $this->assertIsArray($response);
         $this->assertArrayHasKey('success', $response);
         $this->assertTrue($response['success']);
@@ -173,7 +173,7 @@ class TestUserStudent extends TestCase
     public function testLoginFailedReturnStructure(): void
     {
         $response = ['success' => false];
-        
+
         $this->assertIsArray($response);
         $this->assertArrayHasKey('success', $response);
         $this->assertFalse($response['success']);
@@ -242,7 +242,7 @@ class TestUserStudent extends TestCase
     public function testStudentTypeValidation(): void
     {
         $validTypes = ['entrant', 'sortant'];
-        
+
         foreach ($validTypes as $type) {
             $this->assertTrue(in_array($type, ['entrant', 'sortant']));
         }
@@ -473,7 +473,7 @@ class TestUserStudent extends TestCase
         $_SESSION['type_etudiant'] = 'entrant';
 
         $requiredKeys = ['user_role', 'etudiant_id', 'etudiant_nom', 'etudiant_prenom', 'numetu', 'type_etudiant'];
-        
+
         foreach ($requiredKeys as $key) {
             $this->assertArrayHasKey($key, $_SESSION);
         }
@@ -522,7 +522,7 @@ class TestUserStudent extends TestCase
         ];
 
         $this->assertCount(3, $students);
-        
+
         $ids = array_column($students, 'id');
         $this->assertSame(count($ids), count(array_unique($ids)));
 
@@ -560,7 +560,7 @@ class TestUserStudent extends TestCase
     {
         $createdAt = '2024-01-13 10:30:45';
         $dateTime = \DateTime::createFromFormat('Y-m-d H:i:s', $createdAt);
-        
+
         $this->assertNotFalse($dateTime);
         $this->assertSame($createdAt, $dateTime->format('Y-m-d H:i:s'));
     }
@@ -583,7 +583,7 @@ class TestUserStudent extends TestCase
     public function testLoginErrorHandling(): void
     {
         $response = ['success' => false];
-        
+
         $this->assertFalse($response['success']);
         $this->assertArrayNotHasKey('role', $response);
     }

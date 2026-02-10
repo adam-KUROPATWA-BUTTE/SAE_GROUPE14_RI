@@ -6,6 +6,7 @@ class Autoloader
 {
     private static array $prefixes = [
         'Controllers\\site\\' => __DIR__ . '/public/module/site/Controllers/',
+        'Site\\' => __DIR__ . '/public/module/site/',
         'Controllers\\' => __DIR__ . '/public/module/site/Controllers/',
         'Model\\' => __DIR__ . '/public/module/site/Model/',
         'Service\\' => __DIR__ . '/public/module/site/Service/',

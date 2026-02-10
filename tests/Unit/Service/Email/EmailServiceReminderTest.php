@@ -53,7 +53,7 @@ class EmailReminderServiceTest extends TestCase
         // Vérifier que le script est échappé
         $this->assertStringNotContainsString('<script>', $result);
         $this->assertStringContainsString('&lt;script&gt;', $result);
-        
+
         // Vérifier que les balises HTML dans les items sont échappées
         $this->assertStringContainsString('&lt;b&gt;', $result);
     }
@@ -99,7 +99,7 @@ class EmailReminderServiceTest extends TestCase
 
         // Vérifier qu'il y a un message par défaut
         $this->assertStringContainsString('compléter les pièces manquantes', $result);
-        
+
         // Vérifier qu'il n'y a pas de liste <ul>
         $this->assertStringNotContainsString('<ul', $result);
     }

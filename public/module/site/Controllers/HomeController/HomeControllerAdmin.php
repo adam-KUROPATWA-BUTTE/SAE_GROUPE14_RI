@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Controllers\site\HomeController;
 
 use Controllers\ControllerInterface;
@@ -26,14 +25,11 @@ class HomeControllerAdmin implements ControllerInterface
         $completionPercentage = 0;
 
         try {
-
             $repository = new DossierRepositoryPDO();
             $useCase = new GetAdminStatsUseCase($repository);
 
             $completionPercentage = $useCase->execute();
-
         } catch (PDOException $e) {
-
             error_log("HomeControllerAdmin Error: " . $e->getMessage());
             $completionPercentage = 0;
         }

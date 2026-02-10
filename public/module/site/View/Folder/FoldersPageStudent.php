@@ -11,11 +11,15 @@ namespace View\Folder;
  */
 class FoldersPageStudent
 {
+    /** @var array<string, mixed> */
     private array $dossier;
     private string $studentId;
     private string $message;
     private string $lang;
 
+    /**
+     * @param array<string, mixed>|null $dossier
+     */
     public function __construct(?array $dossier, string $studentId, string $message, string $lang)
     {
         $this->dossier = $dossier ?? [];
@@ -24,11 +28,17 @@ class FoldersPageStudent
         $this->lang = $lang;
     }
 
+    /**
+     * @param array{fr: string, en: string} $frEn
+     */
     private function t(array $frEn): string
     {
         return $this->lang === 'en' ? $frEn['en'] : $frEn['fr'];
     }
 
+    /**
+     * @param array<string, mixed> $params
+     */
     private function buildUrl(string $path, array $params = []): string
     {
         $params['lang'] = $this->lang;
@@ -55,7 +65,9 @@ class FoldersPageStudent
 
         $isCreateMode = empty($this->dossier);
         $formAction = $isCreateMode ? 'create_folder' : 'update_my_folder';
-        $pieces = $this->dossier['pieces'] ?? [];
+        $rawPieces = $this->dossier['pieces'] ?? [];
+        /** @var array<string, mixed> $pieces */
+        $pieces = is_array($rawPieces) ? $rawPieces : [];
 
         $detectedType = '';
         if (!$isCreateMode) {
