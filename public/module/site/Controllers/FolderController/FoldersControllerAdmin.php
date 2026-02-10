@@ -117,9 +117,9 @@ class FoldersControllerAdmin
             $message,
             $lang,
             $studentData,
-            $result['data'],        // Données paginées
-            $result['total'],       // Nombre total
-            $result['totalPages']   // Nombre de pages
+            $result['data'],
+            $result['total'],
+            $result['totalPages']
         );
         $view->render();
     }
