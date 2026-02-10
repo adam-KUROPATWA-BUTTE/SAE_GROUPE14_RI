@@ -33,7 +33,7 @@ class TestUserAdmin extends TestCase
     public function testLoginMethodExists(): void
     {
         $this->assertTrue(method_exists(UserAdmin::class, 'login'));
-        
+
         $reflection = new \ReflectionMethod(UserAdmin::class, 'login');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -45,7 +45,7 @@ class TestUserAdmin extends TestCase
     public function testRegisterMethodExists(): void
     {
         $this->assertTrue(method_exists(UserAdmin::class, 'register'));
-        
+
         $reflection = new \ReflectionMethod(UserAdmin::class, 'register');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -57,7 +57,7 @@ class TestUserAdmin extends TestCase
     public function testLogoutMethodExists(): void
     {
         $this->assertTrue(method_exists(UserAdmin::class, 'logout'));
-        
+
         $reflection = new \ReflectionMethod(UserAdmin::class, 'logout');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -70,7 +70,7 @@ class TestUserAdmin extends TestCase
     public function testIsAdminMethodExists(): void
     {
         $this->assertTrue(method_exists(UserAdmin::class, 'isAdmin'));
-        
+
         $reflection = new \ReflectionMethod(UserAdmin::class, 'isAdmin');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -83,7 +83,7 @@ class TestUserAdmin extends TestCase
     public function testIsSuperAdminMethodExists(): void
     {
         $this->assertTrue(method_exists(UserAdmin::class, 'isSuperAdmin'));
-        
+
         $reflection = new \ReflectionMethod(UserAdmin::class, 'isSuperAdmin');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -96,7 +96,7 @@ class TestUserAdmin extends TestCase
     public function testGetByIdMethodExists(): void
     {
         $this->assertTrue(method_exists(UserAdmin::class, 'getById'));
-        
+
         $reflection = new \ReflectionMethod(UserAdmin::class, 'getById');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -108,7 +108,7 @@ class TestUserAdmin extends TestCase
     public function testGetAllMethodExists(): void
     {
         $this->assertTrue(method_exists(UserAdmin::class, 'getAll'));
-        
+
         $reflection = new \ReflectionMethod(UserAdmin::class, 'getAll');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -174,7 +174,7 @@ class TestUserAdmin extends TestCase
     {
         // Simulate successful login response structure
         $response = ['success' => true, 'role' => 'admin'];
-        
+
         $this->assertIsArray($response);
         $this->assertArrayHasKey('success', $response);
         $this->assertTrue($response['success']);
@@ -187,7 +187,7 @@ class TestUserAdmin extends TestCase
     public function testLoginFailedReturnStructure(): void
     {
         $response = ['success' => false];
-        
+
         $this->assertIsArray($response);
         $this->assertArrayHasKey('success', $response);
         $this->assertFalse($response['success']);
@@ -501,7 +501,7 @@ class TestUserAdmin extends TestCase
         ];
 
         $this->assertCount(2, $adminList);
-        
+
         foreach ($adminList as $admin) {
             $this->assertArrayHasKey('id', $admin);
             $this->assertArrayHasKey('email', $admin);
@@ -553,7 +553,7 @@ class TestUserAdmin extends TestCase
         ];
 
         $this->assertCount(3, $admins);
-        
+
         // Each admin has unique ID
         $ids = array_column($admins, 'id');
         $this->assertSame(count($ids), count(array_unique($ids)));
@@ -571,7 +571,7 @@ class TestUserAdmin extends TestCase
         $_SESSION['is_super_admin'] = true;
 
         $requiredKeys = ['user_role', 'admin_id', 'admin_nom', 'admin_prenom', 'is_super_admin'];
-        
+
         foreach ($requiredKeys as $key) {
             $this->assertArrayHasKey($key, $_SESSION);
         }
@@ -584,7 +584,7 @@ class TestUserAdmin extends TestCase
     {
         // Simulate error response
         $response = ['success' => false];
-        
+
         $this->assertFalse($response['success']);
         $this->assertArrayNotHasKey('role', $response);
     }
@@ -613,7 +613,7 @@ class TestUserAdmin extends TestCase
     {
         $createdAt = '2024-01-13 10:30:45';
         $dateTime = \DateTime::createFromFormat('Y-m-d H:i:s', $createdAt);
-        
+
         $this->assertNotFalse($dateTime);
         $this->assertSame($createdAt, $dateTime->format('Y-m-d H:i:s'));
     }

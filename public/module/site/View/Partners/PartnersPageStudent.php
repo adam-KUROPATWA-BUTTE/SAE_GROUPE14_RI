@@ -8,22 +8,13 @@ namespace View\Partners;
  * Class PartnersPageStudent
  *
  * Student view for displaying AMU partner universities.
- * Shows partner list, language selector, accessibility toggle (tritanopia), and chatbot.
+ * Logic is now separated: PHP for structure, JS (main.js) for interactivity.
  */
 class PartnersPageStudent
 {
-    /** @var string Page title */
     private string $titre;
-
-    /** @var string Current language ('fr' or 'en') */
     private string $lang;
 
-    /**
-     * Constructor.
-     *
-     * @param string $titre Page title
-     * @param string $lang  Current language
-     */
     public function __construct(string $titre, string $lang = 'fr')
     {
         $this->titre = $titre;
@@ -31,11 +22,7 @@ class PartnersPageStudent
     }
 
     /**
-     * Build a URL while preserving the current language.
-     *
-     * @param string               $path   Base path
-     * @param array<string, mixed> $params Additional query parameters
-     * @return string
+     * @param array<string, mixed> $params
      */
     private function buildUrl(string $path, array $params = []): string
     {
@@ -44,46 +31,31 @@ class PartnersPageStudent
     }
 
     /**
-     * Translate text based on current language.
-     *
-     * @param array{fr: string, en: string} $frEn ['fr' => '...', 'en' => '...']
-     * @return string
+     * @param array{fr: string, en: string} $frEn
      */
     private function t(array $frEn): string
     {
         return $this->lang === 'en' ? $frEn['en'] : $frEn['fr'];
     }
 
-    /**
-     * Render the student partners page HTML.
-     *
-     * @return void
-     */
     public function render(): void
     {
-        // Start session if not already started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        // Correction Level 9: Strict handling of mixed $_GET
         if (isset($_GET['lang'])) {
             $langParam = strval($_GET['lang']);
             if (in_array($langParam, ['fr', 'en'], true)) {
                 $_SESSION['lang'] = $langParam;
             }
         }
-
-        // Correction Level 9: Strict assignment from mixed $_SESSION
         $this->lang = isset($_SESSION['lang']) ? strval($_SESSION['lang']) : 'fr';
 
-        // Handle tritanopia (color-blind) mode
         if (isset($_GET['tritanopia'])) {
             $tritaParam = strval($_GET['tritanopia']);
             $_SESSION['tritanopia'] = ($tritaParam === '1');
         }
-
-        // Prepare strict boolean for view to avoid mixed access in template
         $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
 
         ?>
@@ -107,8 +79,8 @@ class PartnersPageStudent
                     <div class="lang-dropdown">
                         <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
                         <div class="dropdown-content">
-                            <a href="#" onclick="changeLang('fr'); return false;">Français</a>
-                            <a href="#" onclick="changeLang('en'); return false;">English</a>
+                            <a href="#">Français</a>
+                            <a href="#">English</a>
                         </div>
                     </div>
                 </div>
@@ -143,51 +115,23 @@ class PartnersPageStudent
                  alt="Partner Universities">
         </main>
 
-        <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
+        <div id="help-bubble">💬</div>
         <div id="help-popup" class="chat-popup">
             <div class="help-popup-header">
                 <span>Assistant</span>
-                <button onclick="toggleHelpPopup()">✖</button>
+                <button>✖</button>
             </div>
             <div id="chat-messages" class="chat-messages"></div>
             <div id="quick-actions" class="quick-actions"></div>
         </div>
 
-        <script>
-            // Chatbot configuration
-            const CHAT_CONFIG = {
-                lang: '<?= $this->lang ?>',
-                role: '<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>'
-            };
+        <div id="app-config" 
+             data-lang="<?= htmlspecialchars($this->lang) ?>" 
+             data-role="student"
+             style="display:none;">
+        </div>
 
-            // Language dropdown toggle
-            document.getElementById('current-lang').addEventListener('click', function(event) {
-                event.stopPropagation();
-                document.querySelector('.right-buttons').classList.toggle('show');
-            });
-
-            document.addEventListener('click', () => {
-                document.querySelector('.right-buttons').classList.remove('show');
-            });
-
-            function changeLang(lang) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('lang', lang);
-                window.location.href = url.toString();
-            }
-
-            // Responsive menu toggle
-            document.addEventListener("DOMContentLoaded", () => {
-                const menuToggle = document.createElement('button');
-                menuToggle.classList.add('menu-toggle');
-                menuToggle.innerHTML = '☰';
-                document.querySelector('.right-buttons').appendChild(menuToggle);
-
-                const navMenu = document.querySelector('nav.menu');
-                menuToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
-            });
-        </script>
-
+        <script src="js/main.js"></script>
         <script src="js/chatbot.js"></script>
 
         <footer>

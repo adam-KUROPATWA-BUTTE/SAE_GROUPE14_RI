@@ -265,7 +265,7 @@ class DashboardPageAdmin
             <div id="quick-actions" class="quick-actions"></div>
         </div>
         
-        <script>const CHAT_CONFIG = { lang: '<?= $this->lang ?>', role: 'admin' };</script>
+        <script src="js/main.js"></script>
         <script src="js/chatbot.js"></script>
         <footer><p>&copy; 2026 - Aix-Marseille Université.</p></footer>
         </body>

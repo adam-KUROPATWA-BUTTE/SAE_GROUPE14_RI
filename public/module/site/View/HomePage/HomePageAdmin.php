@@ -214,43 +214,15 @@ class HomePageAdmin
             <div id="quick-actions" class="quick-actions"></div>
         </div>
 
-        <script>
-            const CHAT_CONFIG = {
-                lang: '<?= $this->lang ?>',
-                role: '<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>'
-            };
-        </script>
+        <div id="app-config" 
+            data-lang="<?= htmlspecialchars($this->lang) ?>" 
+            data-role="<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>"
+            style="display:none;">
+        </div>
 
+        <script src="js/main.js"></script>
         <script src="js/chatbot.js"></script>
-
-        <script>
-            function changeLang(lang) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('lang', lang);
-                window.location.href = url.toString();
-            }
-
-            document.addEventListener("DOMContentLoaded", () => {
-                const themeToggle = document.getElementById('theme-toggle');
-
-                if (document.body.classList.contains('tritanopie')) {
-                    themeToggle.classList.add('active');
-                }
-
-                themeToggle.addEventListener('click', function () {
-                    document.body.classList.toggle('tritanopie');
-                    this.classList.toggle('active');
-
-                    const url = new URL(window.location.href);
-                    url.searchParams.set(
-                        'tritanopia',
-                        document.body.classList.contains('tritanopie') ? '1' : '0'
-                    );
-                    window.location.href = url.toString();
-                });
-            });
-        </script>
-
+    
         <footer>
             <p>&copy; 2026 - Aix-Marseille Université.</p>
             <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">

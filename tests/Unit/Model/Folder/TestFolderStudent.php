@@ -21,7 +21,7 @@ class TestFolderStudent extends TestCase
     public function testGetStudentDetailsMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderStudent::class, 'getStudentDetails'));
-        
+
         $reflection = new \ReflectionMethod(FolderStudent::class, 'getStudentDetails');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -33,7 +33,7 @@ class TestFolderStudent extends TestCase
     public function testGetMyFolderMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderStudent::class, 'getMyFolder'));
-        
+
         $reflection = new \ReflectionMethod(FolderStudent::class, 'getMyFolder');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -45,7 +45,7 @@ class TestFolderStudent extends TestCase
     public function testCreateDossierMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderStudent::class, 'createDossier'));
-        
+
         $reflection = new \ReflectionMethod(FolderStudent::class, 'createDossier');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -57,7 +57,7 @@ class TestFolderStudent extends TestCase
     public function testUpdateDossierMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderStudent::class, 'updateDossier'));
-        
+
         $reflection = new \ReflectionMethod(FolderStudent::class, 'updateDossier');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -69,7 +69,7 @@ class TestFolderStudent extends TestCase
     public function testGetConnectionPrivateMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderStudent::class, 'getConnection'));
-        
+
         $reflection = new \ReflectionMethod(FolderStudent::class, 'getConnection');
         $this->assertTrue($reflection->isPrivate());
         $this->assertTrue($reflection->isStatic());
@@ -85,7 +85,7 @@ class TestFolderStudent extends TestCase
 
         // Should have 5 parameters: $data, $photoData, $cvData, $conventionData, $lettreData
         $this->assertCount(5, $params);
-        
+
         $this->assertSame('data', $params[0]->getName());
         $this->assertSame('photoData', $params[1]->getName());
         $this->assertSame('cvData', $params[2]->getName());
@@ -107,7 +107,7 @@ class TestFolderStudent extends TestCase
 
         // Should have 5 parameters: $data, $photoData, $cvData, $conventionData, $lettreData
         $this->assertCount(5, $params);
-        
+
         $this->assertSame('data', $params[0]->getName());
         $this->assertSame('photoData', $params[1]->getName());
         $this->assertSame('cvData', $params[2]->getName());
@@ -123,7 +123,7 @@ class TestFolderStudent extends TestCase
         // Test that getMyFolder accepts int and converts to string
         $etudiantId = 12345;
         $this->assertIsInt($etudiantId);
-        
+
         // getMyFolder should convert int to string
         $stringId = (string)$etudiantId;
         $this->assertIsString($stringId);
@@ -151,7 +151,7 @@ class TestFolderStudent extends TestCase
         $this->assertArrayHasKey('cv', $decoded);
         $this->assertArrayHasKey('convention', $decoded);
         $this->assertArrayHasKey('lettre_motivation', $decoded);
-        
+
         // Test decode
         $this->assertSame('student_photo_data', base64_decode($decoded['photo']));
     }
@@ -205,7 +205,7 @@ class TestFolderStudent extends TestCase
         // Invalid date
         $invalidDate = '1998-13-45';
         $parsedDate = \DateTime::createFromFormat('Y-m-d', $invalidDate);
-        
+
         if (!$parsedDate || $parsedDate->format('Y-m-d') !== $invalidDate) {
             $this->assertTrue(true);
         }
@@ -247,7 +247,7 @@ class TestFolderStudent extends TestCase
     public function testPartialFileEncoding(): void
     {
         $pieces = [];
-        
+
         // Only photo is provided
         $photoData = 'photo_only';
         if ($photoData !== null) {
@@ -289,7 +289,7 @@ class TestFolderStudent extends TestCase
         $this->assertArrayHasKey('Prenom', $folderData);
         $this->assertArrayHasKey('EmailPersonnel', $folderData);
         $this->assertArrayHasKey('PiecesJustificatives', $folderData);
-        
+
         $pieces = json_decode($folderData['PiecesJustificatives'], true);
         $this->assertIsArray($pieces);
     }
@@ -328,7 +328,7 @@ class TestFolderStudent extends TestCase
 
         // When only CV is updated
         $cvData = 'new_cv_data';
-        
+
         if ($cvData !== null) {
             $existingPieces['cv'] = base64_encode($cvData);
         }
@@ -347,10 +347,10 @@ class TestFolderStudent extends TestCase
     public function testNullFileParametersPreserveFiles(): void
     {
         $pieces = ['photo' => 'encoded_photo', 'cv' => 'encoded_cv'];
-        
+
         $photoData = null;
         $cvData = null;
-        
+
         // When both are null, nothing should change
         if ($photoData !== null) {
             $pieces['photo'] = base64_encode($photoData);
@@ -395,7 +395,7 @@ class TestFolderStudent extends TestCase
     public function testEmptyPiecesWhenNoFilesProvided(): void
     {
         $pieces = [];
-        
+
         $photoData = null;
         $cvData = null;
         $conventionData = null;
@@ -558,7 +558,7 @@ class TestFolderStudent extends TestCase
     public function testMultipleFileTypesSimultaneously(): void
     {
         $pieces = [];
-        
+
         $files = [
             'photo' => 'photo_binary_data',
             'cv' => 'cv_binary_data',
@@ -571,7 +571,7 @@ class TestFolderStudent extends TestCase
         }
 
         $this->assertCount(4, $pieces);
-        
+
         foreach ($files as $type => $expectedData) {
             $this->assertArrayHasKey($type, $pieces);
             $this->assertSame($expectedData, base64_decode($pieces[$type]));

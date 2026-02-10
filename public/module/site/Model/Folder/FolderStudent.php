@@ -188,8 +188,8 @@ class FolderStudent
                 ':NumEtu' => $data['NumEtu'],
                 ':EmailPersonnel' => $data['EmailPersonnel'],
                 ':Telephone' => $data['Telephone'],
-                ':Adresse' => $data['Adresse'],         
-                ':CodePostal' => $data['CodePostal'], 
+                ':Adresse' => $data['Adresse'],
+                ':CodePostal' => $data['CodePostal'],
                 ':Ville' => $data['Ville'],
                 ':PiecesJustificatives' => json_encode($pieces),
             ]);

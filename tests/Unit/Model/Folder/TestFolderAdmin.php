@@ -31,7 +31,7 @@ class TestFolderAdmin extends TestCase
     public function testCreerDossierMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderAdmin::class, 'creerDossier'));
-        
+
         // Check method is public and static
         $reflection = new \ReflectionMethod(FolderAdmin::class, 'creerDossier');
         $this->assertTrue($reflection->isPublic());
@@ -44,7 +44,7 @@ class TestFolderAdmin extends TestCase
     public function testGetByEmailMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderAdmin::class, 'getByEmail'));
-        
+
         $reflection = new \ReflectionMethod(FolderAdmin::class, 'getByEmail');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -56,7 +56,7 @@ class TestFolderAdmin extends TestCase
     public function testGetByNumeruMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderAdmin::class, 'getByNumetu'));
-        
+
         $reflection = new \ReflectionMethod(FolderAdmin::class, 'getByNumetu');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -68,7 +68,7 @@ class TestFolderAdmin extends TestCase
     public function testGetStudentDetailsMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderAdmin::class, 'getStudentDetails'));
-        
+
         $reflection = new \ReflectionMethod(FolderAdmin::class, 'getStudentDetails');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -80,7 +80,7 @@ class TestFolderAdmin extends TestCase
     public function testUpdateDossierMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderAdmin::class, 'updateDossier'));
-        
+
         $reflection = new \ReflectionMethod(FolderAdmin::class, 'updateDossier');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -92,7 +92,7 @@ class TestFolderAdmin extends TestCase
     public function testSupprimerDossierMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderAdmin::class, 'supprimerDossier'));
-        
+
         $reflection = new \ReflectionMethod(FolderAdmin::class, 'supprimerDossier');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -104,7 +104,7 @@ class TestFolderAdmin extends TestCase
     public function testValiderMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderAdmin::class, 'valider'));
-        
+
         $reflection = new \ReflectionMethod(FolderAdmin::class, 'valider');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -116,7 +116,7 @@ class TestFolderAdmin extends TestCase
     public function testToggleCompleteStatusMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderAdmin::class, 'toggleCompleteStatus'));
-        
+
         $reflection = new \ReflectionMethod(FolderAdmin::class, 'toggleCompleteStatus');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -128,7 +128,7 @@ class TestFolderAdmin extends TestCase
     public function testUploadPhotoMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderAdmin::class, 'uploadPhoto'));
-        
+
         $reflection = new \ReflectionMethod(FolderAdmin::class, 'uploadPhoto');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -140,7 +140,7 @@ class TestFolderAdmin extends TestCase
     public function testUploadCVMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderAdmin::class, 'uploadCV'));
-        
+
         $reflection = new \ReflectionMethod(FolderAdmin::class, 'uploadCV');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -152,7 +152,7 @@ class TestFolderAdmin extends TestCase
     public function testRechercherMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderAdmin::class, 'rechercher'));
-        
+
         $reflection = new \ReflectionMethod(FolderAdmin::class, 'rechercher');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -164,7 +164,7 @@ class TestFolderAdmin extends TestCase
     public function testRechercherAvecPaginationMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderAdmin::class, 'rechercherAvecPagination'));
-        
+
         $reflection = new \ReflectionMethod(FolderAdmin::class, 'rechercherAvecPagination');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -176,7 +176,7 @@ class TestFolderAdmin extends TestCase
     public function testAjouterRelanceMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderAdmin::class, 'ajouterRelance'));
-        
+
         $reflection = new \ReflectionMethod(FolderAdmin::class, 'ajouterRelance');
         $this->assertTrue($reflection->isPublic());
         $this->assertTrue($reflection->isStatic());
@@ -188,7 +188,7 @@ class TestFolderAdmin extends TestCase
     public function testGetConnectionPrivateMethodExists(): void
     {
         $this->assertTrue(method_exists(FolderAdmin::class, 'getConnection'));
-        
+
         $reflection = new \ReflectionMethod(FolderAdmin::class, 'getConnection');
         $this->assertTrue($reflection->isPrivate());
         $this->assertTrue($reflection->isStatic());
@@ -215,7 +215,7 @@ class TestFolderAdmin extends TestCase
         $this->assertArrayHasKey('cv', $decoded);
         $this->assertArrayHasKey('convention', $decoded);
         $this->assertArrayHasKey('lettre_motivation', $decoded);
-        
+
         // Test decode
         $this->assertSame('photo_data', base64_decode($decoded['photo']));
         $this->assertSame('cv_data', base64_decode($decoded['cv']));
@@ -254,14 +254,14 @@ class TestFolderAdmin extends TestCase
         // Simulate date validation from creerDossier
         $dateStr = '2000-01-15';
         $date = \DateTime::createFromFormat('Y-m-d', $dateStr);
-        
+
         $this->assertNotFalse($date);
         $this->assertSame($dateStr, $date->format('Y-m-d'));
 
         // Test invalid date
         $invalidDate = '2000-13-45';
         $parsedDate = \DateTime::createFromFormat('Y-m-d', $invalidDate);
-        
+
         if ($parsedDate && $parsedDate->format('Y-m-d') !== $invalidDate) {
             $this->assertTrue(true);
         } else {
@@ -344,13 +344,13 @@ class TestFolderAdmin extends TestCase
     public function testBase64FileHandling(): void
     {
         $testData = 'This is a test file content';
-        
+
         $encoded = base64_encode($testData);
         $this->assertIsString($encoded);
-        
+
         $decoded = base64_decode($encoded);
         $this->assertSame($testData, $decoded);
-        
+
         // Test with binary-like data
         $binaryData = "\x00\x01\x02\x03\x04\x05";
         $encoded = base64_encode($binaryData);
@@ -385,7 +385,7 @@ class TestFolderAdmin extends TestCase
 
         // Should have 5 parameters: $data, $photoData, $cvData, $conventionData, $lettreData
         $this->assertCount(5, $params);
-        
+
         $this->assertSame('data', $params[0]->getName());
         $this->assertSame('photoData', $params[1]->getName());
         $this->assertSame('cvData', $params[2]->getName());
@@ -404,7 +404,7 @@ class TestFolderAdmin extends TestCase
     {
         // Test the logic that updateDossier uses to preserve files
         $oldPieces = ['photo' => 'encoded_photo', 'cv' => 'encoded_cv'];
-        
+
         // When no new photo is provided (null), old should be preserved
         $photoData = null;
         if ($photoData !== null) {
@@ -421,9 +421,9 @@ class TestFolderAdmin extends TestCase
     {
         $searchTerm = 'dupont';
         $likePattern = '%' . $searchTerm . '%';
-        
+
         $this->assertSame('%dupont%', $likePattern);
-        
+
         // Test that it would match various cases
         $testNames = ['Dupont', 'DUPONT', 'dupont', 'Jean Dupont'];
         foreach ($testNames as $name) {

@@ -8,26 +8,14 @@ namespace View\Partners;
  * Class PartnersPageAdmin
  *
  * Admin view for managing AMU partner universities.
- * Displays the list of partners, a form to add new partners,
- * language selector, accessibility toggle (tritanopia), and chatbot.
+ * Logic is now separated: PHP for structure, JS (partners.js) for interactivity.
  */
 class PartnersPageAdmin
 {
-    /** @var string Page title */
     private string $titre;
-
-    /** @var string Current language ('fr' or 'en') */
     private string $lang;
-
-    /** @var string|null Optional error message */
     public ?string $errorMessage = null;
 
-    /**
-     * Constructor.
-     *
-     * @param string $titre Page title
-     * @param string $lang  Current language
-     */
     public function __construct(string $titre, string $lang = 'fr')
     {
         $this->titre = $titre;
@@ -35,11 +23,7 @@ class PartnersPageAdmin
     }
 
     /**
-     * Build a URL while preserving the current language.
-     *
-     * @param string               $path   Base path
-     * @param array<string, mixed> $params Additional query parameters
-     * @return string
+     * @param array<string, mixed> $params
      */
     private function buildUrl(string $path, array $params = []): string
     {
@@ -48,45 +32,31 @@ class PartnersPageAdmin
     }
 
     /**
-     * Translate text based on current language.
-     *
-     * @param array{fr: string, en: string} $frEn ['fr' => '...', 'en' => '...']
-     * @return string
+     * @param array{fr: string, en: string} $frEn
      */
     private function t(array $frEn): string
     {
         return $this->lang === 'en' ? $frEn['en'] : $frEn['fr'];
     }
 
-    /**
-     * Render the admin partners page HTML.
-     *
-     * @return void
-     */
     public function render(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        // Correction Level 9: Strict handling of mixed $_GET
         if (isset($_GET['lang'])) {
             $langParam = strval($_GET['lang']);
             if (in_array($langParam, ['fr', 'en'], true)) {
                 $_SESSION['lang'] = $langParam;
             }
         }
-
-        // Correction Level 9: Strict assignment from mixed $_SESSION
         $this->lang = isset($_SESSION['lang']) ? strval($_SESSION['lang']) : 'fr';
 
-        // Handle tritanopia (color-blind) mode
         if (isset($_GET['tritanopia'])) {
             $tritaParam = strval($_GET['tritanopia']);
             $_SESSION['tritanopia'] = ($tritaParam === '1');
         }
-
-        // Prepare strict boolean for view to avoid mixed access in template
         $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
 
         ?>
@@ -110,8 +80,8 @@ class PartnersPageAdmin
                     <div class="lang-dropdown">
                         <button class="dropbtn" id="current-lang"><?= htmlspecialchars($this->lang) ?></button>
                         <div class="dropdown-content">
-                            <a href="#" onclick="changeLang('fr'); return false;">Français</a>
-                            <a href="#" onclick="changeLang('en'); return false;">English</a>
+                            <a href="#">Français</a>
+                            <a href="#">English</a>
                         </div>
                     </div>
                 </div>
@@ -194,77 +164,25 @@ class PartnersPageAdmin
             </a>
         </footer>
 
-        <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
+        <div id="help-bubble">💬</div>
         <div id="help-popup" class="chat-popup">
             <div class="help-popup-header">
                 <span>Assistant</span>
-                <button onclick="toggleHelpPopup()">✖</button>
+                <button>✖</button>
             </div>
             <div id="chat-messages" class="chat-messages"></div>
             <div id="quick-actions" class="quick-actions"></div>
         </div>
 
-        <script>
-            // Chatbot config
-            const CHAT_CONFIG = {
-                lang: '<?= $this->lang ?>',
-                role: '<?= (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') ? 'admin' : 'student' ?>'
-            };
+        <div id="app-config" 
+             data-lang="<?= htmlspecialchars($this->lang) ?>" 
+             data-role="admin"
+             style="display:none;">
+        </div>
 
-            // Language dropdown toggle
-            document.getElementById('current-lang').addEventListener('click', function(event) {
-                event.stopPropagation();
-                document.querySelector('.right-buttons').classList.toggle('show');
-            });
-
-            document.addEventListener('click', () => {
-                document.querySelector('.right-buttons').classList.remove('show');
-            });
-
-            function changeLang(lang) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('lang', lang);
-                window.location.href = url.toString();
-            }
-
-            // Responsive menu toggle
-            document.addEventListener("DOMContentLoaded", () => {
-                const menuToggle = document.createElement('button');
-                menuToggle.classList.add('menu-toggle');
-                menuToggle.innerHTML = '☰';
-                document.querySelector('.right-buttons').appendChild(menuToggle);
-
-                const navMenu = document.querySelector('nav.menu');
-                menuToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
-
-                // Add partner form toggle
-                const addPartnerBtn = document.querySelector('.btn-add-partner');
-                const partnerForm = document.getElementById('partner-form-container');
-                const cancelBtn = document.querySelector('.btn-cancel');
-
-                addPartnerBtn.addEventListener('click', () => {
-                    addPartnerBtn.style.display = 'none';
-                    partnerForm.classList.remove('hidden');
-                });
-
-                cancelBtn.addEventListener('click', () => {
-                    partnerForm.classList.add('hidden');
-                    addPartnerBtn.style.display = 'inline-flex';
-                });
-
-                // Auto-hide success message
-                const successMsg = document.getElementById('success-message');
-                if (successMsg) {
-                    setTimeout(() => {
-                        successMsg.style.transition = 'opacity 0.5s ease';
-                        successMsg.style.opacity = '0';
-                        setTimeout(() => successMsg.remove(), 500);
-                    }, 3000);
-                }
-            });
-        </script>
-
+        <script src="js/main.js"></script>
         <script src="js/chatbot.js"></script>
+        <script src="js/partners.js"></script>
 
         </body>
         </html>

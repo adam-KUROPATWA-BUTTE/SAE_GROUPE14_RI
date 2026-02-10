@@ -6,18 +6,16 @@ namespace View\WebPlan;
 
 /**
  * Class WebPlanPageStudent
+ * * Logic is now separated: PHP for structure, JS (main.js) for interactivity.
  */
 class WebPlanPageStudent
 {
-    /** @var array<int, array{url: string, label: string}> List of links */
+    /** @var array<int, array{url: string, label: string}> */
     private array $links;
-
-    /** @var string Current language */
     private string $lang;
 
     /**
      * @param array<int, array{url: string, label: string}> $links
-     * @param string                                        $lang
      */
     public function __construct(array $links = [], string $lang = 'fr')
     {
@@ -25,7 +23,9 @@ class WebPlanPageStudent
         $this->lang = $lang;
     }
 
-    /** @param array{fr: string, en: string} $frEn */
+    /**
+     * @param array{fr: string, en: string} $frEn
+     */
     private function t(array $frEn): string
     {
         return $this->lang === 'en' ? $frEn['en'] : $frEn['fr'];
@@ -90,8 +90,8 @@ class WebPlanPageStudent
                     <div class="lang-dropdown">
                         <button class="dropbtn"><?= htmlspecialchars($this->lang) ?></button>
                         <div class="dropdown-content">
-                            <a href="#" onclick="changeLang('fr'); return false;">Français</a>
-                            <a href="#" onclick="changeLang('en'); return false;">English</a>
+                            <a href="#">Français</a>
+                            <a href="#">English</a>
                         </div>
                     </div>
                 </div>
@@ -102,7 +102,6 @@ class WebPlanPageStudent
             <h1><?= $this->t(['fr' => 'Plan du site', 'en' => 'Site Map']) ?></h1>
             <ul>
                 <?php foreach ($this->links as $link) :
-                    // Correction Level 9: Direct access without ??
                     $url = strval($link['url']);
                     $label = strval($link['label']);
                     ?>
@@ -118,30 +117,31 @@ class WebPlanPageStudent
             </ul>
         </main>
 
-        <div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
+        <div id="help-bubble">💬</div>
         <div id="help-popup" class="chat-popup">
             <div class="help-popup-header">
                 <span><?= $this->t(['fr' => 'Assistant', 'en' => 'Assistant']) ?></span>
-                <button onclick="toggleHelpPopup()">✖</button>
+                <button>✖</button>
             </div>
             <div id="chat-messages" class="chat-messages"></div>
             <div id="quick-actions" class="quick-actions"></div>
         </div>
 
-        <script>
-            const CHAT_CONFIG = { lang: '<?= $this->lang ?>', role: 'student' };
-            document.getElementById('current-lang').addEventListener('click', function(e) {
-                e.stopPropagation(); document.querySelector('.right-buttons').classList.toggle('show');
-            });
-            document.addEventListener('click', function() {
-                document.querySelector('.right-buttons').classList.remove('show');
-            });
-            function changeLang(l) {
-                const u = new URL(window.location.href); u.searchParams.set('lang', l); window.location.href = u.toString();
-            }
-        </script>
+        <div id="app-config" 
+             data-lang="<?= htmlspecialchars($this->lang) ?>" 
+             data-role="student"
+             style="display:none;">
+        </div>
+
+        <script src="js/main.js"></script>
         <script src="js/chatbot.js"></script>
-        <footer><p>&copy; 2026 - Aix-Marseille Université.</p></footer>
+
+        <footer>
+            <p>&copy; 2026 - Aix-Marseille Université.</p>
+            <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
+                <img class="insta" src="img/instagram.png" alt="Instagram">
+            </a>
+        </footer>
         </body>
         </html>
         <?php
