@@ -1,56 +1,52 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
-
 namespace Controllers\PartnersController;
 
 use Controllers\ControllerInterface;
-use View\Partners\PartnersPageStudent;
+use Core\View;
 
-/**
- * Class PartnersControllerStudent
- *
- * Controller responsible for displaying the partner universities
- * page for students.
- */
 class PartnersControllerStudent implements ControllerInterface
 {
-    /**
-     * Main controller logic.
-     *
-     * - Starts the session if necessary
-     * - Determines the current language
-     * - Creates and renders the student partners view
-     *
-     * @return void
-     */
+    public static function support(string $page, string $method): bool
+    {
+        return $page === 'partners-student';
+    }
+
     public function control(): void
     {
-        // Start session if not already started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        // Retrieve current language (default: French)
-        $lang = $_GET['lang'] ?? 'fr';
+        if (isset($_GET['lang'])) {
+            $langParam = strval($_GET['lang']);
+            if (in_array($langParam, ['fr', 'en'], true)) {
+                $_SESSION['lang'] = $langParam;
+            }
+        }
+        $lang = $_SESSION['lang'] ?? 'fr';
 
-        // Set page title based on language
-        $title = $lang === 'en' ? 'Partner Universities' : 'Universités Partenaires';
+        if (isset($_GET['tritanopia'])) {
+            $_SESSION['tritanopia'] = (strval($_GET['tritanopia']) === '1');
+        }
 
-        // Instantiate and render the student view
-        $view = new PartnersPageStudent($title, $lang);
-        $view->render();
-    }
+        $titre = $lang === 'en' ? 'Partner Universities' : 'Universités Partenaires';
 
-    /**
-     * Checks whether this controller supports the given page and HTTP method.
-     *
-     * @param string $page   Requested page
-     * @param string $method HTTP method
-     * @return bool True if this controller supports the page, false otherwise
-     */
-    public static function support(string $page, string $method): bool
-    {
-        return $page === 'partners-student';
+        $t = function (array $frEn) use ($lang): string {
+            return $lang === 'en' ? $frEn['en'] : $frEn['fr'];
+        };
+
+        $buildUrl = function (string $path, array $params = []) use ($lang): string {
+            $params['lang'] = $lang;
+            $separator = (strpos($path, '?') === false) ? '?' : '&';
+            return $path . $separator . http_build_query($params);
+        };
+
+        View::render('Partners/partners_student', [
+            'titre'    => $titre,
+            'lang'     => $lang,
+            't'        => $t,
+            'buildUrl' => $buildUrl
+        ]);
     }
 }

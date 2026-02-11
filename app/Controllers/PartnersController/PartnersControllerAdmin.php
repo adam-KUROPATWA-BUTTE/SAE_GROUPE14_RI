@@ -6,7 +6,7 @@ use Controllers\ControllerInterface;
 use Site\UseCase\AddPartnerUseCase;
 use Model\Persistence\PartnerRepositoryPDO;
 use Model\Entity\Partner;
-use View\Partners\PartnersPageAdmin;
+use Core\View;
 use PDOException;
 
 class PartnersControllerAdmin implements ControllerInterface
@@ -22,8 +22,20 @@ class PartnersControllerAdmin implements ControllerInterface
             session_start();
         }
 
-        $lang = $_GET['lang'] ?? 'fr';
+        if (isset($_GET['lang'])) {
+            $langParam = strval($_GET['lang']);
+            if (in_array($langParam, ['fr', 'en'], true)) {
+                $_SESSION['lang'] = $langParam;
+            }
+        }
+        $lang = $_SESSION['lang'] ?? 'fr';
+
+        if (isset($_GET['tritanopia'])) {
+            $_SESSION['tritanopia'] = (strval($_GET['tritanopia']) === '1');
+        }
+
         $errorMessage = '';
+        $success = isset($_GET['success']);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $continent   = trim($_POST['continent'] ?? '');
@@ -52,13 +64,25 @@ class PartnersControllerAdmin implements ControllerInterface
             }
         }
 
-        $title = $lang === 'en' ? 'Partner Universities' : 'Universités Partenaires';
-        $view  = new PartnersPageAdmin($title, $lang);
+        $titre = $lang === 'en' ? 'Partner Universities' : 'Universités Partenaires';
 
-        if ($errorMessage) {
-            $view->errorMessage = $errorMessage;
-        }
+        $t = function (array $frEn) use ($lang): string {
+            return $lang === 'en' ? $frEn['en'] : $frEn['fr'];
+        };
 
-        $view->render();
+        $buildUrl = function (string $path, array $params = []) use ($lang): string {
+            $params['lang'] = $lang;
+            $separator = (strpos($path, '?') === false) ? '?' : '&';
+            return $path . $separator . http_build_query($params);
+        };
+
+        View::render('Partners/partners_admin', [
+            'titre'        => $titre,
+            'lang'         => $lang,
+            'errorMessage' => $errorMessage,
+            'success'      => $success,
+            't'            => $t,
+            'buildUrl'     => $buildUrl
+        ]);
     }
 }
