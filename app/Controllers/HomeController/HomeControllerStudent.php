@@ -1,53 +1,55 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
-
 namespace Controllers\site\HomeController;
 
 use Controllers\ControllerInterface;
-use View\HomePage\HomePageStudent;
+use Core\View;
 
-/**
- * Controller responsible for the Student and Visitor Homepage.
- *
-
- * Responsibilities:
- * - Handle the 'home-student' route for non-admin users.
- * - Check if a student is logged in to adapt the view content.
- * - Render the Student/Public Homepage view.
- */
 class HomeControllerStudent implements ControllerInterface
 {
-    /**
-     * Determines if this controller supports the current request.
-     *
-     * This controller should be registered after HomeControllerAdmin in the router.
-     *
-     * @param string $page   Requested page identifier.
-     * @param string $method HTTP method (GET, POST).
-     * @return bool True if the page is 'home-student'.
-     */
     public static function support(string $page, string $method): bool
     {
         return $page === 'home-student' && $method === 'GET';
     }
 
-    /**
-     * Main control logic for the Student/Public Homepage.
-     */
     public function control(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        $lang = $_GET['lang'] ?? 'fr';
+        // --- GESTION DE LA SESSION ---
+        if (isset($_GET['lang'])) {
+            $langParam = strval($_GET['lang']);
+            if (in_array($langParam, ['fr', 'en'], true)) {
+                $_SESSION['lang'] = $langParam;
+            }
+        }
+        $lang = $_SESSION['lang'] ?? 'fr';
 
-        // Determine if a student is logged in
+        if (isset($_GET['tritanopia'])) {
+            $_SESSION['tritanopia'] = (strval($_GET['tritanopia']) === '1');
+        }
+
         $isStudentLoggedIn = isset($_SESSION['numetu']);
 
-        // Render the view
-        $view = new HomePageStudent($isStudentLoggedIn, $lang);
-        $view->render();
+        // --- HELPERS VUE ---
+        $t = function (array $frEn) use ($lang): string {
+            return $lang === 'en' ? $frEn['en'] : $frEn['fr'];
+        };
+
+        $buildUrl = function (string $path, array $params = []) use ($lang): string {
+            $params['lang'] = $lang;
+            $separator = (strpos($path, '?') === false) ? '?' : '&';
+            return $path . $separator . http_build_query($params);
+        };
+
+        // --- RENDU ---
+        View::render('HomePage/home_student', [
+            'isLoggedIn' => $isStudentLoggedIn,
+            'lang'       => $lang,
+            't'          => $t,
+            'buildUrl'   => $buildUrl
+        ]);
     }
 }
