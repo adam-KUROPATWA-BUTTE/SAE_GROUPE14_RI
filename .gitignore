@@ -1,4 +1,4 @@
 .env
 .idea
-.github.idea/
+.github
 .DS_Store
