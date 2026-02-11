@@ -28,11 +28,15 @@ class FileService
             $pieces['lettre_motivation'] = base64_encode($lettreData);
         }
 
-        return json_encode($pieces);
+        $result = json_encode($pieces);
+
+        return $result === false ? '' : $result;
     }
 
     /**
      * Decode files from JSON
+     * * @param string $json
+     * @return array<string, string>
      */
     public function decodeFiles(string $json): array
     {
@@ -42,6 +46,8 @@ class FileService
 
     /**
      * Validate and read uploaded file
+     * @param array<string, mixed> $file
+     * @return string|null
      */
     public function readUploadedFile(array $file): ?string
     {

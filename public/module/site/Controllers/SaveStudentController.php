@@ -128,10 +128,15 @@ class SaveStudentController
     {
         if (isset($_FILES[$inputName]) && $_FILES[$inputName]['error'] === UPLOAD_ERR_OK) {
             $file = $_FILES[$inputName];
-            if (is_array($file) && method_exists(FolderAdmin::class, $uploadMethod)) {
-                call_user_func([FolderAdmin::class, $uploadMethod], $numetu, $file);
+
+
+            if (is_array($file)) {
+                if ($uploadMethod === 'uploadPhoto') {
+                    FolderAdmin::uploadPhoto($numetu, $file);
+                } elseif ($uploadMethod === 'uploadCV') {
+                    FolderAdmin::uploadCV($numetu, $file);
+                }
             }
         }
     }
-
 }

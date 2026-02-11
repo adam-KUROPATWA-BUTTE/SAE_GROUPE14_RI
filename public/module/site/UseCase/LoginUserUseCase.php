@@ -15,6 +15,9 @@ class LoginUserUseCase
         $this->studentRepo = $studentRepo;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function execute(string $identifier, string $password): array
     {
         if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {

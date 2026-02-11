@@ -17,8 +17,20 @@ class Partner
         $this->institution = $institution;
     }
 
-    public function getContinent(): string { return $this->continent; }
-    public function getCountry(): string { return $this->country; }
-    public function getCity(): string { return $this->city; }
-    public function getInstitution(): string { return $this->institution; }
+    public function getContinent(): string
+    {
+        return $this->continent;
+    }
+    public function getCountry(): string
+    {
+        return $this->country;
+    }
+    public function getCity(): string
+    {
+        return $this->city;
+    }
+    public function getInstitution(): string
+    {
+        return $this->institution;
+    }
 }

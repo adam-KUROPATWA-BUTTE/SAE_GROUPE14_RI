@@ -2,7 +2,6 @@
 
 namespace Controllers\PartnersController;
 
-
 use Controllers\ControllerInterface;
 use Site\UseCase\AddPartnerUseCase;
 use Model\Persistence\PartnerRepositoryPDO;
