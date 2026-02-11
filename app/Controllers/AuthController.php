@@ -76,9 +76,10 @@ class AuthController implements ControllerInterface
         $rootPath = is_string($constPath) ? $constPath : dirname(__DIR__, 3);
 
         $possiblePaths = [
-            $rootPath . '/public/View/Login.php',
-            $rootPath . '/public/module/site/View/Login.php',
-            $rootPath . '/View/Login.php',
+            ROOT_PATH . '/public/View/Login.php',
+            ROOT_PATH . '/public/module/site/View/Login.php',
+            ROOT_PATH . '/View/Login.php',
+            ROOT_PATH . '/app/View/Login.php',
         ];
 
         foreach ($possiblePaths as $path) {

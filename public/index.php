@@ -45,7 +45,7 @@ require_once ROOT_PATH . '/vendor/autoload.php';
 
 // Load Custom Autoloader and Database singleton
 require_once ROOT_PATH . '/Autoloader.php';
-require_once ROOT_PATH . '/Database.php';
+require_once ROOT_PATH . '/app/Core/Database.php';
 
 // Load environment variables from .env file
 $dotenv = Dotenv\Dotenv::createImmutable(ROOT_PATH);
@@ -87,27 +87,17 @@ use Controllers\WebPlanController\WebPlanControllerStudent;
  * that confirms it supports the requested page.
  */
 $controllers = [
-    new AuthController(),
-
-    // Home Controllers (Admin first for security)
-    new HomeControllerAdmin(),
-    new HomeControllerStudent(),
-
-    // Folder Controllers
-    new FoldersControllerAdmin(),
-    new FoldersControllerStudent(),
-
-    // Partners Controllers
-    new PartnersControllerAdmin(),
-    new PartnersControllerStudent(),
-
-    // WebPlan Controllers
-    new WebPlanControllerAdmin(),
-    new WebPlanControllerStudent(),
-
-    // Generic Controllers
-    new DashboardController(),
-    new SaveStudentController(),
+    AuthController::class,
+    HomeControllerAdmin::class,
+    HomeControllerStudent::class,
+    FoldersControllerAdmin::class,
+    FoldersControllerStudent::class,
+    PartnersControllerAdmin::class,
+    PartnersControllerStudent::class,
+    WebPlanControllerAdmin::class,
+    WebPlanControllerStudent::class,
+    DashboardController::class,
+    SaveStudentController::class,
 ];
 
 // --- 6. Routing Logic ---
@@ -156,10 +146,11 @@ if ($page === 'logout') {
 // --- 8. Dispatch Request ---
 
 // Loop through controllers to find one that supports the request
-foreach ($controllers as $controller) {
-    if ($controller::support($page, $_SERVER['REQUEST_METHOD'])) {
+foreach ($controllers as $controllerClass) {
+    if ($controllerClass::support($page, $_SERVER['REQUEST_METHOD'])) {
+        $controller = new $controllerClass();
         $controller->control();
-        exit(); // Stop execution once the controller has handled the request
+        exit(); 
     }
 }
 

@@ -5,15 +5,16 @@
 class Autoloader
 {
     private static array $prefixes = [
-        'Controllers\\site\\' => __DIR__ . '/public/module/site/Controllers/',
-        'Site\\' => __DIR__ . '/public/module/site/',
-        'Controllers\\' => __DIR__ . '/public/module/site/Controllers/',
-        'Model\\' => __DIR__ . '/public/module/site/Model/',
-        'Service\\' => __DIR__ . '/public/module/site/Service/',
-        'View\\' => __DIR__ . '/public/module/site/View/',
-        'Model\\Folder\\' => __DIR__ . '/public/module/site/Model/Folder/',
-        'View\\Folder\\' => __DIR__ . '/public/module/site/View/Folder/',
-        'Controllers\\FolderController\\' => __DIR__ . '/public/module/site/Controllers/FolderController/',
+        // On intercepte les namespaces qui contiennent "site" et on les pointe vers /app/
+        'Controllers\\site\\' => __DIR__ . '/app/Controllers/',
+        'Controllers\\'       => __DIR__ . '/app/Controllers/',
+        'Site\\'              => __DIR__ . '/app/',
+        'Model\\'             => __DIR__ . '/app/Model/',
+        'Service\\'           => __DIR__ . '/app/Service/',
+        'View\\'              => __DIR__ . '/app/View/',
+        'UseCase\\'           => __DIR__ . '/app/UseCase/',
+        'Model\\Folder\\'     => __DIR__ . '/app/Model/Folder/',
+        'View\\Folder\\'      => __DIR__ . '/app/View/Folder/',
     ];
 
     public static function register(): void
