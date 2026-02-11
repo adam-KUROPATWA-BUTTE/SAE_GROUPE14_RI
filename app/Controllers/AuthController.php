@@ -76,6 +76,7 @@ class AuthController implements ControllerInterface
             ROOT_PATH . '/public/View/Login.php',
             ROOT_PATH . '/public/module/site/View/Login.php',
             ROOT_PATH . '/View/Login.php',
+            ROOT_PATH . '/app/View/Login.php',
         ];
 
         foreach ($possiblePaths as $path) {

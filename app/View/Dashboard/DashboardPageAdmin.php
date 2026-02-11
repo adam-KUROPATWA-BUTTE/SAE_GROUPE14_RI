@@ -10,18 +10,28 @@ namespace View\Dashboard;
 class DashboardPageAdmin
 {
     /** @var array<int, array<string, mixed>> */
-    private array $dossiers;
+    private array $incoming;
+    
+    /** @var array<int, array<string, mixed>> */
+    private array $outgoing;
+    
+    /** @var array<string, string> */
+    private array $filters;
 
     /** @var string */
     private string $lang;
 
     /**
-     * @param array<int, array<string, mixed>> $dossiers
+     * @param array<int, array<string, mixed>> $incoming
+     * @param array<int, array<string, mixed>> $outgoing
+     * @param array<string, string>            $filters
      * @param string                           $lang
      */
-    public function __construct(array $dossiers = [], string $lang = 'fr')
+    public function __construct(array $incoming = [], array $outgoing = [], array $filters = [], string $lang = 'fr')
     {
-        $this->dossiers = $dossiers;
+        $this->incoming = $incoming;
+        $this->outgoing = $outgoing;
+        $this->filters = $filters;
         $this->lang = $lang;
     }
 
@@ -41,75 +51,7 @@ class DashboardPageAdmin
 
     public function render(): void
     {
-        $searchStudent = strtolower(trim(strval($_GET['student'] ?? '')));
-        $filterDept    = strval($_GET['dept'] ?? '');
-        $filterType    = strval($_GET['type'] ?? '');
-        $filterYear    = strval($_GET['year'] ?? '');
-        $filterDest    = strval($_GET['dest'] ?? '');
-        $filterCamp    = strval($_GET['camp'] ?? '');
-
-        $outgoing = [];
-        $incoming = [];
-
-        foreach ($this->dossiers as $d) {
-            $nom        = strval($d['Nom'] ?? '');
-            $prenom     = strval($d['Prenom'] ?? '');
-            $numEtu     = strval($d['NumEtu'] ?? '');
-            $dept       = strval($d['CodeDepartement'] ?? '');
-            $type       = strval($d['Type'] ?? '');
-            $zone       = strval($d['Zone'] ?? '');
-            $annee      = strval($d['Annee'] ?? '2024-2025');
-            $campagne   = strval($d['Campagne'] ?? 'Automne 2024');
-            $isComplete = intval($d['IsComplete'] ?? 0);
-
-            if ($searchStudent !== '') {
-                $fullName = strtolower("$nom $prenom $numEtu");
-                if (strpos($fullName, $searchStudent) === false) {
-                    continue;
-                }
-            }
-            if ($filterDept !== '' && $dept !== $filterDept) {
-                continue;
-            }
-            if ($filterType !== '' && $type !== $filterType) {
-                continue;
-            }
-            if ($filterYear !== '' && $annee !== $filterYear) {
-                continue;
-            }
-            if ($filterDest !== '' && strpos(strtolower($zone), strtolower($filterDest)) === false) {
-                continue;
-            }
-            if ($filterCamp !== '' && $campagne !== $filterCamp) {
-                continue;
-            }
-
-            $piecesJson = strval($d['PiecesJustificatives'] ?? '');
-            $pieces = (!empty($piecesJson)) ? json_decode($piecesJson, true) : [];
-            $countProvided = (is_array($pieces)) ? count($pieces) : 0;
-            $totalRequired = 4;
-
-            if ($isComplete === 1) {
-                $percentage = 100;
-            } else {
-                $percentage = (int)round(($countProvided / $totalRequired) * 100);
-                if ($percentage > 100) {
-                    $percentage = 100;
-                }
-            }
-
-            // Calculs stockés
-            $d['calc_percentage'] = $percentage;
-            $d['calc_annee']      = $annee;
-            $d['calc_camp']       = $campagne;
-
-            if (stripos($type, 'incoming') !== false || stripos($type, 'entrant') !== false) {
-                $incoming[] = $d;
-            } else {
-                $outgoing[] = $d;
-            }
-        }
-
+        // LA VUE NE FAIT PLUS AUCUN CALCUL, ELLE SE CONTENTE D'AFFICHER !
         ?>
         <!DOCTYPE html>
         <html lang="<?= htmlspecialchars($this->lang) ?>">
@@ -160,40 +102,46 @@ class DashboardPageAdmin
             <form class="filters-container" method="GET" action="index.php">
                 <input type="hidden" name="page" value="dashboard-admin">
                 <input type="hidden" name="lang" value="<?= htmlspecialchars($this->lang) ?>">
-                <input type="text" name="student" placeholder="<?= $this->t(['fr' => 'Rechercher...', 'en' => 'Search...']) ?>" value="<?= htmlspecialchars($searchStudent) ?>">
+                
+                <input type="text" name="student" placeholder="<?= $this->t(['fr' => 'Rechercher...', 'en' => 'Search...']) ?>" value="<?= htmlspecialchars($this->filters['student']) ?>">
+                
                 <select name="dept">
                     <option value=""><?= $this->t(['fr' => 'Départements', 'en' => 'Departments']) ?></option>
-                    <option value="Informatique" <?= $filterDept === 'Informatique' ? 'selected' : '' ?>>Info</option>
-                    <option value="GEA" <?= $filterDept === 'GEA' ? 'selected' : '' ?>>GEA</option>
-                    <option value="Biologie" <?= $filterDept === 'Biologie' ? 'selected' : '' ?>>Bio</option>
+                    <option value="Informatique" <?= $this->filters['dept'] === 'Informatique' ? 'selected' : '' ?>>Info</option>
+                    <option value="GEA" <?= $this->filters['dept'] === 'GEA' ? 'selected' : '' ?>>GEA</option>
+                    <option value="Biologie" <?= $this->filters['dept'] === 'Biologie' ? 'selected' : '' ?>>Bio</option>
                 </select>
+                
                 <select name="year">
                     <option value=""><?= $this->t(['fr' => 'Année', 'en' => 'Year']) ?></option>
-                    <option value="2024-2025" <?= $filterYear === '2024-2025' ? 'selected' : '' ?>>24-25</option>
+                    <option value="2024-2025" <?= $this->filters['year'] === '2024-2025' ? 'selected' : '' ?>>24-25</option>
                 </select>
+                
                 <select name="type">
                     <option value=""><?= $this->t(['fr' => 'Type', 'en' => 'Type']) ?></option>
-                    <option value="Erasmus" <?= $filterType === 'Erasmus' ? 'selected' : '' ?>>Erasmus</option>
-                    <option value="Stage" <?= $filterType === 'Stage' ? 'selected' : '' ?>>Stage</option>
+                    <option value="Erasmus" <?= $this->filters['type'] === 'Erasmus' ? 'selected' : '' ?>>Erasmus</option>
+                    <option value="Stage" <?= $this->filters['type'] === 'Stage' ? 'selected' : '' ?>>Stage</option>
                 </select>
+                
                 <select name="camp">
                     <option value=""><?= $this->t(['fr' => 'Campagne', 'en' => 'Campaign']) ?></option>
-                    <option value="Automne 2024" <?= $filterCamp === 'Automne 2024' ? 'selected' : '' ?>>Automne 24</option>
+                    <option value="Automne 2024" <?= $this->filters['camp'] === 'Automne 2024' ? 'selected' : '' ?>>Automne 24</option>
                 </select>
-                <input type="text" name="dest" placeholder="<?= $this->t(['fr' => 'Destination', 'en' => 'Destination']) ?>" value="<?= htmlspecialchars($filterDest) ?>">
+                
+                <input type="text" name="dest" placeholder="<?= $this->t(['fr' => 'Destination', 'en' => 'Destination']) ?>" value="<?= htmlspecialchars($this->filters['dest']) ?>">
+                
                 <button type="submit" class="btn-filter"><?= $this->t(['fr' => 'Filtrer', 'en' => 'Filter']) ?></button>
             </form>
 
             <h2><?= $this->t(['fr' => 'Sortants', 'en' => 'Outgoing']) ?></h2>
             <div class="table-responsive">
-                <?php if (empty($outgoing)) : ?>
+                <?php if (empty($this->outgoing)) : ?>
                     <p class="no-files"><?= $this->t(['fr' => 'Aucun dossier.', 'en' => 'No files.']) ?></p>
                 <?php else : ?>
                     <table>
                         <thead><tr><th>Étudiant</th><th>Dept</th><th>Dest</th><th>Campagne</th><th>Année</th><th>État</th></tr></thead>
                         <tbody>
-                        <?php foreach ($outgoing as $d) :
-                            // Correction Level 9: Accès direct sans ?? car défini plus haut
+                        <?php foreach ($this->outgoing as $d) :
                             $pct = intval($d['calc_percentage']);
                             $badgeClass = ($pct >= 100) ? 'bg-success' : (($pct > 50) ? 'bg-warning' : 'bg-danger');
                             $label = ($pct >= 100) ? 'Validé' : $pct . '%';
@@ -222,13 +170,13 @@ class DashboardPageAdmin
 
             <h2><?= $this->t(['fr' => 'Entrants', 'en' => 'Incoming']) ?></h2>
             <div class="table-responsive">
-                <?php if (empty($incoming)) : ?>
+                <?php if (empty($this->incoming)) : ?>
                     <p style="text-align:center; color:#666;"><?= $this->t(['fr' => 'Aucun dossier.', 'en' => 'No files.']) ?></p>
                 <?php else : ?>
                     <table>
                         <thead><tr><th>Étudiant</th><th>Dept</th><th>Type</th><th>Année</th><th>État</th></tr></thead>
                         <tbody>
-                        <?php foreach ($incoming as $d) :
+                        <?php foreach ($this->incoming as $d) :
                             $pct = intval($d['calc_percentage']);
                             $badgeClass = ($pct >= 100) ? 'bg-success' : (($pct > 50) ? 'bg-warning' : 'bg-danger');
                             $label = ($pct >= 100) ? 'Validé' : $pct . '%';
