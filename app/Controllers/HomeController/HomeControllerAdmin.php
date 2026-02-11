@@ -6,7 +6,7 @@ use Controllers\ControllerInterface;
 use PDOException;
 use Site\UseCase\GetAdminStatsUseCase;
 use Model\Persistence\DossierRepositoryPDO;
-use View\HomePage\HomePageAdmin;
+use Core\View; 
 
 class HomeControllerAdmin implements ControllerInterface
 {
@@ -21,20 +21,43 @@ class HomeControllerAdmin implements ControllerInterface
             session_start();
         }
 
-        $lang = $_GET['lang'] ?? 'fr';
+        // --- GESTION DE LA LANGUE ---
+        if (isset($_GET['lang'])) {
+            $langParam = strval($_GET['lang']);
+            if (in_array($langParam, ['fr', 'en'], true)) {
+                $_SESSION['lang'] = $langParam;
+            }
+        }
+        $lang = $_SESSION['lang'] ?? 'fr';
+
         $completionPercentage = 0;
 
         try {
             $repository = new DossierRepositoryPDO();
             $useCase = new GetAdminStatsUseCase($repository);
-
             $completionPercentage = $useCase->execute();
         } catch (PDOException $e) {
             error_log("HomeControllerAdmin Error: " . $e->getMessage());
-            $completionPercentage = 0;
         }
 
-        $view = new HomePageAdmin(true, $lang, $completionPercentage);
-        $view->render();
+        // --- HELPERS VUE ---
+        $t = function (array $frEn) use ($lang): string {
+            return $lang === 'en' ? $frEn['en'] : $frEn['fr'];
+        };
+
+        $buildUrl = function (string $path, array $params = []) use ($lang): string {
+            $params['lang'] = $lang;
+            $separator = (strpos($path, '?') === false) ? '?' : '&';
+            return $path . $separator . http_build_query($params);
+        };
+
+        // --- RENDU ---
+        View::render('HomePage/home_admin', [
+            'isLoggedIn' => true,
+            'lang' => $lang,
+            'completionPercentage' => (float)$completionPercentage,
+            't' => $t,
+            'buildUrl' => $buildUrl
+        ]);
     }
 }
