@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Controllers\site\FolderController;
 
 use Controllers\ControllerInterface;
@@ -8,11 +10,23 @@ use View\Folder\FoldersPageStudent;
 
 class FoldersControllerStudent implements ControllerInterface
 {
+    /**
+     * Check if the controller supports the request.
+     *
+     * @param string $page
+     * @param string $method
+     * @return bool
+     */
     public static function support(string $page, string $method): bool
     {
-        return in_array($page, ['folders-student', 'update_my_folder', 'create_folder']);
+        return in_array($page, ['folders-student', 'update_my_folder', 'create_folder'], true);
     }
 
+    /**
+     * Main control method.
+     *
+     * @return void
+     */
     public function control(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -25,10 +39,10 @@ class FoldersControllerStudent implements ControllerInterface
         }
 
         $numetu = (string)$_SESSION['numetu'];
-        $lang = $_GET['lang'] ?? 'fr';
-        $page = $_GET['page'] ?? '';
+        $lang = isset($_GET['lang']) && is_string($_GET['lang']) ? $_GET['lang'] : 'fr';
+        $page = isset($_GET['page']) && is_string($_GET['page']) ? $_GET['page'] : '';
 
-        // Routing POST
+        // POST Routing
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($page === 'update_my_folder') {
                 $this->handleUpdateFolder($numetu, $lang);
@@ -40,30 +54,43 @@ class FoldersControllerStudent implements ControllerInterface
             }
         }
 
-        // Afficher la page
+        // Display page
         $this->displayFolderPage($numetu, $lang);
     }
 
     /**
-     * Afficher la page du dossier étudiant
+     * Display the student folder page.
+     *
+     * @param string $numetu
+     * @param string $lang
+     * @return void
      */
     private function displayFolderPage(string $numetu, string $lang): void
     {
         $studentData = FolderStudent::getStudentDetails($numetu);
 
-        $message = $_SESSION['message'] ?? '';
+        $message = isset($_SESSION['message']) && is_string($_SESSION['message'])
+            ? $_SESSION['message']
+            : '';
         unset($_SESSION['message']);
 
-        $view = new FoldersPageStudent($studentData, $numetu, $message, $lang);
+        // Ensure we pass a valid array to the view, even if null returned
+        $data = is_array($studentData) ? $studentData : [];
+
+        $view = new FoldersPageStudent($data, $numetu, $message, $lang);
         $view->render();
     }
 
     /**
-     * Créer un nouveau dossier
+     * Handle the creation of a new folder.
+     *
+     * @param string $numetu
+     * @param string $lang
+     * @return void
      */
     private function handleCreateFolder(string $numetu, string $lang): void
     {
-        // Vérifier si le dossier existe déjà
+        // Check if folder already exists
         if (FolderStudent::getStudentDetails($numetu)) {
             $_SESSION['message'] = $lang === 'fr'
                 ? "Vous avez déjà déposé un dossier."
@@ -72,22 +99,22 @@ class FoldersControllerStudent implements ControllerInterface
             exit;
         }
 
-        // Récupérer les données du formulaire
+        // Collect form data safely
         $data = [
             'NumEtu' => $numetu,
-            'Nom' => $_POST['nom'] ?? '',
-            'Prenom' => $_POST['prenom'] ?? '',
-            'DateNaissance' => $_POST['naissance'] ?? null,
-            'Sexe' => $_POST['sexe'] ?? null,
-            'Adresse' => $_POST['adresse'] ?? null,
-            'CodePostal' => $_POST['cp'] ?? null,
-            'Ville' => $_POST['ville'] ?? null,
-            'EmailPersonnel' => $_POST['email_perso'] ?? '',
-            'EmailAMU' => $_POST['email_amu'] ?? null,
-            'Telephone' => $_POST['telephone'] ?? '',
-            'CodeDepartement' => $_POST['departement'] ?? null,
-            'Type' => $_POST['type'] ?? null,
-            'Zone' => $_POST['zone'] ?? null
+            'Nom' => isset($_POST['nom']) ? (string)$_POST['nom'] : '',
+            'Prenom' => isset($_POST['prenom']) ? (string)$_POST['prenom'] : '',
+            'DateNaissance' => isset($_POST['naissance']) ? (string)$_POST['naissance'] : null,
+            'Sexe' => isset($_POST['sexe']) ? (string)$_POST['sexe'] : null,
+            'Adresse' => isset($_POST['adresse']) ? (string)$_POST['adresse'] : null,
+            'CodePostal' => isset($_POST['cp']) ? (string)$_POST['cp'] : null,
+            'Ville' => isset($_POST['ville']) ? (string)$_POST['ville'] : null,
+            'EmailPersonnel' => isset($_POST['email_perso']) ? (string)$_POST['email_perso'] : '',
+            'EmailAMU' => isset($_POST['email_amu']) ? (string)$_POST['email_amu'] : null,
+            'Telephone' => isset($_POST['telephone']) ? (string)$_POST['telephone'] : '',
+            'CodeDepartement' => isset($_POST['departement']) ? (string)$_POST['departement'] : null,
+            'Type' => isset($_POST['type']) ? (string)$_POST['type'] : null,
+            'Zone' => isset($_POST['zone']) ? (string)$_POST['zone'] : null
         ];
 
         // Validation
@@ -99,13 +126,13 @@ class FoldersControllerStudent implements ControllerInterface
             exit;
         }
 
-        // Gérer les fichiers uploadés
+        // Handle uploaded files
         $photoData = $this->getUploadedFileContent('photo');
         $cvData = $this->getUploadedFileContent('cv');
         $conventionData = $this->getUploadedFileContent('convention');
         $lettreData = $this->getUploadedFileContent('lettre_motivation');
 
-        // Créer le dossier
+        // Create the folder
         $success = FolderStudent::createDossier(
             $data,
             $photoData,
@@ -123,20 +150,24 @@ class FoldersControllerStudent implements ControllerInterface
     }
 
     /**
-     * Mettre à jour un dossier existant
+     * Handle the update of an existing folder.
+     *
+     * @param string $numetu
+     * @param string $lang
+     * @return void
      */
     private function handleUpdateFolder(string $numetu, string $lang): void
     {
         $data = [
             'NumEtu' => $numetu,
-            'Adresse' => $_POST['adresse'] ?? null,
-            'CodePostal' => $_POST['cp'] ?? null,
-            'Ville' => $_POST['ville'] ?? null,
-            'Telephone' => $_POST['telephone'] ?? null,
-            'EmailPersonnel' => $_POST['email_perso'] ?? null,
+            'Adresse' => isset($_POST['adresse']) ? (string)$_POST['adresse'] : null,
+            'CodePostal' => isset($_POST['cp']) ? (string)$_POST['cp'] : null,
+            'Ville' => isset($_POST['ville']) ? (string)$_POST['ville'] : null,
+            'Telephone' => isset($_POST['telephone']) ? (string)$_POST['telephone'] : null,
+            'EmailPersonnel' => isset($_POST['email_perso']) ? (string)$_POST['email_perso'] : null,
         ];
 
-        // Validation
+        // Basic validation for update
         if (empty($data['EmailPersonnel'])) {
             $_SESSION['message'] = $lang === 'fr'
                 ? "L'email personnel est requis."
@@ -145,13 +176,13 @@ class FoldersControllerStudent implements ControllerInterface
             exit;
         }
 
-        // Gérer les fichiers
+        // Handle files
         $photoData = $this->getUploadedFileContent('photo');
         $cvData = $this->getUploadedFileContent('cv');
         $conventionData = $this->getUploadedFileContent('convention');
         $lettreData = $this->getUploadedFileContent('lettre_motivation');
 
-        // Mettre à jour
+        // Update
         $success = FolderStudent::updateDossier(
             $data,
             $photoData,
@@ -169,9 +200,11 @@ class FoldersControllerStudent implements ControllerInterface
     }
 
     /**
-     * Valider les données du dossier
+     * Validate folder data.
      *
-     * @return array<string> Liste des erreurs
+     * @param array<string, mixed> $data
+     * @param string $lang
+     * @return array<string> List of error messages
      */
     private function validateFolderData(array $data, string $lang): array
     {
@@ -183,7 +216,11 @@ class FoldersControllerStudent implements ControllerInterface
                 : "Name and Firstname required.";
         }
 
-        if (empty($data['EmailPersonnel']) || !filter_var($data['EmailPersonnel'], FILTER_VALIDATE_EMAIL)) {
+        if (
+            empty($data['EmailPersonnel']) ||
+            !is_string($data['EmailPersonnel']) ||
+            !filter_var($data['EmailPersonnel'], FILTER_VALIDATE_EMAIL)
+        ) {
             $errors[] = $lang === 'fr'
                 ? "Email personnel valide requis."
                 : "Valid personal email required.";
@@ -205,11 +242,18 @@ class FoldersControllerStudent implements ControllerInterface
     }
 
     /**
-     * Récupérer le contenu d'un fichier uploadé
+     * Retrieve the content of an uploaded file.
+     *
+     * @param string $fieldName
+     * @return string|null
      */
     private function getUploadedFileContent(string $fieldName): ?string
     {
-        if (!isset($_FILES[$fieldName]) || $_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {
+        if (!isset($_FILES[$fieldName]) || !is_array($_FILES[$fieldName])) {
+            return null;
+        }
+
+        if ($_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) {
             return null;
         }
 

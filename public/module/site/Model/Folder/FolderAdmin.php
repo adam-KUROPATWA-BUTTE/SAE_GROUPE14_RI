@@ -20,13 +20,15 @@ class FolderAdmin
 {
     private PDO $pdo;
 
-    // ✅ Enlever static, ajouter constructeur
     public function __construct()
     {
         $this->pdo = Database::getInstance()->getConnection();
     }
 
-    // ✅ Renommer pour correspondre à l'interface
+    /**
+     * @param string $numEtu
+     * @return array<string, mixed>|null
+     */
     public function findByNumEtu(string $numEtu): ?array
     {
         try {
@@ -43,6 +45,10 @@ class FolderAdmin
         }
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return bool
+     */
     public function save(array $data): bool
     {
         try {

@@ -12,6 +12,10 @@ class AuthController implements ControllerInterface
     public function __construct()
     {
         $this->userRepository = new UserRepositoryPDO();
+
+        if (!defined('ROOT_PATH')) {
+            define('ROOT_PATH', dirname(__DIR__, 3));
+        }
     }
 
     public static function support(string $page, string $method): bool
@@ -44,7 +48,10 @@ class AuthController implements ControllerInterface
             $identifier = $_POST['identifier'] ?? '';
             $password = $_POST['password'] ?? '';
 
-            $result = $this->userRepository->login($identifier, $password);
+            $result = $this->userRepository->login(
+                is_string($identifier) ? $identifier : '',
+                is_string($password) ? $password : ''
+            );
 
             if ($result['success']) {
                 $_SESSION['user_role'] = $result['role'];
@@ -53,29 +60,25 @@ class AuthController implements ControllerInterface
                     $_SESSION['numetu'] = $result['numetu'];
                 }
 
-                // Rediriger selon le rôle
                 if ($result['role'] === 'admin') {
                     header('Location: index.php?page=home-admin');
                 } else {
                     header('Location: index.php?page=home-student');
                 }
                 exit;
-                }
-            } else {
-                $message = 'Identifiants incorrects';
             }
+        } else {
+            $message = 'Identifiants incorrects';
+        }
 
-        // Render login page using absolute path
-        $isLogin = true;
-        $isReset = false;
-        $isTokenReset = false;
-        $token = '';
+        // Fix: Explicitly check if constant is a string
+        $constPath = defined('ROOT_PATH') ? constant('ROOT_PATH') : null;
+        $rootPath = is_string($constPath) ? $constPath : dirname(__DIR__, 3);
 
-        // Try multiple possible paths
         $possiblePaths = [
-            ROOT_PATH . '/public/View/Login.php',
-            ROOT_PATH . '/public/module/site/View/Login.php',
-            ROOT_PATH . '/View/Login.php',
+            $rootPath . '/public/View/Login.php',
+            $rootPath . '/public/module/site/View/Login.php',
+            $rootPath . '/View/Login.php',
         ];
 
         foreach ($possiblePaths as $path) {
@@ -85,7 +88,6 @@ class AuthController implements ControllerInterface
             }
         }
 
-        // If no path works, show error
         die("Login.php not found. Checked paths: " . implode(', ', $possiblePaths));
     }
 
@@ -101,15 +103,14 @@ class AuthController implements ControllerInterface
             $message = 'Inscription réussie !';
         }
 
-        $isLogin = false;
-        $isReset = false;
-        $isTokenReset = false;
-        $token = '';
+        // Fix: Explicitly check if constant is a string
+        $constPath = defined('ROOT_PATH') ? constant('ROOT_PATH') : null;
+        $rootPath = is_string($constPath) ? $constPath : dirname(__DIR__, 3);
 
         $possiblePaths = [
-            ROOT_PATH . '/public/View/Login.php',
-            ROOT_PATH . '/public/module/site/View/Login.php',
-            ROOT_PATH . '/View/Login.php',
+            $rootPath . '/public/View/Login.php',
+            $rootPath . '/public/module/site/View/Login.php',
+            $rootPath . '/View/Login.php',
         ];
 
         foreach ($possiblePaths as $path) {
@@ -134,7 +135,7 @@ class AuthController implements ControllerInterface
                 $message = 'Mot de passe réinitialisé !';
             } else {
                 $email = $_POST['email'] ?? '';
-                $result = $this->userRepository->resetPassword($email);
+                $result = $this->userRepository->resetPassword(is_string($email) ? $email : '');
 
                 if ($result) {
                     $message = 'Email de réinitialisation envoyé !';
@@ -147,10 +148,14 @@ class AuthController implements ControllerInterface
         $isLogin = false;
         $isReset = true;
 
+        // Fix: Explicitly check if constant is a string
+        $constPath = defined('ROOT_PATH') ? constant('ROOT_PATH') : null;
+        $rootPath = is_string($constPath) ? $constPath : dirname(__DIR__, 3);
+
         $possiblePaths = [
-            ROOT_PATH . '/public/View/Login.php',
-            ROOT_PATH . '/public/module/site/View/Login.php',
-            ROOT_PATH . '/View/Login.php',
+            $rootPath . '/public/View/Login.php',
+            $rootPath . '/public/module/site/View/Login.php',
+            $rootPath . '/View/Login.php',
         ];
 
         foreach ($possiblePaths as $path) {

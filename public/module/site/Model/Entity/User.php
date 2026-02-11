@@ -1,4 +1,5 @@
 <?php
+
 namespace Model\Entity;
 
 class User
@@ -19,16 +20,46 @@ class User
     }
 
     // Getters
-    public function getId(): ?int { return $this->id; }
-    public function getEmail(): string { return $this->email; }
-    public function getNumetu(): ?string { return $this->numetu; }
-    public function getPassword(): string { return $this->password; }
-    public function getRole(): string { return $this->role; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+    public function getNumetu(): ?string
+    {
+        return $this->numetu;
+    }
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+    public function getRole(): string
+    {
+        return $this->role;
+    }
 
     // Setters
-    public function setId(?int $id): void { $this->id = $id; }
-    public function setEmail(string $email): void { $this->email = $email; }
-    public function setNumetu(?string $numetu): void { $this->numetu = $numetu; }
-    public function setPassword(string $password): void { $this->password = $password; }
-    public function setRole(string $role): void { $this->role = $role; }
+    public function setId(?int $id): void
+    {
+        $this->id = $id;
+    }
+    public function setEmail(string $email): void
+    {
+        $this->email = $email;
+    }
+    public function setNumetu(?string $numetu): void
+    {
+        $this->numetu = $numetu;
+    }
+    public function setPassword(string $password): void
+    {
+        $this->password = $password;
+    }
+    public function setRole(string $role): void
+    {
+        $this->role = $role;
+    }
 }

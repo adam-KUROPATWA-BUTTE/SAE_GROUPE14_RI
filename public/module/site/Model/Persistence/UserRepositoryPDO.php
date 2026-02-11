@@ -25,7 +25,7 @@ class UserRepositoryPDO implements UserRepositoryInterface
         $stmt->execute(['email' => $email]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($data) {
+        if (is_array($data)) {
             return $this->mapToUser($data, 'admin');
         }
 
@@ -35,7 +35,7 @@ class UserRepositoryPDO implements UserRepositoryInterface
         $stmt->execute(['email' => $email]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($data) {
+        if (is_array($data)) {
             return $this->mapToUser($data, 'student');
         }
 
@@ -50,7 +50,7 @@ class UserRepositoryPDO implements UserRepositoryInterface
         $stmt->execute(['numetu' => $numetu]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$data) {
+        if (!is_array($data)) {
             return null;
         }
 
@@ -105,13 +105,15 @@ class UserRepositoryPDO implements UserRepositoryInterface
             $sql = "UPDATE etudiants SET password = :password WHERE email = :email";
             $stmt = $this->pdo->prepare($sql);
             return $stmt->execute(['password' => $hashedPassword, 'email' => $email]);
-
         } catch (PDOException $e) {
             error_log("Error updating password: " . $e->getMessage());
             return false;
         }
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function login(string $identifier, string $password): array
     {
         $user = filter_var($identifier, FILTER_VALIDATE_EMAIL)
@@ -158,13 +160,24 @@ class UserRepositoryPDO implements UserRepositoryInterface
         return true;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @param string $role
+     * @return User
+     */
     private function mapToUser(array $data, string $role): User
     {
+        // Fix: Explicit check for scalar/numeric types before casting mixed
+        $id = (isset($data['id']) && is_numeric($data['id'])) ? (int)$data['id'] : null;
+        $email = (isset($data['email']) && is_scalar($data['email'])) ? (string)$data['email'] : '';
+        $numetu = (isset($data['numetu']) && is_scalar($data['numetu'])) ? (string)$data['numetu'] : null;
+        $password = (isset($data['password']) && is_scalar($data['password'])) ? (string)$data['password'] : '';
+
         return new User(
-            $data['id'] ?? null,
-            $data['email'] ?? '',
-            $data['numetu'] ?? null,
-            $data['password'] ?? '',
+            $id,
+            $email,
+            $numetu,
+            $password,
             $role
         );
     }
