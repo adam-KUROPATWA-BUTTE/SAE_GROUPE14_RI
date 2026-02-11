@@ -4,6 +4,7 @@ namespace Controllers\site;
 
 use Controllers\ControllerInterface;
 use Model\Persistence\UserRepositoryPDO;
+use Core\View;
 
 class AuthController implements ControllerInterface
 {
@@ -66,30 +67,20 @@ class AuthController implements ControllerInterface
                     header('Location: index.php?page=home-student');
                 }
                 exit;
-            }
-        } else {
-            $message = 'Identifiants incorrects';
-        }
-
-        // Fix: Explicitly check if constant is a string
-        $constPath = defined('ROOT_PATH') ? constant('ROOT_PATH') : null;
-        $rootPath = is_string($constPath) ? $constPath : dirname(__DIR__, 3);
-
-        $possiblePaths = [
-            ROOT_PATH . '/public/View/Login.php',
-            ROOT_PATH . '/public/module/site/View/Login.php',
-            ROOT_PATH . '/View/Login.php',
-            ROOT_PATH . '/app/View/Login.php',
-        ];
-
-        foreach ($possiblePaths as $path) {
-            if (file_exists($path)) {
-                require_once $path;
-                return;
+            } else {
+                // Le message d'erreur s'affiche seulement si la connexion échoue
+                $message = 'Identifiants incorrects';
             }
         }
 
-        die("Login.php not found. Checked paths: " . implode(', ', $possiblePaths));
+        // Appel de la vue avec le nouveau moteur !
+        View::render('login', [
+            'message'      => $message,
+            'isLogin'      => true,
+            'isReset'      => false,
+            'isTokenReset' => false,
+            'token'        => ''
+        ]);
     }
 
     private function handleRegister(): void
@@ -104,24 +95,14 @@ class AuthController implements ControllerInterface
             $message = 'Inscription réussie !';
         }
 
-        // Fix: Explicitly check if constant is a string
-        $constPath = defined('ROOT_PATH') ? constant('ROOT_PATH') : null;
-        $rootPath = is_string($constPath) ? $constPath : dirname(__DIR__, 3);
-
-        $possiblePaths = [
-            $rootPath . '/public/View/Login.php',
-            $rootPath . '/public/module/site/View/Login.php',
-            $rootPath . '/View/Login.php',
-        ];
-
-        foreach ($possiblePaths as $path) {
-            if (file_exists($path)) {
-                require_once $path;
-                return;
-            }
-        }
-
-        die("Login.php not found. Checked paths: " . implode(', ', $possiblePaths));
+        // Appel de la vue pour l'inscription (isLogin passe à false)
+        View::render('login', [
+            'message'      => $message,
+            'isLogin'      => false, 
+            'isReset'      => false,
+            'isTokenReset' => false,
+            'token'        => ''
+        ]);
     }
 
     private function handleResetPassword(): void
@@ -146,26 +127,13 @@ class AuthController implements ControllerInterface
             }
         }
 
-        $isLogin = false;
-        $isReset = true;
-
-        // Fix: Explicitly check if constant is a string
-        $constPath = defined('ROOT_PATH') ? constant('ROOT_PATH') : null;
-        $rootPath = is_string($constPath) ? $constPath : dirname(__DIR__, 3);
-
-        $possiblePaths = [
-            $rootPath . '/public/View/Login.php',
-            $rootPath . '/public/module/site/View/Login.php',
-            $rootPath . '/View/Login.php',
-        ];
-
-        foreach ($possiblePaths as $path) {
-            if (file_exists($path)) {
-                require_once $path;
-                return;
-            }
-        }
-
-        die("Login.php not found. Checked paths: " . implode(', ', $possiblePaths));
+        // Appel de la vue pour la réinitialisation
+        View::render('login', [
+            'message'      => $message,
+            'isLogin'      => false,
+            'isReset'      => !$isTokenReset, // Vrai si on demande l'email, Faux si on a le token
+            'isTokenReset' => $isTokenReset,
+            'token'        => $token
+        ]);
     }
 }

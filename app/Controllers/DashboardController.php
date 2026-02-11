@@ -147,7 +147,22 @@ class DashboardController implements ControllerInterface
             $folder = [];
         }
 
-        $page = new DashboardPageStudent($folder, $lang);
-        $page->render();
+        $t = function (array $frEn) use ($lang): string {
+        return ($lang === 'en') ? $frEn['en'] : $frEn['fr'];
+        };
+
+        $buildUrl = function (string $path) use ($lang): string {
+            $separator = (strpos($path, '?') !== false) ? '&' : '?';
+            return $path . $separator . 'lang=' . urlencode($lang);
+        };
+
+        \Core\View::render('dashboard_admin', [
+            'incoming' => $incoming,
+            'outgoing' => $outgoing,
+            'filters'  => $filters,
+            'lang'     => $lang,
+            't'        => $t,
+            'buildUrl' => $buildUrl
+        ]);
     }
 }
