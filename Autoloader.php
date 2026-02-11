@@ -15,6 +15,7 @@ class Autoloader
         'UseCase\\'           => __DIR__ . '/app/UseCase/',
         'Model\\Folder\\'     => __DIR__ . '/app/Model/Folder/',
         'View\\Folder\\'      => __DIR__ . '/app/View/Folder/',
+        'Core\\'              => __DIR__ . '/app/Core/',
     ];
 
     public static function register(): void

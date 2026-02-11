@@ -1,6 +1,5 @@
 # --- Sécurité et Dépendances ---
 .env
-vendor/
 
 # --- IDE (IntelliJ, PhpStorm, VS Code) ---
 .idea/
