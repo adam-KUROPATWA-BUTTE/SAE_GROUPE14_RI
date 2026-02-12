@@ -1,42 +1,38 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
-
 namespace Controllers\site;
 
 use Controllers\ControllerInterface;
-use View\NotFoundPage;
+use Core\View;
 
-/**
- * NotFoundController
- *
- * Handles 404 pages when a requested route does not exist.
- *
- * Responsibilities:
- *  - Render a "Page Not Found" view
- *  - Does not support any specific route
- */
 class NotFoundController implements ControllerInterface
 {
     /**
-     * Main control method to render the 404 page.
+     * Méthode principale qui prépare les données et appelle la vue.
      */
     public function control(): void
     {
-        $view = new NotFoundPage('Page not found');
-        $view->render();
+        // 1. Logique (session, vérification tritanopie)
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
+        $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
+        $titre = 'Page non trouvée';
+
+        // 2. Appel de la vue (Template) via Core\View
+        // On passe les variables 'titre' et 'isTritanopia' à la vue
+        View::render('404', [
+            'titre' => $titre,
+            'isTritanopia' => $isTritanopia
+        ]);
     }
 
     /**
-     * Determines if this controller supports the requested page and method.
-     *
-     * @param string $page   Requested page
-     * @param string $method HTTP method
-     * @return bool Always returns false because this controller is a fallback
+     * Ce contrôleur est un fallback, il ne supporte aucune route spécifique.
      */
     public static function support(string $page, string $method): bool
     {
-        // This controller does not handle any specific route
         return false;
     }
 }
