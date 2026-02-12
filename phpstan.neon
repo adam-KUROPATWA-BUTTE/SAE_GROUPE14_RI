@@ -5,4 +5,4 @@ parameters:
     
     scanFiles:
         - Autoloader.php
-        - Database.php
+        - ./app/Core/Database.php

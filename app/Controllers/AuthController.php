@@ -98,7 +98,7 @@ class AuthController implements ControllerInterface
         // Appel de la vue pour l'inscription (isLogin passe à false)
         View::render('login', [
             'message'      => $message,
-            'isLogin'      => false, 
+            'isLogin'      => false,
             'isReset'      => false,
             'isTokenReset' => false,
             'token'        => ''
@@ -116,7 +116,7 @@ class AuthController implements ControllerInterface
         $message = ''; // Utilisé pour la vue "login" (demande de reset)
         $error = '';   // Utilisé pour la vue "reset_password" (changement effectif)
         $success = ''; // Utilisé pour la vue "reset_password"
-        
+
         $isTokenReset = isset($_GET['token']);
         $token = $_GET['token'] ?? '';
 
@@ -125,7 +125,7 @@ class AuthController implements ControllerInterface
                 // Logique de traitement du NOUVEAU mot de passe
                 $password = $_POST['password'] ?? '';
                 $passwordConfirm = $_POST['password_confirm'] ?? '';
-                
+
                 if ($password !== $passwordConfirm) {
                     $error = "Les mots de passe ne correspondent pas.";
                 } elseif (strlen($password) < 8) {
