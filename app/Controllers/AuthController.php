@@ -107,15 +107,36 @@ class AuthController implements ControllerInterface
 
     private function handleResetPassword(): void
     {
-        $message = '';
+        // 1. Démarrage session si nécessaire (Logique déplacée de la vue vers le contrôleur)
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
+
+        $message = ''; // Utilisé pour la vue "login" (demande de reset)
+        $error = '';   // Utilisé pour la vue "reset_password" (changement effectif)
+        $success = ''; // Utilisé pour la vue "reset_password"
+        
         $isTokenReset = isset($_GET['token']);
         $token = $_GET['token'] ?? '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($isTokenReset) {
-                $newPassword = $_POST['password'] ?? '';
-                $message = 'Mot de passe réinitialisé !';
+                // Logique de traitement du NOUVEAU mot de passe
+                $password = $_POST['password'] ?? '';
+                $passwordConfirm = $_POST['password_confirm'] ?? '';
+                
+                if ($password !== $passwordConfirm) {
+                    $error = "Les mots de passe ne correspondent pas.";
+                } elseif (strlen($password) < 8) {
+                    $error = "Le mot de passe doit faire au moins 8 caractères.";
+                } else {
+                    // Ici appel au repository pour changer le mdp avec le token...
+                    // $this->userRepository->updatePasswordWithToken($token, $password);
+                    $success = 'Mot de passe réinitialisé avec succès !';
+                }
             } else {
+                // Logique d'envoi de l'email (inchangée)
                 $email = $_POST['email'] ?? '';
                 $result = $this->userRepository->resetPassword(is_string($email) ? $email : '');
 
@@ -127,13 +148,24 @@ class AuthController implements ControllerInterface
             }
         }
 
-        // Appel de la vue pour la réinitialisation
-        View::render('login', [
-            'message'      => $message,
-            'isLogin'      => false,
-            'isReset'      => !$isTokenReset, // Vrai si on demande l'email, Faux si on a le token
-            'isTokenReset' => $isTokenReset,
-            'token'        => $token
-        ]);
+        // 2. Choix de la vue à afficher
+        if ($isTokenReset) {
+            // Affichage du formulaire de changement de mot de passe (Nouvelle Vue)
+            View::render('reset_password', [
+                'token' => $token,
+                'error' => $error,
+                'success' => $success,
+                'isTritanopia' => $isTritanopia
+            ]);
+        } else {
+            // Affichage du formulaire de demande d'email (Ancienne Vue Login modifiée)
+            View::render('login', [
+                'message'      => $message,
+                'isLogin'      => false,
+                'isReset'      => true,
+                'isTokenReset' => false,
+                'token'        => ''
+            ]);
+        }
     }
 }
