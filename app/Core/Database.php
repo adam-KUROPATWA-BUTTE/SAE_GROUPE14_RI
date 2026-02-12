@@ -3,26 +3,26 @@
 // phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
 class Database
 {
-    private static $instance = null;
-    private $conn;
+    private static ?Database $instance = null;
+    private ?PDO $conn = null;
 
-    private $host;
-    private $port;
-    private $dbname;
-    private $username;
-    private $password;
-    private $charset;
+    private string $host;
+    private string $port;
+    private string $dbname;
+    private string $username;
+    private string $password;
+    private string $charset;
 
     private function __construct()
     {
         try {
-            // Charger les variables d'environnement
-            $this->host     = $_ENV['DB_HOST'];
-            $this->port     = $_ENV['DB_PORT'];
-            $this->dbname   = $_ENV['DB_NAME'];
-            $this->username = $_ENV['DB_USER'];
-            $this->password = $_ENV['DB_PASSWORD'];
-            $this->charset  = $_ENV['DB_CHARSET'];
+            // Charger les variables d'environnement (avec valeurs par défaut pour éviter les crashs immédiats)
+            $this->host     = $_ENV['DB_HOST'] ?? 'localhost';
+            $this->port     = $_ENV['DB_PORT'] ?? '3306';
+            $this->dbname   = $_ENV['DB_NAME'] ?? '';
+            $this->username = $_ENV['DB_USER'] ?? '';
+            $this->password = $_ENV['DB_PASSWORD'] ?? '';
+            $this->charset  = $_ENV['DB_CHARSET'] ?? 'utf8mb4';
 
             // Définir le fuseau horaire de PHP
             date_default_timezone_set('Europe/Paris');
@@ -37,18 +37,16 @@ class Database
             ];
 
             $this->conn = new PDO($dsn, $this->username, $this->password, $options);
-
-            // Définir le fuseau horaire MySQL
             $this->conn->exec("SET time_zone = 'Europe/Paris'");
 
             error_log("✅ Connexion à la base de données réussie");
         } catch (PDOException $e) {
             error_log("❌ DB Error: " . $e->getMessage());
-            die("Erreur de connexion à la base de données. Veuillez réessayer plus tard.");
+            die("Erreur de connexion à la base de données.");
         }
     }
 
-    public static function getInstance()
+    public static function getInstance(): Database
     {
         if (self::$instance === null) {
             self::$instance = new self();
@@ -56,14 +54,19 @@ class Database
         return self::$instance;
     }
 
-    public function getConnection()
+    /**
+     * Garantit le retour d'un objet PDO valide.
+     * @return PDO
+     */
+    public function getConnection(): PDO
     {
+        if ($this->conn === null) {
+            throw new \RuntimeException("La connexion base de données n'est pas initialisée.");
+        }
         return $this->conn;
     }
 
-    private function __clone()
-    {
-    }
+    private function __clone() {}
 
     public function __wakeup()
     {

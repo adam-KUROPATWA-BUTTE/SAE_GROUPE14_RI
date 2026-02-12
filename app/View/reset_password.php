@@ -1,4 +1,12 @@
-<!DOCTYPE html>
+<?php
+/**
+ * @var bool $isTritanopia
+ * @var string|null $error
+ * @var string|null $success
+ * @var string|null $token
+ */
+?>
+<!DOCTYPE html><!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">

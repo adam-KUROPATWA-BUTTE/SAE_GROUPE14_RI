@@ -1,4 +1,12 @@
 <?php
+/**
+ * @var string $lang
+ * @var string $titre
+ * @var Closure(array<string, string>): string $t
+ * @var Closure(string, array<string, mixed>=): string $buildUrl
+ * @var bool $success
+ * @var string|null $errorMessage
+ */
 $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
 ?>
 <!DOCTYPE html>

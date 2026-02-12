@@ -1,4 +1,11 @@
 <?php
+/**
+ * @var string $lang
+ * @var Closure(array<string, string>): string $t
+ * @var Closure(string, array<string, mixed>=): string $buildUrl
+ * @var string $progressStyle
+ * @var string $status
+ */
 $isTritanopia = (isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true);
 ?>
 <!DOCTYPE html>
