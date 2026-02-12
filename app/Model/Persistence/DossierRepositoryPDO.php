@@ -17,10 +17,21 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             "SELECT COUNT(*) AS total, SUM(IsComplete) AS completed FROM dossiers"
         );
 
+        if ($stmt === false) {
+            return new DossierStats(0, 0);
+        }
+
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $total = (int)($row['total'] ?? 0);
-        $completed = (int)($row['completed'] ?? 0);
+        if ($row === false || !is_array($row)) {
+            return new DossierStats(0, 0);
+        }
+
+        $totalVal = $row['total'] ?? 0;
+        $completedVal = $row['completed'] ?? 0;
+
+        $total = is_numeric($totalVal) ? (int)$totalVal : 0;
+        $completed = is_numeric($completedVal) ? (int)$completedVal : 0;
 
         return new DossierStats($total, $completed);
     }

@@ -19,10 +19,17 @@ class CronReminderService
 
         foreach ($folders as $folder) {
 
-            $numEtu = $folder['NumEtu'];
-            $email = $folder['EmailAMU'] ?: $folder['EmailPersonnel'];
+            // Correction PHPStan : On force le type string car $folder[] est 'mixed'
+            $numEtu = isset($folder['NumEtu']) ? strval($folder['NumEtu']) : '';
 
-            if (!$email) {
+            $emailAmu = isset($folder['EmailAMU']) ? strval($folder['EmailAMU']) : '';
+            $emailPerso = isset($folder['EmailPersonnel']) ? strval($folder['EmailPersonnel']) : '';
+            
+            // Priorité à l'email AMU, sinon personnel
+            $email = $emailAmu !== '' ? $emailAmu : $emailPerso;
+
+            // Si pas d'email ou pas de numéro étudiant, on ignore
+            if ($email === '' || $numEtu === '') {
                 continue;
             }
 
@@ -31,11 +38,15 @@ class CronReminderService
             }
 
             if ($dryRun) {
+                // $email est maintenant garanti d'être une string
                 echo "Dry-run → {$email}\n";
                 continue;
             }
 
-            $studentName = trim(($folder['Prenom'] ?? '') . ' ' . ($folder['Nom'] ?? ''));
+            // Correction PHPStan : Casting explicite pour le nom aussi
+            $prenom = isset($folder['Prenom']) ? strval($folder['Prenom']) : '';
+            $nom = isset($folder['Nom']) ? strval($folder['Nom']) : '';
+            $studentName = trim($prenom . ' ' . $nom);
 
             $sent = EmailReminderService::sendRelance(
                 $email,

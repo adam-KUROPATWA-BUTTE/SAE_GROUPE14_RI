@@ -1,4 +1,11 @@
 <?php
+/**
+ * @var string $message
+ * @var bool $isTokenReset
+ * @var string|null $token
+ * @var bool $isReset
+ * @var bool $isLogin
+ */
 // On récupère juste l'état du mode daltonien depuis la session
 $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
 ?>
@@ -23,7 +30,7 @@ $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'
 
     <?php if ($isTokenReset) : ?>
         <form method="POST" action="">
-            <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
+            <input type="hidden" name="token" value="<?= htmlspecialchars($token ?? '') ?>">
             <label for="password">Nouveau mot de passe</label>
             <input type="password" name="password" id="password" required>
             <button type="submit" name="action" value="reset_password">Valider</button>

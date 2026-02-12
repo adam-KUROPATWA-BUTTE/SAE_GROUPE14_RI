@@ -1,4 +1,10 @@
 <?php
+/**
+ * @var string $lang
+ * @var Closure(array<string, string>): string $t
+ * @var Closure(string, array<string, mixed>=): string $buildUrl
+ * @var bool $isLoggedIn
+ */
 $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
 ?>
 <!DOCTYPE html>

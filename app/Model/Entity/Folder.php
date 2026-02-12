@@ -4,6 +4,9 @@ namespace Model\Entity;
 
 class Folder
 {
+    /**
+     * @param array<string, mixed> $pieces
+     */
     public function __construct(
         private string $numEtu,
         private ?string $nom = null,
@@ -19,6 +22,26 @@ class Folder
         return $this->numEtu;
     }
 
+    public function getNom(): ?string
+    {
+        return $this->nom;
+    }
+
+    public function getPrenom(): ?string
+    {
+        return $this->prenom;
+    }
+
+    public function getEmailPersonnel(): ?string
+    {
+        return $this->emailPersonnel;
+    }
+
+    public function getTelephone(): ?string
+    {
+        return $this->telephone;
+    }
+
     public function isComplete(): bool
     {
         return $this->isComplete;
@@ -29,11 +52,17 @@ class Folder
         $this->isComplete = $value;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getPieces(): array
     {
         return $this->pieces;
     }
 
+    /**
+     * @param array<string, mixed> $pieces
+     */
     public function setPieces(array $pieces): void
     {
         $this->pieces = $pieces;

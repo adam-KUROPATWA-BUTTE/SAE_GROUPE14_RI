@@ -1,4 +1,12 @@
 <?php
+/**
+ * @var string $lang
+ * @var Closure(array<string, string>): string $t
+ * @var Closure(string, array<string, mixed>=): string $buildUrl
+ * @var array{student: string, dept: string, year: string, type: string, camp: string, dest: string} $filters
+ * @var array<int, array<string, mixed>> $outgoing
+ * @var array<int, array<string, mixed>> $incoming
+ */
 $isTritanopia = (isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true);
 ?>
 <!DOCTYPE html>

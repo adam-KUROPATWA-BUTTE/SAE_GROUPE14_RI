@@ -1,6 +1,15 @@
 <?php
+/**
+ * @var string $lang
+ * @var Closure(array<string, string>): string $t
+ * @var Closure(string, array<string, mixed>=): string $buildUrl
+ * @var float|int $completionPercentage
+ * @var bool $isLoggedIn
+ */
+
 // Calculs pour le graphique Donut
 $radius = 130;
+// ... rest of your code
 $circumference = 2 * pi() * $radius;
 $dashArray = ($completionPercentage / 100) * $circumference;
 

@@ -1,3 +1,10 @@
+<?php
+/**
+ * @var string $titre
+ * @var bool $isTritanopia
+ */
+?>
+<!DOCTYPE html>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
