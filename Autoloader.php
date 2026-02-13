@@ -12,7 +12,7 @@ class Autoloader
         'Model\\'             => __DIR__ . '/app/Model/',
         'Service\\'           => __DIR__ . '/app/Service/',
         'View\\'              => __DIR__ . '/app/View/',
-        'UseCase\\'           => __DIR__ . '/app/UseCase/',
+        'UseCase\\'           => __DIR__ . '/app/Model/UseCase/',
         'Model\\Folder\\'     => __DIR__ . '/app/Model/Folder/',
         'View\\Folder\\'      => __DIR__ . '/app/View/Folder/',
         'Core\\'              => __DIR__ . '/app/Core/',
