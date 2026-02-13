@@ -3,7 +3,7 @@
 namespace Controllers\PartnersController;
 
 use Controllers\ControllerInterface;
-use Site\UseCase\AddPartnerUseCase;
+use Model\UseCase\AddPartnerUseCase;
 use Model\Persistence\PartnerRepositoryPDO;
 use Model\Entity\Partner;
 use Core\View;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Site\UseCase;
+namespace Model\UseCase;
 
 use Model\Repository\PartnerRepositoryInterface;
 use Model\Entity\Partner;

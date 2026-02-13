@@ -4,7 +4,7 @@ namespace Controllers\site\HomeController;
 
 use Controllers\ControllerInterface;
 use PDOException;
-use Site\UseCase\GetAdminStatsUseCase;
+use Model\UseCase\GetAdminStatsUseCase;
 use Model\Persistence\DossierRepositoryPDO;
 use Core\View; 
 
@@ -30,6 +30,10 @@ class HomeControllerAdmin implements ControllerInterface
         }
         $lang = $_SESSION['lang'] ?? 'fr';
 
+        if (isset($_GET['tritanopia'])) {
+            $_SESSION['tritanopia'] = (strval($_GET['tritanopia']) === '1');
+        }
+        
         $completionPercentage = 0;
 
         try {
