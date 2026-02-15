@@ -436,9 +436,8 @@ li a:hover {
         justify-content: space-between;
         align-items: center;
     }
-
     .menu-toggle {
-        display: block;
+        display: none;
         font-size: 28px;
         background: none;
         border: none;
