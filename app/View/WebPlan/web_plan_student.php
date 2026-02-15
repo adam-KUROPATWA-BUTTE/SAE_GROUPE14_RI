@@ -1,43 +1,19 @@
-<<?php
+<?php
 /**
+ * WebPlan Student - Contenu uniquement
+ *
  * @var string $lang
  * @var Closure(array<string, string>): string $t
  * @var Closure(string, array<string, mixed>=): string $buildUrl
  * @var array<int, array{url: string, label: string}> $links
  * @var Closure(string): string $translateLabel
  */
-$isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
+
+ob_start();
 ?>
-<!DOCTYPE html>
-<html lang="<?= htmlspecialchars($lang) ?>">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles/index.css">
-    <link rel="stylesheet" href="styles/web_plan.css">
-    <link rel="stylesheet" href="styles/chatbot.css">
-    <link rel="icon" type="image/png" href="img/favicon.webp"/>
-    <title><?= $t(['fr' => 'Plan du site', 'en' => 'Site Map']) ?></title>
-</head>
-<body class="<?= $isTritanopia ? 'tritanopie' : '' ?>">
 
-<header>
-    <div class="top-bar">
-        <img class="logo_amu" src="img/logo.png" alt="Logo AMU">
-        <div class="right-buttons">
-            <div class="lang-dropdown">
-                <button class="dropbtn"><?= htmlspecialchars($lang) ?></button>
-                <div class="dropdown-content">
-                    <a href="#" onclick="changeLang('fr'); return false;">Français</a>
-                    <a href="#" onclick="changeLang('en'); return false;">English</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</header>
-
-<main>
     <h1><?= $t(['fr' => 'Plan du site', 'en' => 'Site Map']) ?></h1>
+
     <ul>
         <?php foreach ($links as $link) :
             $url = strval($link['url']);
@@ -53,32 +29,20 @@ $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'
             </li>
         <?php endforeach; ?>
     </ul>
-</main>
 
-<div id="help-bubble">💬</div>
-<div id="help-popup" class="chat-popup">
-    <div class="help-popup-header">
-        <span><?= $t(['fr' => 'Assistant', 'en' => 'Assistant']) ?></span>
-        <button>✖</button>
+    <div id="app-config"
+         data-lang="<?= htmlspecialchars($lang) ?>"
+         data-role="student"
+         style="display:none;">
     </div>
-    <div id="chat-messages" class="chat-messages"></div>
-    <div id="quick-actions" class="quick-actions"></div>
-</div>
 
-<div id="app-config" 
-     data-lang="<?= htmlspecialchars($lang) ?>" 
-     data-role="student"
-     style="display:none;">
-</div>
+<?php
+$content = ob_get_clean();
 
-<script src="js/main.js"></script>
-<script src="js/chatbot.js"></script>
+$title = $t(['fr' => 'Plan du site', 'en' => 'Site Map']);
+$styles = ['styles/web_plan.css'];
+$scripts = [];
+$activeMenu = 'web_plan';
+$userRole = 'student';
 
-<footer>
-    <p>&copy; 2026 - Aix-Marseille Université.</p>
-    <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
-        <img class="insta" src="img/instagram.png" alt="Instagram">
-    </a>
-</footer>
-</body>
-</html>
+include __DIR__ . '/../Layout/base.php';

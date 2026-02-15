@@ -1,6 +1,7 @@
 <?php
 /**
- * Layout minimal (sans header) pour pages avec header personnalisé
+ * Layout spécifique pour les pages Home
+ * Sans header (inclus dans le contenu) et SANS <main> (pas de container)
  *
  * @var string $lang
  * @var string $title
@@ -33,22 +34,19 @@ $isTritanopia = (isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === t
         <link rel="stylesheet" href="<?= htmlspecialchars($style) ?>">
     <?php endforeach; ?>
 </head>
-<body class="<?= $isTritanopia ? 'tritanopie' : '' ?>">
+<body class="<?= $isTritanopia ? 'tritanopie' : '' ?> home-page">
 
-<!-- Le header est dans $content pour les pages Home -->
+<?php
+// Flash messages (avant le contenu)
+if (isset($_SESSION['message'])): ?>
+    <div class="message" style="max-width: 1200px; margin: 20px auto;">
+        <?= htmlspecialchars(strval($_SESSION['message'])); ?>
+        <?php unset($_SESSION['message']); ?>
+    </div>
+<?php endif; ?>
 
-<main>
-    <?php
-    // Flash messages
-    if (isset($_SESSION['message'])): ?>
-        <div class="message">
-            <?= htmlspecialchars(strval($_SESSION['message'])); ?>
-            <?php unset($_SESSION['message']); ?>
-        </div>
-    <?php endif; ?>
-
-    <?= $content ?>
-</main>
+<!-- Contenu complet (avec header inclus) sans balise <main> -->
+<?= $content ?>
 
 <?php include __DIR__ . '/chatbot.php'; ?>
 

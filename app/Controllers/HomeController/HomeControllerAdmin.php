@@ -6,7 +6,7 @@ use Controllers\ControllerInterface;
 use PDOException;
 use Model\UseCase\GetAdminStatsUseCase;
 use Model\Persistence\DossierRepositoryPDO;
-use Core\View; 
+use Core\View;
 
 class HomeControllerAdmin implements ControllerInterface
 {
@@ -33,13 +33,25 @@ class HomeControllerAdmin implements ControllerInterface
         if (isset($_GET['tritanopia'])) {
             $_SESSION['tritanopia'] = (strval($_GET['tritanopia']) === '1');
         }
-        
-        $completionPercentage = 0;
+
+        // Valeurs par défaut
+        $statistics = [
+            'complete_folders' => 0,
+            'incomplete_folders' => 0,
+            'total_folders' => 0,
+            'top_countries' => [],
+            'gender' => ['male' => 0, 'female' => 0],
+            'departments' => []
+        ];
+        $completionPercentage = 0.0;
 
         try {
             $repository = new DossierRepositoryPDO();
             $useCase = new GetAdminStatsUseCase($repository);
-            $completionPercentage = $useCase->execute();
+
+            $adminStats = $useCase->execute();
+            $statistics = $adminStats->toArray();
+            $completionPercentage = $adminStats->getDossierStats()->getCompletionPercentage();
         } catch (PDOException $e) {
             error_log("HomeControllerAdmin Error: " . $e->getMessage());
         }
@@ -59,7 +71,8 @@ class HomeControllerAdmin implements ControllerInterface
         View::render('HomePage/home_admin', [
             'isLoggedIn' => true,
             'lang' => $lang,
-            'completionPercentage' => (float)$completionPercentage,
+            'completionPercentage' => $completionPercentage,
+            'statistics' => $statistics,
             't' => $t,
             'buildUrl' => $buildUrl
         ]);

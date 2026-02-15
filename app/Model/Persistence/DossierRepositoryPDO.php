@@ -3,36 +3,121 @@
 namespace Model\Persistence;
 
 use Model\Repository\DossierRepositoryInterface;
-use Model\Entity\DossierStats;
-use Database;
 use PDO;
+use Database;
+use Model\Entity\DossierStats;
+use Model\Entity\GenderStats;
 
 class DossierRepositoryPDO implements DossierRepositoryInterface
 {
-    public function getGlobalStats(): DossierStats
+    private PDO $db;
+
+    public function __construct()
     {
-        $pdo = Database::getInstance()->getConnection();
+        $this->db = Database::getInstance()->getConnection();
+    }
 
-        $stmt = $pdo->query(
-            "SELECT COUNT(*) AS total, SUM(IsComplete) AS completed FROM dossiers"
-        );
+    public function getDossierStats(): DossierStats
+    {
+        try {
+            $stmt = $this->db->query("
+                SELECT 
+                    COUNT(*) as total,
+                    SUM(CASE WHEN IsComplete = 1 THEN 1 ELSE 0 END) as completed
+                FROM dossiers
+            ");
 
-        if ($stmt === false) {
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            return new DossierStats(
+                (int) ($result['total'] ?? 0),
+                (int) ($result['completed'] ?? 0)
+            );
+        } catch (\PDOException $e) {
+            error_log("getDossierStats Error: " . $e->getMessage());
             return new DossierStats(0, 0);
         }
+    }
 
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    public function getTopCountries(int $limit): array
+    {
+        try {
+            $stmt = $this->db->prepare("
+            SELECT 
+                Pays as name, 
+                COUNT(*) as count 
+            FROM dossiers 
+            WHERE Pays IS NOT NULL AND Pays != ''
+            GROUP BY Pays 
+            ORDER BY count DESC 
+            LIMIT :limit
+        ");
 
-        if ($row === false || !is_array($row)) {
-            return new DossierStats(0, 0);
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return !empty($results) ? $results : [];
+        } catch (\PDOException $e) {
+            error_log("getTopCountries Error: " . $e->getMessage());
+            return [];
         }
+    }
 
-        $totalVal = $row['total'] ?? 0;
-        $completedVal = $row['completed'] ?? 0;
+    public function getGenderStats(): GenderStats
+    {
+        try {
+            // Directement depuis la table dossiers
+            $stmt = $this->db->query("
+                SELECT 
+                    SUM(CASE 
+                        WHEN LOWER(Sexe) IN ('m', 'homme', 'male', 'masculin') THEN 1 
+                        ELSE 0 
+                    END) as male,
+                    SUM(CASE 
+                        WHEN LOWER(Sexe) IN ('f', 'femme', 'female', 'féminin', 'feminin') THEN 1 
+                        ELSE 0 
+                    END) as female
+                FROM dossiers
+                WHERE Sexe IS NOT NULL AND Sexe != ''
+            ");
 
-        $total = is_numeric($totalVal) ? (int)$totalVal : 0;
-        $completed = is_numeric($completedVal) ? (int)$completedVal : 0;
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return new DossierStats($total, $completed);
+            return new GenderStats(
+                (int) ($result['male'] ?? 0),
+                (int) ($result['female'] ?? 0)
+            );
+        } catch (\PDOException $e) {
+            error_log("getGenderStats Error: " . $e->getMessage());
+            return new GenderStats(0, 0);
+        }
+    }
+
+    public function getDepartmentStats(int $limit): array
+    {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT 
+                    CodeDepartement as name, 
+                    COUNT(*) as count 
+                FROM dossiers 
+                WHERE CodeDepartement IS NOT NULL AND CodeDepartement != ''
+                GROUP BY CodeDepartement 
+                ORDER BY count DESC 
+                LIMIT :limit
+            ");
+
+            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $stmt->execute();
+
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return !empty($results) ? $results : [];
+        } catch (\PDOException $e) {
+            error_log("getDepartmentStats Error: " . $e->getMessage());
+            return [];
+        }
     }
 }
