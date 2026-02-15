@@ -6,13 +6,14 @@
  * @var string $activeMenu
  * @var string $userRole - 'admin' ou 'student'
  * @var Closure(array<string, string>): string $t
- * @var Closure(string, array<string, mixed>=): string $buildUrl
  */
 ?>
 <header>
     <div class="top-bar">
         <img class="logo_amu" src="img/logo.png" alt="Logo AMU">
         <div class="right-buttons">
+
+
             <div class="lang-dropdown">
                 <button class="dropbtn"><?= htmlspecialchars($lang) ?></button>
                 <div class="dropdown-content">
@@ -33,24 +34,20 @@
             'home' => ['fr' => 'Accueil', 'en' => 'Home'],
             'dashboard' => ['fr' => ($userRole === 'admin' ? 'Tableau de bord' : 'Mon Tableau de bord'), 'en' => ($userRole === 'admin' ? 'Dashboard' : 'My Dashboard')],
             'partners' => ['fr' => 'Partenaires', 'en' => 'Partners'],
-            'folders' => ['fr' => 'Dossiers', 'en' => 'Folders'],
+            'folders' => ['fr' => ($userRole === 'admin' ? 'Dossiers' : 'Mon Dossier'), 'en' => ($userRole === 'admin' ? 'Folders' : 'My Folder')],
             'web_plan' => ['fr' => 'Plan du site', 'en' => 'Sitemap']
         ];
 
         foreach ($menus as $key => $labels):
             $isActive = $activeMenu === $key;
             $page = $key . $suffix;
+            $url = 'index.php?page=' . urlencode($page) . '&lang=' . urlencode($lang);
             ?>
             <button
                 <?= $isActive ? 'class="active"' : '' ?>
-                onclick="window.location.href='<?= $buildUrl('index.php', ['page' => $page]) ?>'">
+                    onclick="window.location.href='<?= htmlspecialchars($url) ?>'">
                 <?= $t($labels) ?>
             </button>
         <?php endforeach; ?>
-
-        <!-- Bouton déconnexion -->
-        <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'logout']) ?>'">
-            <?= $t(['fr' => 'Déconnexion', 'en' => 'Logout']) ?>
-        </button>
     </nav>
 </header>

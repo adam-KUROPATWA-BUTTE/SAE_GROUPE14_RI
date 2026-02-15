@@ -1,16 +1,16 @@
 <?php
 /**
- * Footer commun
+ * Chatbot/Assistant commun
  *
- * @var string $userRole - 'admin' ou 'student'
+ * @var Closure(array<string, string>): string $t
  */
 ?>
-<footer>
-    <p>&copy; 2026 - Aix-Marseille Université.</p>
-
-    <?php if ($userRole === 'student'): ?>
-        <a href="https://www.instagram.com/relationsinternationales_amu/" target="_blank">
-            <img class="insta" src="img/instagram.png" alt="Instagram">
-        </a>
-    <?php endif; ?>
-</footer>
+<div id="help-bubble" onclick="toggleHelpPopup()">💬</div>
+<div id="help-popup" class="chat-popup">
+    <div class="help-popup-header">
+        <span><?= $t(['fr' => 'Assistant', 'en' => 'Assistant']) ?></span>
+        <button onclick="toggleHelpPopup()">✖</button>
+    </div>
+    <div id="chat-messages" class="chat-messages"></div>
+    <div id="quick-actions" class="quick-actions"></div>
+</div>

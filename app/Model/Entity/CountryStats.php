@@ -1,0 +1,33 @@
+<?php
+
+namespace Model\Entity;
+
+class CountryStats
+{
+    private string $name;
+    private int $count;
+
+    public function __construct(string $name, int $count)
+    {
+        $this->name = $name;
+        $this->count = $count;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function getCount(): int
+    {
+        return $this->count;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'count' => $this->count
+        ];
+    }
+}
