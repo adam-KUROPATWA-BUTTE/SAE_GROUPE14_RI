@@ -77,6 +77,8 @@ use Controllers\PartnersController\PartnersControllerAdmin;
 use Controllers\WebPlanController\WebPlanControllerAdmin;
 use Controllers\WebPlanController\WebPlanControllerStudent;
 
+//Email Controller
+use Controllers\ReminderController;
 
 
 // --- 5. Initialize Controllers ---
@@ -98,6 +100,7 @@ $controllers = [
     WebPlanControllerStudent::class,
     DashboardController::class,
     SaveStudentController::class,
+    ReminderController::class,
 ];
 
 // --- 6. Routing Logic ---
