@@ -76,10 +76,7 @@ use Controllers\PartnersController\PartnersControllerAdmin;
 // WebPlan (Sitemap) Controllers
 use Controllers\WebPlanController\WebPlanControllerAdmin;
 use Controllers\WebPlanController\WebPlanControllerStudent;
-
-//Email Controller
-use Controllers\ReminderController;
-
+use Controllers\WebPlanController\WebPlanController;
 
 // --- 5. Initialize Controllers ---
 
@@ -98,9 +95,11 @@ $controllers = [
     PartnersControllerStudent::class,
     WebPlanControllerAdmin::class,
     WebPlanControllerStudent::class,
+    WebPlanController::class,
+    FoldersControllerAdmin::class,
+    FoldersControllerStudent::class,
     DashboardController::class,
     SaveStudentController::class,
-    ReminderController::class,
 ];
 
 // --- 6. Routing Logic ---
