@@ -1,3 +1,11 @@
+
+/* Masquer le bouton menu hamburger sur la page contact */
+.menu-toggle {
+    display: none ;
+}
+
+
+
 .contact-container {
     max-width: 1200px;
     margin: 0 auto;
