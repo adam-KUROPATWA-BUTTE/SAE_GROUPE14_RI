@@ -78,6 +78,9 @@ use Controllers\WebPlanController\WebPlanControllerAdmin;
 use Controllers\WebPlanController\WebPlanControllerStudent;
 use Controllers\WebPlanController\WebPlanController;
 
+//contact controllers
+use Controllers\ContactController\ContactControllerStudent;
+
 // --- 5. Initialize Controllers ---
 
 /**
@@ -100,6 +103,7 @@ $controllers = [
     FoldersControllerStudent::class,
     DashboardController::class,
     SaveStudentController::class,
+    ContactControllerStudent::class,
 ];
 
 // --- 6. Routing Logic ---
