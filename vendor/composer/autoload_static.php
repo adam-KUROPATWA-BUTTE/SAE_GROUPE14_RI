@@ -20,6 +20,10 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
     );
 
     public static $prefixLengthsPsr4 = array (
+        'Z' =>
+        array (
+            'ZipStream\\' => 10,
+        ),
         'S' =>
         array (
             'Symfony\\Polyfill\\Php83\\' => 23,
@@ -36,13 +40,19 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         ),
         'P' =>
         array (
+            'Psr\\SimpleCache\\' => 16,
             'Psr\\Log\\' => 8,
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Http\\Client\\' => 16,
             'Psr\\Container\\' => 14,
             'PhpParser\\' => 10,
             'PhpOption\\' => 10,
+            'PhpOffice\\PhpSpreadsheet\\' => 25,
             'PDepend\\' => 8,
+        ),
+        'M' =>
+        array (
+            'Matrix\\' => 7,
         ),
         'G' =>
         array (
@@ -60,10 +70,15 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         array (
             'Composer\\XdebugHandler\\' => 23,
             'Composer\\Pcre\\' => 14,
+            'Complex\\' => 8,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
+        'ZipStream\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/maennchen/zipstream-php/src',
+        ),
         'Symfony\\Polyfill\\Php83\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php83',
@@ -108,6 +123,10 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         array (
             0 => __DIR__ . '/..' . '/symfony/config',
         ),
+        'Psr\\SimpleCache\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/psr/simple-cache/src',
+        ),
         'Psr\\Log\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/log/src',
@@ -133,9 +152,17 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         array (
             0 => __DIR__ . '/..' . '/phpoption/phpoption/src/PhpOption',
         ),
+        'PhpOffice\\PhpSpreadsheet\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet',
+        ),
         'PDepend\\' =>
         array (
             0 => __DIR__ . '/..' . '/pdepend/pdepend/src/main/php/PDepend',
+        ),
+        'Matrix\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/markbaker/matrix/classes/src',
         ),
         'GuzzleHttp\\Psr7\\' =>
         array (
@@ -168,6 +195,10 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         'Composer\\Pcre\\' =>
         array (
             0 => __DIR__ . '/..' . '/composer/pcre/src',
+        ),
+        'Complex\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/markbaker/complex/classes/src',
         ),
     );
 
