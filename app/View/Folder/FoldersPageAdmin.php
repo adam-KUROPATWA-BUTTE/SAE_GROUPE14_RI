@@ -178,13 +178,13 @@ class FoldersPageAdmin
                 <label for="search" class="search-label"><?= $this->t(['fr' => 'Rechercher','en' => 'Search']) ?></label>
                 <input type="text" id="search" name="search" placeholder="Nom, prénom, email..." 
                     value="<?= htmlspecialchars(strval($this->filters['search'] ?? '')) ?>">
-                <button type="button" class="btn-search">
+                <button type="button" id="btn-search-loupe" class="btn-search">
                     <img src="img/loupe.png" alt="Rechercher">
                 </button>
             </div>
             <div style="display: flex; gap: 10px;">
                 <button id="btn-import-excel" class="btn-search" onclick="document.getElementById('file-import').click()">
-                    <?= $this->t(['fr' => '📥 Importer Excel/CSV','en' => '📥 Import Excel/CSV']) ?>
+                    <?= $this->t(['fr' => 'Importer Excel/CSV','en' => 'Import Excel/CSV']) ?>
                 </button>
                 <form id="form-import" method="post" action="index.php?page=import_folders&lang=<?= htmlspecialchars($this->lang) ?>" enctype="multipart/form-data" style="display:none;">
                     <input type="file" id="file-import" name="excel_file" accept=".csv, .xlsx, .xls" onchange="document.getElementById('form-import').submit()">

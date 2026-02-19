@@ -234,45 +234,61 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         $whereConditions = " WHERE 1=1";
 
         if (isset($filters['complet']) && $filters['complet'] !== 'all') {
-            $whereConditions .= ($filters['complet'] == '1') ? " AND IsComplete = 1" : " AND (IsComplete = 0 OR IsComplete IS NULL)";
+            if ($filters['complet'] == '1') {
+                $whereConditions .= " AND IsComplete = 1";
+            } else {
+                $whereConditions .= " AND (IsComplete = 0 OR IsComplete IS NULL)";
+            }
         }
-        if (!empty($filters['type']) && is_string($filters['type']) && $filters['type'] !== 'all') {
+        if (!empty($filters['type']) && $filters['type'] !== 'all') {
             $whereConditions .= " AND LOWER(Type) = LOWER(:type)";
-            $params[':type'] = $filters['type'];
+            $params['type'] = $filters['type'];
         }
-        if (!empty($filters['zone']) && is_string($filters['zone']) && $filters['zone'] !== 'all') {
+        if (!empty($filters['zone']) && $filters['zone'] !== 'all') {
             $whereConditions .= " AND LOWER(Zone) = LOWER(:zone)";
-            $params[':zone'] = $filters['zone'];
+            $params['zone'] = $filters['zone'];
         }
-        if (!empty($filters['search']) && is_string($filters['search'])) {
-            $whereConditions .= " AND (LOWER(Nom) LIKE LOWER(:search) 
-                                OR LOWER(Prenom) LIKE LOWER(:search) 
-                                OR LOWER(NumEtu) LIKE LOWER(:search) 
-                                OR LOWER(EmailPersonnel) LIKE LOWER(:search))";
-            
-            $params[':search'] = '%' . trim($filters['search']) . '%';        
+        if (!empty($filters['search'])) {
+            $searchValue = $filters['search'] . '%';
+            $whereConditions .= " AND (Nom LIKE :search1 OR Prenom LIKE :search2 OR NumEtu LIKE :search3 OR EmailPersonnel LIKE :search4)";
+            $params['search1'] = $searchValue;
+            $params['search2'] = $searchValue;
+            $params['search3'] = $searchValue;
+            $params['search4'] = $searchValue;
         }
 
+        // Total Count
         $totalCount = 0;
         try {
             $countStmt = $pdo->prepare("SELECT COUNT(*) as total FROM dossiers" . $whereConditions);
-            $countStmt->execute($params);
+            foreach ($params as $key => $value) {
+                $countStmt->bindValue(':' . $key, $value);
+            }
+            $countStmt->execute();
             $row = $countStmt->fetch(PDO::FETCH_ASSOC);
-            if (is_array($row)) $totalCount = (int)($row['total'] ?? 0);
-        } catch (\PDOException $e) { error_log("COUNT ERROR in searchWithPagination: " . $e->getMessage()); }
+            if (is_array($row)) {
+                $totalCount = (int)($row['total'] ?? 0);
+            }
+        } catch (\PDOException $e) {
+            error_log("Error counting folders: " . $e->getMessage());
+        }
 
+        // Pagination Query
         $sql = "SELECT NumEtu, Nom, Prenom, EmailPersonnel as email, Telephone, Type, Zone,
                        DateNaissance, Sexe, Adresse, CodePostal, Ville, EmailAMU, CodeDepartement,
                        IsComplete, PiecesJustificatives
-                FROM dossiers " . $whereConditions . " ORDER BY Nom ASC, Prenom ASC LIMIT :limit OFFSET :offset";
+                FROM dossiers " . $whereConditions;
+        $sql .= " ORDER BY Nom ASC, Prenom ASC";
+        $offset = ($page - 1) * $perPage;
+        $sql .= " LIMIT :limit OFFSET :offset";
 
         try {
             $stmt = $pdo->prepare($sql);
             foreach ($params as $key => $value) {
-                $stmt->bindValue($key, $value);
+                $stmt->bindValue(':' . $key, $value);
             }
             $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
-            $stmt->bindValue(':offset', ($page - 1) * $perPage, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
             $stmt->execute();
 
             return [
@@ -281,6 +297,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                 'totalPages' => ($totalCount > 0) ? (int)ceil($totalCount / $perPage) : 0
             ];
         } catch (\PDOException $e) {
+            error_log("Error searching folders with pagination: " . $e->getMessage());
             return ['data' => [], 'total' => 0, 'totalPages' => 0];
         }
     }
