@@ -11,7 +11,6 @@ use Model\Entity\GenderStats;
  */
 interface DossierRepositoryInterface
 {
-<<<<<<< HEAD
     public function getDossierStats(): DossierStats;
 
     /**
@@ -25,7 +24,6 @@ interface DossierRepositoryInterface
      * @return array<int, array{name: string, count: int}>
      */
     public function getDepartmentStats(int $limit): array;
-=======
     /**
      * Retrieves global statistics about the folders.
      *
@@ -90,5 +88,4 @@ interface DossierRepositoryInterface
      * @return array{data: array<int, array<string, mixed>>, total: int, totalPages: int} The paginated search results.
      */
     public function searchWithPagination(array $filters, int $page, int $perPage): array;
->>>>>>> Separation-models-folders-pour-les-mettres-en-usecase
 }
