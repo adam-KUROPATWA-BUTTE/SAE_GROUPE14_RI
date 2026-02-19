@@ -3,88 +3,72 @@
 namespace Controllers\WebPlanController;
 
 use Controllers\ControllerInterface;
-use Core\View; // Utilisation du moteur de rendu
-use Model\WebPlan;
+use Core\View;
 
-/**
- * Class WebPlanControllerStudent
- *
- * Controller responsible for displaying the website plan (sitemap)
- * for students.
- */
 class WebPlanControllerStudent implements ControllerInterface
 {
-    /**
-     * Checks whether this controller supports the given page and HTTP method.
-     *
-     * @param string $page   Requested page
-     * @param string $method HTTP method
-     * @return bool True if this controller supports the page, false otherwise
-     */
     public static function support(string $page, string $method): bool
     {
-        return $page === 'web_plan-student';
+        return $page === 'web_plan-student' && $method === 'GET';
     }
 
-    /**
-     * Main controller logic.
-     *
-     * - Retrieves the current language
-     * - Fetches student-accessible sitemap links
-     * - Renders the student sitemap view
-     *
-     * @return void
-     */
     public function control(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        // --- GESTION DE LA SESSION ---
-        if (isset($_GET['lang'])) {
-            $langParam = strval($_GET['lang']);
-            if (in_array($langParam, ['fr', 'en'], true)) {
-                $_SESSION['lang'] = $langParam;
-            }
+        // Vérifier l'authentification étudiant
+        if (!isset($_SESSION['numetu'])) {
+            header('Location: index.php?page=login');
+            exit;
         }
+
         $lang = $_SESSION['lang'] ?? 'fr';
 
-        if (isset($_GET['tritanopia'])) {
-            $_SESSION['tritanopia'] = (strval($_GET['tritanopia']) === '1');
-        }
-
-        // Récupération des liens
-        /** @var array<int, array{url: string, label: string}> $links */
-        $links = WebPlan::getLinksStudent();
-
-        // --- FONCTIONS D'AIDE POUR LA VUE ---
-        $t = function (array $frEn) use ($lang): string {
-            return $lang === 'en' ? $frEn['en'] : $frEn['fr'];
+        // Fonction de traduction
+        $t = function(array $translations) use ($lang) {
+            return $translations[$lang] ?? $translations['fr'];
         };
 
-        $buildUrl = function (string $url) use ($lang): string {
-            $sep = (strpos($url, '?') === false) ? '?' : '&';
-            return $url . $sep . 'lang=' . urlencode($lang);
+        // Construction d'URL
+        $buildUrl = function(string $path, array $params = []) use ($lang) {
+            $params['lang'] = $lang;
+            $url = 'index.php?page=' . $path;
+            foreach ($params as $key => $value) {
+                $url .= '&' . urlencode($key) . '=' . urlencode($value);
+            }
+            return $url;
         };
 
-        $translateLabel = function (string $label): string {
-            $map = [
+        // Fonction de traduction des labels
+        $translateLabel = function(string $label) use ($lang) {
+            $translations = [
                 'Accueil' => 'Home',
                 'Mon Tableau de bord' => 'My Dashboard',
                 'Partenaires' => 'Partners',
                 'Mon Dossier' => 'My Folder',
-                'Connexion / Inscription' => 'Login / Register',
+                'Contact' => 'Contact',
+                'Plan du site' => 'Site Map',
             ];
-            return $map[$label] ?? $label;
+            return $lang === 'en' ? ($translations[$label] ?? $label) : $label;
         };
 
-        // --- RENDU DE LA VUE ---
+        // Liste des liens pour les étudiants
+        $links = [
+            ['url' => 'home-student', 'label' => 'Accueil'],
+            ['url' => 'dashboard-student', 'label' => 'Mon Tableau de bord'],
+            ['url' => 'partners-student', 'label' => 'Partenaires'],
+            ['url' => 'folders-student', 'label' => 'Mon Dossier'],
+            ['url' => 'contact-student', 'label' => 'Contact'],
+        ];
+
+        // Utiliser View::render
         View::render('WebPlan/web_plan_student', [
-            'links'          => $links,
-            'lang'           => $lang,
-            't'              => $t,
-            'buildUrl'       => $buildUrl,
+            'lang' => $lang,
+            't' => $t,
+            'buildUrl' => $buildUrl,
+            'links' => $links,
             'translateLabel' => $translateLabel
         ]);
     }

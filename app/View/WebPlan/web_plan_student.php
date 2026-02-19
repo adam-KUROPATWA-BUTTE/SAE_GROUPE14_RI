@@ -45,4 +45,4 @@ $scripts = [];
 $activeMenu = 'web_plan';
 $userRole = 'student';
 
-include __DIR__ . '/../Layout/base.php';
+include __DIR__ . '/../Layout/base_minimal.php';

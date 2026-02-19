@@ -48,7 +48,8 @@ ob_start();
             <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'dashboard-student']) ?>'"><?= $t(['fr' => 'Mon Tableau de bord','en' => 'My Dashboard']) ?></button>
             <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'partners-student']) ?>'"><?= $t(['fr' => 'Partenaires','en' => 'Partners']) ?></button>
             <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'folders-student']) ?>'"><?= $t(['fr' => 'Mon Dossier','en' => 'My Folder']) ?></button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'web_plan-student']) ?>'"><?= $t(['fr' => 'Plan du site','en' => 'Sitemap']) ?></button>
+            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'contact-student']) ?>'"><?= $t(['fr' => 'Contact','en' => 'Contact']) ?></button>
+
         </nav>
     </header>
 

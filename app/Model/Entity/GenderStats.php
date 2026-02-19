@@ -39,7 +39,7 @@ class GenderStats
         $total = $this->getTotal();
         return $total > 0 ? ($this->female / $total) * 100 : 0;
     }
-
+    /** @return array<string, mixed> */
     public function toArray(): array
     {
         return [

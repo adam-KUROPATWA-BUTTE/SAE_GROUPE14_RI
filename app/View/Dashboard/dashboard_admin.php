@@ -141,7 +141,14 @@ ob_start();
                 </tbody>
             </table>
         <?php endif; ?>
+
     </div>
+    <div id="app-config"
+         data-lang="<?= htmlspecialchars($lang) ?>"
+         data-role="admin"
+         style="display:none;">
+    </div>
+
 
 <?php
 $content = ob_get_clean();

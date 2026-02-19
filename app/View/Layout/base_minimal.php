@@ -1,6 +1,6 @@
 <?php
 /**
- * Layout minimal sans header, avec <main>
+ * Layout minimal sans header complet, avec <main>
  * Utilisé quand le header est personnalisé mais qu'on veut garder le container <main>
  *
  * @var string $lang
@@ -12,16 +12,18 @@
  * @var string|null $metaDescription
  */
 
-$isTritanopia = (isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true);
+$isTritanopia = isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true;
 ?>
 <!DOCTYPE html>
 <html lang="<?= htmlspecialchars($lang) ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <?php if (isset($metaDescription)): ?>
+
+    <?php if (!empty($metaDescription)): ?>
         <meta name="description" content="<?= htmlspecialchars($metaDescription) ?>">
     <?php endif; ?>
+
     <title><?= htmlspecialchars($title) ?></title>
 
     <!-- Styles de base -->
@@ -30,20 +32,23 @@ $isTritanopia = (isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === t
     <link rel="icon" type="image/png" href="img/favicon.webp"/>
 
     <!-- Styles additionnels -->
-    <?php foreach ($styles ?? [] as $style): ?>
+    <?php foreach ($styles as $style): ?>
         <link rel="stylesheet" href="<?= htmlspecialchars($style) ?>">
     <?php endforeach; ?>
 </head>
+
 <body class="<?= $isTritanopia ? 'tritanopie' : '' ?>">
 
-<!-- Le header est dans $content si nécessaire -->
+<header>
+    <div class="top-bar">
+        <img class="logo_amu" src="img/logo.png" alt="Logo AMU">
+    </div>
+</header>
 
 <main>
-    <?php
-    // Flash messages
-    if (isset($_SESSION['message'])): ?>
+    <?php if (isset($_SESSION['message'])): ?>
         <div class="message">
-            <?= htmlspecialchars(strval($_SESSION['message'])); ?>
+            <?= htmlspecialchars((string) $_SESSION['message']); ?>
             <?php unset($_SESSION['message']); ?>
         </div>
     <?php endif; ?>
@@ -51,17 +56,15 @@ $isTritanopia = (isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === t
     <?= $content ?>
 </main>
 
-<?php include __DIR__ . '/chatbot.php'; ?>
-
 <?php include __DIR__ . '/footer.php'; ?>
 
 <!-- Scripts de base -->
 <script src="js/main.js"></script>
-<script src="js/chatbot.js"></script>
 
 <!-- Scripts additionnels -->
-<?php foreach ($scripts ?? [] as $script): ?>
+<?php foreach ($scripts as $script): ?>
     <script src="<?= htmlspecialchars($script) ?>"></script>
 <?php endforeach; ?>
+
 </body>
 </html>

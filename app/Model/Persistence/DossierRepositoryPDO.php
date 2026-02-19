@@ -21,18 +21,26 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     {
         try {
             $stmt = $this->db->query("
-                SELECT 
-                    COUNT(*) as total,
-                    SUM(CASE WHEN IsComplete = 1 THEN 1 ELSE 0 END) as completed
-                FROM dossiers
-            ");
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN IsComplete = 1 THEN 1 ELSE 0 END) as completed
+            FROM dossiers
+        ");
+
+            if ($stmt === false) {
+                return new DossierStats(0, 0);
+            }
 
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            return new DossierStats(
-                (int) ($result['total'] ?? 0),
-                (int) ($result['completed'] ?? 0)
-            );
+            if (!is_array($result)) {
+                return new DossierStats(0, 0);
+            }
+
+            $total = is_numeric($result['total']) ? (int) $result['total'] : 0;
+            $completed = is_numeric($result['completed']) ? (int) $result['completed'] : 0;
+
+            return new DossierStats($total, $completed);
         } catch (\PDOException $e) {
             error_log("getDossierStats Error: " . $e->getMessage());
             return new DossierStats(0, 0);
@@ -68,33 +76,39 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     public function getGenderStats(): GenderStats
     {
         try {
-            // Directement depuis la table dossiers
             $stmt = $this->db->query("
-                SELECT 
-                    SUM(CASE 
-                        WHEN LOWER(Sexe) IN ('m', 'homme', 'male', 'masculin') THEN 1 
-                        ELSE 0 
-                    END) as male,
-                    SUM(CASE 
-                        WHEN LOWER(Sexe) IN ('f', 'femme', 'female', 'féminin', 'feminin') THEN 1 
-                        ELSE 0 
-                    END) as female
-                FROM dossiers
-                WHERE Sexe IS NOT NULL AND Sexe != ''
-            ");
+            SELECT 
+                SUM(CASE 
+                    WHEN LOWER(Sexe) IN ('m', 'homme', 'male', 'masculin') THEN 1 
+                    ELSE 0 
+                END) as male,
+                SUM(CASE 
+                    WHEN LOWER(Sexe) IN ('f', 'femme', 'female', 'féminin', 'feminin') THEN 1 
+                    ELSE 0 
+                END) as female
+            FROM dossiers
+            WHERE Sexe IS NOT NULL AND Sexe != ''
+        ");
+
+            if ($stmt === false) {
+                return new GenderStats(0, 0);
+            }
 
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            return new GenderStats(
-                (int) ($result['male'] ?? 0),
-                (int) ($result['female'] ?? 0)
-            );
+            if (!is_array($result)) {
+                return new GenderStats(0, 0);
+            }
+
+            $male = is_numeric($result['male']) ? (int) $result['male'] : 0;
+            $female = is_numeric($result['female']) ? (int) $result['female'] : 0;
+
+            return new GenderStats($male, $female);
         } catch (\PDOException $e) {
             error_log("getGenderStats Error: " . $e->getMessage());
             return new GenderStats(0, 0);
         }
     }
-
     public function getDepartmentStats(int $limit): array
     {
         try {
