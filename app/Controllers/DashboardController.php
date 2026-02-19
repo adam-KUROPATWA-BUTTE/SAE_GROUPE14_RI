@@ -3,13 +3,20 @@
 namespace Controllers\site;
 
 use Controllers\ControllerInterface;
-use Model\Folder\FolderAdmin;
-use Model\Folder\FolderStudent;
+use Model\UseCase\ManageFolderUseCase;
 use View\Dashboard\DashboardPageStudent; 
 use Core\View;
 
 class DashboardController implements ControllerInterface
 {
+    private ManageFolderUseCase $folderUseCase;
+
+    public function __construct()
+    {
+        // Instanciation du Use Case
+        $this->folderUseCase = new ManageFolderUseCase();
+    }
+
     public static function support(string $page, string $method): bool
     {
         return in_array($page, ['dashboard-admin', 'dashboard-student'], true) && $method === 'GET';
@@ -58,7 +65,8 @@ class DashboardController implements ControllerInterface
             'camp'    => is_string($_GET['camp'] ?? null) ? $_GET['camp'] : '',
         ];
 
-        $folders = FolderAdmin::getAll();
+        // Remplacement par le nouveau Use Case
+        $folders = $this->folderUseCase->getAllFolders();
         if (!is_array($folders)) {
             $folders = [];
         }
@@ -148,7 +156,9 @@ class DashboardController implements ControllerInterface
         }
 
         $numetu = $_SESSION['numetu'];
-        $folder = FolderStudent::getStudentDetails($numetu);
+        
+        // Remplacement par le nouveau Use Case
+        $folder = $this->folderUseCase->getStudentDetails($numetu);
 
         if (!is_array($folder)) {
             $folder = [];
