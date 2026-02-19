@@ -32,7 +32,8 @@ ob_start();
 
     <div id="app-config"
          data-lang="<?= htmlspecialchars($lang) ?>"
-         data-role="admin;">
+         data-role="admin"
+         style="display:none;">
     </div>
 
 <?php
@@ -44,4 +45,4 @@ $scripts = [];
 $activeMenu = 'web_plan';
 $userRole = 'admin';
 
-include __DIR__ . '/../Layout/base.php';
+include __DIR__ . '/../Layout/base_minimal.php';

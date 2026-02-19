@@ -1,4 +1,3 @@
-
 <?php
 /**
  * Home Admin - Header personnalisé + Layout Home
@@ -8,15 +7,24 @@
  * @var Closure(string, array<string, mixed>=): string $buildUrl
  * @var float|int $completionPercentage
  * @var bool $isLoggedIn
- * @var array $statistics Tableau contenant toutes les statistiques
+ * @var array{
+ *     complete_folders?: int,
+ *     incomplete_folders?: int,
+ *     total_folders?: int,
+ *     top_countries?: list<array{name: string, count: int}>,
+ *     gender?: array{
+ *         male?: int,
+ *         female?: int
+ *     },
+ *     departments?: list<array{name: string, count: int}>
+ * } $statistics
  */
 
-$isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
+$isTritanopia = !empty($_SESSION['tritanopia']) && ((bool) $_SESSION['tritanopia'] === true);
 
 ob_start();
 ?>
 
-    <!-- Header personnalisé pour Home Admin -->
     <header>
         <div class="top-bar">
             <img class="logo_amu" src="img/logo.png" alt="AMU Logo">
@@ -47,11 +55,18 @@ ob_start();
         </div>
 
         <nav class="menu">
-            <button class="active" onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'home-admin']) ?>'"><?= $t(['fr' => 'Accueil','en' => 'Home']) ?></button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'dashboard-admin']) ?>'"><?= $t(['fr' => 'Tableau de bord','en' => 'Dashboard']) ?></button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'partners-admin']) ?>'"><?= $t(['fr' => 'Partenaires','en' => 'Partners']) ?></button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'folders-admin']) ?>'"><?= $t(['fr' => 'Dossiers','en' => 'Folders']) ?></button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'web_plan-admin']) ?>'"><?= $t(['fr' => 'Plan du site','en' => 'Sitemap']) ?></button>
+            <button class="active" onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'home-student']) ?>'">
+                <?= $t(['fr' => 'Accueil','en' => 'Home']) ?>
+            </button>
+            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'dashboard-student']) ?>'">
+                <?= $t(['fr' => 'Mon Tableau de bord','en' => 'My Dashboard']) ?>
+            </button>
+            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'partners-student']) ?>'">
+                <?= $t(['fr' => 'Partenaires','en' => 'Partners']) ?>
+            </button>
+            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'folders-student']) ?>'">
+                <?= $t(['fr' => 'Mon Dossier','en' => 'My Folder']) ?>
+            </button>
         </nav>
     </header>
 
@@ -77,31 +92,42 @@ ob_start();
 
         <div class="stats-carousel">
             <div class="carousel-container">
-                <!-- Slide 1: Dossiers complets/incomplets -->
+
+                <!-- Slide 1 -->
                 <div class="stat-slide active">
                     <h2><?= $t(['fr' => 'État des dossiers','en' => 'Folder Status']) ?></h2>
+
+                    <?php
+                    $completeFolders = (int) ($statistics['complete_folders'] ?? 0);
+                    $totalFolders = max((int) ($statistics['total_folders'] ?? 1), 1);
+                    $completionRate = round($completeFolders / $totalFolders * 100);
+                    ?>
+
                     <div class="stat-content">
                         <div class="stat-item complete">
-                            <div class="stat-number"><?= $statistics['complete_folders'] ?? 0 ?></div>
+                            <div class="stat-number"><?= $completeFolders ?></div>
                             <div class="stat-label"><?= $t(['fr' => 'Dossiers complets','en' => 'Complete folders']) ?></div>
                         </div>
                         <div class="stat-item incomplete">
-                            <div class="stat-number"><?= $statistics['incomplete_folders'] ?? 0 ?></div>
+                            <div class="stat-number"><?= (int) ($statistics['incomplete_folders'] ?? 0) ?></div>
                             <div class="stat-label"><?= $t(['fr' => 'Dossiers incomplets','en' => 'Incomplete folders']) ?></div>
                         </div>
                     </div>
+
                     <div class="completion-bar">
-                        <div class="completion-fill" style="width: <?= round(($statistics['complete_folders'] ?? 0) / max(($statistics['total_folders'] ?? 1), 1) * 100) ?>%"></div>
+                        <div class="completion-fill" style="width: <?= $completionRate ?>%"></div>
                     </div>
+
                     <div class="stat-percentage">
-                        <?= round(($statistics['complete_folders'] ?? 0) / max(($statistics['total_folders'] ?? 1), 1) * 100) ?>%
+                        <?= $completionRate ?>%
                         <?= $t(['fr' => 'de complétion','en' => 'completion']) ?>
                     </div>
                 </div>
 
-                <!-- Slide 2: Pays les plus demandés -->
+                <!-- Slide 2 -->
                 <div class="stat-slide">
                     <h2><?= $t(['fr' => 'Pays les plus demandés','en' => 'Most Requested Countries']) ?></h2>
+
                     <div class="stat-content ranking">
                         <?php
                         $topCountries = $statistics['top_countries'] ?? [];
@@ -110,58 +136,78 @@ ob_start();
                             <div class="ranking-item">
                                 <span class="rank"><?= $index + 1 ?></span>
                                 <span class="country-name"><?= htmlspecialchars($country['name']) ?></span>
-                                <span class="country-count"><?= $country['count'] ?></span>
+                                <span class="country-count"><?= (int) $country['count'] ?></span>
                             </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
 
-                <!-- Slide 3: Répartition par genre -->
+                <!-- Slide 3 -->
                 <div class="stat-slide">
                     <h2><?= $t(['fr' => 'Répartition par genre','en' => 'Gender Distribution']) ?></h2>
+
+                    <?php
+                    $genderStats = $statistics['gender'] ?? ['male' => 0, 'female' => 0];
+
+                    $maleCount = (int) ($genderStats['male'] ?? 0);
+                    $femaleCount = (int) ($genderStats['female'] ?? 0);
+
+                    $totalGender = $maleCount + $femaleCount;
+
+                    $malePercentage = $totalGender > 0
+                        ? round($maleCount / $totalGender * 100)
+                        : 0;
+
+                    $femalePercentage = $totalGender > 0
+                        ? round($femaleCount / $totalGender * 100)
+                        : 0;
+                    ?>
+
                     <div class="stat-content">
-                        <?php
-                        $totalGender = ($statistics['gender']['male'] ?? 0) + ($statistics['gender']['female'] ?? 0);
-                        $malePercentage = $totalGender > 0 ? round(($statistics['gender']['male'] ?? 0) / $totalGender * 100) : 0;
-                        $femalePercentage = $totalGender > 0 ? round(($statistics['gender']['female'] ?? 0) / $totalGender * 100) : 0;
-                        ?>
                         <div class="stat-item male">
-                            <div class="stat-number"><?= $statistics['gender']['male'] ?? 0 ?></div>
+                            <div class="stat-number"><?= $maleCount ?></div>
                             <div class="stat-label"><?= $t(['fr' => 'Étudiants','en' => 'Male students']) ?></div>
                             <div class="stat-percentage-small"><?= $malePercentage ?>%</div>
                         </div>
                         <div class="stat-item female">
-                            <div class="stat-number"><?= $statistics['gender']['female'] ?? 0 ?></div>
+                            <div class="stat-number"><?= $femaleCount ?></div>
                             <div class="stat-label"><?= $t(['fr' => 'Étudiantes','en' => 'Female students']) ?></div>
                             <div class="stat-percentage-small"><?= $femalePercentage ?>%</div>
                         </div>
                     </div>
+
                     <div class="gender-bar">
                         <div class="gender-male" style="width: <?= $malePercentage ?>%"></div>
                         <div class="gender-female" style="width: <?= $femalePercentage ?>%"></div>
                     </div>
                 </div>
 
-                <!-- Slide 4: Répartition par département -->
+                <!-- Slide 4 -->
                 <div class="stat-slide">
                     <h2><?= $t(['fr' => 'Répartition par département','en' => 'Distribution by Department']) ?></h2>
+
                     <div class="stat-content departments">
                         <?php
                         $departments = $statistics['departments'] ?? [];
-                        $maxDept = !empty($departments) ? max(array_column($departments, 'count')) : 1;
+                        $maxDept = !empty($departments)
+                            ? max(array_map(static fn($d) => (int) $d['count'], $departments))
+                            : 1;
+
                         foreach (array_slice($departments, 0, 5) as $dept):
-                            $barWidth = round(($dept['count'] / max($maxDept, 1)) * 100);
+                            $count = (int) $dept['count'];
+                            $barWidth = round($count / max($maxDept, 1) * 100);
                             ?>
                             <div class="dept-item">
                                 <span class="dept-name"><?= htmlspecialchars($dept['name']) ?></span>
                                 <div class="dept-bar-container">
                                     <div class="dept-bar" style="width: <?= $barWidth ?>%"></div>
                                 </div>
-                                <span class="dept-count"><?= $dept['count'] ?></span>
+                                <span class="dept-count"><?= $count ?></span>
                             </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
+
             </div>
 
             <div class="carousel-dots">
@@ -179,60 +225,6 @@ ob_start();
          style="display:none;">
     </div>
 
-    <script>
-        let currentSlide = 0;
-        let autoSlideInterval;
-
-        function showSlide(n) {
-            const slides = document.querySelectorAll('.stat-slide');
-            const dots = document.querySelectorAll('.dot');
-
-            if (n >= slides.length) currentSlide = 0;
-            if (n < 0) currentSlide = slides.length - 1;
-
-            slides.forEach(slide => slide.classList.remove('active'));
-            dots.forEach(dot => dot.classList.remove('active'));
-
-            slides[currentSlide].classList.add('active');
-            dots[currentSlide].classList.add('active');
-        }
-
-        function changeSlide(direction) {
-            currentSlide += direction;
-            showSlide(currentSlide);
-            resetAutoSlide();
-        }
-
-        function goToSlide(n) {
-            currentSlide = n;
-            showSlide(currentSlide);
-            resetAutoSlide();
-        }
-
-        function autoSlide() {
-            currentSlide++;
-            showSlide(currentSlide);
-        }
-
-        function resetAutoSlide() {
-            clearInterval(autoSlideInterval);
-            autoSlideInterval = setInterval(autoSlide, 5000);
-        }
-
-        autoSlideInterval = setInterval(autoSlide, 5000);
-
-        const carousel = document.querySelector('.stats-carousel');
-        if (carousel) {
-            carousel.addEventListener('mouseenter', () => {
-                clearInterval(autoSlideInterval);
-            });
-
-            carousel.addEventListener('mouseleave', () => {
-                resetAutoSlide();
-            });
-        }
-    </script>
-
 <?php
 $content = ob_get_clean();
 
@@ -240,6 +232,7 @@ $title = $t([
     'fr' => 'Accueil - Service des relations internationales AMU',
     'en' => 'Home - International Relations Service AMU'
 ]);
+
 $styles = ['styles/homepage.css'];
 $scripts = [];
 $activeMenu = 'home';

@@ -5,14 +5,14 @@ namespace Model\Entity;
 class AdminStats
 {
     private DossierStats $dossierStats;
+    /** @var array<int, CountryStats> */
     private array $topCountries;
     private GenderStats $genderStats;
+    /** @var array<int, DepartmentStats> */
     private array $departments;
 
     /**
-     * @param DossierStats $dossierStats
      * @param array<int, CountryStats> $topCountries
-     * @param GenderStats $genderStats
      * @param array<int, DepartmentStats> $departments
      */
     public function __construct(
@@ -32,6 +32,7 @@ class AdminStats
         return $this->dossierStats;
     }
 
+    /** @return array<int, CountryStats> */
     public function getTopCountries(): array
     {
         return $this->topCountries;
@@ -42,14 +43,13 @@ class AdminStats
         return $this->genderStats;
     }
 
+    /** @return array<int, DepartmentStats> */
     public function getDepartments(): array
     {
         return $this->departments;
     }
 
-    /**
-     * Convertit en tableau pour la vue
-     */
+    /** @return array<string, mixed> */
     public function toArray(): array
     {
         return [

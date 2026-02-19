@@ -82,7 +82,7 @@ $content = ob_get_clean();
 
 $title = htmlspecialchars($titre);
 $styles = ['styles/partners.css'];
-$scripts = ['js/partners.js'];
+$scripts = ['js/partner.js'];
 $activeMenu = 'partners';
 $userRole = 'admin';
 

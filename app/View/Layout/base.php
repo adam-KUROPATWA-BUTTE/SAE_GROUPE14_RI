@@ -4,16 +4,16 @@
  *
  * @var string $lang
  * @var string $title
- * @var string $content - Le contenu HTML de la page
- * @var array<string> $styles - Fichiers CSS additionnels
- * @var array<string> $scripts - Fichiers JS additionnels
- * @var string $activeMenu - Menu actif ('home', 'dashboard', 'partners', 'folders', 'sitemap')
- * @var string $userRole - 'admin' ou 'student'
- * @var Closure(array<string, string>): string $t - Fonction de traduction
+ * @var string $content
+ * @var array<string> $styles
+ * @var array<string> $scripts
+ * @var string $activeMenu
+ * @var string $userRole
+ * @var Closure(array<string, string>): string $t
  * @var Closure(string, array<string, mixed>=): string $buildUrl
  */
 
-$isTritanopia = (isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true);
+$isTritanopia = isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true;
 ?>
 <!DOCTYPE html>
 <html lang="<?= htmlspecialchars($lang) ?>">
@@ -28,7 +28,7 @@ $isTritanopia = (isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === t
     <link rel="icon" type="image/png" href="img/favicon.webp"/>
 
     <!-- Styles additionnels -->
-    <?php foreach ($styles ?? [] as $style): ?>
+    <?php foreach ($styles as $style): ?>
         <link rel="stylesheet" href="<?= htmlspecialchars($style) ?>">
     <?php endforeach; ?>
 </head>
@@ -37,11 +37,9 @@ $isTritanopia = (isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === t
 <?php include __DIR__ . '/header.php'; ?>
 
 <main>
-    <?php
-    // Flash messages
-    if (isset($_SESSION['message'])): ?>
+    <?php if (isset($_SESSION['message'])): ?>
         <div class="message">
-            <?= htmlspecialchars(strval($_SESSION['message'])); ?>
+            <?= htmlspecialchars((string) $_SESSION['message']); ?>
             <?php unset($_SESSION['message']); ?>
         </div>
     <?php endif; ?>
@@ -50,7 +48,6 @@ $isTritanopia = (isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === t
 </main>
 
 <?php include __DIR__ . '/chatbot.php'; ?>
-
 <?php include __DIR__ . '/footer.php'; ?>
 
 <!-- Scripts de base -->
@@ -58,8 +55,9 @@ $isTritanopia = (isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === t
 <script src="js/chatbot.js"></script>
 
 <!-- Scripts additionnels -->
-<?php foreach ($scripts ?? [] as $script): ?>
+<?php foreach ($scripts as $script): ?>
     <script src="<?= htmlspecialchars($script) ?>"></script>
 <?php endforeach; ?>
+
 </body>
 </html>

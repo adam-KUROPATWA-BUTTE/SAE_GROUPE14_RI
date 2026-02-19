@@ -23,6 +23,7 @@ class DepartmentStats
         return $this->count;
     }
 
+    /** @return array<string, mixed> */
     public function toArray(): array
     {
         return [
