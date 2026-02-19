@@ -177,12 +177,19 @@ class FoldersPageAdmin
             <div class="search-container-toolbar">
                 <label for="search" class="search-label"><?= $this->t(['fr' => 'Rechercher','en' => 'Search']) ?></label>
                 <input type="text" id="search" name="search" placeholder="Nom, prénom, email..." 
-                       value="<?= htmlspecialchars(strval($this->filters['search'] ?? '')) ?>">
+                    value="<?= htmlspecialchars(strval($this->filters['search'] ?? '')) ?>">
                 <button type="button" class="btn-search">
                     <img src="img/loupe.png" alt="Rechercher">
                 </button>
             </div>
-            <div>
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-import-excel" class="btn-search" onclick="document.getElementById('file-import').click()">
+                    <?= $this->t(['fr' => '📥 Importer Excel/CSV','en' => '📥 Import Excel/CSV']) ?>
+                </button>
+                <form id="form-import" method="post" action="index.php?page=import_folders&lang=<?= htmlspecialchars($this->lang) ?>" enctype="multipart/form-data" style="display:none;">
+                    <input type="file" id="file-import" name="excel_file" accept=".csv, .xlsx, .xls" onchange="document.getElementById('form-import').submit()">
+                </form>
+
                 <button id="btn-creer-dossier" onclick="window.location.href='<?= $this->buildUrl('index.php', ['page' => 'folders-admin', 'action' => 'create']) ?>'">
                     <?= $this->t(['fr' => '+ Créer un dossier','en' => '+ Create Folder']) ?>
                 </button>

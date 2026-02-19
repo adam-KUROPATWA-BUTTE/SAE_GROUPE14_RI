@@ -18,7 +18,7 @@ class FoldersControllerAdmin
 
     public static function support(string $page, string $method): bool
     {
-        return in_array($page, ['folders', 'save_student', 'folders-admin', 'toggle_complete', 'update_student']);
+        return in_array($page, ['folders', 'save_student', 'folders-admin', 'toggle_complete', 'update_student', 'import_folders']);
     }
 
     public function control(): void
@@ -45,6 +45,11 @@ class FoldersControllerAdmin
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // NOUVEAU : Gestion de l'importation
+            if ($page === 'import_folders') {
+                $this->importFolders($lang);
+                return;
+            }
             if ($page === 'save_student') {
                 $this->saveStudent($lang);
                 return;
@@ -62,10 +67,10 @@ class FoldersControllerAdmin
 
         $currentPage = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
         $filters = [
-            'type'      => $_GET['Type'] ?? $_GET['type'] ?? 'all',
-            'zone'      => $_GET['Zone'] ?? $_GET['zone'] ?? 'all',
-            'search'    => $_GET['search'] ?? '',
-            'complet'   => $_GET['complet'] ?? 'all',
+            'type'    => $_GET['type'] ?? 'all',   
+            'zone'    => $_GET['zone'] ?? 'all',   
+            'search'  => $_GET['search'] ?? '',    
+            'complet' => $_GET['complet'] ?? 'all',
         ];
 
         $perPage = 10;
@@ -86,6 +91,35 @@ class FoldersControllerAdmin
             $result['totalPages']
         );
         $view->render();
+    }
+
+    private function importFolders(string $lang): void
+    {
+        if (isset($_FILES['excel_file']) && $_FILES['excel_file']['error'] === UPLOAD_ERR_OK) {
+            $filePath = $_FILES['excel_file']['tmp_name'];
+            $fileName = $_FILES['excel_file']['name'];
+            
+            $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+            
+            $allowedExtensions = ['csv', 'xlsx', 'xls'];
+            
+            if (!in_array($ext, $allowedExtensions)) {
+                $_SESSION['message'] = ($lang === 'fr') 
+                    ? 'Erreur : Format non supporté. Utilisez .csv ou .xlsx' 
+                    : 'Error: Unsupported format. Use .csv or .xlsx';
+            } else {
+                $success = $this->folderUseCase->importFoldersFromCSV($filePath); 
+
+                $_SESSION['message'] = $success
+                    ? (($lang === 'fr') ? 'Importation réussie' : 'Import successful')
+                    : (($lang === 'fr') ? 'Erreur lors de l\'importation (fichier vide ou format invalide)' : 'Error during import');
+            }
+        } else {
+            $_SESSION['message'] = ($lang === 'fr') ? 'Erreur lors du téléchargement du fichier.' : 'File upload error.';
+        }
+        
+        header('Location: index.php?page=folders-admin&lang=' . $lang);
+        exit;
     }
 
     private function saveStudent(string $lang): void

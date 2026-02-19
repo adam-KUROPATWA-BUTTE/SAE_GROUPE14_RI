@@ -8,6 +8,10 @@ use Controllers\ControllerInterface;
 use Model\UseCase\ManageFolderUseCase;
 use View\Folder\FoldersPageStudent;
 
+/**
+ * Class FoldersControllerStudent
+ * Handles the HTTP requests and routing for student-facing folder operations.
+ */
 class FoldersControllerStudent implements ControllerInterface
 {
     private ManageFolderUseCase $folderUseCase;
@@ -17,11 +21,21 @@ class FoldersControllerStudent implements ControllerInterface
         $this->folderUseCase = new ManageFolderUseCase();
     }
 
+    /**
+     * Determines if this controller supports the requested page.
+     *
+     * @param string $page The requested page identifier.
+     * @param string $method The HTTP request method.
+     * @return bool True if supported, false otherwise.
+     */
     public static function support(string $page, string $method): bool
     {
         return in_array($page, ['folders-student', 'update_my_folder', 'create_folder'], true);
     }
 
+    /**
+     * Main control entry point for the student folder module.
+     */
     public function control(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -51,6 +65,9 @@ class FoldersControllerStudent implements ControllerInterface
         $this->displayFolderPage($numetu, $lang);
     }
 
+    /**
+     * Renders the student folder management view.
+     */
     private function displayFolderPage(string $numetu, string $lang): void
     {
         $studentData = $this->folderUseCase->getStudentDetails($numetu);
@@ -62,6 +79,9 @@ class FoldersControllerStudent implements ControllerInterface
         $view->render();
     }
 
+    /**
+     * Processes the creation of a new student folder.
+     */
     private function handleCreateFolder(string $numetu, string $lang): void
     {
         if ($this->folderUseCase->getStudentDetails($numetu)) {
@@ -111,6 +131,9 @@ class FoldersControllerStudent implements ControllerInterface
         exit;
     }
 
+    /**
+     * Processes the update of an existing student folder.
+     */
     private function handleUpdateFolder(string $numetu, string $lang): void
     {
         $data = [
@@ -144,6 +167,13 @@ class FoldersControllerStudent implements ControllerInterface
         exit;
     }
 
+    /**
+     * Validates required student data.
+     *
+     * @param array<string, mixed> $data
+     * @param string $lang
+     * @return array<int, string> Array of validation error messages.
+     */
     private function validateFolderData(array $data, string $lang): array
     {
         $errors = [];
@@ -162,6 +192,12 @@ class FoldersControllerStudent implements ControllerInterface
         return $errors;
     }
 
+    /**
+     * Safely reads the binary content of an uploaded file.
+     *
+     * @param string $fieldName The name attribute of the file input.
+     * @return string|null The file content as a string, or null on failure.
+     */
     private function getUploadedFileContent(string $fieldName): ?string
     {
         if (!isset($_FILES[$fieldName]) || !is_array($_FILES[$fieldName])) return null;

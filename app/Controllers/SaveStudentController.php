@@ -4,12 +4,12 @@
 
 namespace Controllers\site;
 
-use Model\Folder\FolderAdmin;
+use Model\UseCase\ManageFolderUseCase;
 
 /**
- * SaveStudentController
+ * Class SaveStudentController
  *
- * Handles the creation of a new student folder.
+ * Handles the administrative creation of a new student folder via POST requests.
  */
 class SaveStudentController
 {
@@ -18,7 +18,7 @@ class SaveStudentController
      *
      * @param string $page
      * @param string $method
-     * @return bool
+     * @return bool True if supported, false otherwise.
      */
     public static function support(string $page, string $method): bool
     {
@@ -26,7 +26,7 @@ class SaveStudentController
     }
 
     /**
-     * Main control method that processes the student creation.
+     * Main control method that processes the student folder creation.
      */
     public function control(): void
     {
@@ -36,32 +36,31 @@ class SaveStudentController
 
         $lang = $_GET['lang'] ?? 'fr';
 
-        // --- Collect POST data safely ---
+        // Extract and sanitize POST data
         $data = [
-            'numetu' => (string) ($_POST['numetu'] ?? ''),
-            'nom' => (string) ($_POST['nom'] ?? ''),
-            'prenom' => (string) ($_POST['prenom'] ?? ''),
-            'email' => (string) ($_POST['email_perso'] ?? ''),
-            'telephone' => (string) ($_POST['telephone'] ?? ''),
-            'type' => (string) ($_POST['type'] ?? ''),
-            'password' => 'default123',
+            'NumEtu' => (string) ($_POST['numetu'] ?? ''),
+            'Nom' => (string) ($_POST['nom'] ?? ''),
+            'Prenom' => (string) ($_POST['prenom'] ?? ''),
+            'EmailPersonnel' => (string) ($_POST['email_perso'] ?? ''),
+            'Telephone' => (string) ($_POST['telephone'] ?? ''),
+            'Type' => (string) ($_POST['type'] ?? ''),
         ];
 
-        // --- Basic validation ---
+        // Basic input validation
         $errors = [];
-        if ($data['numetu'] === '') {
+        if ($data['NumEtu'] === '') {
             $errors[] = $lang === 'fr' ? 'Le numéro étudiant est requis' : 'Student ID is required';
         }
-        if ($data['nom'] === '') {
+        if ($data['Nom'] === '') {
             $errors[] = $lang === 'fr' ? 'Le nom est requis' : 'Last name is required';
         }
-        if ($data['prenom'] === '') {
+        if ($data['Prenom'] === '') {
             $errors[] = $lang === 'fr' ? 'Le prénom est requis' : 'First name is required';
         }
-        if ($data['email'] === '') {
+        if ($data['EmailPersonnel'] === '') {
             $errors[] = $lang === 'fr' ? 'L\'email est requis' : 'Email is required';
         }
-        if ($data['telephone'] === '') {
+        if ($data['Telephone'] === '') {
             $errors[] = $lang === 'fr' ? 'Le téléphone est requis' : 'Phone is required';
         }
 
@@ -71,10 +70,10 @@ class SaveStudentController
             exit;
         }
 
-        // --- Check for existing student ---
-
-        /** @var array<string, mixed>|null $existing */
-        $existing = FolderAdmin::getByNumetu($data['numetu']);
+        $useCase = new ManageFolderUseCase();
+        
+        // Prevent duplicate student IDs
+        $existing = $useCase->getByNumetu($data['NumEtu']);
 
         if ($existing !== null) {
             $_SESSION['message'] = $lang === 'fr'
@@ -84,25 +83,23 @@ class SaveStudentController
             exit;
         }
 
-        /** @var array<string, mixed>|null $existingEmail */
-        $existingEmail = FolderAdmin::getByEmail($data['email']);
-
-        if ($existingEmail !== null) {
-            $_SESSION['message'] = $lang === 'fr'
-                ? 'Un étudiant avec cet email existe déjà'
-                : 'A student with this email already exists';
-            header('Location: index.php?page=folders&action=create&lang=' . $lang);
-            exit;
+        // Process uploaded files securely
+        $photoData = null;
+        if (isset($_FILES['photo']) && is_array($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
+            $tmpPath = (string) $_FILES['photo']['tmp_name'];
+            $photoData = file_get_contents($tmpPath) ?: null;
         }
 
-        // --- Create the student folder ---
+        $cvData = null;
+        if (isset($_FILES['cv']) && is_array($_FILES['cv']) && $_FILES['cv']['error'] === UPLOAD_ERR_OK) {
+            $tmpPath = (string) $_FILES['cv']['tmp_name'];
+            $cvData = file_get_contents($tmpPath) ?: null;
+        }
 
-        $success = FolderAdmin::creerDossier($data);
+        // Execute creation logic
+        $success = $useCase->creerDossier($data, $photoData, $cvData);
 
         if ($success) {
-            $this->handleFileUpload($data['numetu'], 'photo', 'uploadPhoto');
-            $this->handleFileUpload($data['numetu'], 'cv', 'uploadCV');
-
             $_SESSION['message'] = $lang === 'fr'
                 ? 'Dossier créé avec succès'
                 : 'Folder created successfully';
@@ -114,29 +111,5 @@ class SaveStudentController
 
         header('Location: index.php?page=folders&lang=' . $lang);
         exit;
-    }
-
-    /**
-     * Handle file upload safely.
-     *
-     * @param string $numetu
-     * @param string $inputName
-     * @param string $uploadMethod
-     * @return void
-     */
-    private function handleFileUpload(string $numetu, string $inputName, string $uploadMethod): void
-    {
-        if (isset($_FILES[$inputName]) && $_FILES[$inputName]['error'] === UPLOAD_ERR_OK) {
-            $file = $_FILES[$inputName];
-
-
-            if (is_array($file)) {
-                if ($uploadMethod === 'uploadPhoto') {
-                    FolderAdmin::uploadPhoto($numetu, $file);
-                } elseif ($uploadMethod === 'uploadCV') {
-                    FolderAdmin::uploadCV($numetu, $file);
-                }
-            }
-        }
     }
 }
