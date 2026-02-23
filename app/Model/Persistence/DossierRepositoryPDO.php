@@ -437,13 +437,76 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         }
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $dossiers
+     * @return int
+     */
     public function upsertMultiple(array $dossiers): int
     {
-        // TODO: Implement upsertMultiple() method.
+        $pdo = Database::getInstance()->getConnection();
+        
+        try {
+            $pdo->beginTransaction();
+            
+            $stmt = $pdo->prepare("
+                INSERT INTO dossiers (NumEtu, Nom, Prenom, EmailPersonnel, Telephone, Type, Zone, IsComplete, PiecesJustificatives) 
+                VALUES (:num, :nom, :prenom, :email, :tel, :type, :zone, 0, '{}')
+                ON DUPLICATE KEY UPDATE 
+                    Nom = VALUES(Nom), 
+                    Prenom = VALUES(Prenom),
+                    EmailPersonnel = VALUES(EmailPersonnel),
+                    Telephone = VALUES(Telephone),
+                    Type = VALUES(Type),
+                    Zone = VALUES(Zone)
+            ");
+
+            $insertedRows = 0;
+
+            foreach ($dossiers as $dossier) {
+                $stmt->execute([
+                    ':num'    => $dossier['NumEtu'],
+                    ':nom'    => $dossier['Nom'],
+                    ':prenom' => $dossier['Prenom'],
+                    ':email'  => $dossier['EmailPersonnel'],
+                    ':tel'    => $dossier['Telephone'],
+                    ':type'   => $dossier['Type'],
+                    ':zone'   => $dossier['Zone']
+                ]);
+                $insertedRows++;
+            }
+            
+            $pdo->commit();
+            return $insertedRows;
+            
+        } catch (\PDOException $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            error_log("Import Error (PDO): " . $e->getMessage());
+            return 0;
+        }
     }
 
+     /**
+     * @param string $numEtu
+     * @return bool
+     */
     public function toggleStatus(string $numEtu): bool
     {
-        // TODO: Implement toggleStatus() method.
+        $pdo = Database::getInstance()->getConnection();
+        try {
+            $stmt = $pdo->prepare("SELECT IsComplete FROM dossiers WHERE NumEtu = :numetu");
+            $stmt->execute([':numetu' => $numEtu]);
+            $current = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!is_array($current)) return false;
+
+            $newStatus = (($current['IsComplete'] ?? 0) == 1) ? 0 : 1;
+            $stmt = $pdo->prepare("UPDATE dossiers SET IsComplete = :status WHERE NumEtu = :numetu");
+            return $stmt->execute([':status' => $newStatus, ':numetu' => $numEtu]);
+        } catch (\PDOException $e) {
+            error_log("Error toggling folder status: " . $e->getMessage());
+            return false;
+        }
     }
 }
