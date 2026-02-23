@@ -480,7 +480,7 @@ $content = ob_get_clean();
 $title = $t([
     'fr' => 'Gestion des dossiers - Admin',
     'en' => 'Folders Management - Admin'
-]);
+]); 
 
 $styles = ['styles/index.css','styles/folders.css', 'styles/chatbot.css'];
 $scripts = ['js/chatbot.js', 'js/folders.js'];

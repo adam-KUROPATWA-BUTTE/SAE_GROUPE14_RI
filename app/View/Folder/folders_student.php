@@ -35,7 +35,7 @@ if (!$isCreateMode) {
     } elseif (!empty($pieces['lettre_motivation'])) {
         $detectedType = 'etudes';
     }
-}
+} 
 
 $valNom = htmlspecialchars(strval($dossier['Nom'] ?? ''));
 $valPrenom = htmlspecialchars(strval($dossier['Prenom'] ?? ''));

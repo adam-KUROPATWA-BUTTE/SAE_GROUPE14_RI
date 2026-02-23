@@ -6,7 +6,7 @@ namespace Controllers\site\FolderController;
 
 use Controllers\ControllerInterface;
 use Model\UseCase\ManageFolderUseCase;
-
+ 
 /**
  * Class FoldersControllerStudent
  * Handles the HTTP requests and routing for student-facing folder operations.

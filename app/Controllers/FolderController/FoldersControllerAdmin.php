@@ -73,7 +73,7 @@ class FoldersControllerAdmin
 
         $perPage = 10;
         $result = $this->folderUseCase->rechercherAvecPagination($filters, $currentPage, $perPage);
-
+ 
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 

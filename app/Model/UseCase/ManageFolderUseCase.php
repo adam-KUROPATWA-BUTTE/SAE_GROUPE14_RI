@@ -5,7 +5,7 @@ namespace Model\UseCase;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Model\Repository\DossierRepositoryInterface;
 use Model\Persistence\DossierRepositoryPDO;
-
+ 
 /**
  * Class ManageFolderUseCase
  * Contains the business logic for managing student folders.
