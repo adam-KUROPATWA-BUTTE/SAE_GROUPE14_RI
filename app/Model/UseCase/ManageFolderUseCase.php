@@ -115,21 +115,22 @@ class ManageFolderUseCase
         if ($lettreData !== null) $pieces['lettre_motivation'] = base64_encode($lettreData);
 
         $formattedData = [
-            ':NumEtu' => $data['NumEtu'] ?? null,
-            ':Nom' => $data['Nom'] ?? null,
-            ':Prenom' => $data['Prenom'] ?? null,
-            ':DateNaissance' => $data['DateNaissance'] ?? null,
-            ':Sexe' => $data['Sexe'] ?? null,
-            ':Adresse' => $data['Adresse'] ?? null,
-            ':CodePostal' => $data['CodePostal'] ?? null,
-            ':Ville' => $data['Ville'] ?? null,
-            ':EmailPersonnel' => $data['EmailPersonnel'] ?? null,
-            ':EmailAMU' => $data['EmailAMU'] ?? null,
-            ':Telephone' => $data['Telephone'] ?? null,
-            ':CodeDepartement' => $data['CodeDepartement'] ?? null,
-            ':Type' => $data['Type'] ?? null,
-            ':Zone' => $data['Zone'] ?? null,
-            ':PiecesJustificatives' => json_encode($pieces)
+            'NumEtu' => $data['NumEtu'] ?? null,
+            'Nom' => $data['Nom'] ?? null,
+            'Prenom' => $data['Prenom'] ?? null,
+            'DateNaissance' => $data['DateNaissance'] ?? null,
+            'Sexe' => $data['Sexe'] ?? null,
+            'Adresse' => $data['Adresse'] ?? null,
+            'CodePostal' => $data['CodePostal'] ?? null,
+            'Ville' => $data['Ville'] ?? null,
+            'EmailPersonnel' => $data['EmailPersonnel'] ?? null,
+            'EmailAMU' => $data['EmailAMU'] ?? null,
+            'Telephone' => $data['Telephone'] ?? null,
+            'CodeDepartement' => $data['CodeDepartement'] ?? null,
+            'Type' => $data['Type'] ?? null,
+            'Zone' => $data['Zone'] ?? null,
+            'PiecesJustificatives' => json_encode($pieces),
+            'status' => $data['status'] ?? 'depot'
         ];
 
         return $this->dossierRepo->create($formattedData);
@@ -177,7 +178,8 @@ class ManageFolderUseCase
             ':CodeDepartement' => $data['CodeDepartement'] ?? null,
             ':Type' => $data['Type'] ?? null,
             ':Zone' => $data['Zone'] ?? null,
-            ':PiecesJustificatives' => json_encode($oldPieces)
+            ':PiecesJustificatives' => json_encode($oldPieces),
+            ':status' => $existing['status'] ?? 'depot'
         ];
 
         return $this->dossierRepo->update($numEtu, $formattedData);
@@ -225,9 +227,9 @@ class ManageFolderUseCase
             return false;
         }
     }
+    
     public function cycleFolderStatus(string $numEtu): bool
     {
         return $this->dossierRepo->cycleStatus($numEtu);
     }
-
 }

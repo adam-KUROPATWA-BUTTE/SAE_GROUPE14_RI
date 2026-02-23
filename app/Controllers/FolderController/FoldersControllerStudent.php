@@ -6,7 +6,6 @@ namespace Controllers\site\FolderController;
 
 use Controllers\ControllerInterface;
 use Model\UseCase\ManageFolderUseCase;
-use View\Folder\FoldersPageStudent;
 
 /**
  * Class FoldersControllerStudent
@@ -23,10 +22,6 @@ class FoldersControllerStudent implements ControllerInterface
 
     /**
      * Determines if this controller supports the requested page.
-     *
-     * @param string $page The requested page identifier.
-     * @param string $method The HTTP request method.
-     * @return bool True if supported, false otherwise.
      */
     public static function support(string $page, string $method): bool
     {
@@ -75,8 +70,14 @@ class FoldersControllerStudent implements ControllerInterface
         unset($_SESSION['message']);
 
         $data = is_array($studentData) ? $studentData : [];
-        $view = new FoldersPageStudent($data, $numetu, $message, $lang);
-        $view->render();
+        
+        // Appel à la vue via la classe Core\View
+        \Core\View::render('Folder/folders_student', [
+            'dossier'   => $data,
+            'studentId' => $numetu,
+            'message'   => $message,
+            'lang'      => $lang
+        ]);
     }
 
     /**
@@ -169,10 +170,6 @@ class FoldersControllerStudent implements ControllerInterface
 
     /**
      * Validates required student data.
-     *
-     * @param array<string, mixed> $data
-     * @param string $lang
-     * @return array<int, string> Array of validation error messages.
      */
     private function validateFolderData(array $data, string $lang): array
     {
@@ -194,9 +191,6 @@ class FoldersControllerStudent implements ControllerInterface
 
     /**
      * Safely reads the binary content of an uploaded file.
-     *
-     * @param string $fieldName The name attribute of the file input.
-     * @return string|null The file content as a string, or null on failure.
      */
     private function getUploadedFileContent(string $fieldName): ?string
     {

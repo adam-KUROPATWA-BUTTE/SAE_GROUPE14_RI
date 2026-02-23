@@ -5,7 +5,6 @@
 namespace Controllers\FolderController;
 
 use Model\UseCase\ManageFolderUseCase;
-use View\Folder\FoldersPageAdmin;
 
 class FoldersControllerAdmin
 {
@@ -45,7 +44,6 @@ class FoldersControllerAdmin
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // NOUVEAU : Gestion de l'importation
             if ($page === 'import_folders') {
                 $this->importFolders($lang);
                 return;
@@ -79,18 +77,18 @@ class FoldersControllerAdmin
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-        $view = new FoldersPageAdmin(
-            $action,
-            $filters,
-            $currentPage,
-            $message,
-            $lang,
-            $studentData,
-            $result['data'],
-            $result['total'],
-            $result['totalPages']
-        );
-        $view->render();
+        // Appel à la vue via la classe Core\View
+        \Core\View::render('Folder/folders_admin', [
+            'action'        => $action,
+            'filters'       => $filters,
+            'page'          => $currentPage,
+            'message'       => $message,
+            'lang'          => $lang,
+            'studentData'   => $studentData,
+            'paginatedData' => $result['data'],
+            'totalCount'    => $result['total'],
+            'totalPages'    => $result['totalPages']
+        ]);
     }
 
     private function importFolders(string $lang): void
