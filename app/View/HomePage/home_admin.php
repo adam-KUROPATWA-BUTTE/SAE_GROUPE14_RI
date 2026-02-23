@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Home Admin - Header personnalisé + Layout Home
  *
@@ -55,18 +56,26 @@ ob_start();
         </div>
 
         <nav class="menu">
-            <button class="active" onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'home-student']) ?>'">
-                <?= $t(['fr' => 'Accueil','en' => 'Home']) ?>
+            <button class="active" onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'home-admin']) ?>'">
+                <?= $t(['fr'=> 'Accueil','en' => 'Home']) ?>
             </button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'dashboard-student']) ?>'">
-                <?= $t(['fr' => 'Mon Tableau de bord','en' => 'My Dashboard']) ?>
+
+            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'dashboard-admin']) ?>'">
+                <?= $t(['fr' => 'Tableau de bord','en' => 'Dashboard']) ?>
             </button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'partners-student']) ?>'">
+
+            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'partners-admin']) ?>'">
                 <?= $t(['fr' => 'Partenaires','en' => 'Partners']) ?>
             </button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'folders-student']) ?>'">
-                <?= $t(['fr' => 'Mon Dossier','en' => 'My Folder']) ?>
+
+            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'folders-admin']) ?>'">
+                <?= $t(['fr' => 'Dossiers','en' => 'Folders']) ?>
             </button>
+
+            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'messages-admin']) ?>'">
+                <?= $t(['fr' => 'Messages','en' => 'Messages']) ?>
+            </button>
+
         </nav>
     </header>
 
@@ -234,7 +243,7 @@ $title = $t([
 ]);
 
 $styles = ['styles/homepage.css'];
-$scripts = [];
+$scripts = ['js/carousel.js'];
 $activeMenu = 'home';
 $userRole = 'admin';
 

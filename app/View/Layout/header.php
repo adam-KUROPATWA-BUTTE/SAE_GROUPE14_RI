@@ -8,6 +8,7 @@
  * @var Closure(array<string, string>): string $t
  */
 
+
 // Récupérer la page actuelle
 $currentPage = $_GET['page'] ?? 'home-' . ($userRole === 'admin' ? 'admin' : 'student');
 ?>
@@ -47,6 +48,9 @@ $currentPage = $_GET['page'] ?? 'home-' . ($userRole === 'admin' ? 'admin' : 'st
                 'en' => ($userRole === 'admin' ? 'Folders' : 'My Folder')
             ],
         ];
+        if ($userRole === 'admin') {
+            $menus['messages'] = ['fr' => 'Messages', 'en' => 'Messages'];
+        }
 
         if ($userRole === 'student') {
             $menus['contact'] = [
