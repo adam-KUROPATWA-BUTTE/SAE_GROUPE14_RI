@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Layout spécifique pour les pages Home
  * Sans header (inclus dans le contenu) et SANS <main>
@@ -47,7 +48,20 @@ $isTritanopia = isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === tr
 <?= $content ?>
 
 <?php include __DIR__ . '/chatbot.php'; ?>
-<?php include __DIR__ . '/footer.php'; ?>
+
+<!-- Footer inline pour home -->
+<footer>
+    <p>&copy; 2026 - Aix-Marseille Université</p>
+
+    <div class="footer-links">
+        <a href="https://www.instagram.com/relationsinternationales_amu/"
+           target="_blank"
+           rel="noopener noreferrer"
+           aria-label="Instagram">
+            <img class="insta" src="img/instagram.png" alt="Instagram">
+        </a>
+    </div>
+</footer>
 
 <script src="js/main.js"></script>
 <script src="js/chatbot.js"></script>
