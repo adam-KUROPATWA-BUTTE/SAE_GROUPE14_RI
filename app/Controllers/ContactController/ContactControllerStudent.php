@@ -32,6 +32,9 @@ class ContactControllerStudent implements ControllerInterface
             exit;
         }
 
+        if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en'], true)) {
+            $_SESSION['lang'] = $_GET['lang'];
+        }
         $lang = $_SESSION['lang'] ?? 'fr';
         $numEtu = $_SESSION['numetu'];
 
