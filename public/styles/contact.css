@@ -24,7 +24,7 @@
     max-width: 700px;
     margin: 0 auto 3rem;
     color: #666;
-    font-size: 1.1rem;
+    font-size: 1em;
 }
 
 .contact-content {
@@ -62,7 +62,7 @@
     font-weight: 600;
     color: #333;
     margin-bottom: 0.5rem;
-    font-size: 0.95rem;
+    font-size: 1em;
 }
 
 .form-group input,
@@ -71,8 +71,7 @@
     padding: 0.75rem;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
-    font-size: 1rem;
-    font-family: inherit;
+    font-size: 1em;
     transition: all 0.3s ease;
 }
 
@@ -95,7 +94,7 @@
     padding: 1rem 2rem;
     border: none;
     border-radius: 50px;
-    font-size: 1.1rem;
+    font-size: 1em;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -174,7 +173,7 @@
 .contact-details h3 {
     color: var(--primary-color);
     margin: 0 0 0.5rem 0;
-    font-size: 1.1rem;
+    font-size: 1em;
 }
 
 .contact-details p,

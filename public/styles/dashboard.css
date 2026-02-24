@@ -142,7 +142,6 @@ body.tritanopie .progress-step.active .progress-icon img {
 
 /* Texte */
 .progress-step span {
-    font-size: 14px;
     color: #555;
 }
 
@@ -163,12 +162,10 @@ body.tritanopie .progress-step.active .progress-icon img {
 .contact-info-box p {
     margin: 10px 0;
     color: #333;
-    font-size: 15px;
 }
 
 .contact-title {
     font-weight: bold;
-    font-size: 17px;
     color: var(--primary-color);
 }
 
@@ -380,6 +377,7 @@ body.tritanopie .progress-step.active .progress-icon img {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
+    font-size: 18px;
 }
 .filters-container input, .filters-container select {
     width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;
@@ -398,7 +396,7 @@ body.tritanopie .btn-filter {
 
 /* --- COLOR CODE FIX --- */
 .status-badge {
-    padding: 5px 10px; border-radius: 15px; color: white; font-weight: bold; font-size: 0.85em;
+    padding: 5px 10px; border-radius: 15px; color: white; font-weight: bold; font-size: 1em;
     text-align: center; display:inline-block; min-width: 70px;
 }
 
@@ -416,7 +414,7 @@ body.tritanopie .btn-filter {
     padding: 10px;
     clear: both;
     color: #333;
-    font-size: 0.95rem;
+    font-size: 1em;
 }
 .filters-container {
     clear: both;
@@ -438,14 +436,14 @@ h2 { color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin
 
 /* Reminder Button Style */
 .btn-relance {
-    text-decoration: none; font-size: 1.2em; margin-left: 10px; cursor: pointer;
+    text-decoration: none; font-size: 1em; margin-left: 10px; cursor: pointer;
     display: inline-block; transition: transform 0.2s; border: none; background: none;
 }
 .btn-relance:hover { transform: scale(1.3); }
 
 .btn-relance {
     text-decoration: none;
-    font-size: 1.2em;
+    font-size: 1em;
     margin-left: 10px;
     cursor: pointer;
     transition: transform 0.2s;

@@ -50,7 +50,6 @@ main.messages {
     box-shadow: 0 4px 24px rgba(0,0,0,0.10);
     overflow: hidden;
 
-    font-family: 'Segoe UI', system-ui, sans-serif;
     font-size: 20px;
 
     box-sizing: border-box;
@@ -360,7 +359,6 @@ main.messages {
     padding: 1.2rem;
     border: none;
     outline: none;
-    font-family: inherit;
     font-size: 1rem;
     resize: vertical;
     min-height: 140px;

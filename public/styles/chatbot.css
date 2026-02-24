@@ -72,7 +72,7 @@
     background: none;
     border: none;
     color: white;
-    font-size: 1.2em;
+    font-size: 1em;
     cursor: pointer;
 }
 
@@ -92,7 +92,7 @@
     max-width: 85%;
     padding: 10px 14px;
     border-radius: 18px;
-    font-size: 0.95em;
+    font-size: 1em;
     line-height: 1.4;
     word-wrap: break-word;
 }
@@ -131,7 +131,7 @@
     border: 1px solid #ddd;
     border-radius: 20px;
     padding: 6px 12px;
-    font-size: 0.85em;
+    font-size: 1em;
     color: #003366;
     cursor: pointer;
     white-space: nowrap;
@@ -158,14 +158,14 @@
     border: 1px solid #ccc;
     border-radius: 25px;
     outline: none;
-    font-size: 0.95em;
+    font-size: 1em;
 }
 
 .chat-input-area button {
     background: none;
     border: none;
     color: #003366;
-    font-size: 1.5em;
+    font-size: 1em;
     margin-left: 10px;
     cursor: pointer;
 }

@@ -32,7 +32,6 @@ main {
 
     transition: background-color 0.2s ease, transform 0.1s ease;
 
-    font-family: inherit; /* même police que le titre */
 }
 
 /* Effet clic */
@@ -56,7 +55,6 @@ main {
     font-size: 18px;
     font-weight: bold;
 
-    font-family: inherit; /* même police que le titre */
 }
 
 
