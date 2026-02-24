@@ -32,6 +32,9 @@ class ContactControllerAdmin implements ControllerInterface
             exit;
         }
 
+        if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en'], true)) {
+            $_SESSION['lang'] = $_GET['lang'];
+        }
         $lang = $_SESSION['lang'] ?? 'fr';
         $action = $_GET['action'] ?? 'list';
         $messageId = isset($_GET['id']) ? (int)$_GET['id'] : null;
@@ -75,6 +78,7 @@ class ContactControllerAdmin implements ControllerInterface
         // Afficher un message spécifique
         if ($action === 'view' && $messageId) {
             $message = $this->contactService->getMessageById($messageId);
+
 
             if (!$message) {
                 header('Location: index.php?page=messages-admin');
