@@ -242,6 +242,9 @@ ob_start();
                                 <a href="data:image/jpeg;base64,<?= strval($pieces['photo']) ?>" download="photo_<?= $numEtu ?>.jpg" class="btn-download">
                                     <?= $t(['fr' => 'Télécharger','en' => 'Download']) ?>
                                 </a>
+                                <a href="<?= $buildUrl('index.php', ['page' => 'validate_piece', 'numetu' => $numEtu, 'piece' => 'photo']) ?>" class="btn-validate" onclick="return confirm('<?= $t(['fr' => 'Envoyer un email de validation pour cette pièce ?','en' => 'Send validation email for this document?']) ?>')">
+                                    <?= $t(['fr' => '✓ Valider et notifier','en' => '✓ Validate & Notify']) ?>
+                                </a>
                             </div>
                         <?php else : ?>
                             <p class="no-document"><?= $t(['fr' => 'Aucune photo disponible','en' => 'No photo available']) ?></p>
@@ -256,6 +259,9 @@ ob_start();
                                 <p class="document-available"><?= $t(['fr' => 'CV disponible','en' => 'CV available']) ?></p>
                                 <a href="data:application/pdf;base64,<?= strval($pieces['cv']) ?>" download="cv_<?= $numEtu ?>.pdf" class="btn-download">
                                     <?= $t(['fr' => 'Télécharger le CV','en' => 'Download CV']) ?>
+                                </a>
+                                <a href="<?= $buildUrl('index.php', ['page' => 'validate_piece', 'numetu' => $numEtu, 'piece' => 'cv']) ?>" class="btn-validate" onclick="return confirm('<?= $t(['fr' => 'Envoyer un email de validation pour cette pièce ?','en' => 'Send validation email for this document?']) ?>')">
+                                    <?= $t(['fr' => '✓ Valider et notifier','en' => '✓ Validate & Notify']) ?>
                                 </a>
                             </div>
                         <?php else : ?>
@@ -272,6 +278,9 @@ ob_start();
                                 <a href="data:application/pdf;base64,<?= strval($pieces['convention']) ?>" download="convention_<?= $numEtu ?>.pdf" class="btn-download">
                                     <?= $t(['fr' => 'Télécharger','en' => 'Download']) ?>
                                 </a>
+                                <a href="<?= $buildUrl('index.php', ['page' => 'validate_piece', 'numetu' => $numEtu, 'piece' => 'convention']) ?>" class="btn-validate" onclick="return confirm('<?= $t(['fr' => 'Envoyer un email de validation pour cette pièce ?','en' => 'Send validation email for this document?']) ?>')">
+                                    <?= $t(['fr' => '✓ Valider et notifier','en' => '✓ Validate & Notify']) ?>
+                                </a>
                             </div>
                         <?php else : ?>
                             <p class="no-document"><?= $t(['fr' => 'Aucune convention disponible','en' => 'No agreement available']) ?></p>
@@ -286,6 +295,9 @@ ob_start();
                                 <p class="document-available"><?= $t(['fr' => 'Lettre disponible','en' => 'Letter available']) ?></p>
                                 <a href="data:application/pdf;base64,<?= strval($pieces['lettre_motivation']) ?>" download="lettre_<?= $numEtu ?>.pdf" class="btn-download">
                                     <?= $t(['fr' => 'Télécharger','en' => 'Download']) ?>
+                                </a>
+                                <a href="<?= $buildUrl('index.php', ['page' => 'validate_piece', 'numetu' => $numEtu, 'piece' => 'lettre_motivation']) ?>" class="btn-validate" onclick="return confirm('<?= $t(['fr' => 'Envoyer un email de validation pour cette pièce ?','en' => 'Send validation email for this document?']) ?>')">
+                                    <?= $t(['fr' => '✓ Valider et notifier','en' => '✓ Validate & Notify']) ?>
                                 </a>
                             </div>
                         <?php else : ?>

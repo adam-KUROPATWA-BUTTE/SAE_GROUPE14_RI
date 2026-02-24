@@ -124,6 +124,23 @@ class FoldersControllerStudent implements ControllerInterface
             $this->getUploadedFileContent('lettre_motivation')
         );
 
+        // Send email confirmation for each uploaded document
+        if ($success && !empty($data['EmailPersonnel'])) {
+            $studentName = trim(($data['Prenom'] ?? '') . ' ' . ($data['Nom'] ?? ''));
+            $documents = ['photo', 'cv', 'convention', 'lettre_motivation'];
+            
+            foreach ($documents as $docType) {
+                if ($this->getUploadedFileContent($docType) !== null) {
+                    \Service\Email\EmailReminderService::sendDocumentDeposited(
+                        $data['EmailPersonnel'],
+                        $studentName,
+                        $docType,
+                        $numetu
+                    );
+                }
+            }
+        }
+
         $_SESSION['message'] = $success
             ? ($lang === 'fr' ? 'Votre demande a été déposée avec succès.' : 'Application submitted successfully.')
             : ($lang === 'fr' ? 'Erreur lors du dépôt de la demande.' : 'Error submitting application.');
@@ -137,6 +154,12 @@ class FoldersControllerStudent implements ControllerInterface
      */
     private function handleUpdateFolder(string $numetu, string $lang): void
     {
+        // Get existing folder to compare documents
+        $existingFolder = $this->folderUseCase->getStudentDetails($numetu);
+        $oldPieces = is_array($existingFolder) && isset($existingFolder['pieces']) && is_array($existingFolder['pieces']) 
+            ? $existingFolder['pieces'] 
+            : [];
+
         $data = [
             'NumEtu' => $numetu,
             'Adresse' => isset($_POST['adresse']) ? (string)$_POST['adresse'] : null,
@@ -159,6 +182,31 @@ class FoldersControllerStudent implements ControllerInterface
             $this->getUploadedFileContent('convention'),
             $this->getUploadedFileContent('lettre_motivation')
         );
+
+        // Send email confirmation for newly uploaded documents only
+        if ($success && !empty($data['EmailPersonnel'])) {
+            $studentName = '';
+            if (is_array($existingFolder)) {
+                $prenom = $existingFolder['Prenom'] ?? '';
+                $nom = $existingFolder['Nom'] ?? '';
+                $studentName = trim($prenom . ' ' . $nom);
+            }
+
+            $documents = ['photo', 'cv', 'convention', 'lettre_motivation'];
+            
+            foreach ($documents as $docType) {
+                $newContent = $this->getUploadedFileContent($docType);
+                // Only notify if: new file uploaded AND it wasn't there before OR it's being replaced
+                if ($newContent !== null && empty($oldPieces[$docType])) {
+                    \Service\Email\EmailReminderService::sendDocumentDeposited(
+                        $data['EmailPersonnel'],
+                        $studentName,
+                        $docType,
+                        $numetu
+                    );
+                }
+            }
+        }
 
         $_SESSION['message'] = $success
             ? ($lang === 'fr' ? 'Dossier mis à jour avec succès.' : 'Folder updated successfully.')
