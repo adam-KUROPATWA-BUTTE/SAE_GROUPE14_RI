@@ -99,13 +99,12 @@ class ManageFolderUseCase
         $conventionData = $conventionData ?? (is_string($data['convention'] ?? null) ? $data['convention'] : null);
         $lettreData = $lettreData ?? (is_string($data['lettre_motivation'] ?? null) ? $data['lettre_motivation'] : null);
 
-        foreach ($data as $key => $value) {
-            if ($value === '') $data[$key] = null;
-        }
-
-        if (!empty($data['naissance']) && is_string($data['naissance'])) {
-            $date = \DateTime::createFromFormat('Y-m-d', $data['naissance']);
-            $data['DateNaissance'] = ($date && $date->format('Y-m-d') === $data['naissance']) ? $data['naissance'] : null;
+        // Map HTML form names OR existing keys
+        $rawDate = $data['naissance'] ?? ($data['DateNaissance'] ?? null);
+        $dateNaissance = null;
+        if (!empty($rawDate) && is_string($rawDate)) {
+            $date = \DateTime::createFromFormat('Y-m-d', $rawDate);
+            $dateNaissance = ($date && $date->format('Y-m-d') === $rawDate) ? $rawDate : null;
         }
 
         $pieces = [];
@@ -114,24 +113,32 @@ class ManageFolderUseCase
         if ($conventionData !== null) $pieces['convention'] = base64_encode($conventionData);
         if ($lettreData !== null) $pieces['lettre_motivation'] = base64_encode($lettreData);
 
+        // Ensure empty json objects are stored as '{}' and not '[]'
+        $piecesJson = empty($pieces) ? '{}' : json_encode($pieces);
+
         $formattedData = [
-            'NumEtu' => $data['NumEtu'] ?? null,
-            'Nom' => $data['Nom'] ?? null,
-            'Prenom' => $data['Prenom'] ?? null,
-            'DateNaissance' => $data['DateNaissance'] ?? null,
-            'Sexe' => $data['Sexe'] ?? null,
-            'Adresse' => $data['Adresse'] ?? null,
-            'CodePostal' => $data['CodePostal'] ?? null,
-            'Ville' => $data['Ville'] ?? null,
-            'EmailPersonnel' => $data['EmailPersonnel'] ?? null,
-            'EmailAMU' => $data['EmailAMU'] ?? null,
-            'Telephone' => $data['Telephone'] ?? null,
-            'CodeDepartement' => $data['CodeDepartement'] ?? null,
-            'Type' => $data['Type'] ?? null,
-            'Zone' => $data['Zone'] ?? null,
-            'PiecesJustificatives' => json_encode($pieces),
+            'NumEtu' => $data['numetu'] ?? ($data['NumEtu'] ?? null),
+            'Nom' => $data['nom'] ?? ($data['Nom'] ?? null),
+            'Prenom' => $data['prenom'] ?? ($data['Prenom'] ?? null),
+            'DateNaissance' => $dateNaissance,
+            'Sexe' => $data['sexe'] ?? ($data['Sexe'] ?? null),
+            'Adresse' => $data['adresse'] ?? ($data['Adresse'] ?? null),
+            'CodePostal' => $data['cp'] ?? ($data['CodePostal'] ?? null),
+            'Ville' => $data['ville'] ?? ($data['Ville'] ?? null),
+            'EmailPersonnel' => $data['email_perso'] ?? ($data['EmailPersonnel'] ?? null),
+            'EmailAMU' => $data['email_amu'] ?? ($data['EmailAMU'] ?? null),
+            'Telephone' => $data['telephone'] ?? ($data['Telephone'] ?? null),
+            'CodeDepartement' => $data['departement'] ?? ($data['CodeDepartement'] ?? null),
+            'Type' => $data['type'] ?? ($data['Type'] ?? null),
+            'Zone' => $data['zone'] ?? ($data['Zone'] ?? null),
+            'PiecesJustificatives' => $piecesJson,
             'status' => $data['status'] ?? 'depot'
         ];
+
+        // Ensure empty strings are cast to null for cleaner DB insertion
+        foreach ($formattedData as $key => $value) {
+            if ($value === '') $formattedData[$key] = null;
+        }
 
         return $this->dossierRepo->create($formattedData);
     }
@@ -148,8 +155,19 @@ class ManageFolderUseCase
      */
     public function updateDossier(array $data, ?string $photoData = null, ?string $cvData = null, ?string $conventionData = null, ?string $lettreData = null): bool
     {
-        $numEtu = strval($data['NumEtu'] ?? '');
+        // Safe check for the Student ID from either the HTML form or direct array mapping
+        $numEtu = strval($data['numetu'] ?? ($data['NumEtu'] ?? ''));
+        
+        if ($numEtu === '') {
+            error_log("ManageFolderUseCase: Cannot update folder without a valid NumEtu.");
+            return false;
+        }
+
         $existing = $this->getStudentDetails($numEtu);
+        if (!$existing) {
+            error_log("ManageFolderUseCase: Student $numEtu not found for update.");
+            return false;
+        }
         
         /** @var array<string, string> $oldPieces */
         $oldPieces = isset($existing['pieces']) && is_array($existing['pieces']) ? $existing['pieces'] : [];
@@ -164,21 +182,33 @@ class ManageFolderUseCase
         if (!empty($conventionData)) $oldPieces['convention'] = base64_encode($conventionData);
         if (!empty($lettreData)) $oldPieces['lettre_motivation'] = base64_encode($lettreData);
 
+        // Force an empty array to become `{}` in JSON instead of `[]` to prevent parsing issues
+        $piecesJson = empty($oldPieces) ? '{}' : json_encode($oldPieces);
+
+        // Date handling
+        $rawDate = $data['naissance'] ?? ($data['DateNaissance'] ?? null);
+        $dateNaissance = null;
+        if (!empty($rawDate) && is_string($rawDate)) {
+            $date = \DateTime::createFromFormat('Y-m-d', $rawDate);
+            $dateNaissance = ($date && $date->format('Y-m-d') === $rawDate) ? $rawDate : null;
+        }
+
+        // Map HTML form names (lowercase keys) to Database expectations (CamelCase keys)
         $formattedData = [
-            ':Nom' => $data['Nom'] ?? null,
-            ':Prenom' => $data['Prenom'] ?? null,
-            ':DateNaissance' => $data['DateNaissance'] ?? null,
-            ':Sexe' => $data['Sexe'] ?? null,
-            ':Adresse' => $data['Adresse'] ?? null,
-            ':CodePostal' => $data['CodePostal'] ?? null,
-            ':Ville' => $data['Ville'] ?? null,
-            ':EmailPersonnel' => $data['EmailPersonnel'] ?? null,
-            ':EmailAMU' => $data['EmailAMU'] ?? null,
-            ':Telephone' => $data['Telephone'] ?? null,
-            ':CodeDepartement' => $data['CodeDepartement'] ?? null,
-            ':Type' => $data['Type'] ?? null,
-            ':Zone' => $data['Zone'] ?? null,
-            ':PiecesJustificatives' => json_encode($oldPieces),
+            ':Nom' => $data['nom'] ?? ($data['Nom'] ?? null),
+            ':Prenom' => $data['prenom'] ?? ($data['Prenom'] ?? null),
+            ':DateNaissance' => $dateNaissance,
+            ':Sexe' => $data['sexe'] ?? ($data['Sexe'] ?? null),
+            ':Adresse' => $data['adresse'] ?? ($data['Adresse'] ?? null),
+            ':CodePostal' => $data['cp'] ?? ($data['CodePostal'] ?? null),
+            ':Ville' => $data['ville'] ?? ($data['Ville'] ?? null),
+            ':EmailPersonnel' => $data['email_perso'] ?? ($data['EmailPersonnel'] ?? null),
+            ':EmailAMU' => $data['email_amu'] ?? ($data['EmailAMU'] ?? null),
+            ':Telephone' => $data['telephone'] ?? ($data['Telephone'] ?? null),
+            ':CodeDepartement' => $data['departement'] ?? ($data['CodeDepartement'] ?? null),
+            ':Type' => $data['type'] ?? ($data['Type'] ?? null),
+            ':Zone' => $data['zone'] ?? ($data['Zone'] ?? null),
+            ':PiecesJustificatives' => $piecesJson,
             ':status' => $existing['status'] ?? 'depot'
         ];
 

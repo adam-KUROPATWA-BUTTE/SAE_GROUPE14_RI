@@ -9,15 +9,15 @@
  * @var float|int $completionPercentage
  * @var bool $isLoggedIn
  * @var array{
- *     complete_folders?: int,
- *     incomplete_folders?: int,
- *     total_folders?: int,
- *     top_countries?: list<array{name: string, count: int}>,
- *     gender?: array{
- *         male?: int,
- *         female?: int
- *     },
- *     departments?: list<array{name: string, count: int}>
+ * complete_folders?: int,
+ * incomplete_folders?: int,
+ * total_folders?: int,
+ * top_countries?: list<array{name: string, count: int}>,
+ * gender?: array{
+ * male?: int,
+ * female?: int
+ * },
+ * departments?: list<array{name: string, count: int}>
  * } $statistics
  */
 
@@ -34,8 +34,8 @@ ob_start();
                 <div class="lang-dropdown">
                     <button class="dropbtn"><?= htmlspecialchars($lang) ?></button>
                     <div class="dropdown-content">
-                        <a href="#" onclick="changeLang('fr'); return false;">Français</a>
-                        <a href="#" onclick="changeLang('en'); return false;">English</a>
+                        <a href="#" onclick="window.mainApp.changeLang('fr'); return false;">Français</a>
+                        <a href="#" onclick="window.mainApp.changeLang('en'); return false;">English</a>
                     </div>
                 </div>
 
@@ -96,13 +96,12 @@ ob_start();
     </section>
 
     <section class="stats-section">
-        <button class="carousel-btn prev" onclick="changeSlide(-1)">‹</button>
-        <button class="carousel-btn next" onclick="changeSlide(1)">›</button>
+        <button class="carousel-btn prev" onclick="window.carousel.changeSlide(-1)">‹</button>
+        <button class="carousel-btn next" onclick="window.carousel.changeSlide(1)">›</button>
 
         <div class="stats-carousel">
             <div class="carousel-container">
 
-                <!-- Slide 1 -->
                 <div class="stat-slide active">
                     <h2><?= $t(['fr' => 'État des dossiers','en' => 'Folder Status']) ?></h2>
 
@@ -133,7 +132,6 @@ ob_start();
                     </div>
                 </div>
 
-                <!-- Slide 2 -->
                 <div class="stat-slide">
                     <h2><?= $t(['fr' => 'Pays les plus demandés','en' => 'Most Requested Countries']) ?></h2>
 
@@ -151,7 +149,6 @@ ob_start();
                     </div>
                 </div>
 
-                <!-- Slide 3 -->
                 <div class="stat-slide">
                     <h2><?= $t(['fr' => 'Répartition par genre','en' => 'Gender Distribution']) ?></h2>
 
@@ -191,7 +188,6 @@ ob_start();
                     </div>
                 </div>
 
-                <!-- Slide 4 -->
                 <div class="stat-slide">
                     <h2><?= $t(['fr' => 'Répartition par département','en' => 'Distribution by Department']) ?></h2>
 
@@ -220,10 +216,10 @@ ob_start();
             </div>
 
             <div class="carousel-dots">
-                <span class="dot active" onclick="goToSlide(0)"></span>
-                <span class="dot" onclick="goToSlide(1)"></span>
-                <span class="dot" onclick="goToSlide(2)"></span>
-                <span class="dot" onclick="goToSlide(3)"></span>
+                <span class="dot active" onclick="window.carousel.goToSlide(0)"></span>
+                <span class="dot" onclick="window.carousel.goToSlide(1)"></span>
+                <span class="dot" onclick="window.carousel.goToSlide(2)"></span>
+                <span class="dot" onclick="window.carousel.goToSlide(3)"></span>
             </div>
         </div>
     </section>

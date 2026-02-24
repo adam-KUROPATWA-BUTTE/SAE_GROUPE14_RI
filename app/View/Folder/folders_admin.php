@@ -483,7 +483,7 @@ $title = $t([
 ]); 
 
 $styles = ['styles/index.css','styles/folders.css', 'styles/chatbot.css'];
-$scripts = ['js/chatbot.js', 'js/folders.js'];
+$scripts = ['js/folders.js'];
 $activeMenu = 'folders';
 $userRole = 'admin';
 

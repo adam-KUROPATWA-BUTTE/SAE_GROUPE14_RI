@@ -13,7 +13,6 @@ $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'
 ob_start();
 ?>
 
-    <!-- Header personnalisé pour Home Student -->
     <header>
         <div class="top-bar">
             <img class="logo_amu" src="img/logo.png" alt="AMU Logo">
@@ -22,8 +21,8 @@ ob_start();
                 <div class="lang-dropdown">
                     <button class="dropbtn"><?= htmlspecialchars($lang) ?></button>
                     <div class="dropdown-content">
-                        <a href="#" onclick="changeLang('fr'); return false;">Français</a>
-                        <a href="#" onclick="changeLang('en'); return false;">English</a>
+                        <a href="#" onclick="window.mainApp.changeLang('fr'); return false;">Français</a>
+                        <a href="#" onclick="window.mainApp.changeLang('en'); return false;">English</a>
                     </div>
                 </div>
 

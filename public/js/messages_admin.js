@@ -1,36 +1,35 @@
 /**
- * messages_admin.js
- * Logique de la page "Messages admin" (lecture, réponse, suppression).
- *
- * Données bootstrappées via #app-config :
- *   data-lang      : 'fr' | 'en'
- *   data-base      : URL de base (ex. "index.php?page=messages-admin")
- *   data-messages  : JSON array des messages (voir vue PHP)
+ * Class representing the admin messages management.
+ * Handles reading, replying, and deleting messages.
  */
+class MessagesAdmin {
+    constructor() {
+        // Retrieve configuration from the DOM
+        const cfg = document.getElementById('app-config')?.dataset || {};
+        this.lang = cfg.lang || 'fr';
+        this.base = cfg.base || '';
+        this.messages = cfg.messages ? JSON.parse(cfg.messages) : [];
 
-const MessagesAdmin = (function () {
-    'use strict';
+        // Map subjects to the current language
+        this.subjects = {
+            mobility:  this.lang === 'fr' ? 'Question sur ma mobilité'  : 'Mobility question',
+            documents: this.lang === 'fr' ? 'Documents requis'           : 'Required documents',
+            partners:  this.lang === 'fr' ? 'Universités partenaires'    : 'Partner universities',
+            technical: this.lang === 'fr' ? 'Problème technique'         : 'Technical issue',
+            other:     this.lang === 'fr' ? 'Autre'                      : 'Other',
+        };
 
-    /* ── Bootstrap ───────────────────────────────────────────── */
-    const cfg      = document.getElementById('app-config').dataset;
-    const lang     = cfg.lang;
-    const base     = cfg.base;
-    const messages = JSON.parse(cfg.messages);
+        // Create a map for O(1) access to messages by ID
+        this.msgMap = {};
+        this.messages.forEach(m => { this.msgMap[m.id] = m; });
+    }
 
-    const subjects = {
-        mobility:  lang === 'fr' ? 'Question sur ma mobilité'  : 'Mobility question',
-        documents: lang === 'fr' ? 'Documents requis'           : 'Required documents',
-        partners:  lang === 'fr' ? 'Universités partenaires'    : 'Partner universities',
-        technical: lang === 'fr' ? 'Problème technique'         : 'Technical issue',
-        other:     lang === 'fr' ? 'Autre'                      : 'Other',
-    };
-
-    /** Map id → message object pour un accès O(1) */
-    const msgMap = {};
-    messages.forEach(m => { msgMap[m.id] = m; });
-
-    /* ── Helpers ─────────────────────────────────────────────── */
-    function esc(str) {
+    /**
+     * Escapes HTML characters to prevent XSS.
+     * @param {string} str - The string to escape.
+     * @returns {string} The escaped string.
+     */
+    esc(str) {
         if (!str) return '';
         return String(str)
             .replace(/&/g, '&amp;')
@@ -39,72 +38,78 @@ const MessagesAdmin = (function () {
             .replace(/"/g, '&quot;');
     }
 
-    function nl2br(str) {
+    /**
+     * Converts newline characters to HTML <br> tags.
+     * @param {string} str - The string to convert.
+     * @returns {string} The formatted string.
+     */
+    nl2br(str) {
         return str.replace(/\n/g, '<br>');
     }
 
-    /* ── Actions publiques ───────────────────────────────────── */
-
     /**
-     * Charge un message dans le volet de lecture.
-     * @param {number} id  - identifiant du message
-     * @param {Element} el - élément cliqué dans la liste
+     * Loads a message into the reading pane.
+     * @param {number} id - The ID of the message.
+     * @param {HTMLElement} el - The clicked element in the list.
      */
-    function loadMessage(id, el) {
+    loadMessage(id, el) {
+        // Update UI selection state
         document.querySelectorAll('.message-item').forEach(i => i.classList.remove('selected'));
         el.classList.add('selected');
         el.classList.remove('unread');
+        
         const dot = el.querySelector('.unread-dot');
         if (dot) dot.remove();
 
-        const m = msgMap[id];
+        const m = this.msgMap[id];
         if (!m) return;
 
-        const subjectLabel = subjects[m.subject] || m.subject;
+        const subjectLabel = this.subjects[m.subject] || m.subject;
 
-        /* ── En-tête ── */
+        // Build header
         document.getElementById('readingHeader').innerHTML = `
-            <div class="reading-subject">${esc(subjectLabel)}</div>
+            <div class="reading-subject">${this.esc(subjectLabel)}</div>
             <div class="reading-meta">
                 <span>
-                    <strong>${lang === 'fr' ? 'De' : 'From'} :</strong>
-                    ${esc(m.name)} <small>(${esc(m.numEtu)})</small>
+                    <strong>${this.lang === 'fr' ? 'De' : 'From'}:</strong>
+                    ${this.esc(m.name)} <small>(${this.esc(m.numEtu)})</small>
                 </span>
                 <span>
-                    <strong>Email :</strong>
-                    <a href="mailto:${esc(m.email)}">${esc(m.email)}</a>
+                    <strong>Email:</strong>
+                    <a href="mailto:${this.esc(m.email)}">${this.esc(m.email)}</a>
                 </span>
                 <span>
-                    <strong>${lang === 'fr' ? 'Date' : 'Date'} :</strong>
-                    ${esc(m.createdAt)}
+                    <strong>${this.lang === 'fr' ? 'Date' : 'Date'}:</strong>
+                    ${this.esc(m.createdAt)}
                 </span>
             </div>
             <div class="reading-actions">
                 ${!m.adminResponse
-            ? `<button class="btn-reply" onclick="MessagesAdmin.scrollToReply()">
-                           ${lang === 'fr' ? '↩ Répondre' : '↩ Reply'}
+            ? `<button class="btn-reply" onclick="window.messagesAdmin.scrollToReply()">
+                           ${this.lang === 'fr' ? '↩ Répondre' : '↩ Reply'}
                        </button>`
             : ''}
-                <button class="btn-delete" onclick="MessagesAdmin.deleteMsg(${m.id})">
-                    ${lang === 'fr' ? '🗑 Supprimer' : '🗑 Delete'}
+                <button class="btn-delete" onclick="window.messagesAdmin.deleteMsg(${m.id})">
+                    ${this.lang === 'fr' ? '🗑 Supprimer' : '🗑 Delete'}
                 </button>
             </div>
         `;
 
-        /* ── Corps ── */
+        // Build body
         let bodyHtml = `
             <div class="message-text-block">
-                ${nl2br(esc(m.message))}
+                ${this.nl2br(this.esc(m.message))}
             </div>
         `;
 
+        // Check if there is already an admin response
         if (m.adminResponse) {
             bodyHtml += `
                 <div class="response-sent-block">
-                    <h4>${lang === 'fr' ? 'Votre réponse' : 'Your response'}</h4>
-                    <div class="response-text">${nl2br(esc(m.adminResponse))}</div>
+                    <h4>${this.lang === 'fr' ? 'Votre réponse' : 'Your response'}</h4>
+                    <div class="response-text">${this.nl2br(this.esc(m.adminResponse))}</div>
                     <small>
-                        ${lang === 'fr' ? 'Envoyée le' : 'Sent on'} ${esc(m.respondedAt)}
+                        ${this.lang === 'fr' ? 'Envoyée le' : 'Sent on'} ${this.esc(m.respondedAt)}
                     </small>
                 </div>
             `;
@@ -112,14 +117,14 @@ const MessagesAdmin = (function () {
             bodyHtml += `
                 <div class="reply-form-block" id="replyForm">
                     <div class="reply-label">
-                        ${lang === 'fr' ? "Répondre à l'étudiant" : 'Reply to student'}
+                        ${this.lang === 'fr' ? "Répondre à l'étudiant" : 'Reply to student'}
                     </div>
-                    <form method="POST" action="${base}&action=respond&id=${m.id}&lang=${lang}">
+                    <form method="POST" action="${this.base}&action=respond&id=${m.id}&lang=${this.lang}">
                         <textarea name="response" rows="5" required
-                            placeholder="${lang === 'fr' ? 'Votre réponse…' : 'Your response…'}"></textarea>
+                            placeholder="${this.lang === 'fr' ? 'Votre réponse…' : 'Your response…'}"></textarea>
                         <div class="reply-footer">
                             <button type="submit" class="btn-reply">
-                                ${lang === 'fr' ? 'Envoyer' : 'Send'}
+                                ${this.lang === 'fr' ? 'Envoyer' : 'Send'}
                             </button>
                         </div>
                     </form>
@@ -128,21 +133,22 @@ const MessagesAdmin = (function () {
         }
 
         document.getElementById('readingBody').innerHTML = bodyHtml;
-
-        /* ── Affichage du volet ── */
+        
+        // Show reading pane
         document.getElementById('readingEmpty').style.display = 'none';
-        const rc = document.getElementById('readingContent');
-        rc.style.display = 'flex';
+        document.getElementById('readingContent').style.display = 'flex';
 
-        /* ── Marquage "lu" (fire & forget) ── */
+        // Mark as read in the backend if necessary
         if (!m.isRead) {
             m.isRead = true;
-            fetch(`${base}&action=mark-read&id=${m.id}&lang=${lang}`, { method: 'POST' });
+            fetch(`${this.base}&action=mark-read&id=${m.id}&lang=${this.lang}`, { method: 'POST' });
         }
     }
 
-    /** Fait défiler jusqu'au formulaire de réponse et donne le focus. */
-    function scrollToReply() {
+    /**
+     * Scrolls the view smoothly to the reply form and focuses the textarea.
+     */
+    scrollToReply() {
         const form = document.getElementById('replyForm');
         if (form) {
             form.scrollIntoView({ behavior: 'smooth' });
@@ -151,31 +157,23 @@ const MessagesAdmin = (function () {
     }
 
     /**
-     * Supprime un message après confirmation.
-     * @param {number} id
+     * Deletes a message after user confirmation.
+     * @param {number} id - The ID of the message to delete.
      */
-    function deleteMsg(id) {
-        const msg = lang === 'fr' ? 'Supprimer ce message ?' : 'Delete this message?';
+    deleteMsg(id) {
+        const msg = this.lang === 'fr' ? 'Supprimer ce message ?' : 'Delete this message?';
         if (!confirm(msg)) return;
 
         const f = document.createElement('form');
         f.method  = 'POST';
-        f.action  = `${base}&action=delete&id=${id}&lang=${lang}`;
+        f.action  = `${this.base}&action=delete&id=${id}&lang=${this.lang}`;
         f.innerHTML = '<input type="hidden" name="action" value="delete">';
         document.body.appendChild(f);
         f.submit();
     }
+}
 
-    /**
-     * Change la langue de l'interface.
-     * @param {string} newLang - 'fr' | 'en'
-     */
-    function changeLang(newLang) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('lang', newLang);
-        window.location.href = url.toString();
-    }
-
-    /* ── API publique ────────────────────────────────────────── */
-    return { loadMessage, scrollToReply, deleteMsg, changeLang };
-})();
+// Instantiate and expose globally
+document.addEventListener('DOMContentLoaded', () => {
+    window.messagesAdmin = new MessagesAdmin();
+});
