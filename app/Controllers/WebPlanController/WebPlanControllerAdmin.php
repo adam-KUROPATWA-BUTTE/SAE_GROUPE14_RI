@@ -59,6 +59,7 @@ class WebPlanControllerAdmin implements ControllerInterface
             ['url' => 'dashboard-admin', 'label' => 'Tableau de bord'],
             ['url' => 'partners-admin', 'label' => 'Partenaires'],
             ['url' => 'folders-admin', 'label' => 'Dossiers'],
+            ['url' => 'messages-admin', 'label' => 'Messages'],
         ];
 
         // Utiliser View::render au lieu de require_once
