@@ -36,7 +36,7 @@ $isTritanopia = isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === tr
 
 <?php include __DIR__ . '/header.php'; ?>
 
-<main>
+<main class="<?= $activeMenu ?>">
     <?php if (isset($_SESSION['message'])): ?>
         <div class="message">
             <?= htmlspecialchars((string) $_SESSION['message']); ?>
