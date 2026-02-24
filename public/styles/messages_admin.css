@@ -1,325 +1,420 @@
-.messages-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem;
+/* ============================================================
+   MESSAGES ADMIN — Outlook-style layout
+   ============================================================ */
+
+:root {
+    --sidebar-bg: #f3f2f1;
+    --sidebar-width: 380px;
+    --header-h: 64px;   /* hauteur du header global — à ajuster */
+    --footer-h: 60px;   /* hauteur du footer global — à ajuster */
+    --primary: #0f6cbd;
+    --primary-dark: #0d5ea8;
+    --accent: #2196f3;
+    --unread-bg: #ddeeff;
+    --unread-dot: #0f6cbd;
+    --selected-bg: #cde4f7;
+    --selected-border: #0f6cbd;
+    --border: #e0e0e0;
+    --text-main: #1a1a1a;
+    --text-muted: #666;
+    --green: #107c10;
+    --green-bg: #e6f4ea;
+    --red: #d13438;
+}
+header .menu-toggle {
+    display: none;
 }
 
-.messages-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.messages-header h1 {
-    color: var(--primary-color);
+main.messages {
+    max-width: 100%;
     margin: 0;
+    padding: 0;
+    background: transparent;
 }
 
-.filter-buttons {
+/* Full-height shell*/
+.outlook-shell {
     display: flex;
-    gap: 0.5rem;
+    flex-direction: column;
+    position: relative;
+
+    height: calc(100vh - var(--header-h) - var(--footer-h));
+
+    width: 95%;
+    max-width: 1600px;
+    margin: 20px auto;
+
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    overflow: hidden;
+
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 20px;
+
+    box-sizing: border-box;
+}
+
+/* ── Top toolbar ────────────────────────────────────────── */
+.outlook-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.outlook-toolbar h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin: 0;
+    flex: 1;
 }
 
 .filter-btn {
-    padding: 0.5rem 1rem;
-    border: 2px solid var(--primary-color);
-    border-radius: 5px;
-    text-decoration: none;
-    color: var(--primary-color);
-    transition: all 0.3s ease;
+    padding: 0.45rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--text-main);
+    font-size: 0.92rem;
     font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
 }
 
-.filter-btn.active,
 .filter-btn:hover {
-    background: var(--primary-color);
-    color: white;
+    background: var(--sidebar-bg);
+}
+
+.filter-btn.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+/* ── Main 2-pane area ───────────────────────────────────── */
+.outlook-panes {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* ── LEFT: message list ─────────────────────────────────── */
+.outlook-list-pane {
+    width: var(--sidebar-width);
+    flex-shrink: 0;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .no-messages {
+    padding: 2rem;
     text-align: center;
-    padding: 3rem;
-    color: #666;
-    font-size: 1.1rem;
-}
-
-.messages-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    color: var(--text-muted);
+    font-size: 1rem;
 }
 
 .message-item {
-    background: white;
-    border: 2px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 1.5rem;
+    padding: 1rem 1.1rem 1rem 1.4rem;
+    border-bottom: 1px solid #ddd;
     cursor: pointer;
-    transition: all 0.3s ease;
     position: relative;
+    background: var(--sidebar-bg);
+    transition: background 0.12s;
 }
 
 .message-item:hover {
-    border-color: var(--primary-color);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+    background: #e5e5e5;
 }
 
 .message-item.unread {
-    background: #f0f4ff;
-    border-color: var(--accent-color);
-    border-width: 3px;
+    background: var(--unread-bg);
 }
 
-.message-header-item {
+.message-item.unread:hover {
+    background: #c8dcf5;
+}
+
+.message-item.selected {
+    background: var(--selected-bg);
+    border-left: 4px solid var(--selected-border);
+}
+
+.msg-item-top {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5rem;
+    align-items: baseline;
+    margin-bottom: 0.3rem;
 }
 
-.message-from {
+.msg-item-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}
+
+.message-item.unread .msg-item-name {
+    font-weight: 700;
+}
+
+.msg-item-date {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.msg-item-subject {
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--primary);
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.msg-item-preview {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.unread-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--unread-dot);
+    border-radius: 50%;
+    position: absolute;
+    left: 0.35rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* ── RIGHT: reading pane ────────────────────────────────── */
+.outlook-reading-pane {
+    flex: 1;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    background: #fff;
 }
 
-.message-from strong {
-    font-size: 1.1rem;
-    color: #333;
+/* Empty state */
+.reading-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text-muted);
+    gap: 0.5rem;
 }
 
-.message-numetu {
-    font-size: 0.85rem;
-    color: #666;
-    font-weight: normal;
+.reading-empty-icon {
+    font-size: 3rem;
+    opacity: 0.3;
 }
 
-.message-date {
-    font-size: 0.9rem;
-    color: #999;
+/* Message header bar */
+.reading-header {
+    padding: 1.2rem 2rem 1rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
 }
 
-.message-subject {
-    font-weight: 600;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
+.reading-subject {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.7rem;
 }
 
-.message-preview {
-    color: #666;
+.reading-meta {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
     font-size: 0.95rem;
-    line-height: 1.5;
+    color: var(--text-muted);
 }
 
-.unread-badge {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    color: var(--accent-color);
-    font-size: 1.5rem;
+.reading-meta span strong {
+    color: var(--text-main);
 }
 
+.reading-actions {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 1rem;
+}
+
+.btn-reply {
+    padding: 0.5rem 1.3rem;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-reply:hover { background: var(--primary-dark); }
+
+.btn-delete {
+    padding: 0.5rem 1.1rem;
+    background: #fff;
+    color: var(--red);
+    border: 1px solid var(--red);
+    border-radius: 4px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-delete:hover { background: #fdf0f0; }
+
+/* Body */
+.reading-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.message-text-block {
+    background: #fafafa;
+    border: 1px solid #e8e8e8;
+    border-radius: 6px;
+    padding: 1.5rem 2rem;
+    line-height: 1.8;
+    color: var(--text-main);
+    font-size: 1rem;
+}
+
+/* Sent response block */
+.response-sent-block {
+    background: var(--green-bg);
+    border-left: 4px solid var(--green);
+    border-radius: 6px;
+    padding: 1.2rem 2rem;
+}
+
+.response-sent-block h4 {
+    color: var(--green);
+    margin: 0 0 0.6rem;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.response-sent-block .response-text {
+    line-height: 1.7;
+    color: #1a3a1a;
+    font-size: 1rem;
+}
+
+.response-sent-block small {
+    color: #4a7a4a;
+    font-size: 0.88rem;
+    font-style: italic;
+}
+
+/* Reply form */
+.reply-form-block {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.reply-form-block .reply-label {
+    padding: 0.7rem 1.2rem;
+    background: var(--sidebar-bg);
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+}
+
+.reply-form-block textarea {
+    width: 100%;
+    padding: 1.2rem;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 140px;
+    box-sizing: border-box;
+    color: var(--text-main);
+}
+
+.reply-form-block .reply-footer {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.7rem 1.2rem;
+    background: var(--sidebar-bg);
+    border-top: 1px solid var(--border);
+}
+
+/* ── Standalone page (detail view) ─────────────────────── */
 .message-view-container {
-    max-width: 900px;
+    max-width: 860px;
     margin: 0 auto;
     padding: 2rem;
 }
 
-.message-view-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-}
-
-.back-btn {
-    padding: 0.5rem 1rem;
-    background: var(--primary-color);
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-}
-
-.back-btn:hover {
-    background: var(--accent-color);
-}
-
-.delete-btn {
-    padding: 0.5rem 1rem;
-    background: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.delete-btn:hover {
-    background: #c82333;
-}
-
-.message-detail {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    padding: 2rem;
-}
-
-.message-info {
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.info-row {
-    display: flex;
-    margin-bottom: 1rem;
-}
-
-.info-label {
-    font-weight: 600;
-    color: #666;
-    min-width: 100px;
-}
-
-.info-value {
-    color: #333;
-}
-
-.info-value a {
-    color: var(--accent-color);
-    text-decoration: none;
-}
-
-.info-value a:hover {
-    text-decoration: underline;
-}
-
-.info-value small {
-    color: #999;
-    margin-left: 0.5rem;
-}
-
-.message-content h3 {
-    color: var(--primary-color);
-    margin-bottom: 1rem;
-}
-
-.message-text {
-    background: #f8f9fa;
-    padding: 1.5rem;
-    border-radius: 8px;
-    line-height: 1.6;
-    color: #333;
-    margin-bottom: 2rem;
-}
-
-.admin-response-view {
-    background: #e8f5e9;
-    padding: 1.5rem;
-    border-radius: 8px;
-    border-left: 4px solid #4caf50;
-}
-
-.admin-response-view h3 {
-    color: #2e7d32;
-    margin-top: 0;
-}
-
-.response-text {
-    margin: 1rem 0;
-    line-height: 1.6;
-}
-
-.admin-response-view small {
-    color: #666;
-    font-style: italic;
-}
-
-.admin-response-form h3 {
-    color: var(--primary-color);
-    margin-bottom: 1rem;
-}
-
-.admin-response-form textarea {
-    width: 100%;
-    padding: 1rem;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-family: inherit;
-    font-size: 1rem;
-    resize: vertical;
-    min-height: 150px;
-    margin-bottom: 1rem;
-}
-
-.admin-response-form textarea:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.btn-submit {
-    background: var(--primary-color);
-    color: white;
-    padding: 1rem 2rem;
-    border: none;
-    border-radius: 50px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn-submit:hover {
-    background: var(--accent-color);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
+/* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 768px) {
-    .messages-header {
+    .outlook-shell {
+        height: calc(100vh - var(--header-h) - var(--footer-h) - 8px);
+        margin: 4px;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+
+    .outlook-panes {
         flex-direction: column;
-        align-items: flex-start;
     }
 
-    .message-header-item {
-        flex-direction: column;
-        align-items: flex-start;
+    .outlook-list-pane {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        max-height: 40vh;
     }
 
-    .message-date {
-        margin-top: 0.5rem;
-    }
-
-    .message-view-header {
-        flex-direction: column;
-        gap: 1rem;
+    .outlook-reading-pane {
+        flex: 1;
     }
 }
 
-body.tritanopie .filter-btn {
-    border-color: #004e25;
-}
-
-body.tritanopie .filter-btn.active,
-body.tritanopie .filter-btn:hover {
-    background: #004e25;
-}
-
-body.tritanopie .message-item.unread {
-    background: #e0f7fa;
-    border-color: #004e25;
-}
-
-body.tritanopie .btn-submit {
-    background: #004e25;
-}
-
-body.tritanopie .btn-submit:hover {
-    background: #004e25;
+/* ── Accessibility / tritanopia ─────────────────────────── */
+body.tritanopie {
+    --primary: #004e25;
+    --primary-dark: #003a1c;
+    --unread-bg: #e0f7fa;
+    --unread-dot: #004e25;
+    --selected-bg: #b2dfdb;
+    --selected-border: #004e25;
 }
