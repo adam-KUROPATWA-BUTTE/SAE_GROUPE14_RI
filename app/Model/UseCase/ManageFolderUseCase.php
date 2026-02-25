@@ -6,10 +6,6 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use Model\Repository\DossierRepositoryInterface;
 use Model\Persistence\DossierRepositoryPDO;
  
-/**
- * Class ManageFolderUseCase
- * Contains the business logic for managing student folders.
- */
 class ManageFolderUseCase
 {
     private DossierRepositoryInterface $dossierRepo;
@@ -19,22 +15,11 @@ class ManageFolderUseCase
         $this->dossierRepo = new DossierRepositoryPDO();
     }
 
-    /**
-     * Retrieves all student folders.
-     *
-     * @return array<int, array<string, mixed>>
-     */
     public function getAllFolders(): array
     {
         return $this->dossierRepo->findAll();
     }
 
-    /**
-     * Retrieves detailed information about a specific student folder.
-     *
-     * @param string $numetu
-     * @return array<string, mixed>|null
-     */
     public function getStudentDetails(string $numetu): ?array
     {
         $result = $this->dossierRepo->findByNumEtu($numetu);
@@ -51,47 +36,21 @@ class ManageFolderUseCase
         return $result;
     }
 
-    /**
-     * @param string $numetu
-     * @return array<string, mixed>|null
-     */
     public function getByNumetu(string $numetu): ?array
     {
         return $this->getStudentDetails($numetu);
     }
 
-    /**
-     * @param string $numetu
-     * @return bool
-     */
     public function toggleCompleteStatus(string $numetu): bool
     {
         return $this->dossierRepo->toggleStatus($numetu);
     }
 
-    /**
-     * Searches and paginates folders based on criteria.
-     *
-     * @param array<string, mixed> $filters
-     * @param int $page
-     * @param int $perPage
-     * @return array{data: array<int, array<string, mixed>>, total: int, totalPages: int}
-     */
     public function rechercherAvecPagination(array $filters, int $page = 1, int $perPage = 10): array
     {
         return $this->dossierRepo->searchWithPagination($filters, $page, $perPage);
     }
 
-    /**
-     * Creates a new student folder.
-     *
-     * @param array<string, mixed> $data
-     * @param string|null $photoData
-     * @param string|null $cvData
-     * @param string|null $conventionData
-     * @param string|null $lettreData
-     * @return bool
-     */
     public function creerDossier(array $data, ?string $photoData = null, ?string $cvData = null, ?string $conventionData = null, ?string $lettreData = null): bool
     {
         $photoData = $photoData ?? (is_string($data['photo'] ?? null) ? $data['photo'] : null);
@@ -99,7 +58,6 @@ class ManageFolderUseCase
         $conventionData = $conventionData ?? (is_string($data['convention'] ?? null) ? $data['convention'] : null);
         $lettreData = $lettreData ?? (is_string($data['lettre_motivation'] ?? null) ? $data['lettre_motivation'] : null);
 
-        // Map HTML form names OR existing keys
         $rawDate = $data['naissance'] ?? ($data['DateNaissance'] ?? null);
         $dateNaissance = null;
         if (!empty($rawDate) && is_string($rawDate)) {
@@ -113,7 +71,6 @@ class ManageFolderUseCase
         if ($conventionData !== null) $pieces['convention'] = base64_encode($conventionData);
         if ($lettreData !== null) $pieces['lettre_motivation'] = base64_encode($lettreData);
 
-        // Ensure empty json objects are stored as '{}' and not '[]'
         $piecesJson = empty($pieces) ? '{}' : json_encode($pieces);
 
         $formattedData = [
@@ -131,11 +88,20 @@ class ManageFolderUseCase
             'CodeDepartement' => $data['departement'] ?? ($data['CodeDepartement'] ?? null),
             'Type' => $data['type'] ?? ($data['Type'] ?? null),
             'Zone' => $data['zone'] ?? ($data['Zone'] ?? null),
+            'Pays' => $data['pays'] ?? ($data['Pays'] ?? null),
+            'Campus' => $data['campus'] ?? ($data['Campus'] ?? null),
+            'Discipline' => $data['discipline'] ?? ($data['Discipline'] ?? null),
+            'NiveauEtude' => $data['niveau_etude'] ?? ($data['NiveauEtude'] ?? null),
+            'Formation' => $data['formation'] ?? ($data['Formation'] ?? null),
+            'Moyenne' => $data['moyenne'] ?? ($data['Moyenne'] ?? null),
+            'AvisDRI' => $data['avis_dri'] ?? ($data['AvisDRI'] ?? null),
+            'DateDebut' => $data['date_debut'] ?? ($data['DateDebut'] ?? null),
+            'Langues' => $data['langues'] ?? ($data['Langues'] ?? null),
+            'MobiliteAnterieure' => $data['mobilite_anterieure'] ?? ($data['MobiliteAnterieure'] ?? null),
             'PiecesJustificatives' => $piecesJson,
             'status' => $data['status'] ?? 'depot'
         ];
 
-        // Ensure empty strings are cast to null for cleaner DB insertion
         foreach ($formattedData as $key => $value) {
             if ($value === '') $formattedData[$key] = null;
         }
@@ -143,33 +109,14 @@ class ManageFolderUseCase
         return $this->dossierRepo->create($formattedData);
     }
 
-    /**
-     * Updates an existing student folder.
-     *
-     * @param array<string, mixed> $data
-     * @param string|null $photoData
-     * @param string|null $cvData
-     * @param string|null $conventionData
-     * @param string|null $lettreData
-     * @return bool
-     */
     public function updateDossier(array $data, ?string $photoData = null, ?string $cvData = null, ?string $conventionData = null, ?string $lettreData = null): bool
     {
-        // Safe check for the Student ID from either the HTML form or direct array mapping
         $numEtu = strval($data['numetu'] ?? ($data['NumEtu'] ?? ''));
-        
-        if ($numEtu === '') {
-            error_log("ManageFolderUseCase: Cannot update folder without a valid NumEtu.");
-            return false;
-        }
+        if ($numEtu === '') return false;
 
         $existing = $this->getStudentDetails($numEtu);
-        if (!$existing) {
-            error_log("ManageFolderUseCase: Student $numEtu not found for update.");
-            return false;
-        }
+        if (!$existing) return false;
         
-        /** @var array<string, string> $oldPieces */
         $oldPieces = isset($existing['pieces']) && is_array($existing['pieces']) ? $existing['pieces'] : [];
 
         $photoData = $photoData ?? (is_string($data['photo'] ?? null) ? $data['photo'] : null);
@@ -182,10 +129,8 @@ class ManageFolderUseCase
         if (!empty($conventionData)) $oldPieces['convention'] = base64_encode($conventionData);
         if (!empty($lettreData)) $oldPieces['lettre_motivation'] = base64_encode($lettreData);
 
-        // Force an empty array to become `{}` in JSON instead of `[]` to prevent parsing issues
         $piecesJson = empty($oldPieces) ? '{}' : json_encode($oldPieces);
 
-        // Date handling
         $rawDate = $data['naissance'] ?? ($data['DateNaissance'] ?? null);
         $dateNaissance = null;
         if (!empty($rawDate) && is_string($rawDate)) {
@@ -193,7 +138,6 @@ class ManageFolderUseCase
             $dateNaissance = ($date && $date->format('Y-m-d') === $rawDate) ? $rawDate : null;
         }
 
-        // Map HTML form names (lowercase keys) to Database expectations (CamelCase keys)
         $formattedData = [
             ':Nom' => $data['nom'] ?? ($data['Nom'] ?? null),
             ':Prenom' => $data['prenom'] ?? ($data['Prenom'] ?? null),
@@ -208,6 +152,16 @@ class ManageFolderUseCase
             ':CodeDepartement' => $data['departement'] ?? ($data['CodeDepartement'] ?? null),
             ':Type' => $data['type'] ?? ($data['Type'] ?? null),
             ':Zone' => $data['zone'] ?? ($data['Zone'] ?? null),
+            ':Pays' => $data['pays'] ?? ($data['Pays'] ?? null),
+            ':Campus' => $data['campus'] ?? ($data['Campus'] ?? null),
+            ':Discipline' => $data['discipline'] ?? ($data['Discipline'] ?? null),
+            ':NiveauEtude' => $data['niveau_etude'] ?? ($data['NiveauEtude'] ?? null),
+            ':Formation' => $data['formation'] ?? ($data['Formation'] ?? null),
+            ':Moyenne' => $data['moyenne'] ?? ($data['Moyenne'] ?? null),
+            ':AvisDRI' => $data['avis_dri'] ?? ($data['AvisDRI'] ?? null),
+            ':DateDebut' => $data['date_debut'] ?? ($data['DateDebut'] ?? null),
+            ':Langues' => $data['langues'] ?? ($data['Langues'] ?? null),
+            ':MobiliteAnterieure' => $data['mobilite_anterieure'] ?? ($data['MobiliteAnterieure'] ?? null),
             ':PiecesJustificatives' => $piecesJson,
             ':status' => $existing['status'] ?? 'depot'
         ];
@@ -215,42 +169,131 @@ class ManageFolderUseCase
         return $this->dossierRepo->update($numEtu, $formattedData);
     }
 
-    /**
-     * Reads an Excel or CSV file and imports multiple folders into the database.
-     *
-     * @param string $filePath The temporary path of the uploaded file.
-     * @return bool
-     */
     public function importFoldersFromCSV(string $filePath): bool
     {
         try {
             $spreadsheet = IOFactory::load($filePath);
             $worksheet = $spreadsheet->getActiveSheet();
-            
             $rows = $worksheet->toArray();
-            array_shift($rows); 
+            
+            if (empty($rows) || count($rows) < 2) return false;
+
+            $headers = array_map(function($val) {
+                return strtolower(trim(strval($val)));
+            }, array_shift($rows));
+            
+            // Dictionnaire des mots-clés enrichi avec 'individu', 'début', 'langue', 'ayant déjà'
+            $keywords = [
+                'NumEtu'             => ['identifiant', 'numetu', 'etudiant', 'individu', 'formulaire en ligne'],
+                'Candidat'           => ['candidat', 'nom'],
+                'Prenom'             => ['prénom', 'prenom'],
+                'DateNaissance'      => ['naissance', 'birth'],
+                'Sexe'               => ['sexe', 'genre'],
+                'Adresse'            => ['adresse', 'address', 'rue'],
+                'CodePostal'         => ['postal', 'cp', 'zip'],
+                'Ville'              => ['ville', 'city', 'commune'],
+                'EmailPersonnel'     => ['email', 'courriel', 'mail'],
+                'EmailAMU'           => ['amu', 'institutionnel'],
+                'Telephone'          => ['phone', 'téléphone', 'telephone', 'mobile', 'tel'],
+                'CodeDepartement'    => ['composante', 'département', 'departement', 'faculté'],
+                'Type'               => ['type', 'mobilité'],
+                'Zone'               => ['zone'],
+                'Pays'               => ['pays', 'country'],
+                'Campus'             => ['campus'],
+                'Discipline'         => ['discipline'],
+                'NiveauEtude'        => ['niveau'],
+                'Formation'          => ['formation'],
+                'Moyenne'            => ['moyenne'],
+                'AvisDRI'            => ['avis dri', 'avis'],
+                'DateDebut'          => ['période de', 'début', 'date de début'],
+                'Langues'            => ['langue'],
+                'MobiliteAnterieure' => ['ayant déjà effect', 'mobilité antérieure']
+            ];
+
+            $indices = [];
+            foreach ($keywords as $field => $searchWords) {
+                $indices[$field] = -1;
+                foreach ($headers as $index => $header) {
+                    foreach ($searchWords as $word) {
+                        if (strpos($header, $word) !== false) {
+                            $indices[$field] = $index;
+                            break 2;
+                        }
+                    }
+                }
+            }
+
+            $getVal = function($field) use (&$data, $indices) {
+                $idx = $indices[$field];
+                return ($idx !== -1 && isset($data[$idx])) ? trim(strval($data[$idx])) : '';
+            };
 
             $dossiersToInsert = [];
 
             foreach ($rows as $data) {
-                if (!is_array($data) || empty(trim(strval($data[0] ?? '')))) {
-                    continue; 
+                if (!is_array($data)) continue;
+
+                $numEtu = $getVal('NumEtu') ?: trim(strval($data[0] ?? ''));
+                if (empty($numEtu)) continue;
+
+                $candidatVal = $getVal('Candidat');
+                if (!empty($candidatVal)) {
+                    $candidatVal = str_replace(',', '', $candidatVal);
+                    $parts = explode(' ', $candidatVal, 2);
+                    if (count($parts) === 2 && $indices['Prenom'] === -1) {
+                        $nom = strtoupper(trim($parts[0]));
+                        $prenom = trim($parts[1]);
+                    } else {
+                        $nom = strtoupper($candidatVal);
+                        $prenom = $getVal('Prenom') ?: '-';
+                    }
+                } else {
+                    $nom = 'INCONNU';
+                    $prenom = $getVal('Prenom') ?: '-';
+                }
+
+                $rawDate = $getVal('DateNaissance');
+                $dateNaissance = null;
+                if (!empty($rawDate)) {
+                    if (preg_match('#^(\d{2})[-/](\d{2})[-/](\d{4})$#', $rawDate, $matches)) {
+                        $dateNaissance = $matches[3] . '-' . $matches[2] . '-' . $matches[1];
+                    } else {
+                        $dateNaissance = $rawDate; 
+                    }
                 }
 
                 $dossiersToInsert[] = [
-                    'NumEtu'    => trim(strval($data[0] ?? '')),
-                    'Nom'       => trim(strval($data[1] ?? '')),
-                    'Prenom'    => trim(strval($data[2] ?? '')),
-                    'EmailPersonnel' => trim(strval($data[3] ?? '')),
-                    'Telephone' => trim(strval($data[4] ?? '')),
-                    'Type'      => strtolower(trim(strval($data[5] ?? 'sortant'))),
-                    'Zone'      => strtolower(trim(strval($data[6] ?? 'europe')))
+                    'NumEtu'             => $numEtu,
+                    'Nom'                => $nom,
+                    'Prenom'             => $prenom,
+                    'DateNaissance'      => $dateNaissance,
+                    'Sexe'               => $getVal('Sexe'),
+                    'Adresse'            => $getVal('Adresse'),
+                    'CodePostal'         => $getVal('CodePostal'),
+                    'Ville'              => $getVal('Ville'),
+                    'EmailPersonnel'     => $getVal('EmailPersonnel'),
+                    'EmailAMU'           => $getVal('EmailAMU'),
+                    'Telephone'          => $getVal('Telephone'),
+                    'CodeDepartement'    => $getVal('CodeDepartement'),
+                    'Type'               => $getVal('Type') ?: 'sortant',
+                    'Zone'               => $getVal('Zone') ?: 'europe',
+                    'Pays'               => $getVal('Pays'),
+                    'Campus'             => $getVal('Campus'),
+                    'Discipline'         => $getVal('Discipline'),
+                    'NiveauEtude'        => $getVal('NiveauEtude'),
+                    'Formation'          => $getVal('Formation'),
+                    'Moyenne'            => $getVal('Moyenne'),
+                    'AvisDRI'            => $getVal('AvisDRI'),
+                    'DateDebut'          => $getVal('DateDebut'),
+                    'Langues'            => $getVal('Langues'),
+                    'MobiliteAnterieure' => $getVal('MobiliteAnterieure')
                 ];
             }
 
-            $lignesInserees = $this->dossierRepo->upsertMultiple($dossiersToInsert);
-            
-            return $lignesInserees > 0;
+            if (!empty($dossiersToInsert)) {
+                return $this->dossierRepo->upsertMultiple($dossiersToInsert) > 0;
+            }
+            return false;
             
         } catch (\Exception $e) {
             error_log("Import Error (PhpSpreadsheet/UseCase): " . $e->getMessage());

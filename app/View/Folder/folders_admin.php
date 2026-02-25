@@ -1,28 +1,14 @@
 <?php
 /**
  * Vue : Dossiers Admin
- *
- * Variables attendues (extraites par View::render) :
- * @var string $action
- * @var array<string, mixed> $filters
- * @var int $page
- * @var string $message
- * @var string $lang
- * @var array<string, mixed>|null $studentData
- * @var array<int, array<string, mixed>> $paginatedData
- * @var int $totalCount
- * @var int $totalPages
- * @var Closure(array<string, string>): string $t (fournie globalement ou définie ici)
  */
 
-// Création de la fonction de traduction locale si non injectée
 if (!isset($t)) {
     $t = function(array $translations) use ($lang) {
         return $translations[$lang] ?? $translations['fr'] ?? '';
     };
 }
 
-// Utilitaires de construction d'URL
 $buildUrl = function(string $path, array $params = []) use ($lang): string {
     $params['lang'] = $lang;
     $separator = (strpos($path, '?') === false) ? '?' : '&';
@@ -39,7 +25,6 @@ $buildPaginationUrl = function(int $p) use ($filters, $lang, $page): string {
     return 'index.php?' . http_build_query($params);
 };
 
-// Vérification de filtres actifs
 $hasActiveFilters = (strval($filters['type'] ?? 'all')) !== 'all'
     || (strval($filters['zone'] ?? 'all')) !== 'all'
     || (strval($filters['complet'] ?? 'all')) !== 'all'
@@ -99,6 +84,36 @@ ob_start();
                 
                 <label for="departement"><?= $t(['fr' => 'Code Département','en' => 'Department Code']) ?></label>
                 <input type="text" name="departement" id="departement">
+
+                <label for="campus"><?= $t(['fr' => 'Campus','en' => 'Campus']) ?></label>
+                <input type="text" name="campus" id="campus">
+
+                <label for="discipline"><?= $t(['fr' => 'Discipline','en' => 'Discipline']) ?></label>
+                <input type="text" name="discipline" id="discipline">
+
+                <label for="niveau_etude"><?= $t(['fr' => 'Niveau d\'étude','en' => 'Study Level']) ?></label>
+                <input type="text" name="niveau_etude" id="niveau_etude">
+
+                <label for="formation"><?= $t(['fr' => 'Formation','en' => 'Degree Program']) ?></label>
+                <input type="text" name="formation" id="formation">
+
+                <label for="moyenne"><?= $t(['fr' => 'Moyenne','en' => 'Average Grade']) ?></label>
+                <input type="text" name="moyenne" id="moyenne">
+
+                <label for="avis_dri"><?= $t(['fr' => 'Avis DRI','en' => 'DRI Advice']) ?></label>
+                <input type="text" name="avis_dri" id="avis_dri">
+
+                <label for="date_debut"><?= $t(['fr' => 'Date de début','en' => 'Start Date']) ?></label>
+                <input type="text" name="date_debut" id="date_debut">
+
+                <label for="langues"><?= $t(['fr' => 'Langues','en' => 'Languages']) ?></label>
+                <input type="text" name="langues" id="langues">
+
+                <label for="mobilite_anterieure"><?= $t(['fr' => 'A déjà effectué une mobilité','en' => 'Previous Mobility']) ?></label>
+                <input type="text" name="mobilite_anterieure" id="mobilite_anterieure">
+
+                <label for="pays"><?= $t(['fr' => 'Pays','en' => 'Country']) ?></label>
+                <input type="text" name="pays" id="pays">
                 
                 <label for="type"><?= $t(['fr' => 'Type *','en' => 'Type *']) ?></label>
                 <select name="type" id="type" required>
@@ -208,6 +223,36 @@ ob_start();
 
                     <label for="departement"><?= $t(['fr' => 'Code Département','en' => 'Department Code']) ?></label>
                     <input type="text" name="departement" id="departement" value="<?= htmlspecialchars(strval($studentData['CodeDepartement'] ?? '')) ?>" disabled class="input-disabled">
+
+                    <label for="campus"><?= $t(['fr' => 'Campus','en' => 'Campus']) ?></label>
+                    <input type="text" name="campus" id="campus" value="<?= htmlspecialchars(strval($studentData['Campus'] ?? '')) ?>" disabled class="input-disabled">
+
+                    <label for="discipline"><?= $t(['fr' => 'Discipline','en' => 'Discipline']) ?></label>
+                    <input type="text" name="discipline" id="discipline" value="<?= htmlspecialchars(strval($studentData['Discipline'] ?? '')) ?>" disabled class="input-disabled">
+
+                    <label for="niveau_etude"><?= $t(['fr' => 'Niveau d\'étude','en' => 'Study Level']) ?></label>
+                    <input type="text" name="niveau_etude" id="niveau_etude" value="<?= htmlspecialchars(strval($studentData['NiveauEtude'] ?? '')) ?>" disabled class="input-disabled">
+
+                    <label for="formation"><?= $t(['fr' => 'Formation','en' => 'Degree Program']) ?></label>
+                    <input type="text" name="formation" id="formation" value="<?= htmlspecialchars(strval($studentData['Formation'] ?? '')) ?>" disabled class="input-disabled">
+
+                    <label for="moyenne"><?= $t(['fr' => 'Moyenne','en' => 'Average Grade']) ?></label>
+                    <input type="text" name="moyenne" id="moyenne" value="<?= htmlspecialchars(strval($studentData['Moyenne'] ?? '')) ?>" disabled class="input-disabled">
+
+                    <label for="avis_dri"><?= $t(['fr' => 'Avis DRI','en' => 'DRI Advice']) ?></label>
+                    <input type="text" name="avis_dri" id="avis_dri" value="<?= htmlspecialchars(strval($studentData['AvisDRI'] ?? '')) ?>" disabled class="input-disabled">
+
+                    <label for="date_debut"><?= $t(['fr' => 'Date de début','en' => 'Start Date']) ?></label>
+                    <input type="text" name="date_debut" id="date_debut" value="<?= htmlspecialchars(strval($studentData['DateDebut'] ?? '')) ?>" disabled class="input-disabled">
+
+                    <label for="langues"><?= $t(['fr' => 'Langues','en' => 'Languages']) ?></label>
+                    <input type="text" name="langues" id="langues" value="<?= htmlspecialchars(strval($studentData['Langues'] ?? '')) ?>" disabled class="input-disabled">
+
+                    <label for="mobilite_anterieure"><?= $t(['fr' => 'A déjà effectué une mobilité','en' => 'Previous Mobility']) ?></label>
+                    <input type="text" name="mobilite_anterieure" id="mobilite_anterieure" value="<?= htmlspecialchars(strval($studentData['MobiliteAnterieure'] ?? '')) ?>" disabled class="input-disabled">
+
+                    <label for="pays"><?= $t(['fr' => 'Pays','en' => 'Country']) ?></label>
+                    <input type="text" name="pays" id="pays" value="<?= htmlspecialchars(strval($studentData['Pays'] ?? '')) ?>" disabled class="input-disabled">
 
                     <label for="type"><?= $t(['fr' => 'Type *','en' => 'Type *']) ?></label>
                     <select name="type" id="type" disabled class="input-disabled" required>
@@ -401,9 +446,9 @@ ob_start();
                 <tr>
                     <th><?= $t(['fr' => 'Nom','en' => 'Last Name']) ?></th>
                     <th><?= $t(['fr' => 'Prénom','en' => 'First Name']) ?></th>
-                    <th><?= $t(['fr' => 'Né(e) le','en' => 'Birth Date']) ?></th>
                     <th><?= $t(['fr' => 'Type','en' => 'Type']) ?></th>
                     <th><?= $t(['fr' => 'Zone','en' => 'Zone']) ?></th>
+                    <th><?= $t(['fr' => 'Campus','en' => 'Campus']) ?></th>
                     <th><?= $t(['fr' => 'Mobilité', 'en' => 'Mobility']) ?></th>
                     <th><?= $t(['fr' => 'Statut','en' => 'Status']) ?></th>
                 </tr>
@@ -427,14 +472,15 @@ ob_start();
                     $prenom = strval($etudiant['Prenom'] ?? '');
                     $type = strval($etudiant['Type'] ?? '');
                     $zone = strval($etudiant['Zone'] ?? '');
+                    $campus = strval($etudiant['Campus'] ?? '-');
                     $isComplete = intval($etudiant['IsComplete'] ?? 0);
                     ?>
                     <tr class="clickable-row" data-numetu="<?= htmlspecialchars($numEtu) ?>">
                         <td><?= htmlspecialchars($nom) ?></td>
                         <td><?= htmlspecialchars($prenom) ?></td>
-                        <td><?= htmlspecialchars(strval($etudiant['DateNaissance'] ?? '')) ?></td>
                         <td><?= $t(['fr' => ($type === 'entrant' ? 'Entrant' : 'Sortant'), 'en' => ($type === 'entrant' ? 'Incoming' : 'Outgoing')]) ?></td>
                         <td><?= $t(['fr' => ($zone === 'europe' ? 'Europe' : 'Hors Europe'), 'en' => ($zone === 'europe' ? 'Europe' : 'Non-Europe')]) ?></td>
+                        <td><?= htmlspecialchars($campus ?: '-') ?></td>
                         <td><?= htmlspecialchars($mobilityType) ?></td>
                         <td>
                             <?= $isComplete === 1
@@ -476,7 +522,6 @@ ob_start();
 <?php
 $content = ob_get_clean();
 
-// Configuration pour le layout principal (base.php)
 $title = $t([
     'fr' => 'Gestion des dossiers - Admin',
     'en' => 'Folders Management - Admin'
@@ -487,5 +532,4 @@ $scripts = ['js/folders.js'];
 $activeMenu = 'folders';
 $userRole = 'admin';
 
-// Inclusion du layout commun qui contient <header>, <footer>, chatbot etc.
 include __DIR__ . '/../Layout/base.php';
