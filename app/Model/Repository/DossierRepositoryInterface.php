@@ -88,4 +88,13 @@ interface DossierRepositoryInterface
      * @return array{data: array<int, array<string, mixed>>, total: int, totalPages: int} The paginated search results.
      */
     public function searchWithPagination(array $filters, int $page, int $perPage): array;
+
+    /** @return array{incoming: int, outgoing: int} */
+    public function getIncomingOutgoingStats(): array;
+
+    /** @return array<int, array{name: string, count: int}> */
+    public function getZoneStats(): array;
+
+    /** @return array{europe_countries: int, non_europe_countries: int} */
+    public function getEuropeVsNonEuropeStats(): array;
 }

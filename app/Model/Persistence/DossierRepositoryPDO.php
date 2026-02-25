@@ -18,10 +18,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
 {
     private PDO $db;
 
-    /**
-     * DossierRepositoryPDO constructor.
-     * Initializes the PDO connection from the Database singleton.
-     */
     public function __construct()
     {
         $this->db = Database::getInstance()->getConnection();
@@ -31,21 +27,11 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     // Dashboard Statistics
     // ===========================
 
-    /**
-     * Returns overall statistics of all dossiers.
-     *
-     * @return DossierStats
-     */
     public function getGlobalStats(): DossierStats
     {
         return $this->getDossierStats();
     }
 
-    /**
-     * Retrieves the total number of dossiers and number of completed dossiers.
-     *
-     * @return DossierStats
-     */
     public function getDossierStats(): DossierStats
     {
         try {
@@ -57,8 +43,8 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             ");
             $result = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : null;
 
-            $total = is_numeric($result['total'] ?? 0) ? (int)$result['total'] : 0;
-            $completed = is_numeric($result['completed'] ?? 0) ? (int)$result['completed'] : 0;
+            $total     = is_numeric($result['total']     ?? 0) ? (int) $result['total']     : 0;
+            $completed = is_numeric($result['completed'] ?? 0) ? (int) $result['completed'] : 0;
 
             return new DossierStats($total, $completed);
         } catch (\PDOException $e) {
@@ -67,11 +53,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         }
     }
 
-    /**
-     * Returns the count of male and female students.
-     *
-     * @return GenderStats
-     */
     public function getGenderStats(): GenderStats
     {
         try {
@@ -84,8 +65,8 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             ");
             $result = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : null;
 
-            $male = is_numeric($result['male'] ?? 0) ? (int)$result['male'] : 0;
-            $female = is_numeric($result['female'] ?? 0) ? (int)$result['female'] : 0;
+            $male   = is_numeric($result['male']   ?? 0) ? (int) $result['male']   : 0;
+            $female = is_numeric($result['female'] ?? 0) ? (int) $result['female'] : 0;
 
             return new GenderStats($male, $female);
         } catch (\PDOException $e) {
@@ -95,9 +76,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     }
 
     /**
-     * Returns top countries with the most dossiers.
-     *
-     * @param int $limit Number of top countries to return
+     * @param int $limit
      * @return array<int, array{name: string, count: int}>
      */
     public function getTopCountries(int $limit): array
@@ -113,7 +92,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             ");
             $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
             $stmt->execute();
-
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return $results ?: [];
         } catch (\PDOException $e) {
@@ -123,9 +101,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     }
 
     /**
-     * Returns top departments with the most dossiers.
-     *
-     * @param int $limit Number of top departments to return
+     * @param int $limit
      * @return array<int, array{name: string, count: int}>
      */
     public function getDepartmentStats(int $limit): array
@@ -141,7 +117,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             ");
             $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
             $stmt->execute();
-
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return $results ?: [];
         } catch (\PDOException $e) {
@@ -150,13 +125,126 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         }
     }
 
+    /** @return array{incoming: int, outgoing: int} */
+    public function getIncomingOutgoingStats(): array
+    {
+        try {
+            $stmt = $this->db->query("
+                SELECT 
+                    SUM(CASE WHEN LOWER(Type) = 'entrant' THEN 1 ELSE 0 END) as incoming,
+                    SUM(CASE WHEN LOWER(Type) = 'sortant' THEN 1 ELSE 0 END) as outgoing
+                FROM dossiers
+            ");
+            if ($stmt === false) return ['incoming' => 0, 'outgoing' => 0];
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!is_array($result)) return ['incoming' => 0, 'outgoing' => 0];
+            return [
+                'incoming' => is_numeric($result['incoming']) ? (int) $result['incoming'] : 0,
+                'outgoing' => is_numeric($result['outgoing']) ? (int) $result['outgoing'] : 0,
+            ];
+        } catch (\PDOException $e) {
+            error_log("getIncomingOutgoingStats Error: " . $e->getMessage());
+            return ['incoming' => 0, 'outgoing' => 0];
+        }
+    }
+
+    /** @return array<int, array{name: string, count: int}> */
+    public function getContinentStats(): array
+    {
+        try {
+            $stmt = $this->db->query("
+                SELECT Continent as name, COUNT(*) as count
+                FROM dossiers
+                WHERE Continent IS NOT NULL AND Continent != ''
+                GROUP BY Continent
+                ORDER BY count DESC
+            ");
+            if ($stmt === false) return [];
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return is_array($results) ? array_map(fn($r) => [
+                'name'  => is_string($r['name'])  ? $r['name']  : '',
+                'count' => is_numeric($r['count']) ? (int) $r['count'] : 0,
+            ], $results) : [];
+        } catch (\PDOException $e) {
+            error_log("getContinentStats Error: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /** @return array{europe_countries: int, non_europe_countries: int} */
+    public function getEuropeVsNonEuropeStats(): array
+    {
+        try {
+            $stmt = $this->db->query("
+                SELECT
+                    COUNT(DISTINCT CASE WHEN LOWER(Zone) = 'europe' THEN Pays END) as europe_countries,
+                    COUNT(DISTINCT CASE WHEN LOWER(Zone) = 'hors_europe' THEN Pays END) as non_europe_countries
+                FROM dossiers
+                WHERE Pays IS NOT NULL AND Pays != ''
+            ");
+            if ($stmt === false) return ['europe_countries' => 0, 'non_europe_countries' => 0];
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!is_array($result)) return ['europe_countries' => 0, 'non_europe_countries' => 0];
+            return [
+                'europe_countries'     => is_numeric($result['europe_countries'])     ? (int) $result['europe_countries']     : 0,
+                'non_europe_countries' => is_numeric($result['non_europe_countries']) ? (int) $result['non_europe_countries'] : 0,
+            ];
+        } catch (\PDOException $e) {
+            error_log("getEuropeVsNonEuropeStats Error: " . $e->getMessage());
+            return ['europe_countries' => 0, 'non_europe_countries' => 0];
+        }
+    }
+
+    /** @return array<int, array{name: string, count: int}> */
+    public function getZoneStats(): array
+    {
+        try {
+            $stmt = $this->db->query("
+                SELECT Zone as name, COUNT(*) as count
+                FROM dossiers
+                WHERE Zone IS NOT NULL AND Zone != ''
+                GROUP BY Zone
+                ORDER BY count DESC
+            ");
+            if ($stmt === false) return [];
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return is_array($results) ? array_map(fn($r) => [
+                'name'  => is_string($r['name'])  ? $r['name']  : '',
+                'count' => is_numeric($r['count']) ? (int) $r['count'] : 0,
+            ], $results) : [];
+        } catch (\PDOException $e) {
+            error_log("getZoneStats Error: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    // ===========================
+    // Continent inference
+    // ===========================
+
+    private function inferContinent(string $pays, string $zone): ?string
+    {
+        if (strtolower($zone) === 'europe') return 'Europe';
+
+        $mapping = [
+            'Amérique'     => ['Canada', 'États-Unis', 'Mexique', 'Brésil', 'Argentine', 'Colombie', 'Chili', 'Pérou', 'Venezuela', 'Cuba'],
+            'Asie'         => ['Japon', 'Chine', 'Corée du Sud', 'Inde', 'Thaïlande', 'Vietnam', 'Indonésie', 'Singapour', 'Malaisie', 'Philippines', 'Bangladesh', 'Pakistan'],
+            'Océanie'      => ['Australie', 'Nouvelle-Zélande', 'Fidji', 'Papouasie-Nouvelle-Guinée'],
+            'Afrique'      => ['Maroc', 'Tunisie', 'Algérie', 'Sénégal', 'Côte d\'Ivoire', 'Cameroun', 'Mali', 'Guinée', 'Madagascar', 'Mozambique', 'Tanzanie', 'Kenya', 'Ghana', 'Nigeria', 'Éthiopie'],
+            'Moyen-Orient' => ['Turquie', 'Liban', 'Jordanie', 'Égypte', 'Arabie Saoudite', 'Émirats Arabes Unis', 'Qatar', 'Koweït', 'Israël', 'Iran', 'Irak'],
+        ];
+
+        foreach ($mapping as $continent => $countries) {
+            if (in_array($pays, $countries, true)) return $continent;
+        }
+        return null;
+    }
+
     // ===========================
     // CRUD Operations
     // ===========================
 
     /**
-     * Fetches all dossiers ordered by last name and first name.
-     *
      * @return array<int, array<string, mixed>>
      */
     public function findAll(): array
@@ -177,9 +265,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     }
 
     /**
-     * Fetch a dossier by its student number.
-     *
-     * @param string $numEtu
      * @return array<string, mixed>|null
      */
     public function findByNumEtu(string $numEtu): ?array
@@ -203,10 +288,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     }
 
     /**
-     * Creates a new dossier in the database.
-     *
      * @param array<string, mixed> $data
-     * @return bool
      */
     public function create(array $data): bool
     {
@@ -214,31 +296,35 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             $stmt = $this->db->prepare("
                 INSERT INTO dossiers (
                     NumEtu, Nom, Prenom, DateNaissance, Sexe, Adresse, CodePostal, Ville,
-                    EmailPersonnel, EmailAMU, Telephone, CodeDepartement, Type, Zone,
+                    EmailPersonnel, EmailAMU, Telephone, CodeDepartement, Type, Zone, Continent,
                     IsComplete, PiecesJustificatives, status
                 ) VALUES (
                     :NumEtu, :Nom, :Prenom, :DateNaissance, :Sexe, :Adresse, :CodePostal, :Ville,
-                    :EmailPersonnel, :EmailAMU, :Telephone, :CodeDepartement, :Type, :Zone,
+                    :EmailPersonnel, :EmailAMU, :Telephone, :CodeDepartement, :Type, :Zone, :Continent,
                     0, :PiecesJustificatives, :status
                 )
             ");
             return $stmt->execute([
-                ':NumEtu' => $data['NumEtu'] ?? null,
-                ':Nom' => $data['Nom'] ?? null,
-                ':Prenom' => $data['Prenom'] ?? null,
-                ':DateNaissance' => $data['DateNaissance'] ?? null,
-                ':Sexe' => $data['Sexe'] ?? null,
-                ':Adresse' => $data['Adresse'] ?? null,
-                ':CodePostal' => $data['CodePostal'] ?? null,
-                ':Ville' => $data['Ville'] ?? null,
-                ':EmailPersonnel' => $data['EmailPersonnel'] ?? null,
-                ':EmailAMU' => $data['EmailAMU'] ?? null,
-                ':Telephone' => $data['Telephone'] ?? null,
-                ':CodeDepartement' => $data['CodeDepartement'] ?? null,
-                ':Type' => $data['Type'] ?? null,
-                ':Zone' => $data['Zone'] ?? null,
+                ':NumEtu'               => $data['NumEtu']               ?? null,
+                ':Nom'                  => $data['Nom']                  ?? null,
+                ':Prenom'               => $data['Prenom']               ?? null,
+                ':DateNaissance'        => $data['DateNaissance']        ?? null,
+                ':Sexe'                 => $data['Sexe']                 ?? null,
+                ':Adresse'              => $data['Adresse']              ?? null,
+                ':CodePostal'           => $data['CodePostal']           ?? null,
+                ':Ville'                => $data['Ville']                ?? null,
+                ':EmailPersonnel'       => $data['EmailPersonnel']       ?? null,
+                ':EmailAMU'             => $data['EmailAMU']             ?? null,
+                ':Telephone'            => $data['Telephone']            ?? null,
+                ':CodeDepartement'      => $data['CodeDepartement']      ?? null,
+                ':Type'                 => $data['Type']                 ?? null,
+                ':Zone'                 => $data['Zone']                 ?? null,
+                ':Continent' => $this->inferContinent(
+                    is_string($data['Pays'] ?? null) ? $data['Pays'] : '',
+                    is_string($data['Zone'] ?? null) ? $data['Zone'] : ''
+                ),
                 ':PiecesJustificatives' => $data['PiecesJustificatives'] ?? '{}',
-                ':status' => $data['status'] ?? 'depot'
+                ':status'               => $data['status']               ?? 'depot',
             ]);
         } catch (\PDOException $e) {
             error_log("create Error: " . $e->getMessage());
@@ -247,11 +333,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     }
 
     /**
-     * Updates an existing dossier by student number.
-     *
-     * @param string $numEtu
      * @param array<string, mixed> $data
-     * @return bool
      */
     public function update(string $numEtu, array $data): bool
     {
@@ -259,21 +341,21 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             $stmt = $this->db->prepare("
                 UPDATE dossiers
                 SET 
-                    Nom = COALESCE(:Nom, Nom),
-                    Prenom = COALESCE(:Prenom, Prenom),
-                    DateNaissance = COALESCE(:DateNaissance, DateNaissance),
-                    Sexe = COALESCE(:Sexe, Sexe),
-                    Adresse = COALESCE(:Adresse, Adresse),
-                    CodePostal = COALESCE(:CodePostal, CodePostal),
-                    Ville = COALESCE(:Ville, Ville),
-                    EmailPersonnel = COALESCE(:EmailPersonnel, EmailPersonnel),
-                    EmailAMU = COALESCE(:EmailAMU, EmailAMU),
-                    Telephone = COALESCE(:Telephone, Telephone),
-                    CodeDepartement = COALESCE(:CodeDepartement, CodeDepartement),
-                    Type = COALESCE(:Type, Type),
-                    Zone = COALESCE(:Zone, Zone),
+                    Nom                  = COALESCE(:Nom, Nom),
+                    Prenom               = COALESCE(:Prenom, Prenom),
+                    DateNaissance        = COALESCE(:DateNaissance, DateNaissance),
+                    Sexe                 = COALESCE(:Sexe, Sexe),
+                    Adresse              = COALESCE(:Adresse, Adresse),
+                    CodePostal           = COALESCE(:CodePostal, CodePostal),
+                    Ville                = COALESCE(:Ville, Ville),
+                    EmailPersonnel       = COALESCE(:EmailPersonnel, EmailPersonnel),
+                    EmailAMU             = COALESCE(:EmailAMU, EmailAMU),
+                    Telephone            = COALESCE(:Telephone, Telephone),
+                    CodeDepartement      = COALESCE(:CodeDepartement, CodeDepartement),
+                    Type                 = COALESCE(:Type, Type),
+                    Zone                 = COALESCE(:Zone, Zone),
                     PiecesJustificatives = COALESCE(:PiecesJustificatives, PiecesJustificatives),
-                    status = COALESCE(:status, status)
+                    status               = COALESCE(:status, status)
                 WHERE NumEtu = :NumEtu
             ");
             $data[':NumEtu'] = $numEtu;
@@ -284,12 +366,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         }
     }
 
-    /**
-     * Toggle the completion status of a dossier.
-     *
-     * @param string $numEtu
-     * @return bool
-     */
     public function toggleCompleteStatus(string $numEtu): bool
     {
         try {
@@ -307,17 +383,28 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         }
     }
 
+    public function toggleStatus(string $numEtu): bool
+    {
+        $pdo = Database::getInstance()->getConnection();
+        try {
+            $stmt = $pdo->prepare("SELECT IsComplete FROM dossiers WHERE NumEtu = :numetu");
+            $stmt->execute([':numetu' => $numEtu]);
+            $current = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!is_array($current)) return false;
+
+            $newStatus = (($current['IsComplete'] ?? 0) == 1) ? 0 : 1;
+            $stmt = $pdo->prepare("UPDATE dossiers SET IsComplete = :status WHERE NumEtu = :numetu");
+            return $stmt->execute([':status' => $newStatus, ':numetu' => $numEtu]);
+        } catch (\PDOException $e) {
+            error_log("Error toggling folder status: " . $e->getMessage());
+            return false;
+        }
+    }
+
     // ===========================
     // Status management
     // ===========================
 
-    /**
-     * Set the dossier status to one of: depot, instruction, or decision.
-     *
-     * @param string $numEtu
-     * @param string $status
-     * @return bool
-     */
     public function setStatus(string $numEtu, string $status): bool
     {
         $allowed = ['depot', 'instruction', 'decision'];
@@ -332,12 +419,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         }
     }
 
-    /**
-     * Cycles the dossier status in the order: depot -> instruction -> decision -> depot.
-     *
-     * @param string $numEtu
-     * @return bool
-     */
     public function cycleStatus(string $numEtu): bool
     {
         try {
@@ -346,11 +427,11 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             $current = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!is_array($current)) return false;
 
-            $statuses = ['depot', 'instruction', 'decision'];
+            $statuses     = ['depot', 'instruction', 'decision'];
             $currentStatus = strtolower(trim($current['status'] ?? 'depot'));
-            $currentIndex = array_search($currentStatus, $statuses, true);
-            $nextIndex = ($currentIndex === false || $currentIndex === count($statuses) - 1) ? 0 : $currentIndex + 1;
-            $nextStatus = $statuses[$nextIndex];
+            $currentIndex  = array_search($currentStatus, $statuses, true);
+            $nextIndex     = ($currentIndex === false || $currentIndex === count($statuses) - 1) ? 0 : $currentIndex + 1;
+            $nextStatus    = $statuses[$nextIndex];
 
             $stmt = $this->db->prepare("UPDATE dossiers SET status = :status WHERE NumEtu = :numetu");
             return $stmt->execute([':status' => $nextStatus, ':numetu' => $numEtu]);
@@ -365,16 +446,12 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     // ===========================
 
     /**
-     * Searches dossiers with filters and returns paginated results.
-     *
      * @param array<string, mixed> $filters
-     * @param int $page
-     * @param int $perPage
      * @return array{data: array<int, array<string, mixed>>, total: int, totalPages: int}
      */
     public function searchWithPagination(array $filters, int $page, int $perPage): array
     {
-        $params = [];
+        $params          = [];
         $whereConditions = " WHERE 1=1";
 
         if (isset($filters['complet']) && $filters['complet'] !== 'all') {
@@ -397,7 +474,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             $params['search4'] = $searchValue;
         }
 
-        // Count total results
         $totalCount = 0;
         try {
             $countStmt = $this->db->prepare("SELECT COUNT(*) as total FROM dossiers" . $whereConditions);
@@ -405,31 +481,30 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                 $countStmt->bindValue(':' . $key, $value);
             }
             $countStmt->execute();
-            $row = $countStmt->fetch(PDO::FETCH_ASSOC);
-            $totalCount = is_array($row) ? (int)($row['total'] ?? 0) : 0;
+            $row        = $countStmt->fetch(PDO::FETCH_ASSOC);
+            $totalCount = is_array($row) ? (int) ($row['total'] ?? 0) : 0;
         } catch (\PDOException $e) {
             error_log("searchWithPagination count Error: " . $e->getMessage());
         }
 
-        // Fetch paginated data
         $sql = "SELECT NumEtu, Nom, Prenom, EmailPersonnel as email, Telephone, Type, Zone,
                        DateNaissance, Sexe, Adresse, CodePostal, Ville, EmailAMU, CodeDepartement,
                        IsComplete, PiecesJustificatives, status
-                FROM dossiers " . $whereConditions . " ORDER BY Nom ASC, Prenom ASC LIMIT :limit OFFSET :offset";
+                FROM dossiers" . $whereConditions . " ORDER BY Nom ASC, Prenom ASC LIMIT :limit OFFSET :offset";
 
         try {
             $stmt = $this->db->prepare($sql);
             foreach ($params as $key => $value) {
                 $stmt->bindValue(':' . $key, $value);
             }
-            $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+            $stmt->bindValue(':limit',  $perPage,              PDO::PARAM_INT);
             $stmt->bindValue(':offset', ($page - 1) * $perPage, PDO::PARAM_INT);
             $stmt->execute();
 
             return [
-                'data' => $stmt->fetchAll(PDO::FETCH_ASSOC),
-                'total' => $totalCount,
-                'totalPages' => $totalCount > 0 ? (int)ceil($totalCount / $perPage) : 0
+                'data'       => $stmt->fetchAll(PDO::FETCH_ASSOC),
+                'total'      => $totalCount,
+                'totalPages' => $totalCount > 0 ? (int) ceil($totalCount / $perPage) : 0,
             ];
         } catch (\PDOException $e) {
             error_log("searchWithPagination fetch Error: " . $e->getMessage());
@@ -439,74 +514,51 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
 
     /**
      * @param array<int, array<string, mixed>> $dossiers
-     * @return int
      */
     public function upsertMultiple(array $dossiers): int
     {
         $pdo = Database::getInstance()->getConnection();
-        
         try {
             $pdo->beginTransaction();
-            
+
             $stmt = $pdo->prepare("
-                INSERT INTO dossiers (NumEtu, Nom, Prenom, EmailPersonnel, Telephone, Type, Zone, IsComplete, PiecesJustificatives) 
-                VALUES (:num, :nom, :prenom, :email, :tel, :type, :zone, 0, '{}')
+                INSERT INTO dossiers (NumEtu, Nom, Prenom, EmailPersonnel, Telephone, Type, Zone, Continent, IsComplete, PiecesJustificatives) 
+                VALUES (:num, :nom, :prenom, :email, :tel, :type, :zone, :continent, 0, '{}')
                 ON DUPLICATE KEY UPDATE 
-                    Nom = VALUES(Nom), 
-                    Prenom = VALUES(Prenom),
+                    Nom            = VALUES(Nom),
+                    Prenom         = VALUES(Prenom),
                     EmailPersonnel = VALUES(EmailPersonnel),
-                    Telephone = VALUES(Telephone),
-                    Type = VALUES(Type),
-                    Zone = VALUES(Zone)
+                    Telephone      = VALUES(Telephone),
+                    Type           = VALUES(Type),
+                    Zone           = VALUES(Zone),
+                    Continent      = VALUES(Continent)
             ");
 
             $insertedRows = 0;
-
             foreach ($dossiers as $dossier) {
+                $pays = is_string($dossier['Pays'] ?? null) ? $dossier['Pays'] : '';
+                $zone = is_string($dossier['Zone'] ?? null) ? $dossier['Zone'] : '';
                 $stmt->execute([
-                    ':num'    => $dossier['NumEtu'],
-                    ':nom'    => $dossier['Nom'],
-                    ':prenom' => $dossier['Prenom'],
-                    ':email'  => $dossier['EmailPersonnel'],
-                    ':tel'    => $dossier['Telephone'],
-                    ':type'   => $dossier['Type'],
-                    ':zone'   => $dossier['Zone']
+                    ':num'       => $dossier['NumEtu'],
+                    ':nom'       => $dossier['Nom'],
+                    ':prenom'    => $dossier['Prenom'],
+                    ':email'     => $dossier['EmailPersonnel'],
+                    ':tel'       => $dossier['Telephone'],
+                    ':type'      => $dossier['Type'],
+                    ':zone'      => $dossier['Zone'],
+                    ':continent' => $this->inferContinent($pays, $zone),
                 ]);
                 $insertedRows++;
             }
-            
+
             $pdo->commit();
             return $insertedRows;
-            
         } catch (\PDOException $e) {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
             }
             error_log("Import Error (PDO): " . $e->getMessage());
             return 0;
-        }
-    }
-
-     /**
-     * @param string $numEtu
-     * @return bool
-     */
-    public function toggleStatus(string $numEtu): bool
-    {
-        $pdo = Database::getInstance()->getConnection();
-        try {
-            $stmt = $pdo->prepare("SELECT IsComplete FROM dossiers WHERE NumEtu = :numetu");
-            $stmt->execute([':numetu' => $numEtu]);
-            $current = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if (!is_array($current)) return false;
-
-            $newStatus = (($current['IsComplete'] ?? 0) == 1) ? 0 : 1;
-            $stmt = $pdo->prepare("UPDATE dossiers SET IsComplete = :status WHERE NumEtu = :numetu");
-            return $stmt->execute([':status' => $newStatus, ':numetu' => $numEtu]);
-        } catch (\PDOException $e) {
-            error_log("Error toggling folder status: " . $e->getMessage());
-            return false;
         }
     }
 }

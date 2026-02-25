@@ -19,25 +19,38 @@ class GetAdminStatsUseCase
     public function execute(): AdminStats
     {
         $dossierStats = $this->repository->getDossierStats();
-        $genderStats = $this->repository->getGenderStats();
+        $genderStats  = $this->repository->getGenderStats();
+        $mobility     = $this->repository->getIncomingOutgoingStats();
+        $zoneStats    = $this->repository->getContinentStats();
+        $europeStats  = $this->repository->getEuropeVsNonEuropeStats();
 
-        $topCountriesData = $this->repository->getTopCountries(5);
+        // Conversion des tableaux bruts en objets
         $topCountries = array_map(
-            fn($data) => new CountryStats($data['name'], $data['count']),
-            $topCountriesData
+            fn($row) => new CountryStats(
+                is_string($row['name'])    ? $row['name']    : '',
+                is_numeric($row['count'])  ? (int) $row['count'] : 0
+            ),
+            $this->repository->getTopCountries(5)
         );
 
-        $departmentsData = $this->repository->getDepartmentStats(5);
         $departments = array_map(
-            fn($data) => new DepartmentStats($data['name'], $data['count']),
-            $departmentsData
+            fn($row) => new DepartmentStats(
+                is_string($row['name'])    ? $row['name']    : '',
+                is_numeric($row['count'])  ? (int) $row['count'] : 0
+            ),
+            $this->repository->getDepartmentStats(5)
         );
 
         return new AdminStats(
-            $dossierStats,
-            $topCountries,
-            $genderStats,
-            $departments
+            dossierStats:            $dossierStats,
+            topCountries:            $topCountries,
+            genderStats:             $genderStats,
+            departments:             $departments,
+            incomingStudents:        $mobility['incoming'],
+            outgoingStudents:        $mobility['outgoing'],
+            zoneStats:               $zoneStats,
+            europeCountriesCount:    $europeStats['europe_countries'],
+            nonEuropeCountriesCount: $europeStats['non_europe_countries'],
         );
     }
 }
