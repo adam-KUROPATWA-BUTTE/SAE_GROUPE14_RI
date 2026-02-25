@@ -34,14 +34,19 @@ class HomeControllerAdmin implements ControllerInterface
             $_SESSION['tritanopia'] = (strval($_GET['tritanopia']) === '1');
         }
 
-        // Valeurs par défaut
         $statistics = [
-            'complete_folders' => 0,
-            'incomplete_folders' => 0,
-            'total_folders' => 0,
-            'top_countries' => [],
-            'gender' => ['male' => 0, 'female' => 0],
-            'departments' => []
+            'complete_folders'           => 0,
+            'incomplete_folders'         => 0,
+            'total_folders'              => 0,
+            'top_countries'              => [],
+            'gender'                     => ['male' => 0, 'female' => 0],
+            'departments'                => [],
+            'incoming_students'          => 0,
+            'outgoing_students'          => 0,
+            'top_continents'             => [],
+            'europe_countries_count'     => 0,
+            'non_europe_countries_count' => 0,
+            'total_countries_count'      => 0,
         ];
         $completionPercentage = 0.0;
 

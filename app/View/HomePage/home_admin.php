@@ -17,7 +17,13 @@
  * male?: int,
  * female?: int
  * },
- * departments?: list<array{name: string, count: int}>
+ * departments?: list<array{name: string, count: int}>,
+ * incoming_students?: int,
+ * outgoing_students?: int,
+ * top_continents?: list<array{name: string, count: int}>,
+ * europe_countries_count?: int,
+ * non_europe_countries_count?: int,
+ * total_countries_count?: int
  * } $statistics
  */
 
@@ -102,6 +108,7 @@ ob_start();
         <div class="stats-carousel">
             <div class="carousel-container">
 
+                <!-- Slide 1 : État des dossiers -->
                 <div class="stat-slide active">
                     <h2><?= $t(['fr' => 'État des dossiers','en' => 'Folder Status']) ?></h2>
 
@@ -132,23 +139,33 @@ ob_start();
                     </div>
                 </div>
 
-                <div class="stat-slide">
-                    <h2><?= $t(['fr' => 'Pays les plus demandés','en' => 'Most Requested Countries']) ?></h2>
 
-                    <div class="stat-content ranking">
+                <!-- Slide 2 : Répartition par département -->
+                <div class="stat-slide">
+                    <h2><?= $t(['fr' => 'Répartition par département','en' => 'Distribution by Department']) ?></h2>
+
+                    <div class="stat-content departments">
                         <?php
-                        $topCountries = $statistics['top_countries'] ?? [];
-                        foreach (array_slice($topCountries, 0, 5) as $index => $country):
+                        $departments = $statistics['departments'] ?? [];
+                        $maxDept = !empty($departments)
+                            ? max(array_map(static fn($d) => (int) $d['count'], $departments))
+                            : 1;
+
+                        foreach (array_slice($departments, 0, 5) as $dept):
+                            $count = (int) $dept['count'];
+                            $barWidth = round($count / max($maxDept, 1) * 100);
                             ?>
-                            <div class="ranking-item">
-                                <span class="rank"><?= $index + 1 ?></span>
-                                <span class="country-name"><?= htmlspecialchars($country['name']) ?></span>
-                                <span class="country-count"><?= (int) $country['count'] ?></span>
+                            <div class="dept-item">
+                                <span class="dept-name"><?= htmlspecialchars($dept['name']) ?></span>
+                                <div class="dept-bar-container">
+                                    <div class="dept-bar" style="width: <?= $barWidth ?>%"></div>
+                                </div>
+                                <span class="dept-count"><?= $count ?></span>
                             </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
-
+                <!-- Slide 3 : Répartition par genre -->
                 <div class="stat-slide">
                     <h2><?= $t(['fr' => 'Répartition par genre','en' => 'Gender Distribution']) ?></h2>
 
@@ -187,27 +204,99 @@ ob_start();
                         <div class="gender-female" style="width: <?= $femalePercentage ?>%"></div>
                     </div>
                 </div>
-
+                <!-- Slide 4 : Mobilité étudiantes (entrants / sortants) -->
                 <div class="stat-slide">
-                    <h2><?= $t(['fr' => 'Répartition par département','en' => 'Distribution by Department']) ?></h2>
+                    <h2><?= $t(['fr' => 'Mobilité étudiante','en' => 'Student Mobility']) ?></h2>
 
-                    <div class="stat-content departments">
+                    <?php
+                    $incomingStudents = (int) ($statistics['incoming_students'] ?? 0);
+                    $outgoingStudents = (int) ($statistics['outgoing_students'] ?? 0);
+                    $totalMobility    = $incomingStudents + $outgoingStudents;
+                    $incomingPct      = $totalMobility > 0 ? round($incomingStudents / $totalMobility * 100) : 0;
+                    $outgoingPct      = $totalMobility > 0 ? round($outgoingStudents / $totalMobility * 100) : 0;
+                    ?>
+
+                    <div class="stat-content">
+                        <div class="stat-item incoming">
+                            <div class="stat-number"><?= $incomingStudents ?></div>
+                            <div class="stat-label"><?= $t(['fr' => 'Étudiants entrants','en' => 'Incoming students']) ?></div>
+                            <div class="stat-percentage-small"><?= $incomingPct ?>%</div>
+                        </div>
+                        <div class="stat-item outgoing">
+                            <div class="stat-number"><?= $outgoingStudents ?></div>
+                            <div class="stat-label"><?= $t(['fr' => 'Étudiants sortants','en' => 'Outgoing students']) ?></div>
+                            <div class="stat-percentage-small"><?= $outgoingPct ?>%</div>
+                        </div>
+                    </div>
+
+                    <div class="gender-bar">
+                        <div class="gender-male" style="width: <?= $incomingPct ?>%"></div>
+                        <div class="gender-female" style="width: <?= $outgoingPct ?>%"></div>
+                    </div>
+                </div>
+
+                <!-- Slide 5 : Classement par continent -->
+                <div class="stat-slide">
+                    <h2><?= $t(['fr' => 'Classement par continent','en' => 'Ranking by Continent']) ?></h2>
+
+                    <div class="stat-content ranking">
                         <?php
-                        $departments = $statistics['departments'] ?? [];
-                        $maxDept = !empty($departments)
-                            ? max(array_map(static fn($d) => (int) $d['count'], $departments))
-                            : 1;
-
-                        foreach (array_slice($departments, 0, 5) as $dept):
-                            $count = (int) $dept['count'];
-                            $barWidth = round($count / max($maxDept, 1) * 100);
+                        $topContinents = $statistics['top_continents'] ?? [];
+                        foreach (array_slice($topContinents, 0, 6) as $index => $continent):
                             ?>
-                            <div class="dept-item">
-                                <span class="dept-name"><?= htmlspecialchars($dept['name']) ?></span>
-                                <div class="dept-bar-container">
-                                    <div class="dept-bar" style="width: <?= $barWidth ?>%"></div>
-                                </div>
-                                <span class="dept-count"><?= $count ?></span>
+                            <div class="ranking-item">
+                                <span class="rank"><?= $index + 1 ?></span>
+                                <span class="country-name"><?= htmlspecialchars($continent['name']) ?></span>
+                                <span class="country-count"><?= (int) $continent['count'] ?></span>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+
+                <!-- Slide 6 : Répartition Europe / Hors Europe -->
+                <div class="stat-slide">
+                    <h2><?= $t(['fr' => 'Répartition Europe / Hors Europe','en' => 'Europe vs. Non-Europe']) ?></h2>
+
+                    <?php
+                    $europeCount    = (int) ($statistics['europe_countries_count'] ?? 0);
+                    $nonEuropeCount = (int) ($statistics['non_europe_countries_count'] ?? 0);
+                    $totalCountries = max($europeCount + $nonEuropeCount, 1);
+                    $europePct      = round($europeCount    / $totalCountries * 100);
+                    $nonEuropePct   = round($nonEuropeCount / $totalCountries * 100);
+                    ?>
+
+                    <div class="stat-content">
+                        <div class="stat-item complete">
+                            <div class="stat-number"><?= $europeCount ?></div>
+                            <div class="stat-label"><?= $t(['fr' => 'Pays européens','en' => 'European countries']) ?></div>
+                            <div class="stat-percentage-small"><?= $europePct ?>%</div>
+                        </div>
+                        <div class="stat-item incomplete">
+                            <div class="stat-number"><?= $nonEuropeCount ?></div>
+                            <div class="stat-label"><?= $t(['fr' => 'Pays hors Europe','en' => 'Non-European countries']) ?></div>
+                            <div class="stat-percentage-small"><?= $nonEuropePct ?>%</div>
+                        </div>
+                    </div>
+
+                    <div class="gender-bar">
+                        <div class="gender-male" style="width: <?= $europePct ?>%"></div>
+                        <div class="gender-female" style="width: <?= $nonEuropePct ?>%"></div>
+                    </div>
+                </div>
+                <!-- Slide 7 : Pays les plus demandés -->
+                <div class="stat-slide">
+                    <h2><?= $t(['fr' => 'Pays les plus demandés','en' => 'Most Requested Countries']) ?></h2>
+
+                    <div class="stat-content ranking">
+                        <?php
+                        $topCountries = $statistics['top_countries'] ?? [];
+                        foreach (array_slice($topCountries, 0, 5) as $index => $country):
+                            ?>
+                            <div class="ranking-item">
+                                <span class="rank"><?= $index + 1 ?></span>
+                                <span class="country-name"><?= htmlspecialchars($country['name']) ?></span>
+                                <span class="country-count"><?= (int) $country['count'] ?></span>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -215,11 +304,15 @@ ob_start();
 
             </div>
 
+
             <div class="carousel-dots">
                 <span class="dot active" onclick="window.carousel.goToSlide(0)"></span>
                 <span class="dot" onclick="window.carousel.goToSlide(1)"></span>
                 <span class="dot" onclick="window.carousel.goToSlide(2)"></span>
                 <span class="dot" onclick="window.carousel.goToSlide(3)"></span>
+                <span class="dot" onclick="window.carousel.goToSlide(4)"></span>
+                <span class="dot" onclick="window.carousel.goToSlide(5)"></span>
+                <span class="dot" onclick="window.carousel.goToSlide(6)"></span>
             </div>
         </div>
     </section>
