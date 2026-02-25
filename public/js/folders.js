@@ -265,6 +265,83 @@ class FolderManager {
 
         window.location.href = url.toString();
     }
+
+    /**
+     * Envoie la validation d'une pièce précise au serveur sans recharger la page
+     */
+    async confirmDocument(numEtu, docType) {
+        const container = document.querySelector(`.doc-review-item[data-doctype="${docType}"]`);
+        if (!container) return;
+
+        const status = container.querySelector(`input[name="status_${docType}"]:checked`)?.value || 'accepted';
+        const comment = container.querySelector(`textarea[name="comment_${docType}"]`).value;
+        const indicator = container.querySelector(`#indicator_${docType}`);
+        const btn = container.querySelector('.btn-confirm-doc');
+
+        btn.disabled = true;
+        indicator.textContent = "Sauvegarde en cours...";
+        indicator.style.color = "orange";
+
+        const formData = new FormData();
+        formData.append('numetu', numEtu);
+        formData.append('doc_type', docType);
+        formData.append('status', status);
+        formData.append('comment', comment);
+
+        try {
+            const response = await fetch('index.php?page=update_document_status', { method: 'POST', body: formData });
+            const result = await response.json();
+            
+            if (result.success) {
+                indicator.textContent = "Enregistré";
+                indicator.style.color = "green";
+            } else {
+                indicator.textContent = "Erreur serveur";
+                indicator.style.color = "red";
+            }
+        } catch (error) {
+            indicator.textContent = "Erreur de réseau";
+            indicator.style.color = "red";
+        }
+
+        setTimeout(() => { indicator.textContent = ""; btn.disabled = false; }, 3000);
+    }
+
+    /**
+     * NOUVEAU : Met à jour le statut global du dossier via AJAX
+     */
+    async updateGlobalStatus(numEtu) {
+        const statusSelect = document.getElementById('global_status_select');
+        const indicator = document.getElementById('global_status_indicator');
+        if (!statusSelect) return;
+
+        const newStatus = statusSelect.value;
+        
+        indicator.textContent = "Sauvegarde en cours...";
+        indicator.style.color = "orange";
+
+        const formData = new FormData();
+        formData.append('numetu', numEtu);
+        formData.append('status', newStatus);
+
+        try {
+            const response = await fetch('index.php?page=update_global_status', { method: 'POST', body: formData });
+            const result = await response.json();
+            
+            if (result.success) {
+                indicator.textContent = "Statut mis à jour";
+                indicator.style.color = "green";
+            } else {
+                indicator.textContent = "Erreur";
+                indicator.style.color = "red";
+            }
+        } catch (error) {
+            indicator.textContent = "Erreur réseau";
+            indicator.style.color = "red";
+        }
+
+        setTimeout(() => { indicator.textContent = ""; }, 3000);
+    }
 }
 
 // Instantiate globally

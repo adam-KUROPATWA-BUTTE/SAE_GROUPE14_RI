@@ -191,8 +191,9 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
 
     public function setStatus(string $numEtu, string $status): bool
     {
-        $allowed = ['depot', 'instruction', 'decision'];
+        $allowed = ['depot', 'instruction', 'accepte', 'refuse'];
         if (!in_array($status, $allowed, true)) return false;
+        
         try {
             $stmt = $this->db->prepare("UPDATE dossiers SET status = :status WHERE NumEtu = :numetu");
             return $stmt->execute([':status' => $status, ':numetu' => $numEtu]);
@@ -200,7 +201,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             return false; 
         }
     }
-
+    
     public function cycleStatus(string $numEtu): bool
     {
         try {
@@ -209,7 +210,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             $current = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!is_array($current)) return false;
 
-            $statuses = ['depot', 'instruction', 'decision'];
+            $statuses = ['depot', 'instruction', 'accepte', 'refuse'];
             $currentStatus = strtolower(trim($current['status'] ?? 'depot'));
             $currentIndex = array_search($currentStatus, $statuses, true);
             $nextIndex = ($currentIndex === false || $currentIndex === count($statuses) - 1) ? 0 : $currentIndex + 1;

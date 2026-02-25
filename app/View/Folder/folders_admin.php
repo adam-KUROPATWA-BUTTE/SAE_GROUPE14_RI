@@ -168,9 +168,9 @@ ob_start();
             <?php
             $pieces = (isset($studentData['pieces']) && is_array($studentData['pieces'])) ? $studentData['pieces'] : [];
             $detectedType = '';
-            if (!empty($pieces['convention'])) {
+            if (!empty($pieces['convention']['file'])) {
                 $detectedType = 'stage';
-            } elseif (!empty($pieces['lettre_motivation'])) {
+            } elseif (!empty($pieces['lettre_motivation']['file'])) {
                 $detectedType = 'etudes';
             }
             $numEtu = htmlspecialchars(strval($studentData['NumEtu'] ?? ''));
@@ -280,94 +280,82 @@ ob_start();
                     </select>
                 </div>
 
-                <div class="form-section documents-section">
-                    <h2><?= $t(['fr' => 'Pièces Justificatives','en' => 'Supporting Documents']) ?></h2>
+                <div class="form-section documents-section" style="grid-column: 1 / -1;">
+                    <h2><?= $t(['fr' => 'Revue des Pièces Justificatives', 'en' => 'Documents Review']) ?></h2>
                     
-                    <div class="document-block">
-                        <label><?= $t(['fr' => 'Photo','en' => 'Photo']) ?></label>
-                        <?php if (!empty($pieces['photo'])) : ?>
-                            <div class="document-preview">
-                                <img src="data:image/jpeg;base64,<?= strval($pieces['photo']) ?>" alt="Photo" class="photo-preview"><br>
-                                <a href="data:image/jpeg;base64,<?= strval($pieces['photo']) ?>" download="photo_<?= $numEtu ?>.jpg" class="btn-download">
-                                    <?= $t(['fr' => 'Télécharger','en' => 'Download']) ?>
-                                </a>
+                    <div class="doc-review-list">
+                        <?php 
+                        $docTypes = [
+                            'photo' => $t(['fr' => 'Photo', 'en' => 'Photo']),
+                            'cv' => $t(['fr' => 'CV', 'en' => 'CV']),
+                            'convention' => $t(['fr' => 'Convention de stage', 'en' => 'Internship Agreement']),
+                            'lettre_motivation' => $t(['fr' => 'Lettre de motivation', 'en' => 'Motivation Letter']),
+                            'langues' => $t(['fr' => 'Attestation de langues', 'en' => 'Language Certificate'])
+                        ];
+                        
+                        foreach ($docTypes as $key => $label) :
+                            $doc = $pieces[$key] ?? null;
+                            $hasDoc = !empty($doc['file']);
+                            $status = $doc['status'] ?? 'pending';
+                            $comment = $doc['comment'] ?? '';
+                        ?>
+                        <div class="doc-review-item" data-doctype="<?= $key ?>">
+                            <div class="doc-info">
+                                <h4><?= $label ?></h4>
+                                <?php if ($hasDoc): ?>
+                                    <a href="data:application/octet-stream;base64,<?= strval($doc['file']) ?>" download="<?= $key ?>_<?= $numEtu ?>" class="btn-download">
+                                        <?= $t(['fr' => 'Télécharger le fichier', 'en' => 'Download file']) ?>
+                                    </a>
+                                <?php else: ?>
+                                    <span class="no-document"><?= $t(['fr' => 'Non fourni', 'en' => 'Not provided']) ?></span>
+                                <?php endif; ?>
+                                
+                                <br><br>
+                                <label style="font-size: 0.85em; text-align:left; color:#666;">
+                                    <?= $t(['fr' => 'Mettre à jour le fichier (Optionnel) :', 'en' => 'Update file (Optional):']) ?>
+                                </label>
+                                <input type="file" name="<?= $key === 'langues' ? 'langues_file' : $key ?>" accept="<?= $key === 'photo' ? 'image/*' : '.pdf,.doc,.docx' ?>" disabled class="input-disabled file-input-margin" style="margin-top: 5px;">
                             </div>
-                        <?php else : ?>
-                            <p class="no-document"><?= $t(['fr' => 'Aucune photo disponible','en' => 'No photo available']) ?></p>
-                        <?php endif; ?>
-                        <input type="file" name="photo" id="photo" accept="image/*" disabled class="input-disabled file-input-margin">
-                    </div>
-
-                    <div class="document-block">
-                        <label><?= $t(['fr' => 'CV','en' => 'CV']) ?></label>
-                        <?php if (!empty($pieces['cv'])) : ?>
-                            <div class="document-preview">
-                                <p class="document-available"><?= $t(['fr' => 'CV disponible','en' => 'CV available']) ?></p>
-                                <a href="data:application/pdf;base64,<?= strval($pieces['cv']) ?>" download="cv_<?= $numEtu ?>.pdf" class="btn-download">
-                                    <?= $t(['fr' => 'Télécharger le CV','en' => 'Download CV']) ?>
-                                </a>
+                            
+                            <div class="doc-actions <?= !$hasDoc ? 'disabled-area' : '' ?>">
+                                <div class="status-radios">
+                                    <label class="radio-accept">
+                                        <input type="radio" name="status_<?= $key ?>" value="accepted" <?= ($status === 'accepted' || $status === 'pending') ? 'checked' : '' ?> <?= !$hasDoc ? 'disabled' : '' ?>> 
+                                        <?= $t(['fr' => 'Accepter', 'en' => 'Accept']) ?>
+                                    </label>
+                                    <label class="radio-refuse">
+                                        <input type="radio" name="status_<?= $key ?>" value="refused" <?= $status === 'refused' ? 'checked' : '' ?> <?= !$hasDoc ? 'disabled' : '' ?>> 
+                                        <?= $t(['fr' => 'Refuser', 'en' => 'Refuse']) ?>
+                                    </label>
+                                </div>
+                                <textarea name="comment_<?= $key ?>" placeholder="<?= $t(['fr' => 'Ajouter un commentaire pour l\'étudiant...', 'en' => 'Add a comment for the student...']) ?>" <?= !$hasDoc ? 'disabled' : '' ?>><?= htmlspecialchars($comment) ?></textarea>
+                                
+                                <div style="display: flex; align-items: center; margin-top: 5px;">
+                                    <button type="button" class="btn-confirm-doc" onclick="window.folderManager.confirmDocument('<?= $numEtu ?>', '<?= $key ?>')" <?= !$hasDoc ? 'disabled' : '' ?>>
+                                        <?= $t(['fr' => 'Confirmer la pièce', 'en' => 'Confirm Document']) ?>
+                                    </button>
+                                    <span class="doc-save-indicator" id="indicator_<?= $key ?>"></span>
+                                </div>
                             </div>
-                        <?php else : ?>
-                            <p class="no-document"><?= $t(['fr' => 'Aucun CV disponible','en' => 'No CV available']) ?></p>
-                        <?php endif; ?>
-                        <input type="file" name="cv" id="cv" accept=".pdf,.doc,.docx" disabled class="input-disabled file-input-margin">
+                        </div>
+                        <?php endforeach; ?>
                     </div>
+                </div>
 
-                    <div id="justificatif_convention" class="document-block">
-                        <label><?= $t(['fr' => 'Convention de stage','en' => 'Internship Agreement']) ?></label>
-                        <?php if (!empty($pieces['convention'])) : ?>
-                            <div class="document-preview">
-                                <p class="document-available"><?= $t(['fr' => 'Convention disponible','en' => 'Agreement available']) ?></p>
-                                <a href="data:application/pdf;base64,<?= strval($pieces['convention']) ?>" download="convention_<?= $numEtu ?>.pdf" class="btn-download">
-                                    <?= $t(['fr' => 'Télécharger','en' => 'Download']) ?>
-                                </a>
-                            </div>
-                        <?php else : ?>
-                            <p class="no-document"><?= $t(['fr' => 'Aucune convention disponible','en' => 'No agreement available']) ?></p>
-                        <?php endif; ?>
-                        <input type="file" name="convention" id="convention" accept=".pdf,.doc,.docx" disabled class="input-disabled file-input-margin">
-                    </div>
-
-                    <div id="lettre_motivation" class="document-block">
-                        <label><?= $t(['fr' => 'Lettre de motivation','en' => 'Motivation Letter']) ?></label>
-                        <?php if (!empty($pieces['lettre_motivation'])) : ?>
-                            <div class="document-preview">
-                                <p class="document-available"><?= $t(['fr' => 'Lettre disponible','en' => 'Letter available']) ?></p>
-                                <a href="data:application/pdf;base64,<?= strval($pieces['lettre_motivation']) ?>" download="lettre_<?= $numEtu ?>.pdf" class="btn-download">
-                                    <?= $t(['fr' => 'Télécharger','en' => 'Download']) ?>
-                                </a>
-                            </div>
-                        <?php else : ?>
-                            <p class="no-document"><?= $t(['fr' => 'Aucune lettre disponible','en' => 'No letter available']) ?></p>
-                        <?php endif; ?>
-                        <input type="file" name="lettre_motivation" id="lettre_motivation_file" accept=".pdf,.doc,.docx" disabled class="input-disabled file-input-margin">
-                    </div>
-
-                    <div id="justificatif_langues" class="document-block">
-                        <label><?= $t(['fr' => 'Attestation de langues', 'en' => 'Language Certificate']) ?></label>
-                        <?php if (!empty($pieces['langues'])) : ?>
-                            <div class="document-preview">
-                                <p class="document-available"><?= $t(['fr' => 'Fichier disponible','en' => 'File available']) ?></p>
-                                <a href="data:application/pdf;base64,<?= strval($pieces['langues']) ?>" download="langues_<?= $numEtu ?>.pdf" class="btn-download">
-                                    <?= $t(['fr' => 'Télécharger','en' => 'Download']) ?>
-                                </a>
-                            </div>
-                        <?php else : ?>
-                            <p class="no-document"><?= $t(['fr' => 'Aucune attestation disponible','en' => 'No certificate available']) ?></p>
-                        <?php endif; ?>
-                        <input type="file" name="langues_file" accept=".pdf,.doc,.docx,.jpg,.png" disabled class="input-disabled file-input-margin">
-                    </div>
-
-                    <?php $isComplete = intval($studentData['IsComplete'] ?? 0); ?>
-                    <div class="status-block status-<?= $isComplete ? 'complete' : 'incomplete' ?>">
-                        <strong><?= $t(['fr' => 'Statut du dossier :','en' => 'Folder status:']) ?></strong>
-                        <span class="status-text-<?= $isComplete ? 'complete' : 'incomplete' ?>">
-                            <?= $isComplete ? $t(['fr' => 'Complet','en' => 'Complete']) : $t(['fr' => 'Incomplet','en' => 'Incomplete']) ?>
-                        </span>
-                        <br><br>
-                        <button type="button" onclick="window.location.href='index.php?page=toggle_complete&numetu=<?= urlencode($numEtu) ?>&lang=<?= htmlspecialchars($lang) ?>'" class="btn-secondary btn-toggle-status">
-                            <?= $isComplete ? $t(['fr' => 'Marquer comme incomplet','en' => 'Mark as incomplete']) : $t(['fr' => 'Marquer comme complet','en' => 'Mark as complete']) ?>
+                <?php $currentStatus = $studentData['status'] ?? 'depot'; ?>
+                <div class="global-status-block" style="margin-top: 30px; margin-bottom: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 5px solid var(--primary-color);">
+                    <strong style="font-size: 1.1em;"><?= $t(['fr' => 'Statut GLOBAL du dossier :', 'en' => 'GLOBAL Folder status:']) ?></strong>
+                    <div style="display: flex; gap: 15px; align-items: center; margin-top: 15px;">
+                        <select id="global_status_select" class="form-control" style="width: auto; padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                            <option value="depot" <?= $currentStatus === 'depot' ? 'selected' : '' ?>><?= $t(['fr' => 'Dépôt', 'en' => 'Submitted']) ?></option>
+                            <option value="instruction" <?= $currentStatus === 'instruction' ? 'selected' : '' ?>><?= $t(['fr' => 'En instruction', 'en' => 'Under Review']) ?></option>
+                            <option value="accepte" <?= $currentStatus === 'accepte' ? 'selected' : '' ?>><?= $t(['fr' => 'Accepté', 'en' => 'Accepted']) ?></option>
+                            <option value="refuse" <?= $currentStatus === 'refuse' ? 'selected' : '' ?>><?= $t(['fr' => 'Refusé', 'en' => 'Refused']) ?></option>
+                        </select>
+                        <button type="button" class="btn-primary" onclick="window.folderManager.updateGlobalStatus('<?= $numEtu ?>')">
+                            <?= $t(['fr' => 'Mettre à jour le statut', 'en' => 'Update Status']) ?>
                         </button>
+                        <span id="global_status_indicator" style="font-weight: bold; margin-left: 10px;"></span>
                     </div>
                 </div>
 
@@ -479,8 +467,6 @@ ob_start();
         <p class="results-count"><?= $totalCount ?> <?= $t(['fr' => 'étudiant(s) trouvé(s)','en' => 'student(s) found']) ?></p>
 
         <?php
-            // On regroupe les données selon la valeur de 'Composante'
-            // NOTE : Pour que la pagination JS fonctionne idéalement, assure-toi que $paginatedData contient bien *tous* les étudiants sans LIMIT
             $groupedData = [];
             foreach ($paginatedData as $etudiant) {
                 $comp = strval($etudiant['Composante'] ?? '');
@@ -521,9 +507,9 @@ ob_start();
                                     $pieces = is_array($decoded) ? $decoded : [];
 
                                     $mobilityType = '-';
-                                    if (!empty($pieces['convention'])) {
+                                    if (!empty($pieces['convention']['file'])) {
                                         $mobilityType = $t(['fr' => 'Stage', 'en' => 'Internship']);
-                                    } elseif (!empty($pieces['lettre_motivation'])) {
+                                    } elseif (!empty($pieces['lettre_motivation']['file'])) {
                                         $mobilityType = $t(['fr' => 'Études', 'en' => 'Studies']);
                                     }
 
@@ -533,7 +519,8 @@ ob_start();
                                     $type = strval($etudiant['Type'] ?? '');
                                     $composante = strval($etudiant['Composante'] ?? '-'); 
                                     $departement = strval($etudiant['CodeDepartement'] ?? '-');
-                                    $isComplete = intval($etudiant['IsComplete'] ?? 0);
+                                    // Utilisation du nouveau statut au lieu de IsComplete pour l'affichage de la liste
+                                    $statusDossier = strval($etudiant['status'] ?? 'depot');
                                     ?>
                                     <tr class="clickable-row" data-numetu="<?= htmlspecialchars($numEtu) ?>">
                                         <td><?= htmlspecialchars($nom) ?></td>
@@ -543,21 +530,22 @@ ob_start();
                                         <td><?= htmlspecialchars($departement ?: '-') ?></td>
                                         <td><?= htmlspecialchars($mobilityType) ?></td>
                                         <td>
-                                            <?= $isComplete === 1
-                                                ? '<span class="status-complete">Complet</span>'
-                                                : '<span class="status-incomplete">Incomplet</span>' ?>
+                                            <?php 
+                                            if ($statusDossier === 'accepte') echo '<span class="status-complete" style="color: green;">Accepté</span>';
+                                            elseif ($statusDossier === 'refuse') echo '<span class="status-incomplete" style="color: red;">Refusé</span>';
+                                            elseif ($statusDossier === 'instruction') echo '<span class="status-incomplete" style="color: orange;">En instruction</span>';
+                                            else echo '<span class="status-incomplete" style="color: grey;">Dépôt</span>';
+                                            ?>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
-                        
                         <div class="pagination accordion-pagination"></div>
                     </div>
                 </div>
             <?php endforeach; ?>
         </div>
-        
     <?php endif; ?>
 
 <?php

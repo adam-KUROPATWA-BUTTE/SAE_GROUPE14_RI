@@ -18,30 +18,31 @@ class ManageFolderUseCase
         $this->dossierRepo = new DossierRepositoryPDO();
     }
 
-    /**
-     * Retrieves all folders.
-     */
     public function getAllFolders(): array
     {
         return $this->dossierRepo->findAll();
     }
 
-    /**
-     * Retrieves details for a specific student folder.
-     */
     public function getStudentDetails(string $numetu): ?array
     {
         $result = $this->dossierRepo->findByNumEtu($numetu);
-
-        if (!$result) {
-            return null;
-        }
+        if (!$result) return null;
 
         $piecesJson = $result['PiecesJustificatives'] ?? '';
-        $result['pieces'] = (is_string($piecesJson) && $piecesJson !== '')
-            ? (json_decode($piecesJson, true) ?? [])
-            : [];
+        $pieces = (is_string($piecesJson) && $piecesJson !== '') ? (json_decode($piecesJson, true) ?? []) : [];
+        
+        // COMPATIBILITÉ : Transforme l'ancien format simple (base64) vers le nouveau format structuré
+        foreach ($pieces as $key => $val) {
+            if (is_string($val)) {
+                $pieces[$key] = [
+                    'file' => $val,
+                    'status' => 'pending',
+                    'comment' => ''
+                ];
+            }
+        }
             
+        $result['pieces'] = $pieces;
         return $result;
     }
 
@@ -55,33 +56,50 @@ class ManageFolderUseCase
         return $this->dossierRepo->toggleStatus($numetu);
     }
 
-    /**
-     * Searches for folders using filters, with pagination.
-     */
     public function rechercherAvecPagination(array $filters, int $page = 1, int $perPage = 10): array
     {
         return $this->dossierRepo->searchWithPagination($filters, $page, $perPage);
     }
 
-    /**
-     * Searches for folders using filters, without pagination (returns all matching records).
-     * Used for client-side pagination (e.g., accordions).
-     */
     public function searchWithoutPagination(array $filters): array
     {
         return $this->dossierRepo->searchWithPagination($filters, 1, 0);
     }
 
-    /**
-     * Creates a new student folder.
-     */
-    public function creerDossier(array $data, ?string $photoData = null, ?string $cvData = null, ?string $conventionData = null, ?string $lettreData = null, ?string $languesData = null): bool
+    // NOUVELLE MÉTHODE : Met à jour le statut et commentaire d'une pièce précise
+    public function updateDocumentStatus(string $numEtu, string $docType, string $status, string $comment): bool
     {
-        $photoData = $photoData ?? (is_string($data['photo'] ?? null) ? $data['photo'] : null);
-        $cvData = $cvData ?? (is_string($data['cv'] ?? null) ? $data['cv'] : null);
-        $conventionData = $conventionData ?? (is_string($data['convention'] ?? null) ? $data['convention'] : null);
-        $lettreData = $lettreData ?? (is_string($data['lettre_motivation'] ?? null) ? $data['lettre_motivation'] : null);
-        $languesData = $languesData ?? (is_string($data['langues_file'] ?? null) ? $data['langues_file'] : null);
+        $dossier = $this->getStudentDetails($numEtu);
+        if (!$dossier) return false;
+        
+        $pieces = $dossier['pieces'] ?? [];
+        
+        if (!isset($pieces[$docType])) {
+            $pieces[$docType] = ['file' => '', 'status' => $status, 'comment' => $comment];
+        } else {
+            $pieces[$docType]['status'] = $status;
+            $pieces[$docType]['comment'] = $comment;
+        }
+        
+        return $this->dossierRepo->update($numEtu, [
+            ':PiecesJustificatives' => json_encode($pieces)
+        ]);
+    }
+
+    public function creerDossier(array $data): bool
+    {
+        $pieces = [];
+        $addPiece = function(?string $fileData) {
+            return $fileData !== null ? ['file' => base64_encode($fileData), 'status' => 'pending', 'comment' => ''] : null;
+        };
+
+        if (!empty($data['photo'])) $pieces['photo'] = $addPiece($data['photo']);
+        if (!empty($data['cv'])) $pieces['cv'] = $addPiece($data['cv']);
+        if (!empty($data['convention'])) $pieces['convention'] = $addPiece($data['convention']);
+        if (!empty($data['lettre_motivation'])) $pieces['lettre_motivation'] = $addPiece($data['lettre_motivation']);
+        if (!empty($data['langues_file'])) $pieces['langues'] = $addPiece($data['langues_file']);
+
+        $piecesJson = empty($pieces) ? '{}' : json_encode($pieces);
 
         $rawDate = $data['naissance'] ?? ($data['DateNaissance'] ?? null);
         $dateNaissance = null;
@@ -89,15 +107,6 @@ class ManageFolderUseCase
             $date = \DateTime::createFromFormat('Y-m-d', $rawDate);
             $dateNaissance = ($date && $date->format('Y-m-d') === $rawDate) ? $rawDate : null;
         }
-
-        $pieces = [];
-        if ($photoData !== null) $pieces['photo'] = base64_encode($photoData);
-        if ($cvData !== null) $pieces['cv'] = base64_encode($cvData);
-        if ($conventionData !== null) $pieces['convention'] = base64_encode($conventionData);
-        if ($lettreData !== null) $pieces['lettre_motivation'] = base64_encode($lettreData);
-        if ($languesData !== null) $pieces['langues'] = base64_encode($languesData);
-
-        $piecesJson = empty($pieces) ? '{}' : json_encode($pieces);
 
         $formattedData = [
             'NumEtu' => $data['numetu'] ?? ($data['NumEtu'] ?? null),
@@ -136,10 +145,7 @@ class ManageFolderUseCase
         return $this->dossierRepo->create($formattedData);
     }
 
-    /**
-     * Updates an existing student folder.
-     */
-    public function updateDossier(array $data, ?string $photoData = null, ?string $cvData = null, ?string $conventionData = null, ?string $lettreData = null, ?string $languesData = null): bool
+    public function updateDossier(array $data): bool
     {
         $numEtu = strval($data['numetu'] ?? ($data['NumEtu'] ?? ''));
         if ($numEtu === '') return false;
@@ -149,17 +155,22 @@ class ManageFolderUseCase
         
         $oldPieces = isset($existing['pieces']) && is_array($existing['pieces']) ? $existing['pieces'] : [];
 
-        $photoData = $photoData ?? (is_string($data['photo'] ?? null) ? $data['photo'] : null);
-        $cvData = $cvData ?? (is_string($data['cv'] ?? null) ? $data['cv'] : null);
-        $conventionData = $conventionData ?? (is_string($data['convention'] ?? null) ? $data['convention'] : null);
-        $lettreData = $lettreData ?? (is_string($data['lettre_motivation'] ?? null) ? $data['lettre_motivation'] : null);
-        $languesData = $languesData ?? (is_string($data['langues_file'] ?? null) ? $data['langues_file'] : null);
+        // Si on upload un nouveau fichier, on réinitialise son statut à 'pending'
+        $updatePiece = function(array &$arr, string $key, ?string $fileData) {
+            if (!empty($fileData)) {
+                $arr[$key] = [
+                    'file' => base64_encode($fileData),
+                    'status' => 'pending',
+                    'comment' => ''
+                ];
+            }
+        };
 
-        if (!empty($photoData)) $oldPieces['photo'] = base64_encode($photoData);
-        if (!empty($cvData)) $oldPieces['cv'] = base64_encode($cvData);
-        if (!empty($conventionData)) $oldPieces['convention'] = base64_encode($conventionData);
-        if (!empty($lettreData)) $oldPieces['lettre_motivation'] = base64_encode($lettreData);
-        if (!empty($languesData)) $oldPieces['langues'] = base64_encode($languesData);
+        $updatePiece($oldPieces, 'photo', $data['photo'] ?? null);
+        $updatePiece($oldPieces, 'cv', $data['cv'] ?? null);
+        $updatePiece($oldPieces, 'convention', $data['convention'] ?? null);
+        $updatePiece($oldPieces, 'lettre_motivation', $data['lettre_motivation'] ?? null);
+        $updatePiece($oldPieces, 'langues', $data['langues_file'] ?? null);
 
         $piecesJson = empty($oldPieces) ? '{}' : json_encode($oldPieces);
 
@@ -202,11 +213,9 @@ class ManageFolderUseCase
         return $this->dossierRepo->update($numEtu, $formattedData);
     }
 
-    /**
-     * Imports folders from a CSV or Excel file.
-     */
     public function importFoldersFromCSV(string $filePath): bool
     {
+        // (Méthode importFoldersFromCSV inchangée par rapport à tout à l'heure)
         try {
             $spreadsheet = IOFactory::load($filePath);
             $worksheet = $spreadsheet->getActiveSheet();
@@ -214,36 +223,20 @@ class ManageFolderUseCase
             
             if (empty($rows) || count($rows) < 2) return false;
 
-            $headers = array_map(function($val) {
-                return strtolower(trim(strval($val)));
-            }, array_shift($rows));
-            
-            // Map keywords to standard column names
+            $headers = array_map(function($val) { return strtolower(trim(strval($val))); }, array_shift($rows));
             $keywords = [
-                'NumEtu'             => ['identifiant', 'numetu', 'etudiant', 'individu', 'formulaire en ligne'],
-                'Candidat'           => ['candidat', 'nom'],
-                'Prenom'             => ['prénom', 'prenom'],
-                'DateNaissance'      => ['naissance', 'birth'],
-                'Sexe'               => ['sexe', 'genre'],
-                'Adresse'            => ['adresse', 'address', 'rue'],
-                'CodePostal'         => ['postal', 'cp', 'zip'],
-                'Ville'              => ['ville', 'city', 'commune'],
-                'EmailPersonnel'     => ['email', 'courriel', 'mail'],
-                'EmailAMU'           => ['amu', 'institutionnel'],
-                'Telephone'          => ['phone', 'téléphone', 'telephone', 'mobile', 'tel'],
-                'CodeDepartement'    => ['département', 'departement', 'filière'], 
-                'Composante'         => ['composante', 'faculté', 'institut'], 
-                'Type'               => ['type', 'mobilité'],
-                'Zone'               => ['zone'],
-                'Pays'               => ['pays', 'country'],
-                'Campus'             => ['campus'],
-                'Discipline'         => ['discipline'],
-                'NiveauEtude'        => ['niveau'],
-                'Formation'          => ['formation'],
-                'MoyenneBac'         => ['moyenne bac', 'baccalauréat'],
-                'MoyenneSansBac'     => ['moyenne sans bac', 'moyenne hors', 'moyenne universitaire'],
-                'AvisDRI'            => ['avis dri', 'avis'],
-                'DateDebut'          => ['période de', 'début', 'date de début'],
+                'NumEtu' => ['identifiant', 'numetu', 'etudiant', 'individu', 'formulaire en ligne'],
+                'Candidat' => ['candidat', 'nom'], 'Prenom' => ['prénom', 'prenom'],
+                'DateNaissance' => ['naissance', 'birth'], 'Sexe' => ['sexe', 'genre'],
+                'Adresse' => ['adresse', 'address', 'rue'], 'CodePostal' => ['postal', 'cp', 'zip'],
+                'Ville' => ['ville', 'city', 'commune'], 'EmailPersonnel' => ['email', 'courriel', 'mail'],
+                'EmailAMU' => ['amu', 'institutionnel'], 'Telephone' => ['phone', 'téléphone', 'telephone', 'mobile', 'tel'],
+                'CodeDepartement' => ['département', 'departement', 'filière'], 'Composante' => ['composante', 'faculté', 'institut'], 
+                'Type' => ['type', 'mobilité'], 'Zone' => ['zone'], 'Pays' => ['pays', 'country'],
+                'Campus' => ['campus'], 'Discipline' => ['discipline'], 'NiveauEtude' => ['niveau'],
+                'Formation' => ['formation'], 'MoyenneBac' => ['moyenne bac', 'baccalauréat'],
+                'MoyenneSansBac' => ['moyenne sans bac', 'moyenne hors', 'moyenne universitaire'],
+                'AvisDRI' => ['avis dri', 'avis'], 'DateDebut' => ['période de', 'début', 'date de début'],
                 'MobiliteAnterieure' => ['ayant déjà effect', 'mobilité antérieure']
             ];
 
@@ -266,7 +259,6 @@ class ManageFolderUseCase
             };
 
             $dossiersToInsert = [];
-
             foreach ($rows as $data) {
                 if (!is_array($data)) continue;
 
@@ -300,47 +292,32 @@ class ManageFolderUseCase
                 }
 
                 $dossiersToInsert[] = [
-                    'NumEtu'             => $numEtu,
-                    'Nom'                => $nom,
-                    'Prenom'             => $prenom,
-                    'DateNaissance'      => $dateNaissance,
-                    'Sexe'               => $getVal('Sexe'),
-                    'Adresse'            => $getVal('Adresse'),
-                    'CodePostal'         => $getVal('CodePostal'),
-                    'Ville'              => $getVal('Ville'),
-                    'EmailPersonnel'     => $getVal('EmailPersonnel'),
-                    'EmailAMU'           => $getVal('EmailAMU'),
-                    'Telephone'          => $getVal('Telephone'),
-                    'CodeDepartement'    => $getVal('CodeDepartement'),
-                    'Composante'         => $getVal('Composante'),
-                    'Type'               => $getVal('Type') ?: 'sortant',
-                    'Zone'               => $getVal('Zone') ?: 'europe',
-                    'Pays'               => $getVal('Pays'),
-                    'Campus'             => $getVal('Campus'),
-                    'Discipline'         => $getVal('Discipline'),
-                    'NiveauEtude'        => $getVal('NiveauEtude'),
-                    'Formation'          => $getVal('Formation'),
-                    'MoyenneBac'         => $getVal('MoyenneBac'),
-                    'MoyenneSansBac'     => $getVal('MoyenneSansBac'),
-                    'AvisDRI'            => $getVal('AvisDRI'),
-                    'DateDebut'          => $getVal('DateDebut'),
+                    'NumEtu' => $numEtu, 'Nom' => $nom, 'Prenom' => $prenom, 'DateNaissance' => $dateNaissance,
+                    'Sexe' => $getVal('Sexe'), 'Adresse' => $getVal('Adresse'), 'CodePostal' => $getVal('CodePostal'),
+                    'Ville' => $getVal('Ville'), 'EmailPersonnel' => $getVal('EmailPersonnel'), 'EmailAMU' => $getVal('EmailAMU'),
+                    'Telephone' => $getVal('Telephone'), 'CodeDepartement' => $getVal('CodeDepartement'),
+                    'Composante' => $getVal('Composante'), 'Type' => $getVal('Type') ?: 'sortant',
+                    'Zone' => $getVal('Zone') ?: 'europe', 'Pays' => $getVal('Pays'),
+                    'Campus' => $getVal('Campus'), 'Discipline' => $getVal('Discipline'),
+                    'NiveauEtude' => $getVal('NiveauEtude'), 'Formation' => $getVal('Formation'),
+                    'MoyenneBac' => $getVal('MoyenneBac'), 'MoyenneSansBac' => $getVal('MoyenneSansBac'),
+                    'AvisDRI' => $getVal('AvisDRI'), 'DateDebut' => $getVal('DateDebut'),
                     'MobiliteAnterieure' => $getVal('MobiliteAnterieure')
                 ];
             }
 
-            if (!empty($dossiersToInsert)) {
-                return $this->dossierRepo->upsertMultiple($dossiersToInsert) > 0;
-            }
+            if (!empty($dossiersToInsert)) return $this->dossierRepo->upsertMultiple($dossiersToInsert) > 0;
             return false;
-            
-        } catch (\Exception $e) {
-            error_log("Import Error (PhpSpreadsheet/UseCase): " . $e->getMessage());
-            return false;
-        }
+        } catch (\Exception $e) { return false; }
     }
     
     public function cycleFolderStatus(string $numEtu): bool
     {
         return $this->dossierRepo->cycleStatus($numEtu);
+    }
+
+    public function setFolderStatus(string $numEtu, string $status): bool
+    {
+        return $this->dossierRepo->setStatus($numEtu, $status);
     }
 }
