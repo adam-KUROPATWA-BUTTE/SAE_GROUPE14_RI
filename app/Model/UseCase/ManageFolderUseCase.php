@@ -6,6 +6,9 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use Model\Repository\DossierRepositoryInterface;
 use Model\Persistence\DossierRepositoryPDO;
  
+/**
+ * Use Case handling business logic for student folders.
+ */
 class ManageFolderUseCase
 {
     private DossierRepositoryInterface $dossierRepo;
@@ -15,11 +18,17 @@ class ManageFolderUseCase
         $this->dossierRepo = new DossierRepositoryPDO();
     }
 
+    /**
+     * Retrieves all folders.
+     */
     public function getAllFolders(): array
     {
         return $this->dossierRepo->findAll();
     }
 
+    /**
+     * Retrieves details for a specific student folder.
+     */
     public function getStudentDetails(string $numetu): ?array
     {
         $result = $this->dossierRepo->findByNumEtu($numetu);
@@ -46,17 +55,33 @@ class ManageFolderUseCase
         return $this->dossierRepo->toggleStatus($numetu);
     }
 
+    /**
+     * Searches for folders using filters, with pagination.
+     */
     public function rechercherAvecPagination(array $filters, int $page = 1, int $perPage = 10): array
     {
         return $this->dossierRepo->searchWithPagination($filters, $page, $perPage);
     }
 
-    public function creerDossier(array $data, ?string $photoData = null, ?string $cvData = null, ?string $conventionData = null, ?string $lettreData = null): bool
+    /**
+     * Searches for folders using filters, without pagination (returns all matching records).
+     * Used for client-side pagination (e.g., accordions).
+     */
+    public function searchWithoutPagination(array $filters): array
+    {
+        return $this->dossierRepo->searchWithPagination($filters, 1, 0);
+    }
+
+    /**
+     * Creates a new student folder.
+     */
+    public function creerDossier(array $data, ?string $photoData = null, ?string $cvData = null, ?string $conventionData = null, ?string $lettreData = null, ?string $languesData = null): bool
     {
         $photoData = $photoData ?? (is_string($data['photo'] ?? null) ? $data['photo'] : null);
         $cvData = $cvData ?? (is_string($data['cv'] ?? null) ? $data['cv'] : null);
         $conventionData = $conventionData ?? (is_string($data['convention'] ?? null) ? $data['convention'] : null);
         $lettreData = $lettreData ?? (is_string($data['lettre_motivation'] ?? null) ? $data['lettre_motivation'] : null);
+        $languesData = $languesData ?? (is_string($data['langues_file'] ?? null) ? $data['langues_file'] : null);
 
         $rawDate = $data['naissance'] ?? ($data['DateNaissance'] ?? null);
         $dateNaissance = null;
@@ -70,6 +95,7 @@ class ManageFolderUseCase
         if ($cvData !== null) $pieces['cv'] = base64_encode($cvData);
         if ($conventionData !== null) $pieces['convention'] = base64_encode($conventionData);
         if ($lettreData !== null) $pieces['lettre_motivation'] = base64_encode($lettreData);
+        if ($languesData !== null) $pieces['langues'] = base64_encode($languesData);
 
         $piecesJson = empty($pieces) ? '{}' : json_encode($pieces);
 
@@ -85,7 +111,8 @@ class ManageFolderUseCase
             'EmailPersonnel' => $data['email_perso'] ?? ($data['EmailPersonnel'] ?? null),
             'EmailAMU' => $data['email_amu'] ?? ($data['EmailAMU'] ?? null),
             'Telephone' => $data['telephone'] ?? ($data['Telephone'] ?? null),
-            'CodeDepartement' => $data['departement'] ?? ($data['CodeDepartement'] ?? null),
+            'CodeDepartement' => $data['departement'] ?? ($data['CodeDepartement'] ?? null), 
+            'Composante' => $data['composante'] ?? ($data['Composante'] ?? null),
             'Type' => $data['type'] ?? ($data['Type'] ?? null),
             'Zone' => $data['zone'] ?? ($data['Zone'] ?? null),
             'Pays' => $data['pays'] ?? ($data['Pays'] ?? null),
@@ -93,10 +120,10 @@ class ManageFolderUseCase
             'Discipline' => $data['discipline'] ?? ($data['Discipline'] ?? null),
             'NiveauEtude' => $data['niveau_etude'] ?? ($data['NiveauEtude'] ?? null),
             'Formation' => $data['formation'] ?? ($data['Formation'] ?? null),
-            'Moyenne' => $data['moyenne'] ?? ($data['Moyenne'] ?? null),
+            'MoyenneBac' => $data['moyenne_bac'] ?? ($data['MoyenneBac'] ?? null),
+            'MoyenneSansBac' => $data['moyenne_sans_bac'] ?? ($data['MoyenneSansBac'] ?? null),
             'AvisDRI' => $data['avis_dri'] ?? ($data['AvisDRI'] ?? null),
             'DateDebut' => $data['date_debut'] ?? ($data['DateDebut'] ?? null),
-            'Langues' => $data['langues'] ?? ($data['Langues'] ?? null),
             'MobiliteAnterieure' => $data['mobilite_anterieure'] ?? ($data['MobiliteAnterieure'] ?? null),
             'PiecesJustificatives' => $piecesJson,
             'status' => $data['status'] ?? 'depot'
@@ -109,7 +136,10 @@ class ManageFolderUseCase
         return $this->dossierRepo->create($formattedData);
     }
 
-    public function updateDossier(array $data, ?string $photoData = null, ?string $cvData = null, ?string $conventionData = null, ?string $lettreData = null): bool
+    /**
+     * Updates an existing student folder.
+     */
+    public function updateDossier(array $data, ?string $photoData = null, ?string $cvData = null, ?string $conventionData = null, ?string $lettreData = null, ?string $languesData = null): bool
     {
         $numEtu = strval($data['numetu'] ?? ($data['NumEtu'] ?? ''));
         if ($numEtu === '') return false;
@@ -123,11 +153,13 @@ class ManageFolderUseCase
         $cvData = $cvData ?? (is_string($data['cv'] ?? null) ? $data['cv'] : null);
         $conventionData = $conventionData ?? (is_string($data['convention'] ?? null) ? $data['convention'] : null);
         $lettreData = $lettreData ?? (is_string($data['lettre_motivation'] ?? null) ? $data['lettre_motivation'] : null);
+        $languesData = $languesData ?? (is_string($data['langues_file'] ?? null) ? $data['langues_file'] : null);
 
         if (!empty($photoData)) $oldPieces['photo'] = base64_encode($photoData);
         if (!empty($cvData)) $oldPieces['cv'] = base64_encode($cvData);
         if (!empty($conventionData)) $oldPieces['convention'] = base64_encode($conventionData);
         if (!empty($lettreData)) $oldPieces['lettre_motivation'] = base64_encode($lettreData);
+        if (!empty($languesData)) $oldPieces['langues'] = base64_encode($languesData);
 
         $piecesJson = empty($oldPieces) ? '{}' : json_encode($oldPieces);
 
@@ -150,6 +182,7 @@ class ManageFolderUseCase
             ':EmailAMU' => $data['email_amu'] ?? ($data['EmailAMU'] ?? null),
             ':Telephone' => $data['telephone'] ?? ($data['Telephone'] ?? null),
             ':CodeDepartement' => $data['departement'] ?? ($data['CodeDepartement'] ?? null),
+            ':Composante' => $data['composante'] ?? ($data['Composante'] ?? null),
             ':Type' => $data['type'] ?? ($data['Type'] ?? null),
             ':Zone' => $data['zone'] ?? ($data['Zone'] ?? null),
             ':Pays' => $data['pays'] ?? ($data['Pays'] ?? null),
@@ -157,10 +190,10 @@ class ManageFolderUseCase
             ':Discipline' => $data['discipline'] ?? ($data['Discipline'] ?? null),
             ':NiveauEtude' => $data['niveau_etude'] ?? ($data['NiveauEtude'] ?? null),
             ':Formation' => $data['formation'] ?? ($data['Formation'] ?? null),
-            ':Moyenne' => $data['moyenne'] ?? ($data['Moyenne'] ?? null),
+            ':MoyenneBac' => $data['moyenne_bac'] ?? ($data['MoyenneBac'] ?? null),
+            ':MoyenneSansBac' => $data['moyenne_sans_bac'] ?? ($data['MoyenneSansBac'] ?? null),
             ':AvisDRI' => $data['avis_dri'] ?? ($data['AvisDRI'] ?? null),
             ':DateDebut' => $data['date_debut'] ?? ($data['DateDebut'] ?? null),
-            ':Langues' => $data['langues'] ?? ($data['Langues'] ?? null),
             ':MobiliteAnterieure' => $data['mobilite_anterieure'] ?? ($data['MobiliteAnterieure'] ?? null),
             ':PiecesJustificatives' => $piecesJson,
             ':status' => $existing['status'] ?? 'depot'
@@ -169,6 +202,9 @@ class ManageFolderUseCase
         return $this->dossierRepo->update($numEtu, $formattedData);
     }
 
+    /**
+     * Imports folders from a CSV or Excel file.
+     */
     public function importFoldersFromCSV(string $filePath): bool
     {
         try {
@@ -182,7 +218,7 @@ class ManageFolderUseCase
                 return strtolower(trim(strval($val)));
             }, array_shift($rows));
             
-            // Dictionnaire des mots-clés enrichi avec 'individu', 'début', 'langue', 'ayant déjà'
+            // Map keywords to standard column names
             $keywords = [
                 'NumEtu'             => ['identifiant', 'numetu', 'etudiant', 'individu', 'formulaire en ligne'],
                 'Candidat'           => ['candidat', 'nom'],
@@ -195,7 +231,8 @@ class ManageFolderUseCase
                 'EmailPersonnel'     => ['email', 'courriel', 'mail'],
                 'EmailAMU'           => ['amu', 'institutionnel'],
                 'Telephone'          => ['phone', 'téléphone', 'telephone', 'mobile', 'tel'],
-                'CodeDepartement'    => ['composante', 'département', 'departement', 'faculté'],
+                'CodeDepartement'    => ['département', 'departement', 'filière'], 
+                'Composante'         => ['composante', 'faculté', 'institut'], 
                 'Type'               => ['type', 'mobilité'],
                 'Zone'               => ['zone'],
                 'Pays'               => ['pays', 'country'],
@@ -203,10 +240,10 @@ class ManageFolderUseCase
                 'Discipline'         => ['discipline'],
                 'NiveauEtude'        => ['niveau'],
                 'Formation'          => ['formation'],
-                'Moyenne'            => ['moyenne'],
+                'MoyenneBac'         => ['moyenne bac', 'baccalauréat'],
+                'MoyenneSansBac'     => ['moyenne sans bac', 'moyenne hors', 'moyenne universitaire'],
                 'AvisDRI'            => ['avis dri', 'avis'],
                 'DateDebut'          => ['période de', 'début', 'date de début'],
-                'Langues'            => ['langue'],
                 'MobiliteAnterieure' => ['ayant déjà effect', 'mobilité antérieure']
             ];
 
@@ -275,6 +312,7 @@ class ManageFolderUseCase
                     'EmailAMU'           => $getVal('EmailAMU'),
                     'Telephone'          => $getVal('Telephone'),
                     'CodeDepartement'    => $getVal('CodeDepartement'),
+                    'Composante'         => $getVal('Composante'),
                     'Type'               => $getVal('Type') ?: 'sortant',
                     'Zone'               => $getVal('Zone') ?: 'europe',
                     'Pays'               => $getVal('Pays'),
@@ -282,10 +320,10 @@ class ManageFolderUseCase
                     'Discipline'         => $getVal('Discipline'),
                     'NiveauEtude'        => $getVal('NiveauEtude'),
                     'Formation'          => $getVal('Formation'),
-                    'Moyenne'            => $getVal('Moyenne'),
+                    'MoyenneBac'         => $getVal('MoyenneBac'),
+                    'MoyenneSansBac'     => $getVal('MoyenneSansBac'),
                     'AvisDRI'            => $getVal('AvisDRI'),
                     'DateDebut'          => $getVal('DateDebut'),
-                    'Langues'            => $getVal('Langues'),
                     'MobiliteAnterieure' => $getVal('MobiliteAnterieure')
                 ];
             }

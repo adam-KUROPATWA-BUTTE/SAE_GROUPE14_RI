@@ -15,19 +15,11 @@ $buildUrl = function(string $path, array $params = []) use ($lang): string {
     return $path . $separator . http_build_query($params);
 };
 
-$buildPaginationUrl = function(int $p) use ($filters, $lang, $page): string {
-    $params = array_merge($filters, [
-        'p' => $p,
-        'page' => 'folders-admin'
-    ]);
-    $params = array_filter($params, fn($v) => !empty($v) || $v === 0 || $v === '0');
-    $params['lang'] = $lang;
-    return 'index.php?' . http_build_query($params);
-};
-
 $hasActiveFilters = (strval($filters['type'] ?? 'all')) !== 'all'
     || (strval($filters['zone'] ?? 'all')) !== 'all'
     || (strval($filters['complet'] ?? 'all')) !== 'all'
+    || (strval($filters['composante'] ?? 'all')) !== 'all'
+    || (strval($filters['accord'] ?? 'all')) !== 'all'
     || !empty($filters['date_debut'])
     || !empty($filters['date_fin'])
     || !empty($filters['search']);
@@ -82,7 +74,10 @@ ob_start();
                 <label for="telephone"><?= $t(['fr' => 'Téléphone *','en' => 'Phone *']) ?></label>
                 <input type="text" name="telephone" id="telephone" required>
                 
-                <label for="departement"><?= $t(['fr' => 'Code Département','en' => 'Department Code']) ?></label>
+                <label for="composante"><?= $t(['fr' => 'Composante (AMU CIVIS, IUT, Erasmus...)','en' => 'Component']) ?></label>
+                <input type="text" name="composante" id="composante">
+
+                <label for="departement"><?= $t(['fr' => 'Département (Info, GEA...)','en' => 'Department (CS, Biz...)']) ?></label>
                 <input type="text" name="departement" id="departement">
 
                 <label for="campus"><?= $t(['fr' => 'Campus','en' => 'Campus']) ?></label>
@@ -97,17 +92,17 @@ ob_start();
                 <label for="formation"><?= $t(['fr' => 'Formation','en' => 'Degree Program']) ?></label>
                 <input type="text" name="formation" id="formation">
 
-                <label for="moyenne"><?= $t(['fr' => 'Moyenne','en' => 'Average Grade']) ?></label>
-                <input type="text" name="moyenne" id="moyenne">
+                <label for="moyenne_bac"><?= $t(['fr' => 'Moyenne Bac','en' => 'High School Average']) ?></label>
+                <input type="text" name="moyenne_bac" id="moyenne_bac">
+
+                <label for="moyenne_sans_bac"><?= $t(['fr' => 'Moyenne sans Bac','en' => 'Average w/o High School']) ?></label>
+                <input type="text" name="moyenne_sans_bac" id="moyenne_sans_bac">
 
                 <label for="avis_dri"><?= $t(['fr' => 'Avis DRI','en' => 'DRI Advice']) ?></label>
                 <input type="text" name="avis_dri" id="avis_dri">
 
                 <label for="date_debut"><?= $t(['fr' => 'Date de début','en' => 'Start Date']) ?></label>
                 <input type="text" name="date_debut" id="date_debut">
-
-                <label for="langues"><?= $t(['fr' => 'Langues','en' => 'Languages']) ?></label>
-                <input type="text" name="langues" id="langues">
 
                 <label for="mobilite_anterieure"><?= $t(['fr' => 'A déjà effectué une mobilité','en' => 'Previous Mobility']) ?></label>
                 <input type="text" name="mobilite_anterieure" id="mobilite_anterieure">
@@ -147,9 +142,15 @@ ob_start();
                 <label><?= $t(['fr' => 'Convention de stage','en' => 'Internship Agreement']) ?></label>
                 <input type="file" name="convention" accept=".pdf,.doc,.docx">
             </div>
+            
             <div class="fichier-obligatoire" id="lettre_motivation">
                 <label><?= $t(['fr' => 'Lettre de motivation','en' => 'Motivation Letter']) ?></label>
                 <input type="file" name="lettre_motivation" accept=".pdf,.doc,.docx">
+            </div>
+
+            <div class="fichier-obligatoire" id="justificatif_langues">
+                <label><?= $t(['fr' => 'Attestation de langues', 'en' => 'Language Certificate']) ?></label>
+                <input type="file" name="langues_file" accept=".pdf,.doc,.docx,.jpg,.png">
             </div>
 
             <div class="form-actions">
@@ -221,7 +222,10 @@ ob_start();
                     <label for="telephone"><?= $t(['fr' => 'Téléphone *','en' => 'Phone *']) ?></label>
                     <input type="text" name="telephone" id="telephone" value="<?= htmlspecialchars(strval($studentData['Telephone'] ?? '')) ?>" disabled class="input-disabled" required>
 
-                    <label for="departement"><?= $t(['fr' => 'Code Département','en' => 'Department Code']) ?></label>
+                    <label for="composante"><?= $t(['fr' => 'Composante (AMU CIVIS, IUT, Erasmus...)','en' => 'Component']) ?></label>
+                    <input type="text" name="composante" id="composante" value="<?= htmlspecialchars(strval($studentData['Composante'] ?? '')) ?>" disabled class="input-disabled">
+
+                    <label for="departement"><?= $t(['fr' => 'Département (Info, GEA...)','en' => 'Department (CS, Biz...)']) ?></label>
                     <input type="text" name="departement" id="departement" value="<?= htmlspecialchars(strval($studentData['CodeDepartement'] ?? '')) ?>" disabled class="input-disabled">
 
                     <label for="campus"><?= $t(['fr' => 'Campus','en' => 'Campus']) ?></label>
@@ -236,17 +240,17 @@ ob_start();
                     <label for="formation"><?= $t(['fr' => 'Formation','en' => 'Degree Program']) ?></label>
                     <input type="text" name="formation" id="formation" value="<?= htmlspecialchars(strval($studentData['Formation'] ?? '')) ?>" disabled class="input-disabled">
 
-                    <label for="moyenne"><?= $t(['fr' => 'Moyenne','en' => 'Average Grade']) ?></label>
-                    <input type="text" name="moyenne" id="moyenne" value="<?= htmlspecialchars(strval($studentData['Moyenne'] ?? '')) ?>" disabled class="input-disabled">
+                    <label for="moyenne_bac"><?= $t(['fr' => 'Moyenne Bac','en' => 'High School Average']) ?></label>
+                    <input type="text" name="moyenne_bac" id="moyenne_bac" value="<?= htmlspecialchars(strval($studentData['MoyenneBac'] ?? '')) ?>" disabled class="input-disabled">
+
+                    <label for="moyenne_sans_bac"><?= $t(['fr' => 'Moyenne sans Bac','en' => 'Average w/o High School']) ?></label>
+                    <input type="text" name="moyenne_sans_bac" id="moyenne_sans_bac" value="<?= htmlspecialchars(strval($studentData['MoyenneSansBac'] ?? '')) ?>" disabled class="input-disabled">
 
                     <label for="avis_dri"><?= $t(['fr' => 'Avis DRI','en' => 'DRI Advice']) ?></label>
                     <input type="text" name="avis_dri" id="avis_dri" value="<?= htmlspecialchars(strval($studentData['AvisDRI'] ?? '')) ?>" disabled class="input-disabled">
 
                     <label for="date_debut"><?= $t(['fr' => 'Date de début','en' => 'Start Date']) ?></label>
                     <input type="text" name="date_debut" id="date_debut" value="<?= htmlspecialchars(strval($studentData['DateDebut'] ?? '')) ?>" disabled class="input-disabled">
-
-                    <label for="langues"><?= $t(['fr' => 'Langues','en' => 'Languages']) ?></label>
-                    <input type="text" name="langues" id="langues" value="<?= htmlspecialchars(strval($studentData['Langues'] ?? '')) ?>" disabled class="input-disabled">
 
                     <label for="mobilite_anterieure"><?= $t(['fr' => 'A déjà effectué une mobilité','en' => 'Previous Mobility']) ?></label>
                     <input type="text" name="mobilite_anterieure" id="mobilite_anterieure" value="<?= htmlspecialchars(strval($studentData['MobiliteAnterieure'] ?? '')) ?>" disabled class="input-disabled">
@@ -337,6 +341,21 @@ ob_start();
                             <p class="no-document"><?= $t(['fr' => 'Aucune lettre disponible','en' => 'No letter available']) ?></p>
                         <?php endif; ?>
                         <input type="file" name="lettre_motivation" id="lettre_motivation_file" accept=".pdf,.doc,.docx" disabled class="input-disabled file-input-margin">
+                    </div>
+
+                    <div id="justificatif_langues" class="document-block">
+                        <label><?= $t(['fr' => 'Attestation de langues', 'en' => 'Language Certificate']) ?></label>
+                        <?php if (!empty($pieces['langues'])) : ?>
+                            <div class="document-preview">
+                                <p class="document-available"><?= $t(['fr' => 'Fichier disponible','en' => 'File available']) ?></p>
+                                <a href="data:application/pdf;base64,<?= strval($pieces['langues']) ?>" download="langues_<?= $numEtu ?>.pdf" class="btn-download">
+                                    <?= $t(['fr' => 'Télécharger','en' => 'Download']) ?>
+                                </a>
+                            </div>
+                        <?php else : ?>
+                            <p class="no-document"><?= $t(['fr' => 'Aucune attestation disponible','en' => 'No certificate available']) ?></p>
+                        <?php endif; ?>
+                        <input type="file" name="langues_file" accept=".pdf,.doc,.docx,.jpg,.png" disabled class="input-disabled file-input-margin">
                     </div>
 
                     <?php $isComplete = intval($studentData['IsComplete'] ?? 0); ?>
@@ -430,6 +449,24 @@ ob_start();
                 </div>
 
                 <div class="filter-group">
+                    <label for="filter-composante"><?= $t(['fr' => 'Composante :','en' => 'Component:']) ?></label>
+                    <select id="filter-composante" name="composante">
+                        <option value="all" <?= (strval($filters['composante'] ?? 'all')) === 'all' ? 'selected' : '' ?>><?= $t(['fr' => 'Toutes','en' => 'All']) ?></option>
+                        <option value="AMU CIVIS" <?= (strval($filters['composante'] ?? '')) === 'AMU CIVIS' ? 'selected' : '' ?>>AMU CIVIS</option>
+                        <option value="IUT" <?= (strval($filters['composante'] ?? '')) === 'IUT' ? 'selected' : '' ?>>IUT</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="filter-accord"><?= $t(['fr' => 'Accord :','en' => 'Agreement:']) ?></label>
+                    <select id="filter-accord" name="accord">
+                        <option value="all" <?= (strval($filters['accord'] ?? 'all')) === 'all' ? 'selected' : '' ?>><?= $t(['fr' => 'Tous','en' => 'All']) ?></option>
+                        <option value="Erasmus" <?= (strval($filters['accord'] ?? '')) === 'Erasmus' ? 'selected' : '' ?>>Erasmus</option>
+                        <option value="Bilatéral" <?= (strval($filters['accord'] ?? '')) === 'Bilatéral' ? 'selected' : '' ?>>Bilatéral</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
                     <?php if ($hasActiveFilters) : ?>
                         <a href="<?= $buildUrl('index.php', ['page' => 'folders-admin']) ?>" class="btn-reset">
                             <?= $t(['fr' => 'Réinitialiser les filtres','en' => 'Reset filters']) ?>
@@ -441,83 +478,87 @@ ob_start();
 
         <p class="results-count"><?= $totalCount ?> <?= $t(['fr' => 'étudiant(s) trouvé(s)','en' => 'student(s) found']) ?></p>
 
-        <table id="table-etudiants">
-            <thead>
-                <tr>
-                    <th><?= $t(['fr' => 'Nom','en' => 'Last Name']) ?></th>
-                    <th><?= $t(['fr' => 'Prénom','en' => 'First Name']) ?></th>
-                    <th><?= $t(['fr' => 'Type','en' => 'Type']) ?></th>
-                    <th><?= $t(['fr' => 'Zone','en' => 'Zone']) ?></th>
-                    <th><?= $t(['fr' => 'Campus','en' => 'Campus']) ?></th>
-                    <th><?= $t(['fr' => 'Mobilité', 'en' => 'Mobility']) ?></th>
-                    <th><?= $t(['fr' => 'Statut','en' => 'Status']) ?></th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($paginatedData as $etudiant) : ?>
-                    <?php
-                    $rawPieces = strval($etudiant['PiecesJustificatives'] ?? '{}');
-                    $decoded = json_decode($rawPieces, true);
-                    $pieces = is_array($decoded) ? $decoded : [];
+        <?php
+            // On regroupe les données selon la valeur de 'Composante'
+            // NOTE : Pour que la pagination JS fonctionne idéalement, assure-toi que $paginatedData contient bien *tous* les étudiants sans LIMIT
+            $groupedData = [];
+            foreach ($paginatedData as $etudiant) {
+                $comp = strval($etudiant['Composante'] ?? '');
+                if (empty($comp) || $comp === '-') {
+                    $comp = $t(['fr' => 'Autre / Non assignée', 'en' => 'Other / Unassigned']);
+                }
+                $groupedData[$comp][] = $etudiant;
+            }
+        ?>
 
-                    $mobilityType = '-';
-                    if (!empty($pieces['convention'])) {
-                        $mobilityType = $t(['fr' => 'Stage', 'en' => 'Internship']);
-                    } elseif (!empty($pieces['lettre_motivation'])) {
-                        $mobilityType = $t(['fr' => 'Études', 'en' => 'Studies']);
-                    }
+        <div class="conteneur-composantes">
+            <?php foreach ($groupedData as $compName => $students) : ?>
+                <?php $safeCompId = md5($compName); ?>
+                <div class="section-composante">
+                    <div class="barre-titre" data-target="dossiers-<?= $safeCompId ?>">
+                        <span><?= htmlspecialchars($compName) ?> (<?= count($students) ?>)</span>
+                        <span class="fleche">▼</span>
+                    </div>
 
-                    $numEtu = strval($etudiant['NumEtu'] ?? '');
-                    $nom = strval($etudiant['Nom'] ?? '');
-                    $prenom = strval($etudiant['Prenom'] ?? '');
-                    $type = strval($etudiant['Type'] ?? '');
-                    $zone = strval($etudiant['Zone'] ?? '');
-                    $campus = strval($etudiant['Campus'] ?? '-');
-                    $isComplete = intval($etudiant['IsComplete'] ?? 0);
-                    ?>
-                    <tr class="clickable-row" data-numetu="<?= htmlspecialchars($numEtu) ?>">
-                        <td><?= htmlspecialchars($nom) ?></td>
-                        <td><?= htmlspecialchars($prenom) ?></td>
-                        <td><?= $t(['fr' => ($type === 'entrant' ? 'Entrant' : 'Sortant'), 'en' => ($type === 'entrant' ? 'Incoming' : 'Outgoing')]) ?></td>
-                        <td><?= $t(['fr' => ($zone === 'europe' ? 'Europe' : 'Hors Europe'), 'en' => ($zone === 'europe' ? 'Europe' : 'Non-Europe')]) ?></td>
-                        <td><?= htmlspecialchars($campus ?: '-') ?></td>
-                        <td><?= htmlspecialchars($mobilityType) ?></td>
-                        <td>
-                            <?= $isComplete === 1
-                                ? '<span class="status-complete">Complet</span>'
-                                : '<span class="status-incomplete">Incomplet</span>' ?>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                    <div id="dossiers-<?= $safeCompId ?>" class="contenu-dossiers">
+                        <table class="table-etudiants">
+                            <thead>
+                                <tr>
+                                    <th><?= $t(['fr' => 'Nom','en' => 'Last Name']) ?></th>
+                                    <th><?= $t(['fr' => 'Prénom','en' => 'First Name']) ?></th>
+                                    <th><?= $t(['fr' => 'Type','en' => 'Type']) ?></th>
+                                    <th><?= $t(['fr' => 'Composante / Accord','en' => 'Component / Agreement']) ?></th>
+                                    <th><?= $t(['fr' => 'Département','en' => 'Department']) ?></th>
+                                    <th><?= $t(['fr' => 'Mobilité', 'en' => 'Mobility']) ?></th>
+                                    <th><?= $t(['fr' => 'Statut','en' => 'Status']) ?></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($students as $etudiant) : ?>
+                                    <?php
+                                    $rawPieces = strval($etudiant['PiecesJustificatives'] ?? '{}');
+                                    $decoded = json_decode($rawPieces, true);
+                                    $pieces = is_array($decoded) ? $decoded : [];
 
-        <?php if ($totalPages > 0) : ?>
-            <div class="pagination">
-                <?php if ($page > 1) : ?>
-                    <button onclick="window.location.href='<?= $buildPaginationUrl(1) ?>'">«</button>
-                    <button onclick="window.location.href='<?= $buildPaginationUrl($page - 1) ?>'">‹</button>
-                <?php else : ?>
-                    <button disabled>«</button>
-                    <button disabled>‹</button>
-                <?php endif; ?>
-                
-                <?php for ($i = max(1, $page - 2); $i <= min($totalPages, $page + 2); $i++) : ?>
-                    <button class="<?= $i === $page ? 'active' : '' ?>" onclick="window.location.href='<?= $buildPaginationUrl($i) ?>'"><?= $i ?></button>
-                <?php endfor; ?>
-                
-                <?php if ($page < $totalPages) : ?>
-                    <button onclick="window.location.href='<?= $buildPaginationUrl($page + 1) ?>'">›</button>
-                    <button onclick="window.location.href='<?= $buildPaginationUrl($totalPages) ?>'">»</button>
-                <?php else : ?>
-                    <button disabled>›</button>
-                    <button disabled>»</button>
-                <?php endif; ?>
-            </div>
-        <?php endif; ?>
+                                    $mobilityType = '-';
+                                    if (!empty($pieces['convention'])) {
+                                        $mobilityType = $t(['fr' => 'Stage', 'en' => 'Internship']);
+                                    } elseif (!empty($pieces['lettre_motivation'])) {
+                                        $mobilityType = $t(['fr' => 'Études', 'en' => 'Studies']);
+                                    }
 
+                                    $numEtu = strval($etudiant['NumEtu'] ?? '');
+                                    $nom = strval($etudiant['Nom'] ?? '');
+                                    $prenom = strval($etudiant['Prenom'] ?? '');
+                                    $type = strval($etudiant['Type'] ?? '');
+                                    $composante = strval($etudiant['Composante'] ?? '-'); 
+                                    $departement = strval($etudiant['CodeDepartement'] ?? '-');
+                                    $isComplete = intval($etudiant['IsComplete'] ?? 0);
+                                    ?>
+                                    <tr class="clickable-row" data-numetu="<?= htmlspecialchars($numEtu) ?>">
+                                        <td><?= htmlspecialchars($nom) ?></td>
+                                        <td><?= htmlspecialchars($prenom) ?></td>
+                                        <td><?= $t(['fr' => ($type === 'entrant' ? 'Entrant' : 'Sortant'), 'en' => ($type === 'entrant' ? 'Incoming' : 'Outgoing')]) ?></td>
+                                        <td><?= htmlspecialchars($composante ?: '-') ?></td>
+                                        <td><?= htmlspecialchars($departement ?: '-') ?></td>
+                                        <td><?= htmlspecialchars($mobilityType) ?></td>
+                                        <td>
+                                            <?= $isComplete === 1
+                                                ? '<span class="status-complete">Complet</span>'
+                                                : '<span class="status-incomplete">Incomplet</span>' ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                        
+                        <div class="pagination accordion-pagination"></div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+        
     <?php endif; ?>
-
 
 <?php
 $content = ob_get_clean();
