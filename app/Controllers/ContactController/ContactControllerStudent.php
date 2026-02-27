@@ -35,16 +35,44 @@ class ContactControllerStudent implements ControllerInterface
         if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en'], true)) {
             $_SESSION['lang'] = $_GET['lang'];
         }
-        $lang = $_SESSION['lang'] ?? 'fr';
-        $numEtu = $_SESSION['numetu'];
 
+        $lang   = $_SESSION['lang'] ?? 'fr';
+        $numEtu = $_SESSION['numetu'];
+        $action = $_GET['action'] ?? 'form';
+
+        $t = function (array $translations) use ($lang): string {
+            return $translations[$lang] ?? $translations['fr'] ?? '';
+        };
+
+        $buildUrl = function (string $url, array $params = []) use ($lang): string {
+            $params['lang'] = $lang;
+            return $url . '?' . http_build_query($params);
+        };
+
+        // ── Action : réponse étudiant à la réponse admin ──
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply') {
+            $messageId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+            $reply     = trim($_POST['student_reply'] ?? '');
+
+            if ($messageId > 0 && !empty($reply)) {
+                $this->contactService->replyToAdminResponse($messageId, $reply);
+                $_SESSION['message'] = $lang === 'fr'
+                    ? 'Votre réponse a été envoyée !'
+                    : 'Your reply has been sent!';
+            }
+
+            header('Location: index.php?page=contact-student&lang=' . $lang . '#messagesPanel');
+            exit;
+        }
+
+        // ── Action : envoi nouveau message ──
         $messageSent = false;
-        $error = null;
+        $error       = null;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
-                $name = trim($_POST['name'] ?? '');
-                $email = trim($_POST['email'] ?? '');
+                $name    = trim($_POST['name']    ?? '');
+                $email   = trim($_POST['email']   ?? '');
                 $subject = trim($_POST['subject'] ?? '');
                 $message = trim($_POST['message'] ?? '');
 
@@ -72,29 +100,21 @@ class ContactControllerStudent implements ControllerInterface
             }
         }
 
-        $t = function(array $translations) use ($lang) {
-            return $translations[$lang] ?? $translations['fr'] ?? '';
-        };
-
-        $buildUrl = function(string $url, array $params = []) use ($lang) {
-            $params['lang'] = $lang;
-            $queryString = http_build_query($params);
-            return $url . ($queryString ? '?' . $queryString : '');
-        };
-
         $contactInfo = [
             'email' => 'relations.internationales@univ-amu.fr',
             'phone' => '+33 4 13 55 00 00',
             'address' => [
                 'fr' => 'Aix-Marseille Université<br>58 Boulevard Charles Livon<br>13007 Marseille, France',
-                'en' => 'Aix-Marseille University<br>58 Boulevard Charles Livon<br>13007 Marseille, France'
+                'en' => 'Aix-Marseille University<br>58 Boulevard Charles Livon<br>13007 Marseille, France',
             ],
             'hours' => [
                 'fr' => 'Lundi - Vendredi : 9h00 - 17h00',
-                'en' => 'Monday - Friday: 9:00 AM - 5:00 PM'
-            ]
+                'en' => 'Monday - Friday: 9:00 AM - 5:00 PM',
+            ],
         ];
 
-        require_once __DIR__ . '/../../View/Contact/contact_student.php';
+        $studentMessages = $this->contactService->getStudentMessages($numEtu);
+
+        require_once ROOT_PATH . '/app/View/Contact/contact_student.php';
     }
 }
