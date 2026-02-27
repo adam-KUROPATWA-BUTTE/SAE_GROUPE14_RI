@@ -68,6 +68,7 @@ use Controllers\site\FolderController\FoldersControllerStudent;
 // Home Controllers
 use Controllers\site\HomeController\HomeControllerAdmin;
 use Controllers\site\HomeController\HomeControllerStudent;
+use Controllers\site\HomeController\SuperAdminController;
 
 // Partners Controllers
 use Controllers\PartnersController\PartnersControllerStudent;
@@ -105,6 +106,7 @@ $controllers = [
     SaveStudentController::class,
     ContactControllerStudent::class,
     ContactControllerAdmin::class,
+    SuperAdminController::class,
 ];
 
 // --- 6. Routing Logic ---

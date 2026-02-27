@@ -61,14 +61,16 @@ class AuthController implements ControllerInterface
                     $_SESSION['numetu'] = $result['numetu'];
                 }
 
-                if ($result['role'] === 'admin') {
+                if ($result['role'] === 'super_admin') {
+                    header('Location: index.php?page=super-admin');
+                } elseif (in_array($result['role'], ['admin', 'coordinateur'], true)) {
                     header('Location: index.php?page=home-admin');
                 } else {
                     header('Location: index.php?page=home-student');
                 }
                 exit;
             } else {
-                // Le message d'erreur s'affiche seulement si la connexion échoue
+
                 $message = 'Identifiants incorrects';
             }
         }
