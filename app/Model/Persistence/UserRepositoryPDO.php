@@ -19,20 +19,21 @@ class UserRepositoryPDO implements UserRepositoryInterface
 
     public function findByEmail(string $email): ?User
     {
-        // Chercher d'abord dans admins
-        $sql = "SELECT *, 'admin' as role FROM admins WHERE email = :email";
+        // Chercher d'abord dans admins avec le VRAI rôle
+        $sql = "SELECT * FROM admins WHERE email = :email";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(['email' => $email]);
+        $stmt->execute([':email' => $email]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (is_array($data)) {
-            return $this->mapToUser($data, 'admin');
+            $realRole = is_string($data['role']) ? $data['role'] : 'admin';
+            return $this->mapToUser($data, $realRole);
         }
 
         // Sinon chercher dans etudiants
-        $sql = "SELECT *, 'student' as role FROM etudiants WHERE email = :email";
+        $sql = "SELECT * FROM etudiants WHERE email = :email";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute(['email' => $email]);
+        $stmt->execute([':email' => $email]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (is_array($data)) {
@@ -180,5 +181,72 @@ class UserRepositoryPDO implements UserRepositoryInterface
             $password,
             $role
         );
+    }
+    // Ajoute ces méthodes dans ton UserRepositoryPDO existant
+
+    public function loginExists(string $email): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM admins WHERE email = :email");
+            $stmt->execute([':email' => $email]);
+            return (int) $stmt->fetchColumn() > 0;
+        } catch (PDOException $e) {
+            error_log("loginExists Error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function createAdmin(string $email, string $hashedPassword, string $role): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+            INSERT INTO admins (email, password, role, created_at)
+            VALUES (:email, :password, :role, NOW())
+        ");
+            return $stmt->execute([
+                ':email'    => $email,
+                ':password' => $hashedPassword,
+                ':role'     => $role,
+            ]);
+        } catch (PDOException $e) {
+            error_log("createAdmin Error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function deleteAdminByEmail(string $email): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+            DELETE FROM admins WHERE email = :email AND role != 'super_admin'
+        ");
+            return $stmt->execute([':email' => $email]);
+        } catch (PDOException $e) {
+            error_log("deleteAdminByEmail Error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /** @return array<int, array{login: string, role: string, created_at: string}> */
+    public function getAllAdmins(): array
+    {
+        try {
+            $stmt = $this->pdo->query("
+            SELECT email as login, role, created_at
+            FROM admins
+            WHERE role != 'super_admin'
+            ORDER BY created_at DESC
+        ");
+            if ($stmt === false) return [];
+            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return is_array($results) ? array_map(fn($r) => [
+                'login'      => is_string($r['login'])      ? $r['login']      : '',
+                'role'       => is_string($r['role'])        ? $r['role']       : '',
+                'created_at' => is_string($r['created_at']) ? $r['created_at'] : '',
+            ], $results) : [];
+        } catch (PDOException $e) {
+            error_log("getAllAdmins Error: " . $e->getMessage());
+            return [];
+        }
     }
 }
