@@ -13,7 +13,6 @@
     text-align: center;
     color: var(--primary-color);
     margin-bottom: 1rem;
-    font-size: 2.5rem;
 }
 
 .contact-intro {
@@ -21,7 +20,7 @@
     max-width: 700px;
     margin: 0 auto 3rem;
     color: #666;
-    font-size: 1em;
+    font-size: var(--text-size);
 }
 
 .contact-content {
@@ -41,7 +40,6 @@
 .contact-form-section h2 {
     color: var(--primary-color);
     margin-bottom: 1.5rem;
-    font-size: 1.5rem;
 }
 
 .contact-form {
@@ -59,7 +57,7 @@
     font-weight: 600;
     color: #333;
     margin-bottom: 0.5rem;
-    font-size: 1em;
+    font-size: var(--text-size);
 }
 
 .form-group input,
@@ -68,7 +66,7 @@
     padding: 0.75rem;
     border: 2px solid #e0e0e0;
     border-radius: 8px;
-    font-size: 1em;
+    font-size: var(--text-size);
     transition: all 0.3s ease;
 }
 
@@ -91,7 +89,7 @@
     padding: 1rem 2rem;
     border: none;
     border-radius: 50px;
-    font-size: 1em;
+    font-size: var(--button-small-size);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -137,7 +135,6 @@
 .contact-info-section h2 {
     color: var(--primary-color);
     margin-bottom: 1rem;
-    font-size: 1.5rem;
 }
 
 .contact-info-item {
@@ -156,7 +153,7 @@
 }
 
 .contact-icon {
-    font-size: 2.5rem;
+    font-size: var(--h1-size);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -170,7 +167,7 @@
 .contact-details h3 {
     color: var(--primary-color);
     margin: 0 0 0.5rem 0;
-    font-size: 1em;
+    font-size: var(--text-size);
 }
 
 .contact-details p,
@@ -203,7 +200,6 @@
 
 .contact-history h2 {
     color: var(--primary-color);
-    font-size: 1.5rem;
     margin-bottom: 1.5rem;
 }
 
@@ -257,17 +253,17 @@
 .history-subject {
     font-weight: 700;
     color: var(--primary-color);
-    font-size: 0.95rem;
+    font-size: var(--text-size);
 }
 
 .history-date {
     color: #888;
-    font-size: 0.82rem;
+    font-size: var(--text-size);
 }
 
 /* Status badge */
 .history-status {
-    font-size: 0.78rem;
+    font-size: var(--text-size);
     font-weight: 700;
     padding: 3px 12px;
     border-radius: 20px;
@@ -293,7 +289,7 @@
 }
 
 .history-label {
-    font-size: 0.75rem;
+    font-size: var(--text-size);
     font-weight: 700;
     color: #999;
     text-transform: uppercase;
@@ -315,12 +311,12 @@
     font-style: italic;
     text-transform: none;
     letter-spacing: 0;
-    font-size: 0.75rem;
+    font-size: var(--text-size);
 }
 
 .history-text {
     color: #333;
-    font-size: 0.95rem;
+    font-size: var(--text-size);
     line-height: 1.65;
     background: #f8f9fa;
     border-left: 3px solid var(--accent-color);
@@ -336,7 +332,7 @@
 
 .history-response-text {
     color: #1a3a1a;
-    font-size: 0.95rem;
+    font-size: var(--text-size);
     line-height: 1.65;
     background: #fff;
     border-left: 3px solid #107c10;
