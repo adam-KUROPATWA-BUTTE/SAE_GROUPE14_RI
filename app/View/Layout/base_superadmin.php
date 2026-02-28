@@ -12,7 +12,7 @@
  */
 
 $isTritanopia = isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true;
-$isLoggedIn   = isset($_SESSION['user_role']);
+$isLoggedIn   = isset($_SESSION['role']);
 
 $t = function (array $frEn) use ($lang): string {
     return ($lang ?? 'fr') === 'en' ? $frEn['en'] : $frEn['fr'];

@@ -19,7 +19,7 @@ class WebPlanControllerAdmin implements ControllerInterface
         }
 
         // Vérifier l'authentification admin
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             header('Location: index.php?page=login');
             exit;
         }
