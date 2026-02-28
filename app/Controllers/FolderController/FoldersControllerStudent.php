@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Controllers\site\FolderController;
+namespace Controllers\FolderController;
 
 use Controllers\ControllerInterface;
 use Model\UseCase\ManageFolderUseCase;
