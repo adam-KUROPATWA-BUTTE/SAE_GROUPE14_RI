@@ -143,7 +143,7 @@ class DashboardController implements ControllerInterface
 
     private function showStudentDashboard(): void
     {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'student') {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
             header('Location: index.php?page=login');
             exit;
         }
