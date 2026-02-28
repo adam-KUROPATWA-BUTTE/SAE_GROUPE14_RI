@@ -37,57 +37,103 @@ $unreadCount = count(array_filter($studentMessages ?? [], fn($m) => !$m->isRead(
                 <button class="btn-my-messages" onclick="toggleMessages()">
                     📬 <?= $t(['fr' => 'Mes messages', 'en' => 'My messages']) ?>
                     <span class="msg-count-badge"><?= count($studentMessages) ?></span>
-                    <?php if ($unreadCount > 0): ?>
-                        <span class="msg-unread-badge"><?= $unreadCount ?> <?= $t(['fr' => 'nouvelle(s) réponse(s)', 'en' => 'new reply(ies)']) ?></span>
-                    <?php endif; ?>
+
                     <span class="btn-arrow" id="msgArrow">▼</span>
                 </button>
             <?php endif; ?>
         </div>
 
-        <!-- ── Historique des messages (caché par défaut) ── -->
+        <!-- ── Historique des messages ── -->
         <?php if (!empty($studentMessages)): ?>
             <div class="contact-history" id="messagesPanel" style="display:none;">
                 <div class="history-list">
                     <?php foreach ($studentMessages as $msg):
-                        $hasResponse  = $msg->getAdminResponse() !== null;
-                        $subjectLabel = $subjects[$msg->getSubject()] ?? $msg->getSubject();
+                        $hasResponse     = $msg->getAdminResponse() !== null;
+                        $hasStudentReply = $msg->getStudentReply() !== null;
+                        $subjectLabel    = $subjects[$msg->getSubject()] ?? $msg->getSubject();
                         ?>
                         <div class="history-card <?= $hasResponse ? 'history-card--answered' : 'history-card--pending' ?>">
 
+                            <!-- Header -->
                             <div class="history-card-header">
                                 <div class="history-meta">
                                     <span class="history-subject"><?= htmlspecialchars($subjectLabel) ?></span>
                                     <span class="history-date"><?= $msg->getCreatedAt()->format('d/m/Y H:i') ?></span>
                                 </div>
                                 <span class="history-status <?= $hasResponse ? 'history-status--answered' : 'history-status--pending' ?>">
-                            <?= $hasResponse
-                                ? '✓ ' . $t(['fr' => 'Répondu', 'en' => 'Answered'])
-                                : '⏳ ' . $t(['fr' => 'En attente', 'en' => 'Pending']) ?>
-                        </span>
+                                <?= $hasResponse
+                                    ? '✓ ' . $t(['fr' => 'Répondu', 'en' => 'Answered'])
+                                    : '⏳ ' . $t(['fr' => 'En attente', 'en' => 'Pending']) ?>
+                            </span>
                             </div>
 
+                            <!-- Message étudiant -->
                             <div class="history-message-block">
-                                <div class="history-label">
-                                    <?= $t(['fr' => 'Votre message', 'en' => 'Your message']) ?>
-                                </div>
-                                <div class="history-text">
-                                    <?= nl2br(htmlspecialchars($msg->getMessage())) ?>
-                                </div>
+                                <div class="history-label"><?= $t(['fr' => 'Votre message', 'en' => 'Your message']) ?></div>
+                                <div class="history-text"><?= nl2br(htmlspecialchars($msg->getMessage())) ?></div>
                             </div>
 
                             <?php if ($hasResponse): ?>
+
+                                <!-- Réponse admin -->
                                 <div class="history-response-block">
                                     <div class="history-label history-label--response">
                                         <?= $t(['fr' => 'Réponse du service', 'en' => 'Service response']) ?>
-                                        <span class="history-response-date">
-                                    — <?= $msg->getRespondedAt()?->format('d/m/Y H:i') ?>
-                                </span>
+                                        <span class="history-response-date">— <?= $msg->getRespondedAt()?->format('d/m/Y H:i') ?></span>
                                     </div>
                                     <div class="history-response-text">
                                         <?= nl2br(htmlspecialchars($msg->getAdminResponse())) ?>
                                     </div>
                                 </div>
+
+                                <?php if ($hasStudentReply): ?>
+
+                                    <!-- Réponse étudiant déjà envoyée -->
+                                    <div class="history-student-reply-block">
+                                        <div class="history-label history-label--student-reply">
+                                            <?= $t(['fr' => 'Votre réponse', 'en' => 'Your reply']) ?>
+                                            <span class="history-response-date">— <?= $msg->getStudentRepliedAt()?->format('d/m/Y H:i') ?></span>
+                                        </div>
+                                        <div class="history-student-reply-text">
+                                            <?= nl2br(htmlspecialchars($msg->getStudentReply())) ?>
+                                        </div>
+                                    </div>
+
+                                <?php else: ?>
+
+                                    <!-- Formulaire réponse étudiant -->
+                                    <div class="history-reply-form">
+                                        <button type="button"
+                                                class="btn-toggle-reply"
+                                                onclick="toggleReplyForm(<?= $msg->getId() ?>)">
+                                            ↩ <?= $t(['fr' => 'Répondre', 'en' => 'Reply']) ?>
+                                        </button>
+
+                                        <div class="reply-form-inner" id="replyForm<?= $msg->getId() ?>" style="display:none;">
+                                            <form method="POST"
+                                                  action="index.php?page=contact-student&action=reply&id=<?= $msg->getId() ?>&lang=<?= $lang ?>">
+                                            <textarea
+                                                    name="student_reply"
+                                                    rows="4"
+                                                    required
+                                                    placeholder="<?= $t(['fr' => 'Votre réponse...', 'en' => 'Your reply...']) ?>"
+                                            ></textarea>
+                                                <div class="reply-form-actions">
+                                                    <button type="submit" class="btn-send-reply">
+                                                        <?= $t(['fr' => 'Envoyer', 'en' => 'Send']) ?>
+                                                    </button>
+                                                    <button type="button"
+                                                            class="btn-cancel-reply"
+                                                            onclick="toggleReplyForm(<?= $msg->getId() ?>)">
+                                                        <?= $t(['fr' => 'Annuler', 'en' => 'Cancel']) ?>
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+
+                                <?php endif; ?>
+
                             <?php endif; ?>
 
                         </div>
@@ -98,7 +144,7 @@ $unreadCount = count(array_filter($studentMessages ?? [], fn($m) => !$m->isRead(
 
         <div class="contact-content">
 
-            <!-- ── Formulaire ── -->
+            <!-- ── Formulaire nouveau message ── -->
             <div class="contact-form-section">
                 <h2><?= $t(['fr' => 'Envoyez-nous un message', 'en' => 'Send us a message']) ?></h2>
 
@@ -112,9 +158,7 @@ $unreadCount = count(array_filter($studentMessages ?? [], fn($m) => !$m->isRead(
                 <?php endif; ?>
 
                 <?php if ($error): ?>
-                    <div class="error-message">
-                        ✗ <?= htmlspecialchars($error) ?>
-                    </div>
+                    <div class="error-message">✗ <?= htmlspecialchars($error) ?></div>
                 <?php endif; ?>
 
                 <form method="POST" class="contact-form">
@@ -123,13 +167,10 @@ $unreadCount = count(array_filter($studentMessages ?? [], fn($m) => !$m->isRead(
                         <input type="text" id="name" name="name" required
                                placeholder="<?= $t(['fr' => 'Votre nom', 'en' => 'Your name']) ?>">
                     </div>
-
                     <div class="form-group">
                         <label for="email"><?= $t(['fr' => 'Email', 'en' => 'Email']) ?> *</label>
-                        <input type="email" id="email" name="email" required
-                               placeholder="votre.email@etu.univ-amu.fr">
+                        <input type="email" id="email" name="email" required placeholder="votre.email@etu.univ-amu.fr">
                     </div>
-
                     <div class="form-group">
                         <label for="subject"><?= $t(['fr' => 'Sujet', 'en' => 'Subject']) ?> *</label>
                         <select id="subject" name="subject" required>
@@ -141,43 +182,32 @@ $unreadCount = count(array_filter($studentMessages ?? [], fn($m) => !$m->isRead(
                             <option value="other"><?= $t(['fr' => 'Autre', 'en' => 'Other']) ?></option>
                         </select>
                     </div>
-
                     <div class="form-group">
                         <label for="message"><?= $t(['fr' => 'Message', 'en' => 'Message']) ?> *</label>
                         <textarea id="message" name="message" rows="6" required
                                   placeholder="<?= $t(['fr' => 'Votre message...', 'en' => 'Your message...']) ?>"></textarea>
                     </div>
-
-                    <button type="submit" class="btn-submit">
-                        <?= $t(['fr' => 'Envoyer', 'en' => 'Send']) ?>
-                    </button>
+                    <button type="submit" class="btn-submit"><?= $t(['fr' => 'Envoyer', 'en' => 'Send']) ?></button>
                 </form>
             </div>
 
             <!-- ── Coordonnées ── -->
             <div class="contact-info-section">
                 <h2><?= $t(['fr' => 'Nos coordonnées', 'en' => 'Our contact information']) ?></h2>
-
                 <div class="contact-info-item">
                     <div class="contact-icon">📧</div>
                     <div class="contact-details">
                         <h3><?= $t(['fr' => 'Email', 'en' => 'Email']) ?></h3>
-                        <a href="mailto:<?= htmlspecialchars($contactInfo['email']) ?>">
-                            <?= htmlspecialchars($contactInfo['email']) ?>
-                        </a>
+                        <a href="mailto:<?= htmlspecialchars($contactInfo['email']) ?>"><?= htmlspecialchars($contactInfo['email']) ?></a>
                     </div>
                 </div>
-
                 <div class="contact-info-item">
                     <div class="contact-icon">📞</div>
                     <div class="contact-details">
                         <h3><?= $t(['fr' => 'Téléphone', 'en' => 'Phone']) ?></h3>
-                        <a href="tel:<?= htmlspecialchars($contactInfo['phone']) ?>">
-                            <?= htmlspecialchars($contactInfo['phone']) ?>
-                        </a>
+                        <a href="tel:<?= htmlspecialchars($contactInfo['phone']) ?>"><?= htmlspecialchars($contactInfo['phone']) ?></a>
                     </div>
                 </div>
-
                 <div class="contact-info-item">
                     <div class="contact-icon">📍</div>
                     <div class="contact-details">
@@ -185,7 +215,6 @@ $unreadCount = count(array_filter($studentMessages ?? [], fn($m) => !$m->isRead(
                         <p><?= $contactInfo['address'][$lang] ?></p>
                     </div>
                 </div>
-
                 <div class="contact-info-item">
                     <div class="contact-icon">🕒</div>
                     <div class="contact-details">
@@ -197,27 +226,15 @@ $unreadCount = count(array_filter($studentMessages ?? [], fn($m) => !$m->isRead(
         </div>
     </div>
 
-    <div id="app-config"
-         data-lang="<?= htmlspecialchars($lang) ?>"
-         data-role="student"
-         style="display:none;">
-    </div>
+    <div id="app-config" data-lang="<?= htmlspecialchars($lang) ?>" data-role="student" style="display:none;"></div>
 
-    <script>
-        function toggleMessages() {
-            const panel = document.getElementById('messagesPanel');
-            const arrow = document.getElementById('msgArrow');
-            const isOpen = panel.style.display !== 'none';
-            panel.style.display = isOpen ? 'none' : 'block';
-            arrow.textContent = isOpen ? '▼' : '▲';
-        }
-    </script>
+
 
 <?php
 $content    = ob_get_clean();
 $title      = $t(['fr' => 'Contact - Relations Internationales', 'en' => 'Contact - International Relations']);
 $styles     = ['styles/contact.css'];
-$scripts    = [];
+$scripts    = ['js/contact_student.js'];
 $activeMenu = 'contact';
 $userRole   = 'student';
 

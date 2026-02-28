@@ -635,3 +635,45 @@ body.tritanopie .admin-response-form textarea:focus {
     border-color: #004e25;
     box-shadow: 0 0 0 3px rgba(0, 78, 37, 0.1);
 }
+/* ── Réponse étudiant ─────────────────────────────────── */
+.student-reply-block {
+    background: #eef4ff;
+    border-left: 4px solid #0f6cbd;
+    border-radius: 6px;
+    padding: 1.2rem 2rem;
+    margin-top: 0.5rem;
+}
+
+.student-reply-block h4 {
+    color: #0f6cbd;
+    margin: 0 0 0.6rem;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.student-reply-block .student-reply-text {
+    line-height: 1.7;
+    color: #1a2a3a;
+    font-size: 1rem;
+}
+
+.student-reply-block small {
+    color: #4a6a8a;
+    font-size: 0.88rem;
+    font-style: italic;
+}
+
+/* Tritanopie */
+body.tritanopie .student-reply-block {
+    background: #e0f7fa;
+    border-left-color: #004e25;
+}
+
+body.tritanopie .student-reply-block h4 {
+    color: #004e25;
+}
+
+body.tritanopie .student-reply-block small {
+    color: #2e6b4a;
+}
