@@ -72,6 +72,7 @@ class HomeControllerAdmin implements ControllerInterface
         // --- RENDU ---
         View::render('HomePage/home_admin', [
             'isLoggedIn'           => true,
+            'userRole'             => $_SESSION['role'] ?? null,
             'lang'                 => $lang,
             'completionPercentage' => $completionPercentage,
             'stats'                => $stats,

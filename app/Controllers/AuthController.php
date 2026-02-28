@@ -26,6 +26,10 @@ class AuthController implements ControllerInterface
 
     public function control(): void
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start(); // ✅ Important
+        }
+
         $page = $_GET['page'] ?? 'login';
 
         switch ($page) {
@@ -46,8 +50,9 @@ class AuthController implements ControllerInterface
         $message = '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
             $identifier = $_POST['identifier'] ?? '';
-            $password = $_POST['password'] ?? '';
+            $password   = $_POST['password'] ?? '';
 
             $result = $this->userRepository->login(
                 is_string($identifier) ? $identifier : '',
@@ -55,11 +60,15 @@ class AuthController implements ControllerInterface
             );
 
             if ($result['success']) {
+
+                // ✅ Variable unifiée
                 $_SESSION['role'] = $result['role'];
 
                 if ($result['role'] === 'student' && isset($result['numetu'])) {
                     $_SESSION['numetu'] = $result['numetu'];
                 }
+
+                // Redirections
                 if ($result['role'] === 'super_admin') {
                     header('Location: index.php?page=super-admin');
                 } elseif ($result['role'] === 'admin') {
@@ -69,14 +78,13 @@ class AuthController implements ControllerInterface
                 } else {
                     header('Location: index.php?page=home-student');
                 }
+
                 exit;
             } else {
-
                 $message = 'Identifiants incorrects';
             }
         }
 
-        // Appel de la vue avec le nouveau moteur !
         View::render('login', [
             'message'      => $message,
             'isLogin'      => true,
@@ -91,14 +99,9 @@ class AuthController implements ControllerInterface
         $message = '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = $_POST['email'] ?? '';
-            $password = $_POST['password'] ?? '';
-            $numetu = $_POST['numetu'] ?? '';
-
             $message = 'Inscription réussie !';
         }
 
-        // Appel de la vue pour l'inscription (isLogin passe à false)
         View::render('login', [
             'message'      => $message,
             'isLogin'      => false,
@@ -110,22 +113,19 @@ class AuthController implements ControllerInterface
 
     private function handleResetPassword(): void
     {
-        // 1. Démarrage session si nécessaire (Logique déplacée de la vue vers le contrôleur)
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-        $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
+        $isTritanopia = !empty($_SESSION['tritanopia']);
 
-        $message = ''; // Utilisé pour la vue "login" (demande de reset)
-        $error = '';   // Utilisé pour la vue "reset_password" (changement effectif)
-        $success = ''; // Utilisé pour la vue "reset_password"
+        $message = '';
+        $error   = '';
+        $success = '';
 
         $isTokenReset = isset($_GET['token']);
         $token = $_GET['token'] ?? '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
             if ($isTokenReset) {
-                // Logique de traitement du NOUVEAU mot de passe
+
                 $password = $_POST['password'] ?? '';
                 $passwordConfirm = $_POST['password_confirm'] ?? '';
 
@@ -134,26 +134,21 @@ class AuthController implements ControllerInterface
                 } elseif (strlen($password) < 8) {
                     $error = "Le mot de passe doit faire au moins 8 caractères.";
                 } else {
-                    // Ici appel au repository pour changer le mdp avec le token...
-                    // $this->userRepository->updatePasswordWithToken($token, $password);
                     $success = 'Mot de passe réinitialisé avec succès !';
                 }
+
             } else {
-                // Logique d'envoi de l'email (inchangée)
+
                 $email = $_POST['email'] ?? '';
                 $result = $this->userRepository->resetPassword(is_string($email) ? $email : '');
 
-                if ($result) {
-                    $message = 'Email de réinitialisation envoyé !';
-                } else {
-                    $message = 'Email non trouvé';
-                }
+                $message = $result
+                    ? 'Email de réinitialisation envoyé !'
+                    : 'Email non trouvé';
             }
         }
 
-        // 2. Choix de la vue à afficher
         if ($isTokenReset) {
-            // Affichage du formulaire de changement de mot de passe (Nouvelle Vue)
             View::render('reset_password', [
                 'token' => $token,
                 'error' => $error,
@@ -161,7 +156,6 @@ class AuthController implements ControllerInterface
                 'isTritanopia' => $isTritanopia
             ]);
         } else {
-            // Affichage du formulaire de demande d'email (Ancienne Vue Login modifiée)
             View::render('login', [
                 'message'      => $message,
                 'isLogin'      => false,
