@@ -14,7 +14,6 @@
     box-shadow: none ;
 }
 
-/* --- Floating Chat Bubble Icon --- */
 #help-bubble {
     position: fixed;
     bottom: 20px;
@@ -38,6 +37,28 @@
     transform: scale(1.1);
 }
 
+#help-popup {
+    display: none;
+    position: fixed;
+    bottom: 60px;
+    right: 20px;
+    width: 300px;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 0px 10px rgba(0,0,0,0.3);
+    display: none;
+    z-index: 1001;
+    padding:10px;
+}
+
+#help-popup ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+
 /* --- Main Chat Window Container --- */
 .chat-popup {
     position: fixed;
@@ -57,7 +78,7 @@
 
 /* --- Chat Header --- */
 .help-popup-header {
-    background-color: #003366;
+    background-color: var(--primary-color);
     color: white;
     padding: 15px;
     display: flex;
@@ -66,7 +87,10 @@
     font-weight: bold;
     font-size: 1.1em;
     flex-shrink: 0;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
+
 
 .help-popup-header button {
     background: none;
@@ -74,6 +98,19 @@
     color: white;
     font-size: 1em;
     cursor: pointer;
+}
+
+.help-popup-body {
+    padding: 15px;
+}
+
+.help-popup-body ul {
+    padding-left: 20px;
+    margin: 0;
+}
+
+.help-popup-body li {
+    margin-bottom: 10px;
 }
 
 /* --- Message Scroll Area --- */
