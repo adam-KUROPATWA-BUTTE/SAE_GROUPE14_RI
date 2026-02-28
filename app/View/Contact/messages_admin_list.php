@@ -19,19 +19,20 @@ $subjects = [
     'other'     => $t(['fr' => 'Autre',                     'en' => 'Other']),
 ];
 
-// Serialize messages for JS consumption
 $messagesJson = json_encode(array_map(function ($m) {
     return [
-        'id'            => $m->getId(),
-        'name'          => $m->getName(),
-        'numEtu'        => $m->getStudentNumEtu(),
-        'email'         => $m->getEmail(),
-        'subject'       => $m->getSubject(),
-        'message'       => $m->getMessage(),
-        'createdAt'     => $m->getCreatedAt()->format('d/m/Y H:i'),
-        'isRead'        => $m->isRead(),
-        'adminResponse' => $m->getAdminResponse(),
-        'respondedAt'   => $m->getAdminResponse() ? $m->getRespondedAt()->format('d/m/Y H:i') : null,
+        'id'               => $m->getId(),
+        'name'             => $m->getName(),
+        'numEtu'           => $m->getStudentNumEtu(),
+        'email'            => $m->getEmail(),
+        'subject'          => $m->getSubject(),
+        'message'          => $m->getMessage(),
+        'createdAt'        => $m->getCreatedAt()->format('d/m/Y H:i'),
+        'isRead'           => $m->isRead(),
+        'adminResponse'    => $m->getAdminResponse(),
+        'respondedAt'      => $m->getAdminResponse() ? $m->getRespondedAt()?->format('d/m/Y H:i') : null,
+        'studentReply'     => $m->getStudentReply(),
+        'studentRepliedAt' => $m->getStudentReply() ? $m->getStudentRepliedAt()?->format('d/m/Y H:i') : null,
     ];
 }, $messages), JSON_UNESCAPED_UNICODE);
 ?>

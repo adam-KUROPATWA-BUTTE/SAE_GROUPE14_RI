@@ -4,13 +4,11 @@
  */
 class MessagesAdmin {
     constructor() {
-        // Retrieve configuration from the DOM
         const cfg = document.getElementById('app-config')?.dataset || {};
         this.lang = cfg.lang || 'fr';
         this.base = cfg.base || '';
         this.messages = cfg.messages ? JSON.parse(cfg.messages) : [];
 
-        // Map subjects to the current language
         this.subjects = {
             mobility:  this.lang === 'fr' ? 'Question sur ma mobilité'  : 'Mobility question',
             documents: this.lang === 'fr' ? 'Documents requis'           : 'Required documents',
@@ -19,16 +17,10 @@ class MessagesAdmin {
             other:     this.lang === 'fr' ? 'Autre'                      : 'Other',
         };
 
-        // Create a map for O(1) access to messages by ID
         this.msgMap = {};
         this.messages.forEach(m => { this.msgMap[m.id] = m; });
     }
 
-    /**
-     * Escapes HTML characters to prevent XSS.
-     * @param {string} str - The string to escape.
-     * @returns {string} The escaped string.
-     */
     esc(str) {
         if (!str) return '';
         return String(str)
@@ -38,26 +30,15 @@ class MessagesAdmin {
             .replace(/"/g, '&quot;');
     }
 
-    /**
-     * Converts newline characters to HTML <br> tags.
-     * @param {string} str - The string to convert.
-     * @returns {string} The formatted string.
-     */
     nl2br(str) {
         return str.replace(/\n/g, '<br>');
     }
 
-    /**
-     * Loads a message into the reading pane.
-     * @param {number} id - The ID of the message.
-     * @param {HTMLElement} el - The clicked element in the list.
-     */
     loadMessage(id, el) {
-        // Update UI selection state
         document.querySelectorAll('.message-item').forEach(i => i.classList.remove('selected'));
         el.classList.add('selected');
         el.classList.remove('unread');
-        
+
         const dot = el.querySelector('.unread-dot');
         if (dot) dot.remove();
 
@@ -66,7 +47,7 @@ class MessagesAdmin {
 
         const subjectLabel = this.subjects[m.subject] || m.subject;
 
-        // Build header
+        // ── Header ──
         document.getElementById('readingHeader').innerHTML = `
             <div class="reading-subject">${this.esc(subjectLabel)}</div>
             <div class="reading-meta">
@@ -95,25 +76,36 @@ class MessagesAdmin {
             </div>
         `;
 
-        // Build body
+        // ── Body ──
         let bodyHtml = `
             <div class="message-text-block">
                 ${this.nl2br(this.esc(m.message))}
             </div>
         `;
 
-        // Check if there is already an admin response
         if (m.adminResponse) {
+            // Réponse admin
             bodyHtml += `
                 <div class="response-sent-block">
                     <h4>${this.lang === 'fr' ? 'Votre réponse' : 'Your response'}</h4>
                     <div class="response-text">${this.nl2br(this.esc(m.adminResponse))}</div>
-                    <small>
-                        ${this.lang === 'fr' ? 'Envoyée le' : 'Sent on'} ${this.esc(m.respondedAt)}
-                    </small>
+                    <small>${this.lang === 'fr' ? 'Envoyée le' : 'Sent on'} ${this.esc(m.respondedAt)}</small>
                 </div>
             `;
+
+            // Réponse étudiant si elle existe
+            if (m.studentReply) {
+                bodyHtml += `
+                    <div class="student-reply-block">
+                        <h4>${this.lang === 'fr' ? "Réponse de l'étudiant" : "Student's reply"}</h4>
+                        <div class="student-reply-text">${this.nl2br(this.esc(m.studentReply))}</div>
+                        <small>${this.lang === 'fr' ? 'Reçue le' : 'Received on'} ${this.esc(m.studentRepliedAt)}</small>
+                    </div>
+                `;
+            }
+
         } else {
+            // Formulaire de réponse admin
             bodyHtml += `
                 <div class="reply-form-block" id="replyForm">
                     <div class="reply-label">
@@ -133,21 +125,15 @@ class MessagesAdmin {
         }
 
         document.getElementById('readingBody').innerHTML = bodyHtml;
-        
-        // Show reading pane
         document.getElementById('readingEmpty').style.display = 'none';
         document.getElementById('readingContent').style.display = 'flex';
 
-        // Mark as read in the backend if necessary
         if (!m.isRead) {
             m.isRead = true;
             fetch(`${this.base}&action=mark-read&id=${m.id}&lang=${this.lang}`, { method: 'POST' });
         }
     }
 
-    /**
-     * Scrolls the view smoothly to the reply form and focuses the textarea.
-     */
     scrollToReply() {
         const form = document.getElementById('replyForm');
         if (form) {
@@ -156,10 +142,6 @@ class MessagesAdmin {
         }
     }
 
-    /**
-     * Deletes a message after user confirmation.
-     * @param {number} id - The ID of the message to delete.
-     */
     deleteMsg(id) {
         const msg = this.lang === 'fr' ? 'Supprimer ce message ?' : 'Delete this message?';
         if (!confirm(msg)) return;
@@ -173,7 +155,6 @@ class MessagesAdmin {
     }
 }
 
-// Instantiate and expose globally
 document.addEventListener('DOMContentLoaded', () => {
     window.messagesAdmin = new MessagesAdmin();
 });

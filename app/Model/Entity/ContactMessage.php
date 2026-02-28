@@ -14,6 +14,8 @@ class ContactMessage
     private bool $isRead;
     private ?string $adminResponse;
     private ?\DateTime $respondedAt;
+    private ?string $studentReply;
+    private ?\DateTime $studentRepliedAt;
 
     public function __construct(
         string $studentNumEtu,
@@ -25,78 +27,52 @@ class ContactMessage
         ?\DateTime $createdAt = null,
         bool $isRead = false,
         ?string $adminResponse = null,
-        ?\DateTime $respondedAt = null
+        ?\DateTime $respondedAt = null,
+        ?string $studentReply = null,
+        ?\DateTime $studentRepliedAt = null
     ) {
-        $this->id = $id;
-        $this->studentNumEtu = $studentNumEtu;
-        $this->name = $name;
-        $this->email = $email;
-        $this->subject = $subject;
-        $this->message = $message;
-        $this->createdAt = $createdAt ?? new \DateTime();
-        $this->isRead = $isRead;
-        $this->adminResponse = $adminResponse;
-        $this->respondedAt = $respondedAt;
+        $this->id               = $id;
+        $this->studentNumEtu    = $studentNumEtu;
+        $this->name             = $name;
+        $this->email            = $email;
+        $this->subject          = $subject;
+        $this->message          = $message;
+        $this->createdAt        = $createdAt ?? new \DateTime();
+        $this->isRead           = $isRead;
+        $this->adminResponse    = $adminResponse;
+        $this->respondedAt      = $respondedAt;
+        $this->studentReply     = $studentReply;
+        $this->studentRepliedAt = $studentRepliedAt;
     }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    public function getId(): ?int { return $this->id; }
+    public function getStudentNumEtu(): string { return $this->studentNumEtu; }
+    public function getName(): string { return $this->name; }
+    public function getEmail(): string { return $this->email; }
+    public function getSubject(): string { return $this->subject; }
+    public function getMessage(): string { return $this->message; }
+    public function getCreatedAt(): \DateTime { return $this->createdAt; }
+    public function isRead(): bool { return $this->isRead; }
 
-    public function getStudentNumEtu(): string
-    {
-        return $this->studentNumEtu;
-    }
+    public function markAsRead(): void { $this->isRead = true; }
 
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function getEmail(): string
-    {
-        return $this->email;
-    }
-
-    public function getSubject(): string
-    {
-        return $this->subject;
-    }
-
-    public function getMessage(): string
-    {
-        return $this->message;
-    }
-
-    public function getCreatedAt(): \DateTime
-    {
-        return $this->createdAt;
-    }
-
-    public function isRead(): bool
-    {
-        return $this->isRead;
-    }
-
-    public function markAsRead(): void
-    {
-        $this->isRead = true;
-    }
-
-    public function getAdminResponse(): ?string
-    {
-        return $this->adminResponse;
-    }
+    public function getAdminResponse(): ?string { return $this->adminResponse; }
 
     public function setAdminResponse(string $response): void
     {
         $this->adminResponse = $response;
-        $this->respondedAt = new \DateTime();
+        $this->respondedAt   = new \DateTime();
     }
 
-    public function getRespondedAt(): ?\DateTime
+    public function getRespondedAt(): ?\DateTime { return $this->respondedAt; }
+
+    public function getStudentReply(): ?string { return $this->studentReply; }
+
+    public function setStudentReply(string $reply): void
     {
-        return $this->respondedAt;
+        $this->studentReply     = $reply;
+        $this->studentRepliedAt = new \DateTime();
     }
+
+    public function getStudentRepliedAt(): ?\DateTime { return $this->studentRepliedAt; }
 }

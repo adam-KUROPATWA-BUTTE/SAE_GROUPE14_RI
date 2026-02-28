@@ -54,6 +54,7 @@ class ContactService
     {
         return $this->repository->findUnread();
     }
+
     public function getMessageById(int $id): ?ContactMessage
     {
         return $this->repository->findById($id);
@@ -67,12 +68,59 @@ class ContactService
     public function respondToMessage(int $id, string $response): bool
     {
         $this->validateRequired($response, 'response');
-        return $this->repository->addAdminResponse($id, $response);
+
+        $message = $this->repository->findById($id);
+        if (!$message) return false;
+
+        $saved = $this->repository->addAdminResponse($id, $response);
+
+        if ($saved) {
+            $this->sendResponseMail($message, $response);
+        }
+
+        return $saved;
+    }
+
+    public function replyToAdminResponse(int $id, string $reply): bool
+    {
+        $this->validateRequired($reply, 'reply');
+        return $this->repository->addStudentReply($id, $reply);
     }
 
     public function deleteMessage(int $id): bool
     {
         return $this->repository->delete($id);
+    }
+
+    private function sendResponseMail(ContactMessage $message, string $response): void
+    {
+        $studentEmail = $message->getEmail();
+        $studentName  = $message->getName();
+
+        $subject = "=?UTF-8?B?" . base64_encode("Réponse à votre message - Service Relations Internationales AMU") . "?=";
+
+        $body  = "Bonjour $studentName,\r\n\r\n"
+            . "Le Service des Relations Internationales d'AMU a répondu à votre message.\r\n\r\n"
+            . "─────────────────────────────────\r\n"
+            . "Votre message :\r\n"
+            . $message->getMessage() . "\r\n\r\n"
+            . "─────────────────────────────────\r\n"
+            . "Notre réponse :\r\n"
+            . $response . "\r\n\r\n"
+            . "─────────────────────────────────\r\n\r\n"
+            . "Cordialement,\r\n"
+            . "Service des Relations Internationales — AMU\r\n";
+
+        $headers  = "From: relations.internationales@univ-amu.fr\r\n";
+        $headers .= "Reply-To: relations.internationales@univ-amu.fr\r\n";
+        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+        $headers .= "MIME-Version: 1.0\r\n";
+
+        try {
+            mail($studentEmail, $subject, $body, $headers);
+        } catch (\Exception $e) {
+            error_log("Mail non envoyé : " . $e->getMessage());
+        }
     }
 
     private function validateEmail(string $email): void
