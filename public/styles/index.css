@@ -5,6 +5,13 @@
     --background-color: #F9F1D7;
     --accent-color: #2B91BB;
     --hero-bg-color: #00558B;
+
+    --h1-size: 2.5rem;
+    --h2-size: 1.8rem;
+    --text-size: 1rem;
+    --text-small-size: 0.9rem;
+    --button-size: 1.5rem;
+    --button-small-size: 1rem;
 }
 
 body.tritanopie {
@@ -50,6 +57,11 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    font-size: var(--text-size);
+}
+
+h2{
+    font-size: var(--h2-size);
 }
 
 .right-buttons {
@@ -57,7 +69,13 @@ body {
     gap: 0px;
     align-items: center;
     margin-left :auto;
+
 }
+
+button{
+    font-size: var(--button-size)
+}
+
 
 .lang-dropdown {
     position : relative;
@@ -106,6 +124,7 @@ nav.menu button {
     background-color: var(--accent-color);
     color: var(--text-color);
     cursor: pointer;
+    font-size: var(--button-size);
 }
 
 nav.menu button:hover {
@@ -148,6 +167,7 @@ main {
 
 
 h1 {
+    font-size: var(--h1-size);
     text-align: center;
     color: #222;
 }
@@ -157,7 +177,6 @@ ul {
     margin: 2em 0 1em 1em;
     padding: 0;
     color: #333;
-    font-size: 1.1em;
 }
 
 ul li {
@@ -166,7 +185,7 @@ ul li {
 
 p {
     color: #444;
-    font-size: 1em;
+    font-size: var(--text-size);
     margin-bottom: 1em;
 }
 
@@ -194,7 +213,7 @@ footer::before {
 footer p {
     margin: 0;
     color: #f0f4ff;
-    font-size: 14px;
+    font-size: var(--text-small-size);
 }
 
 .insta {
@@ -202,78 +221,6 @@ footer p {
     margin-top: 10px;
 }
 
-#help-bubble {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background-color: #ffffff;
-    color: white;
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
-    text-align: center;
-    font-size: 2em;
-    line-height: 60px;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    z-index: 1000;
-}
-
-#help-popup {
-    display: none;
-    position: fixed;
-    bottom: 60px;
-    right: 20px;
-    width: 300px;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    box-shadow: 0 0px 10px rgba(0,0,0,0.3);
-    display: none;
-    z-index: 1001;
-    padding:10px;
-}
-
-
-#help-popup ul {
-    list-style-type: none;
-    padding-left: 0;
-    margin: 0;
-}
-
-.help-popup-header {
-    background-color: var(--accent-color);
-    color: white;
-    padding: 10px;
-    font-weight: bold;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-}
-
-
-.help-popup-header button {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 18px;
-    cursor: pointer;
-}
-
-.help-popup-body {
-    padding: 15px;
-}
-
-.help-popup-body ul {
-    padding-left: 20px;
-    margin: 0;
-}
-
-.help-popup-body li {
-    margin-bottom: 10px;
-}
 
 
 
@@ -284,7 +231,7 @@ li a {
     color:var(--accent-color);
     text-decoration: none;
     border-radius: 5px;
-    font-size: 1.1em;
+    font-size: var(--text-size);
 }
 
 li a:hover {
@@ -293,21 +240,6 @@ li a:hover {
 }
 
 
-
-#page_complete {
-    display: block;
-    padding: 1em;
-    background: #f0f4ff;
-    color: var(--accent-color);
-    text-decoration: none;
-    border-radius: 5px;
-    font-size: 1.1em;
-}
-
-#page_complete:hover {
-    background: var(--primary-color);
-    color: #fff;
-}
 /* Bouton Plan du site dans le footer */
 .footer-sitemap-btn {
     display: inline-flex;
@@ -320,7 +252,7 @@ li a:hover {
     color: white;
     text-decoration: none;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: var(--button-small-size);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -360,7 +292,7 @@ li a:hover {
 /* Icône optionnelle */
 .footer-sitemap-btn::after {
     content: '🗺️';
-    font-size: 1.1rem;
+    font-size: var(--button-small-size);
 }
 
 /* Séparateur entre les liens */
@@ -395,6 +327,7 @@ li a:hover {
 
 
 @media (max-width: 810px) {
+
     header {
         padding: 10px;
     }

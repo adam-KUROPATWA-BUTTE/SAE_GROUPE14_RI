@@ -50,9 +50,6 @@ main.messages {
     box-shadow: 0 4px 24px rgba(0,0,0,0.10);
     overflow: hidden;
 
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    font-size: 20px;
-
     box-sizing: border-box;
 }
 
@@ -68,7 +65,6 @@ main.messages {
 }
 
 .outlook-toolbar h1 {
-    font-size: 1.25rem;
     font-weight: 600;
     color: var(--primary);
     margin: 0;
@@ -81,7 +77,6 @@ main.messages {
     border-radius: 4px;
     background: #fff;
     color: var(--text-main);
-    font-size: 0.92rem;
     font-weight: 500;
     text-decoration: none;
     cursor: pointer;
@@ -120,7 +115,7 @@ main.messages {
     padding: 2rem;
     text-align: center;
     color: var(--text-muted);
-    font-size: 1rem;
+    font-size: var(--text-size);
 }
 
 .message-item {
@@ -157,7 +152,7 @@ main.messages {
 }
 
 .msg-item-name {
-    font-size: 1rem;
+    font-size: var(--text-size);
     font-weight: 600;
     color: var(--text-main);
     white-space: nowrap;
@@ -171,14 +166,14 @@ main.messages {
 }
 
 .msg-item-date {
-    font-size: 0.82rem;
+    font-size: var(--text-small-size);
     color: var(--text-muted);
     white-space: nowrap;
     flex-shrink: 0;
 }
 
 .msg-item-subject {
-    font-size: 0.92rem;
+    font-size: var(--text-small-size);
     font-weight: 500;
     color: var(--primary);
     margin-bottom: 0.25rem;
@@ -188,7 +183,7 @@ main.messages {
 }
 
 .msg-item-preview {
-    font-size: 0.88rem;
+    font-size: var(--text-small-size);
     color: var(--text-muted);
     white-space: nowrap;
     overflow: hidden;
@@ -239,7 +234,7 @@ main.messages {
 }
 
 .reading-subject {
-    font-size: 1.4rem;
+    font-size: var(--h2-size);
     font-weight: 700;
     color: var(--text-main);
     margin-bottom: 0.7rem;
@@ -249,7 +244,7 @@ main.messages {
     display: flex;
     gap: 2rem;
     flex-wrap: wrap;
-    font-size: 0.95rem;
+    font-size: var(--text-size);
     color: var(--text-muted);
 }
 
@@ -269,7 +264,7 @@ main.messages {
     color: #fff;
     border: none;
     border-radius: 4px;
-    font-size: 0.95rem;
+    font-size: var(--button-size);
     font-weight: 600;
     cursor: pointer;
     transition: background 0.15s;
@@ -283,7 +278,7 @@ main.messages {
     color: var(--red);
     border: 1px solid var(--red);
     border-radius: 4px;
-    font-size: 0.95rem;
+    font-size: var(--button-small-size);
     font-weight: 600;
     cursor: pointer;
     transition: background 0.15s;
@@ -308,7 +303,7 @@ main.messages {
     padding: 1.5rem 2rem;
     line-height: 1.8;
     color: var(--text-main);
-    font-size: 1rem;
+    font-size: var(--text-size);
 }
 
 /* Sent response block */
@@ -322,7 +317,7 @@ main.messages {
 .response-sent-block h4 {
     color: var(--green);
     margin: 0 0 0.6rem;
-    font-size: 0.95rem;
+    font-size: var(--text-size);
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
@@ -330,12 +325,12 @@ main.messages {
 .response-sent-block .response-text {
     line-height: 1.7;
     color: #1a3a1a;
-    font-size: 1rem;
+    font-size: var(--text-size);
 }
 
 .response-sent-block small {
     color: #4a7a4a;
-    font-size: 0.88rem;
+    font-size: var(--text-small-size);
     font-style: italic;
 }
 
@@ -349,7 +344,7 @@ main.messages {
 .reply-form-block .reply-label {
     padding: 0.7rem 1.2rem;
     background: var(--sidebar-bg);
-    font-size: 0.92rem;
+    font-size: var(--text-size);
     font-weight: 600;
     color: var(--text-muted);
     border-bottom: 1px solid var(--border);
@@ -360,8 +355,7 @@ main.messages {
     padding: 1.2rem;
     border: none;
     outline: none;
-    font-family: inherit;
-    font-size: 1rem;
+    font-size: var(--text-size);
     resize: vertical;
     min-height: 140px;
     box-sizing: border-box;
@@ -443,7 +437,7 @@ body.tritanopie {
     border: 1px solid var(--border);
     border-radius: 4px;
     color: var(--primary);
-    font-size: 0.95rem;
+    font-size: var(--button-small-size);
     font-weight: 600;
     text-decoration: none;
     transition: background 0.15s;
@@ -459,7 +453,7 @@ body.tritanopie {
     color: var(--red);
     border: 1px solid var(--red);
     border-radius: 4px;
-    font-size: 0.95rem;
+    font-size: var(--button-small-size);
     font-weight: 600;
     cursor: pointer;
     transition: background 0.15s;
@@ -492,7 +486,7 @@ body.tritanopie {
     display: flex;
     align-items: baseline;
     gap: 0.8rem;
-    font-size: 0.95rem;
+    font-size: var(--text-size);
 }
 
 .info-label {
@@ -517,7 +511,7 @@ body.tritanopie {
 
 .info-value small {
     color: var(--text-muted);
-    font-size: 0.85em;
+    font-size: var(--text-small-size);
     margin-left: 0.3rem;
 }
 
@@ -528,7 +522,7 @@ body.tritanopie {
 }
 
 .message-content h3 {
-    font-size: 1rem;
+    font-size: var(--text-size);
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -543,7 +537,7 @@ body.tritanopie {
     padding: 1.2rem 1.5rem;
     line-height: 1.8;
     color: var(--text-main);
-    font-size: 1rem;
+    font-size: var(--text-size);
 }
 
 /* Admin response — already sent */
@@ -554,7 +548,7 @@ body.tritanopie {
 }
 
 .admin-response-view h3 {
-    font-size: 1rem;
+    font-size: var(--text-size);
     font-weight: 700;
     color: var(--green);
     text-transform: uppercase;
@@ -565,13 +559,11 @@ body.tritanopie {
 .admin-response-view .response-text {
     line-height: 1.7;
     color: #1a3a1a;
-    font-size: 1rem;
     margin-bottom: 0.5rem;
 }
 
 .admin-response-view small {
     color: #4a7a4a;
-    font-size: 0.88rem;
     font-style: italic;
 }
 
@@ -581,7 +573,6 @@ body.tritanopie {
 }
 
 .admin-response-form h3 {
-    font-size: 1rem;
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -595,7 +586,6 @@ body.tritanopie {
     border: 1px solid var(--border);
     border-radius: 6px;
     font-family: inherit;
-    font-size: 1rem;
     resize: vertical;
     min-height: 140px;
     box-sizing: border-box;
@@ -616,7 +606,7 @@ body.tritanopie {
     color: #fff;
     border: none;
     border-radius: 4px;
-    font-size: 0.95rem;
+    font-size: var(--button-small-size);
     font-weight: 600;
     cursor: pointer;
     transition: background 0.15s;
@@ -647,7 +637,7 @@ body.tritanopie .admin-response-form textarea:focus {
 .student-reply-block h4 {
     color: #0f6cbd;
     margin: 0 0 0.6rem;
-    font-size: 0.95rem;
+    font-size: var(--text-size);
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
@@ -655,12 +645,12 @@ body.tritanopie .admin-response-form textarea:focus {
 .student-reply-block .student-reply-text {
     line-height: 1.7;
     color: #1a2a3a;
-    font-size: 1rem;
+    font-size: var(--text-size);
 }
 
 .student-reply-block small {
     color: #4a6a8a;
-    font-size: 0.88rem;
+    font-size: var(--text-small-size);
     font-style: italic;
 }
 
