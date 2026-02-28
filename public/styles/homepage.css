@@ -53,7 +53,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 16px;
+    font-size: var(--text-size);
 }
 
 .legend-color {
@@ -112,7 +112,7 @@
 }
 
 .chart-percentage {
-    font-size: 48px;
+    font-size: var(--h1-size);
     font-weight: bold;
     color: var(--accent-color);
     line-height: 1;
@@ -143,7 +143,7 @@
     left: 10px;
     transform: none;
     color: #002439;
-    font-size: 40px;
+    font-size: var(--h1-size);
     font-weight: bold;
 }
 
@@ -256,7 +256,6 @@ body.tritanopie .stats-section {
     text-align: center;
     color: #003d7a;
     margin-bottom: 3rem;
-    font-size: 2.5rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -355,7 +354,7 @@ body.tritanopie .stat-item.outgoing {
 }
 
 .stat-number {
-    font-size: 4rem;
+    font-size: var(--h1-size);
     font-weight: bold;
     color: #003d7a;
     margin-bottom: 1rem;
@@ -366,14 +365,14 @@ body.tritanopie .stat-number {
 }
 
 .stat-label {
-    font-size: 1.3rem;
+    font-size: var(--h2-size);
     color: #333;
     font-weight: 600;
     margin-top: 1rem;
 }
 
 .stat-percentage-small {
-    font-size: 1.5rem;
+    font-size: var(--text-size);
     color: #666;
     margin-top: 1rem;
     font-weight: 600;
@@ -403,7 +402,7 @@ body.tritanopie .completion-fill {
 
 .stat-percentage {
     text-align: center;
-    font-size: 2rem;
+    font-size: var(--h2-size);
     color: #003d7a;
     font-weight: bold;
     margin-top: 1.5rem;
@@ -446,7 +445,7 @@ body.tritanopie .stat-percentage {
     color: white;
     border-radius: 50%;
     font-weight: bold;
-    font-size: 1.3rem;
+    font-size: var(--button-size);
     margin-right: 2rem;
     box-shadow: 0 4px 8px rgba(0, 61, 122, 0.3);
 }
@@ -458,13 +457,13 @@ body.tritanopie .rank {
 
 .country-name {
     flex: 1;
-    font-size: 1.3rem;
+    font-size: var(--button-size);
     color: #333;
     font-weight: 500;
 }
 
 .country-count {
-    font-size: 1.5rem;
+    font-size: var(--button-size);
     font-weight: bold;
     color: #003d7a;
     background: #f0f0f0;
@@ -529,7 +528,7 @@ body.tritanopie .gender-male {
 .dept-name {
     font-weight: 600;
     color: #003d7a;
-    font-size: 1.2rem;
+    font-size: var(--button-size);
 }
 
 body.tritanopie .dept-name {
@@ -558,7 +557,7 @@ body.tritanopie .dept-bar {
     text-align: right;
     font-weight: bold;
     color: #003d7a;
-    font-size: 1.3rem;
+    font-size: var(--button-size);
 }
 
 body.tritanopie .dept-count {
@@ -576,7 +575,7 @@ body.tritanopie .dept-count {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    font-size: 2.5rem;
+    font-size: var(--h1-size);
     cursor: pointer;
     transition: all 0.3s;
     z-index: 100;
@@ -659,7 +658,7 @@ body.tritanopie .mobilite-filter {
 }
 
 .mobilite-filter__label {
-    font-size: 1.1rem;
+    font-size: var(--text-size);
     color: #003d7a;
     font-weight: 700;
     text-transform: uppercase;
@@ -685,7 +684,7 @@ body.tritanopie .mobilite-filter__label {
     border: 2.5px solid #d1d5db;
     background: #fff;
     color: #555;
-    font-size: 1.1rem;
+    font-size: var(--text-size);
     font-weight: 700;
     font-family: inherit;
     text-decoration: none;
@@ -788,7 +787,7 @@ body.tritanopie .mobilite-btn--stage.active {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: 0.95rem;
+    font-size: var(--button-small-size);
     font-family: inherit;
     padding: 0.4rem 1.1rem;
     border-radius: 999px;
@@ -807,7 +806,7 @@ body.tritanopie .mobilite-filter__badge {
 
 .mobilite-filter__badge::before {
     content: '●';
-    font-size: 0.6rem;
+    font-size: var(--text-small-size);
     color: #003d7a;
     font-style: normal;
 }
