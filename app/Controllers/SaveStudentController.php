@@ -2,7 +2,7 @@
 
 // phpcs:disable Generic.Files.LineLength
 
-namespace Controllers\site;
+namespace Controllers;
 
 use Model\UseCase\ManageFolderUseCase;
 

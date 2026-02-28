@@ -1,163 +1,198 @@
-document.addEventListener("DOMContentLoaded", () => {
-    
-    /* --- 1. Gestion des formulaires (Admin & Student) --- */
-    
-    // Changement dynamique (Stage vs Études)
-    const mobiliteSelect = document.getElementById('mobilite_type');
-    if (mobiliteSelect) {
-        // Initial check
-        changerTypeMobilite(mobiliteSelect.value);
-        // Event listener
-        mobiliteSelect.addEventListener('change', function() {
-            changerTypeMobilite(this.value);
-        });
+/**
+ * Class representing the management of student folders.
+ * Handles form editing, dynamic fields, filtering, and table interactions.
+ */
+class FolderManager {
+    constructor() {
+        this.initFormEvents();
+        this.initFilterEvents();
+        this.initTableEvents();
     }
 
-    // Bouton Modifier (Admin)
-    const btnModifier = document.getElementById('btn-modifier');
-    if (btnModifier) {
-        btnModifier.addEventListener('click', activerModification);
-    }
-
-
-    /* --- 2. Gestion des Filtres et Recherche (Admin Liste) --- */
-
-    // Recherche avec touche Entrée
-    const searchInput = document.getElementById('search');
-    const searchBtn = document.querySelector('.btn-search');
-    
-    if (searchInput) {
-        // Debounce simple
-        let timeout = null;
-        searchInput.addEventListener('input', function() {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => {
-                 // Optionnel : recherche automatique au bout de 3s
-                 appliquerFiltres(true); 
-            }, 3000);
-        });
-
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') appliquerFiltres(true);
-        });
-    }
-
-    if (searchBtn) {
-        searchBtn.addEventListener('click', () => appliquerFiltres(true));
-    }
-
-    // Checkboxes filtres (Entrant/Sortant, Zones...)
-    const checkboxes = document.querySelectorAll('input[name="entrant_sortant"], input[name="zone"]');
-    checkboxes.forEach(cb => {
-        cb.addEventListener('click', function() {
-            // Comportement "Radio" pour les checkboxes du même groupe
-            const groupName = this.name;
-            document.querySelectorAll(`input[name="${groupName}"]`).forEach(other => {
-                if (other !== this) other.checked = false;
+    /**
+     * Initializes events related to the creation/edition forms.
+     */
+    initFormEvents() {
+        // Dynamic change (Internship vs Studies)
+        const mobiliteSelect = document.getElementById('mobilite_type');
+        if (mobiliteSelect) {
+            this.changerTypeMobilite(mobiliteSelect.value);
+            mobiliteSelect.addEventListener('change', (e) => {
+                this.changerTypeMobilite(e.target.value);
             });
-            appliquerFiltres(true);
-        });
-    });
-
-    // Selects filtres
-    const selectFilters = document.querySelectorAll('#filter-complet, #date-debut, #date-fin');
-    selectFilters.forEach(sel => {
-        sel.addEventListener('change', () => appliquerFiltres(true));
-    });
-
-    /* --- 3. Click sur ligne tableau --- */
-    const rows = document.querySelectorAll('#table-etudiants tbody tr');
-    rows.forEach(row => {
-        row.addEventListener('click', function() {
-            // On cherche l'ID dans un attribut data ou on le déduit (ici méthode simplifiée via attribut onclick simulé)
-            // L'idéal serait <tr data-numetu="xxx">
-            // Si vous gardez le onclick dans le HTML pour l'instant, ce bloc n'est pas nécessaire.
-            // Mais pour nettoyer complètement :
-            const numetu = this.dataset.numetu;
-            if (numetu) ouvrirFicheEtudiant(numetu);
-        });
-    });
-});
-
-/* --- Fonctions Logiques --- */
-
-function changerTypeMobilite(type) {
-    const conventionBlock = document.getElementById('justificatif_convention');
-    const lettreBlock = document.getElementById('lettre_motivation');
-
-    if (conventionBlock) conventionBlock.style.display = 'none';
-    if (lettreBlock) lettreBlock.style.display = 'none';
-
-    if (type === 'stage') {
-        if (conventionBlock) conventionBlock.style.display = 'block';
-    } else if (type === 'etudes') {
-        if (lettreBlock) lettreBlock.style.display = 'block';
-    }
-}
-
-function activerModification() {
-    document.querySelectorAll('.creation-form input, .creation-form select').forEach(field => {
-        // On ne réactive pas l'ID étudiant
-        if (field.id !== 'numetu' && field.id !== 'numetu_display') {
-            field.disabled = false;
-            field.style.backgroundColor = 'white';
-            field.style.color = 'black';
-            field.classList.remove('input-disabled');
         }
-    });
-    
-    const btnMod = document.getElementById('btn-modifier');
-    const btnSave = document.getElementById('btn-enregistrer');
-    const btnCancel = document.getElementById('btn-annuler');
-    const fileInputs = document.querySelectorAll('input[type="file"]');
 
-    if (btnMod) btnMod.style.display = 'none';
-    if (btnSave) btnSave.style.display = 'inline-block';
-    if (btnSave) btnSave.classList.remove('btn-hidden');
-    if (btnCancel) btnCancel.style.display = 'inline-block';
-    if (btnCancel) btnCancel.classList.remove('btn-hidden');
-
-    fileInputs.forEach(input => {
-        input.disabled = false;
-        input.classList.remove('input-disabled');
-    });
-}
-
-function ouvrirFicheEtudiant(numetu) {
-    const url = new URL(window.location.href);
-    url.searchParams.set('action', 'view');
-    url.searchParams.set('numetu', numetu);
-    window.location.href = url.toString();
-}
-
-function appliquerFiltres(resetPage = false) {
-    const url = new URL(window.location.href);
-    
-    // Recherche textuelle
-    const searchInput = document.getElementById('search');
-    if (searchInput && searchInput.value.trim() !== '') {
-        url.searchParams.set('search', searchInput.value.trim());
-    } else {
-        url.searchParams.delete('search');
+        // Edit button for admins
+        const btnModifier = document.getElementById('btn-modifier');
+        if (btnModifier) {
+            btnModifier.addEventListener('click', () => this.activerModification());
+        }
     }
 
-    // Checkboxes Type
-    const typeChecked = document.querySelector('input[name="entrant_sortant"]:checked');
-    if (typeChecked) url.searchParams.set('type', typeChecked.value);
-    else url.searchParams.delete('type');
+    /**
+     * Initializes events related to the search and filtering system.
+     */
+    initFilterEvents() {
+        const searchInput = document.getElementById('search');
+        const searchBtn = document.querySelector('.btn-search');
+        
+        if (searchInput) {
+            let timeout = null;
+            searchInput.addEventListener('input', () => {
+                clearTimeout(timeout);
+                // Auto-search after 3 seconds of inactivity
+                timeout = setTimeout(() => {
+                     this.appliquerFiltres(true); 
+                }, 3000);
+            });
 
-    // Checkboxes Zone
-    const zoneChecked = document.querySelector('input[name="zone"]:checked');
-    if (zoneChecked) url.searchParams.set('zone', zoneChecked.value);
-    else url.searchParams.delete('zone');
+            // Search on Enter key
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.appliquerFiltres(true);
+            });
+        }
 
-    // Select Statut
-    const completVal = document.getElementById('filter-complet');
-    if (completVal && completVal.value !== 'all') url.searchParams.set('complet', completVal.value);
-    else url.searchParams.delete('complet');
+        if (searchBtn) {
+            searchBtn.addEventListener('click', () => this.appliquerFiltres(true));
+        }
 
-    // Reset pagination
-    if (resetPage) url.searchParams.set('p', 1);
+        // Checkboxes filters (Incoming/Outgoing, Zones)
+        const checkboxes = document.querySelectorAll('input[name="entrant_sortant"], input[name="zone"]');
+        checkboxes.forEach(cb => {
+            cb.addEventListener('click', (e) => {
+                // Radio-like behavior for checkboxes of the same group
+                const groupName = e.target.name;
+                document.querySelectorAll(`input[name="${groupName}"]`).forEach(other => {
+                    if (other !== e.target) other.checked = false;
+                });
+                this.appliquerFiltres(true);
+            });
+        });
 
-    window.location.href = url.toString();
+        // Dropdown filters
+        const selectFilters = document.querySelectorAll('#filter-complet, #date-debut, #date-fin');
+        selectFilters.forEach(sel => {
+            sel.addEventListener('change', () => this.appliquerFiltres(true));
+        });
+    }
+
+    /**
+     * Initializes table row clicks to view a student's profile.
+     */
+    initTableEvents() {
+        const rows = document.querySelectorAll('#table-etudiants tbody tr');
+        rows.forEach(row => {
+            row.addEventListener('click', (e) => {
+                const numetu = e.currentTarget.dataset.numetu;
+                if (numetu) this.ouvrirFicheEtudiant(numetu);
+            });
+        });
+    }
+
+    /**
+     * Toggles the display of document upload fields based on mobility type.
+     * @param {string} type - 'stage' (internship) or 'etudes' (studies).
+     */
+    changerTypeMobilite(type) {
+        const conventionBlock = document.getElementById('justificatif_convention');
+        const lettreBlock = document.getElementById('lettre_motivation');
+
+        if (conventionBlock) conventionBlock.style.display = 'none';
+        if (lettreBlock) lettreBlock.style.display = 'none';
+
+        if (type === 'stage' && conventionBlock) {
+            conventionBlock.style.display = 'block';
+        } else if (type === 'etudes' && lettreBlock) {
+            lettreBlock.style.display = 'block';
+        }
+    }
+
+    /**
+     * Activates the form fields for editing (Admin side).
+     */
+    activerModification() {
+        document.querySelectorAll('.creation-form input, .creation-form select').forEach(field => {
+            // Do not reactivate the student ID field
+            if (field.id !== 'numetu' && field.id !== 'numetu_display') {
+                field.disabled = false;
+                field.style.backgroundColor = 'white';
+                field.style.color = 'black';
+                field.classList.remove('input-disabled');
+            }
+        });
+        
+        const btnMod = document.getElementById('btn-modifier');
+        const btnSave = document.getElementById('btn-enregistrer');
+        const btnCancel = document.getElementById('btn-annuler');
+        const fileInputs = document.querySelectorAll('input[type="file"]');
+
+        if (btnMod) btnMod.style.display = 'none';
+        
+        if (btnSave) {
+            btnSave.style.display = 'inline-block';
+            btnSave.classList.remove('btn-hidden');
+        }
+        
+        if (btnCancel) {
+            btnCancel.style.display = 'inline-block';
+            btnCancel.classList.remove('btn-hidden');
+        }
+
+        fileInputs.forEach(input => {
+            input.disabled = false;
+            input.classList.remove('input-disabled');
+        });
+    }
+
+    /**
+     * Redirects to a student's profile view.
+     * @param {string} numetu - The student's ID number.
+     */
+    ouvrirFicheEtudiant(numetu) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('action', 'view');
+        url.searchParams.set('numetu', numetu);
+        window.location.href = url.toString();
+    }
+
+    /**
+     * Collects all filter values and updates the URL to reload the filtered list.
+     * @param {boolean} resetPage - Whether to reset pagination to page 1.
+     */
+    appliquerFiltres(resetPage = false) {
+        const url = new URL(window.location.href);
+        
+        // Text search
+        const searchInput = document.getElementById('search');
+        if (searchInput && searchInput.value.trim() !== '') {
+            url.searchParams.set('search', searchInput.value.trim());
+        } else {
+            url.searchParams.delete('search');
+        }
+
+        // Type checkboxes
+        const typeChecked = document.querySelector('input[name="entrant_sortant"]:checked');
+        if (typeChecked) url.searchParams.set('type', typeChecked.value);
+        else url.searchParams.delete('type');
+
+        // Zone checkboxes
+        const zoneChecked = document.querySelector('input[name="zone"]:checked');
+        if (zoneChecked) url.searchParams.set('zone', zoneChecked.value);
+        else url.searchParams.delete('zone');
+
+        // Status dropdown
+        const completVal = document.getElementById('filter-complet');
+        if (completVal && completVal.value !== 'all') url.searchParams.set('complet', completVal.value);
+        else url.searchParams.delete('complet');
+
+        // Reset pagination
+        if (resetPage) url.searchParams.set('p', 1);
+
+        window.location.href = url.toString();
+    }
 }
+
+// Instantiate globally
+document.addEventListener('DOMContentLoaded', () => {
+    window.folderManager = new FolderManager();
+});

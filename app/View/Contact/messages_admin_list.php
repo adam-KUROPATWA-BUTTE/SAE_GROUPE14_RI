@@ -19,26 +19,26 @@ $subjects = [
     'other'     => $t(['fr' => 'Autre',                     'en' => 'Other']),
 ];
 
-// Serialize messages for JS consumption
 $messagesJson = json_encode(array_map(function ($m) {
     return [
-        'id'            => $m->getId(),
-        'name'          => $m->getName(),
-        'numEtu'        => $m->getStudentNumEtu(),
-        'email'         => $m->getEmail(),
-        'subject'       => $m->getSubject(),
-        'message'       => $m->getMessage(),
-        'createdAt'     => $m->getCreatedAt()->format('d/m/Y H:i'),
-        'isRead'        => $m->isRead(),
-        'adminResponse' => $m->getAdminResponse(),
-        'respondedAt'   => $m->getAdminResponse() ? $m->getRespondedAt()->format('d/m/Y H:i') : null,
+        'id'               => $m->getId(),
+        'name'             => $m->getName(),
+        'numEtu'           => $m->getStudentNumEtu(),
+        'email'            => $m->getEmail(),
+        'subject'          => $m->getSubject(),
+        'message'          => $m->getMessage(),
+        'createdAt'        => $m->getCreatedAt()->format('d/m/Y H:i'),
+        'isRead'           => $m->isRead(),
+        'adminResponse'    => $m->getAdminResponse(),
+        'respondedAt'      => $m->getAdminResponse() ? $m->getRespondedAt()?->format('d/m/Y H:i') : null,
+        'studentReply'     => $m->getStudentReply(),
+        'studentRepliedAt' => $m->getStudentReply() ? $m->getStudentRepliedAt()?->format('d/m/Y H:i') : null,
     ];
 }, $messages), JSON_UNESCAPED_UNICODE);
 ?>
 
     <div class="outlook-shell">
 
-        <!-- ── Toolbar ── -->
         <div class="outlook-toolbar">
             <h1>📬 <?= $t(['fr' => 'Messages des étudiants', 'en' => 'Student Messages']) ?></h1>
 
@@ -52,10 +52,8 @@ $messagesJson = json_encode(array_map(function ($m) {
             </a>
         </div>
 
-        <!-- ── Two-pane area ── -->
         <div class="outlook-panes">
 
-            <!-- LEFT: list -->
             <div class="outlook-list-pane" id="msgList">
                 <?php if (empty($messages)): ?>
                     <div class="no-messages">
@@ -70,7 +68,7 @@ $messagesJson = json_encode(array_map(function ($m) {
                         ?>
                         <div class="message-item <?= $isUnread ? 'unread' : '' ?>"
                              data-id="<?= $message->getId() ?>"
-                             onclick="MessagesAdmin.loadMessage(<?= $message->getId() ?>, this)">
+                             onclick="window.messagesAdmin.loadMessage(<?= $message->getId() ?>, this)">
 
                             <?php if ($isUnread): ?>
                                 <div class="unread-dot"></div>
@@ -87,14 +85,12 @@ $messagesJson = json_encode(array_map(function ($m) {
                 <?php endif; ?>
             </div>
 
-            <!-- RIGHT: reading pane -->
             <div class="outlook-reading-pane" id="readingPane">
                 <div class="reading-empty" id="readingEmpty">
                     <div class="reading-empty-icon">✉️</div>
                     <span><?= $t(['fr' => 'Sélectionnez un message', 'en' => 'Select a message']) ?></span>
                 </div>
 
-                <!-- Filled by JS -->
                 <div id="readingContent" style="display:none; flex-direction:column;">
                     <div class="reading-header" id="readingHeader"></div>
                     <div class="reading-body"   id="readingBody"></div>
@@ -103,7 +99,6 @@ $messagesJson = json_encode(array_map(function ($m) {
         </div>
     </div>
 
-    <!-- Config & data bridge for JS — no inline script needed -->
     <div id="app-config"
          data-lang="<?= htmlspecialchars($lang) ?>"
          data-role="admin"

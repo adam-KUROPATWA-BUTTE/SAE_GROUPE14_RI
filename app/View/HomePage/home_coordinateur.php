@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Home Admin
+ * Home Coordinateur
  *
  * @var string $lang
  * @var Closure(array<string, string>): string $t
@@ -81,20 +81,17 @@ ob_start();
         </div>
 
         <nav class="menu">
-            <button class="active" onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'home-admin']) ?>'">
+            <button class="active" onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'home-coordinateur']) ?>'">
                 <?= $t(['fr' => 'Accueil', 'en' => 'Home']) ?>
             </button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'dashboard-admin']) ?>'">
-                <?= $t(['fr' => 'Tableau de bord', 'en' => 'Dashboard']) ?>
+            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'coordinateur-etude']) ?>'">
+                <?= $t(['fr' => 'Coordinateur d\'étude', 'en' => 'Study Coordinator']) ?>
             </button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'partners-admin']) ?>'">
-                <?= $t(['fr' => 'Partenaires', 'en' => 'Partners']) ?>
+            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'coordinateur-stage']) ?>'">
+                <?= $t(['fr' => 'Coordinateur de stage', 'en' => 'Internship Coordinator']) ?>
             </button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'folders-admin']) ?>'">
-                <?= $t(['fr' => 'Dossiers', 'en' => 'Folders']) ?>
-            </button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'messages-admin']) ?>'">
-                <?= $t(['fr' => 'Messages', 'en' => 'Messages']) ?>
+            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'chef-departement']) ?>'">
+                <?= $t(['fr' => 'Chef de département', 'en' => 'Department Head']) ?>
             </button>
         </nav>
     </header>
@@ -124,26 +121,24 @@ ob_start();
             </span>
 
             <div class="mobilite-filter__buttons">
-                <a href="<?= $buildUrl('index.php', ['page' => 'home-admin']) ?>"
+                <a href="<?= $buildUrl('index.php', ['page' => 'home-coordinateur']) ?>"
                    class="mobilite-btn <?= $mobiliteFilter === null ? 'active' : '' ?>">
                     <?= $t(['fr' => 'Tous', 'en' => 'All']) ?>
                 </a>
-                <a href="<?= $buildUrl('index.php', ['page' => 'home-admin', 'mobilite' => 'etude']) ?>"
+                <a href="<?= $buildUrl('index.php', ['page' => 'home-coordinateur', 'mobilite' => 'etude']) ?>"
                    class="mobilite-btn mobilite-btn--etude <?= $mobiliteFilter === 'etude' ? 'active' : '' ?>">
                     🎓 <?= $t(['fr' => 'Études', 'en' => 'Studies']) ?>
                 </a>
-                <a href="<?= $buildUrl('index.php', ['page' => 'home-admin', 'mobilite' => 'stage']) ?>"
+                <a href="<?= $buildUrl('index.php', ['page' => 'home-coordinateur', 'mobilite' => 'stage']) ?>"
                    class="mobilite-btn mobilite-btn--stage <?= $mobiliteFilter === 'stage' ? 'active' : '' ?>">
                     💼 <?= $t(['fr' => 'Stage', 'en' => 'Internship']) ?>
                 </a>
             </div>
 
-
-
         </div>
     </section>
 
-    <!-- Carrousel -->
+    <!-- Carrousel — identique à home admin -->
     <section class="stats-section">
         <button class="carousel-btn prev" onclick="window.carousel.changeSlide(-1)">‹</button>
         <button class="carousel-btn next" onclick="window.carousel.changeSlide(1)">›</button>
@@ -297,7 +292,7 @@ ob_start();
 
     <div id="app-config"
          data-lang="<?= htmlspecialchars($lang) ?>"
-         data-role="admin"
+         data-role="coordinateur"
          style="display:none;">
     </div>
 
@@ -305,18 +300,18 @@ ob_start();
 $content = ob_get_clean();
 
 $title = $t([
-    'fr' => 'Accueil - Service des relations internationales AMU',
-    'en' => 'Home - International Relations Service AMU',
+    'fr' => 'Accueil - Coordinateur - Relations Internationales AMU',
+    'en' => 'Home - Coordinator - International Relations AMU',
 ]);
 
 $styles     = ['styles/homepage.css'];
 $scripts    = ['js/carousel.js'];
 $activeMenu = 'home';
-$userRole   = 'admin';
+$userRole   = 'coordinateur';
 
 $metaDescription = $t([
-    'fr' => "Service des relations internationales de l'AMU. Informations pour étudiants internationaux, échanges universitaires et partenariats.",
-    'en' => 'International Relations Service of AMU. Info for international students, university exchanges, and partnerships.',
+    'fr' => "Espace coordinateur du service des relations internationales de l'AMU.",
+    'en' => 'Coordinator space of the International Relations Service of AMU.',
 ]);
 
 include __DIR__ . '/../Layout/base_home.php';
