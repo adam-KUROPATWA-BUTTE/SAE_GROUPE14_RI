@@ -21,7 +21,7 @@ class HomeControllerAdmin implements ControllerInterface
             session_start();
         }
 
-        // --- GESTION DE LA LANGUE ---
+        // --- LANGUE ---
         if (isset($_GET['lang'])) {
             $langParam = strval($_GET['lang']);
             if (in_array($langParam, ['fr', 'en'], true)) {
@@ -30,33 +30,30 @@ class HomeControllerAdmin implements ControllerInterface
         }
         $lang = $_SESSION['lang'] ?? 'fr';
 
+        // --- TRITANOPIA ---
         if (isset($_GET['tritanopia'])) {
             $_SESSION['tritanopia'] = (strval($_GET['tritanopia']) === '1');
         }
 
-        $statistics = [
-            'complete_folders'           => 0,
-            'incomplete_folders'         => 0,
-            'total_folders'              => 0,
-            'top_countries'              => [],
-            'gender'                     => ['male' => 0, 'female' => 0],
-            'departments'                => [],
-            'incoming_students'          => 0,
-            'outgoing_students'          => 0,
-            'top_continents'             => [],
-            'europe_countries_count'     => 0,
-            'non_europe_countries_count' => 0,
-            'total_countries_count'      => 0,
-        ];
+        // --- FILTRE MOBILITE ---
+        $mobiliteFilter = null;
+        if (isset($_GET['mobilite']) && in_array($_GET['mobilite'], ['etude', 'stage'], true)) {
+            $mobiliteFilter = $_GET['mobilite'];
+        }
+
+        // --- STATISTIQUES ---
+        $stats                = null;
         $completionPercentage = 0.0;
 
         try {
             $repository = new DossierRepositoryPDO();
-            $useCase = new GetAdminStatsUseCase($repository);
+            $useCase    = new GetAdminStatsUseCase($repository);
+            $stats      = $useCase->execute($mobiliteFilter);
 
-            $adminStats = $useCase->execute();
-            $statistics = $adminStats->toArray();
-            $completionPercentage = $adminStats->getDossierStats()->getCompletionPercentage();
+            $dossierStats         = $stats->getDossierStats();
+            $completionPercentage = $dossierStats->getTotal() > 0
+                ? round($dossierStats->getCompleted() / $dossierStats->getTotal() * 100, 1)
+                : 0.0;
         } catch (PDOException $e) {
             error_log("HomeControllerAdmin Error: " . $e->getMessage());
         }
@@ -68,18 +65,19 @@ class HomeControllerAdmin implements ControllerInterface
 
         $buildUrl = function (string $path, array $params = []) use ($lang): string {
             $params['lang'] = $lang;
-            $separator = (strpos($path, '?') === false) ? '?' : '&';
+            $separator      = str_contains($path, '?') ? '&' : '?';
             return $path . $separator . http_build_query($params);
         };
 
         // --- RENDU ---
         View::render('HomePage/home_admin', [
-            'isLoggedIn' => true,
-            'lang' => $lang,
+            'isLoggedIn'           => true,
+            'lang'                 => $lang,
             'completionPercentage' => $completionPercentage,
-            'statistics' => $statistics,
-            't' => $t,
-            'buildUrl' => $buildUrl
+            'stats'                => $stats,
+            'mobiliteFilter'       => $mobiliteFilter,
+            't'                    => $t,
+            'buildUrl'             => $buildUrl,
         ]);
     }
 }
