@@ -8,11 +8,11 @@ use Model\UseCase\GetAdminStatsUseCase;
 use Model\Persistence\DossierRepositoryPDO;
 use Core\View;
 
-class HomeControllerAdmin implements ControllerInterface
+class HomeControllerCoordinateur implements ControllerInterface
 {
     public static function support(string $page, string $method): bool
     {
-        return $page === 'home-admin' && $method === 'GET';
+        return $page === 'home-coordinateur';
     }
 
     public function control(): void
@@ -21,12 +21,16 @@ class HomeControllerAdmin implements ControllerInterface
             session_start();
         }
 
+        // Vérification rôle
+        $allowedRoles = ['coordinateur', 'coordinateur_etude', 'coordinateur_stage', 'chef_departement'];
+        if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], $allowedRoles, true)) {
+            header('Location: index.php?page=login');
+            exit;
+        }
+
         // --- LANGUE ---
-        if (isset($_GET['lang'])) {
-            $langParam = strval($_GET['lang']);
-            if (in_array($langParam, ['fr', 'en'], true)) {
-                $_SESSION['lang'] = $langParam;
-            }
+        if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en'], true)) {
+            $_SESSION['lang'] = $_GET['lang'];
         }
         $lang = $_SESSION['lang'] ?? 'fr';
 
@@ -41,7 +45,7 @@ class HomeControllerAdmin implements ControllerInterface
             $mobiliteFilter = $_GET['mobilite'];
         }
 
-        // --- STATISTIQUES ---
+        // --- STATISTIQUES (même use case que l'admin) ---
         $stats                = null;
         $completionPercentage = 0.0;
 
@@ -55,7 +59,7 @@ class HomeControllerAdmin implements ControllerInterface
                 ? round($dossierStats->getCompleted() / $dossierStats->getTotal() * 100, 1)
                 : 0.0;
         } catch (PDOException $e) {
-            error_log("HomeControllerAdmin Error: " . $e->getMessage());
+            error_log('HomeControllerCoordinateur Error: ' . $e->getMessage());
         }
 
         // --- HELPERS VUE ---
@@ -70,7 +74,7 @@ class HomeControllerAdmin implements ControllerInterface
         };
 
         // --- RENDU ---
-        View::render('HomePage/home_admin', [
+        View::render('HomePage/home_coordinateur', [
             'isLoggedIn'           => true,
             'lang'                 => $lang,
             'completionPercentage' => $completionPercentage,

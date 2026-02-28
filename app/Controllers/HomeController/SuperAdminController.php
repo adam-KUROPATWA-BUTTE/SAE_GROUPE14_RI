@@ -1,6 +1,6 @@
 <?php
 
-namespace Controllers\site\HomeController;
+namespace Controllers\HomeController;
 
 use Controllers\ControllerInterface;
 use Service\SuperAdminService;
