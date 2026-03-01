@@ -29,7 +29,7 @@ class FoldersControllerAdmin
         $page = $_GET['page'] ?? 'folders';
         $action = $_GET['action'] ?? 'list';
         $lang = $_GET['lang'] ?? 'fr';
-        
+
         if ($page === 'toggle_complete') {
             $numetu = $_GET['numetu'] ?? null;
             if ($numetu) {
@@ -98,9 +98,23 @@ class FoldersControllerAdmin
         ]);
     }
 
-    /**
-     * NOUVELLE MÉTHODE : Traitement AJAX pour un document individuel
-     */
+    private function updateGlobalStatus(): void
+    {
+        header('Content-Type: application/json');
+        
+        $numEtu = $_POST['numetu'] ?? '';
+        $status = $_POST['status'] ?? 'depot';
+        
+        if (empty($numEtu)) {
+            echo json_encode(['success' => false, 'message' => 'Paramètre manquant']);
+            exit;
+        }
+        
+        $success = $this->folderUseCase->setFolderStatus($numEtu, $status);
+        echo json_encode(['success' => $success]);
+        exit;
+    }
+
     private function updateDocumentStatus(): void
     {
         header('Content-Type: application/json');
@@ -125,6 +139,7 @@ class FoldersControllerAdmin
         if (isset($_FILES['excel_file']) && $_FILES['excel_file']['error'] === UPLOAD_ERR_OK) {
             $filePath = $_FILES['excel_file']['tmp_name'];
             $fileName = $_FILES['excel_file']['name'];
+            
             $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
             $allowedExtensions = ['csv', 'xlsx', 'xls'];
             
@@ -133,7 +148,9 @@ class FoldersControllerAdmin
                     ? 'Erreur : Format non supporté. Utilisez .csv ou .xlsx' 
                     : 'Error: Unsupported format. Use .csv or .xlsx';
             } else {
-                $success = $this->folderUseCase->importFoldersFromCSV($filePath); 
+                // SÉCURITÉ : On envoie bien le $fileName au UseCase pour activer le lecteur CSV !
+                $success = $this->folderUseCase->importFoldersFromCSV($filePath, $fileName); 
+
                 $_SESSION['message'] = $success
                     ? (($lang === 'fr') ? 'Importation réussie' : 'Import successful')
                     : (($lang === 'fr') ? 'Erreur lors de l\'importation (fichier vide ou format invalide)' : 'Error during import');
@@ -141,6 +158,7 @@ class FoldersControllerAdmin
         } else {
             $_SESSION['message'] = ($lang === 'fr') ? 'Erreur lors du téléchargement du fichier.' : 'File upload error.';
         }
+        
         header('Location: index.php?page=folders-admin&lang=' . $lang);
         exit;
     }
@@ -164,7 +182,7 @@ class FoldersControllerAdmin
                 } elseif ($error !== UPLOAD_ERR_NO_FILE) {
                     $msg = ($lang === 'fr') ? "Erreur upload pour '$field' (Code: $error)" : "Upload error for '$field' (Code: $error)";
                     if ($error === UPLOAD_ERR_INI_SIZE || $error === UPLOAD_ERR_FORM_SIZE) {
-                        $msg .= ($lang === 'fr') ? " : Le fichier est trop lourd pour le serveur." : " : File is too large.";
+                        $msg .= ($lang === 'fr') ? " : Le fichier est trop lourd (limite dépassée)." : " : File is too large.";
                     }
                     $errors[] = $msg;
                 }
@@ -173,26 +191,6 @@ class FoldersControllerAdmin
         return $errors;
     }
 
-    /**
-     * NOUVEAU : Traitement AJAX pour le statut global
-     */
-    private function updateGlobalStatus(): void
-    {
-        header('Content-Type: application/json');
-        
-        $numEtu = $_POST['numetu'] ?? '';
-        $status = $_POST['status'] ?? 'depot';
-        
-        if (empty($numEtu)) {
-            echo json_encode(['success' => false, 'message' => 'Paramètre manquant']);
-            exit;
-        }
-        
-        $success = $this->folderUseCase->setFolderStatus($numEtu, $status);
-        echo json_encode(['success' => $success]);
-        exit;
-    }
-    
     private function saveStudent(string $lang): void
     {
         $data = [
@@ -201,8 +199,8 @@ class FoldersControllerAdmin
             'Adresse' => $_POST['adresse'] ?? null, 'CodePostal' => $_POST['cp'] ?? null,
             'Ville' => $_POST['ville'] ?? null, 'EmailPersonnel' => $_POST['email_perso'] ?? '',
             'EmailAMU' => $_POST['email_amu'] ?? null, 'Telephone' => $_POST['telephone'] ?? '',
-            'CodeDepartement' => $_POST['departement'] ?? null, 'Type' => $_POST['type'] ?? null,
-            'Zone' => $_POST['zone'] ?? 'europe', 'Composante' => $_POST['composante'] ?? null,
+            'CodeDepartement' => $_POST['departement'] ?? null, 'Composante' => $_POST['composante'] ?? null,
+            'Type' => $_POST['type'] ?? null, 'Zone' => $_POST['zone'] ?? 'europe',
             'Pays' => $_POST['pays'] ?? null, 'Campus' => $_POST['campus'] ?? null,
             'Discipline' => $_POST['discipline'] ?? null, 'NiveauEtude' => $_POST['niveau_etude'] ?? null,
             'Formation' => $_POST['formation'] ?? null, 'MoyenneBac' => $_POST['moyenne_bac'] ?? null,

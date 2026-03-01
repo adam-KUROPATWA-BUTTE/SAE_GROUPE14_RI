@@ -8,10 +8,6 @@ use Database;
 use Model\Entity\DossierStats;
 use Model\Entity\GenderStats;
 
-/**
- * PDO Implementation for Dossier Repository.
- * Handles all database operations related to student folders.
- */
 class DossierRepositoryPDO implements DossierRepositoryInterface
 {
     private PDO $db;
@@ -34,9 +30,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             $total = is_numeric($result['total'] ?? 0) ? (int)$result['total'] : 0;
             $completed = is_numeric($result['completed'] ?? 0) ? (int)$result['completed'] : 0;
             return new DossierStats($total, $completed);
-        } catch (\PDOException $e) { 
-            return new DossierStats(0, 0); 
-        }
+        } catch (\PDOException $e) { return new DossierStats(0, 0); }
     }
 
     public function getGenderStats(): GenderStats
@@ -49,9 +43,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             ");
             $result = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : null;
             return new GenderStats(is_numeric($result['male'] ?? 0) ? (int)$result['male'] : 0, is_numeric($result['female'] ?? 0) ? (int)$result['female'] : 0);
-        } catch (\PDOException $e) { 
-            return new GenderStats(0, 0); 
-        }
+        } catch (\PDOException $e) { return new GenderStats(0, 0); }
     }
 
     public function getTopCountries(int $limit): array
@@ -61,9 +53,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-        } catch (\PDOException $e) { 
-            return []; 
-        }
+        } catch (\PDOException $e) { return []; }
     }
 
     public function getDepartmentStats(int $limit): array
@@ -73,9 +63,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
             $stmt->execute();
             return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
-        } catch (\PDOException $e) { 
-            return []; 
-        }
+        } catch (\PDOException $e) { return []; }
     }
 
     public function findAll(): array
@@ -89,9 +77,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                 FROM dossiers ORDER BY Nom, Prenom
             ");
             return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
-        } catch (\PDOException $e) { 
-            return []; 
-        }
+        } catch (\PDOException $e) { return []; }
     }
 
     public function findByNumEtu(string $numEtu): ?array
@@ -107,9 +93,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             $stmt->execute([':numetu' => $numEtu]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             return is_array($result) ? $result : null;
-        } catch (\PDOException $e) { 
-            return null; 
-        }
+        } catch (\PDOException $e) { return null; }
     }
 
     public function create(array $data): bool
@@ -143,9 +127,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                 ':MobiliteAnterieure' => $data['MobiliteAnterieure'] ?? null,
                 ':PiecesJustificatives' => $data['PiecesJustificatives'] ?? '{}', ':status' => $data['status'] ?? 'depot'
             ]);
-        } catch (\PDOException $e) { 
-            return false; 
-        }
+        } catch (\PDOException $e) { return false; }
     }
 
     public function update(string $numEtu, array $data): bool
@@ -168,12 +150,10 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             ");
             $data[':NumEtu'] = $numEtu;
             return $stmt->execute($data);
-        } catch (\PDOException $e) { 
-            return false; 
-        }
+        } catch (\PDOException $e) { return false; }
     }
 
-    public function toggleCompleteStatus(string $numEtu): bool
+    public function toggleStatus(string $numEtu): bool
     {
         try {
             $stmt = $this->db->prepare("SELECT IsComplete FROM dossiers WHERE NumEtu = :numetu");
@@ -184,24 +164,19 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             $newStatus = (($current['IsComplete'] ?? 0) == 1) ? 0 : 1;
             $stmt = $this->db->prepare("UPDATE dossiers SET IsComplete = :status WHERE NumEtu = :numetu");
             return $stmt->execute([':status' => $newStatus, ':numetu' => $numEtu]);
-        } catch (\PDOException $e) { 
-            return false; 
-        }
+        } catch (\PDOException $e) { return false; }
     }
 
     public function setStatus(string $numEtu, string $status): bool
     {
         $allowed = ['depot', 'instruction', 'accepte', 'refuse'];
         if (!in_array($status, $allowed, true)) return false;
-        
         try {
             $stmt = $this->db->prepare("UPDATE dossiers SET status = :status WHERE NumEtu = :numetu");
             return $stmt->execute([':status' => $status, ':numetu' => $numEtu]);
-        } catch (\PDOException $e) { 
-            return false; 
-        }
+        } catch (\PDOException $e) { return false; }
     }
-    
+
     public function cycleStatus(string $numEtu): bool
     {
         try {
@@ -218,15 +193,9 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
 
             $stmt = $this->db->prepare("UPDATE dossiers SET status = :status WHERE NumEtu = :numetu");
             return $stmt->execute([':status' => $nextStatus, ':numetu' => $numEtu]);
-        } catch (\PDOException $e) { 
-            return false; 
-        }
+        } catch (\PDOException $e) { return false; }
     }
 
-    /**
-     * Searches for records with optional pagination.
-     * Passing $perPage = 0 will bypass the LIMIT clause.
-     */
     public function searchWithPagination(array $filters, int $page, int $perPage): array
     {
         $params = [];
@@ -243,12 +212,10 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             $whereConditions .= " AND LOWER(Zone) = LOWER(:zone)";
             $params['zone'] = $filters['zone'];
         }
-        // Menu 1: Component filtering (IUT / AMU CIVIS)
         if (!empty($filters['composante']) && $filters['composante'] !== 'all') {
             $whereConditions .= " AND LOWER(Composante) LIKE LOWER(:composante)";
             $params['composante'] = '%' . $filters['composante'] . '%';
         }
-        // Menu 2: Agreement filtering (Erasmus / Bilatéral)
         if (!empty($filters['accord']) && $filters['accord'] !== 'all') {
             $whereConditions .= " AND LOWER(Composante) LIKE LOWER(:accord)";
             $params['accord'] = '%' . $filters['accord'] . '%';
@@ -271,7 +238,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             $totalCount = is_array($row) ? (int)($row['total'] ?? 0) : 0;
         } catch (\PDOException $e) {}
 
-        // Add LIMIT and OFFSET only if $perPage is greater than 0
         $limitClause = "";
         if ($perPage > 0) {
             $limitClause = " LIMIT :limit OFFSET :offset";
@@ -288,13 +254,10 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             foreach ($params as $key => $value) {
                 $stmt->bindValue(':' . $key, $value);
             }
-            
-            // Bind pagination parameters conditionally
             if ($perPage > 0) {
                 $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
                 $stmt->bindValue(':offset', ($page - 1) * $perPage, PDO::PARAM_INT);
             }
-            
             $stmt->execute();
 
             $totalPages = 1;
@@ -302,14 +265,8 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                 $totalPages = (int)ceil($totalCount / $perPage);
             }
 
-            return [
-                'data' => $stmt->fetchAll(PDO::FETCH_ASSOC), 
-                'total' => $totalCount, 
-                'totalPages' => $totalPages
-            ];
-        } catch (\PDOException $e) { 
-            return ['data' => [], 'total' => 0, 'totalPages' => 0]; 
-        }
+            return ['data' => $stmt->fetchAll(PDO::FETCH_ASSOC), 'total' => $totalCount, 'totalPages' => $totalPages];
+        } catch (\PDOException $e) { return ['data' => [], 'total' => 0, 'totalPages' => 0]; }
     }
 
     public function upsertMultiple(array $dossiers): int
@@ -318,62 +275,77 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         try {
             $pdo->beginTransaction();
             
+            // LA SÉCURITÉ ABSOLUE EST ICI :
+            // 1. On remplace les cases vides par des chaînes vides '' (pour éviter de froisser les contraintes NOT NULL de la BDD).
+            // 2. Si on écrase une ligne existante avec une valeur vide, on ordonne à MySQL de GARDER l'ancienne valeur.
             $stmt = $pdo->prepare("
                 INSERT INTO dossiers (
                     NumEtu, Nom, Prenom, DateNaissance, Sexe, Adresse, CodePostal, Ville,
                     EmailPersonnel, EmailAMU, Telephone, CodeDepartement, Composante, Type, Zone, Pays,
                     Campus, Discipline, NiveauEtude, Formation, MoyenneBac, MoyenneSansBac, AvisDRI,
-                    DateDebut, MobiliteAnterieure, IsComplete, PiecesJustificatives
+                    DateDebut, MobiliteAnterieure, IsComplete, PiecesJustificatives, status
                 ) VALUES (
                     :NumEtu, :Nom, :Prenom, :DateNaissance, :Sexe, :Adresse, :CodePostal, :Ville,
                     :EmailPersonnel, :EmailAMU, :Telephone, :CodeDepartement, :Composante, :Type, :Zone, :Pays,
                     :Campus, :Discipline, :NiveauEtude, :Formation, :MoyenneBac, :MoyenneSansBac, :AvisDRI,
-                    :DateDebut, :MobiliteAnterieure, 0, '{}'
+                    :DateDebut, :MobiliteAnterieure, 0, '{}', 'depot'
                 )
                 ON DUPLICATE KEY UPDATE 
-                    Nom = VALUES(Nom), Prenom = VALUES(Prenom),
-                    DateNaissance = COALESCE(VALUES(DateNaissance), dossiers.DateNaissance),
-                    Sexe = COALESCE(VALUES(Sexe), dossiers.Sexe), Adresse = COALESCE(VALUES(Adresse), dossiers.Adresse),
-                    CodePostal = COALESCE(VALUES(CodePostal), dossiers.CodePostal), Ville = COALESCE(VALUES(Ville), dossiers.Ville),
-                    EmailPersonnel = COALESCE(VALUES(EmailPersonnel), dossiers.EmailPersonnel), EmailAMU = COALESCE(VALUES(EmailAMU), dossiers.EmailAMU),
-                    Telephone = COALESCE(VALUES(Telephone), dossiers.Telephone), 
-                    CodeDepartement = COALESCE(VALUES(CodeDepartement), dossiers.CodeDepartement),
-                    Composante = COALESCE(VALUES(Composante), dossiers.Composante),
-                    Type = COALESCE(VALUES(Type), dossiers.Type), Zone = COALESCE(VALUES(Zone), dossiers.Zone),
-                    Pays = COALESCE(VALUES(Pays), dossiers.Pays), Campus = COALESCE(VALUES(Campus), dossiers.Campus),
-                    Discipline = COALESCE(VALUES(Discipline), dossiers.Discipline), NiveauEtude = COALESCE(VALUES(NiveauEtude), dossiers.NiveauEtude),
-                    Formation = COALESCE(VALUES(Formation), dossiers.Formation), MoyenneBac = COALESCE(VALUES(MoyenneBac), dossiers.MoyenneBac),
-                    MoyenneSansBac = COALESCE(VALUES(MoyenneSansBac), dossiers.MoyenneSansBac), AvisDRI = COALESCE(VALUES(AvisDRI), dossiers.AvisDRI), 
-                    DateDebut = COALESCE(VALUES(DateDebut), dossiers.DateDebut), MobiliteAnterieure = COALESCE(VALUES(MobiliteAnterieure), dossiers.MobiliteAnterieure)
+                    Nom = IF(VALUES(Nom) = 'INCONNU', dossiers.Nom, VALUES(Nom)), 
+                    Prenom = IF(VALUES(Prenom) = '-', dossiers.Prenom, VALUES(Prenom)),
+                    DateNaissance = IF(VALUES(DateNaissance) IS NULL, dossiers.DateNaissance, VALUES(DateNaissance)),
+                    Sexe = IF(VALUES(Sexe) IS NULL, dossiers.Sexe, VALUES(Sexe)),
+                    Adresse = IF(VALUES(Adresse) = '', dossiers.Adresse, VALUES(Adresse)),
+                    CodePostal = IF(VALUES(CodePostal) = '', dossiers.CodePostal, VALUES(CodePostal)),
+                    Ville = IF(VALUES(Ville) = '', dossiers.Ville, VALUES(Ville)),
+                    EmailPersonnel = IF(VALUES(EmailPersonnel) = '', dossiers.EmailPersonnel, VALUES(EmailPersonnel)),
+                    EmailAMU = IF(VALUES(EmailAMU) = '', dossiers.EmailAMU, VALUES(EmailAMU)),
+                    Telephone = IF(VALUES(Telephone) = '', dossiers.Telephone, VALUES(Telephone)),
+                    CodeDepartement = IF(VALUES(CodeDepartement) = '', dossiers.CodeDepartement, VALUES(CodeDepartement)),
+                    Composante = IF(VALUES(Composante) = '', dossiers.Composante, VALUES(Composante)),
+                    Type = IF(VALUES(Type) = '', dossiers.Type, VALUES(Type)),
+                    Zone = IF(VALUES(Zone) = '', dossiers.Zone, VALUES(Zone)),
+                    Pays = IF(VALUES(Pays) = '', dossiers.Pays, VALUES(Pays)),
+                    Campus = IF(VALUES(Campus) = '', dossiers.Campus, VALUES(Campus)),
+                    Discipline = IF(VALUES(Discipline) = '', dossiers.Discipline, VALUES(Discipline)),
+                    NiveauEtude = IF(VALUES(NiveauEtude) = '', dossiers.NiveauEtude, VALUES(NiveauEtude)),
+                    Formation = IF(VALUES(Formation) = '', dossiers.Formation, VALUES(Formation)),
+                    MoyenneBac = IF(VALUES(MoyenneBac) = '', dossiers.MoyenneBac, VALUES(MoyenneBac)),
+                    MoyenneSansBac = IF(VALUES(MoyenneSansBac) = '', dossiers.MoyenneSansBac, VALUES(MoyenneSansBac)),
+                    AvisDRI = IF(VALUES(AvisDRI) = '', dossiers.AvisDRI, VALUES(AvisDRI)),
+                    DateDebut = IF(VALUES(DateDebut) = '', dossiers.DateDebut, VALUES(DateDebut)),
+                    MobiliteAnterieure = IF(VALUES(MobiliteAnterieure) = '', dossiers.MobiliteAnterieure, VALUES(MobiliteAnterieure))
             ");
 
             $insertedRows = 0;
 
             foreach ($dossiers as $dossier) {
                 $stmt->execute([
-                    ':NumEtu'         => $dossier['NumEtu'], ':Nom' => $dossier['Nom'], ':Prenom' => $dossier['Prenom'],
-                    ':DateNaissance'  => !empty($dossier['DateNaissance']) ? $dossier['DateNaissance'] : null,
-                    ':Sexe'           => !empty($dossier['Sexe']) ? $dossier['Sexe'] : null,
-                    ':Adresse'        => !empty($dossier['Adresse']) ? $dossier['Adresse'] : null,
-                    ':CodePostal'     => !empty($dossier['CodePostal']) ? $dossier['CodePostal'] : null,
-                    ':Ville'          => !empty($dossier['Ville']) ? $dossier['Ville'] : null,
-                    ':EmailPersonnel' => !empty($dossier['EmailPersonnel']) ? $dossier['EmailPersonnel'] : null,
-                    ':EmailAMU'       => !empty($dossier['EmailAMU']) ? $dossier['EmailAMU'] : null,
-                    ':Telephone'      => !empty($dossier['Telephone']) ? $dossier['Telephone'] : null,
-                    ':CodeDepartement'=> !empty($dossier['CodeDepartement']) ? $dossier['CodeDepartement'] : null,
-                    ':Composante'     => !empty($dossier['Composante']) ? $dossier['Composante'] : null,
-                    ':Type'           => !empty($dossier['Type']) ? $dossier['Type'] : null,
-                    ':Zone'           => !empty($dossier['Zone']) ? $dossier['Zone'] : null,
-                    ':Pays'           => !empty($dossier['Pays']) ? $dossier['Pays'] : null,
-                    ':Campus'         => !empty($dossier['Campus']) ? $dossier['Campus'] : null,
-                    ':Discipline'     => !empty($dossier['Discipline']) ? $dossier['Discipline'] : null,
-                    ':NiveauEtude'    => !empty($dossier['NiveauEtude']) ? $dossier['NiveauEtude'] : null,
-                    ':Formation'      => !empty($dossier['Formation']) ? $dossier['Formation'] : null,
-                    ':MoyenneBac'     => !empty($dossier['MoyenneBac']) ? $dossier['MoyenneBac'] : null,
-                    ':MoyenneSansBac' => !empty($dossier['MoyenneSansBac']) ? $dossier['MoyenneSansBac'] : null,
-                    ':AvisDRI'        => !empty($dossier['AvisDRI']) ? $dossier['AvisDRI'] : null,
-                    ':DateDebut'      => !empty($dossier['DateDebut']) ? $dossier['DateDebut'] : null,
-                    ':MobiliteAnterieure' => !empty($dossier['MobiliteAnterieure']) ? $dossier['MobiliteAnterieure'] : null
+                    ':NumEtu'         => $dossier['NumEtu'], 
+                    ':Nom'            => $dossier['Nom'], 
+                    ':Prenom'         => $dossier['Prenom'],
+                    ':DateNaissance'  => $dossier['DateNaissance'] ?: null,
+                    ':Sexe'           => $dossier['Sexe'] ?: null,
+                    ':Adresse'        => $dossier['Adresse'] ?? '',
+                    ':CodePostal'     => $dossier['CodePostal'] ?? '',
+                    ':Ville'          => $dossier['Ville'] ?? '',
+                    ':EmailPersonnel' => $dossier['EmailPersonnel'] ?? '',
+                    ':EmailAMU'       => $dossier['EmailAMU'] ?? '',
+                    ':Telephone'      => $dossier['Telephone'] ?? '',
+                    ':CodeDepartement'=> $dossier['CodeDepartement'] ?? '',
+                    ':Composante'     => $dossier['Composante'] ?? '',
+                    ':Type'           => !empty($dossier['Type']) ? $dossier['Type'] : 'sortant',
+                    ':Zone'           => !empty($dossier['Zone']) ? $dossier['Zone'] : 'europe',
+                    ':Pays'           => $dossier['Pays'] ?? '',
+                    ':Campus'         => $dossier['Campus'] ?? '',
+                    ':Discipline'     => $dossier['Discipline'] ?? '',
+                    ':NiveauEtude'    => $dossier['NiveauEtude'] ?? '',
+                    ':Formation'      => $dossier['Formation'] ?? '',
+                    ':MoyenneBac'     => $dossier['MoyenneBac'] ?? '',
+                    ':MoyenneSansBac' => $dossier['MoyenneSansBac'] ?? '',
+                    ':AvisDRI'        => $dossier['AvisDRI'] ?? '',
+                    ':DateDebut'      => $dossier['DateDebut'] ?? '',
+                    ':MobiliteAnterieure' => $dossier['MobiliteAnterieure'] ?? ''
                 ]);
                 $insertedRows++;
             }
@@ -382,27 +354,9 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             return $insertedRows;
             
         } catch (\PDOException $e) {
-            if ($pdo->inTransaction()) { 
-                $pdo->rollBack(); 
-            }
+            if ($pdo->inTransaction()) { $pdo->rollBack(); }
+            error_log("DB Upsert Error: " . $e->getMessage()); 
             return 0;
-        }
-    }
-
-    public function toggleStatus(string $numEtu): bool
-    {
-        $pdo = Database::getInstance()->getConnection();
-        try {
-            $stmt = $pdo->prepare("SELECT IsComplete FROM dossiers WHERE NumEtu = :numetu");
-            $stmt->execute([':numetu' => $numEtu]);
-            $current = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if (!is_array($current)) return false;
-            $newStatus = (($current['IsComplete'] ?? 0) == 1) ? 0 : 1;
-            $stmt = $pdo->prepare("UPDATE dossiers SET IsComplete = :status WHERE NumEtu = :numetu");
-            return $stmt->execute([':status' => $newStatus, ':numetu' => $numEtu]);
-        } catch (\PDOException $e) { 
-            return false; 
         }
     }
 }
