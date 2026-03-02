@@ -5,7 +5,7 @@ namespace Model\UseCase;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Model\Repository\DossierRepositoryInterface;
 use Model\Persistence\DossierRepositoryPDO;
- 
+
 /**
  * Class ManageFolderUseCase
  * Contains the business logic for managing student folders.
@@ -47,7 +47,12 @@ class ManageFolderUseCase
         $result['pieces'] = (is_string($piecesJson) && $piecesJson !== '')
             ? (json_decode($piecesJson, true) ?? [])
             : [];
-            
+
+        $statutsJson = $result['StatutDocuments'] ?? '';
+        $result['statuts'] = (is_string($statutsJson) && $statutsJson !== '')
+            ? (json_decode($statutsJson, true) ?? [])
+            : [];
+
         return $result;
     }
 
@@ -157,7 +162,7 @@ class ManageFolderUseCase
     {
         // Safe check for the Student ID from either the HTML form or direct array mapping
         $numEtu = strval($data['numetu'] ?? ($data['NumEtu'] ?? ''));
-        
+
         if ($numEtu === '') {
             error_log("ManageFolderUseCase: Cannot update folder without a valid NumEtu.");
             return false;
@@ -168,7 +173,7 @@ class ManageFolderUseCase
             error_log("ManageFolderUseCase: Student $numEtu not found for update.");
             return false;
         }
-        
+
         /** @var array<string, string> $oldPieces */
         $oldPieces = isset($existing['pieces']) && is_array($existing['pieces']) ? $existing['pieces'] : [];
 
@@ -226,15 +231,15 @@ class ManageFolderUseCase
         try {
             $spreadsheet = IOFactory::load($filePath);
             $worksheet = $spreadsheet->getActiveSheet();
-            
+
             $rows = $worksheet->toArray();
-            array_shift($rows); 
+            array_shift($rows);
 
             $dossiersToInsert = [];
 
             foreach ($rows as $data) {
                 if (!is_array($data) || empty(trim(strval($data[0] ?? '')))) {
-                    continue; 
+                    continue;
                 }
 
                 $dossiersToInsert[] = [
@@ -249,17 +254,52 @@ class ManageFolderUseCase
             }
 
             $lignesInserees = $this->dossierRepo->upsertMultiple($dossiersToInsert);
-            
+
             return $lignesInserees > 0;
-            
+
         } catch (\Exception $e) {
             error_log("Import Error (PhpSpreadsheet/UseCase): " . $e->getMessage());
             return false;
         }
     }
-    
+
     public function cycleFolderStatus(string $numEtu): bool
     {
         return $this->dossierRepo->cycleStatus($numEtu);
     }
+
+    /**
+     * Analyse les documents manquants d'un dossier
+     *
+     * @param string $numetu
+     * @return array{manquants: array<int, string>, presents: array<int, string>, statuts: array<string, string>}
+     */
+    public function analyserDocuments(string $numetu): array
+    {
+        return $this->dossierRepo->analyserDocuments($numetu);
+    }
+
+    /**
+     * Enregistre la validation des documents
+     *
+     * @param string $numetu
+     * @param array<string, string> $statutsDocuments
+     * @param string|null $dateLimite
+     * @param string|null $commentaire
+     * @return bool
+     */
+    public function enregistrerValidation(
+        string $numetu,
+        array $statutsDocuments,
+        ?string $dateLimite = null,
+        ?string $commentaire = null
+    ): bool {
+        return $this->dossierRepo->enregistrerValidation(
+            $numetu,
+            $statutsDocuments,
+            $dateLimite,
+            $commentaire
+        );
+    }
+
 }

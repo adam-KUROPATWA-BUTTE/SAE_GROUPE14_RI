@@ -35,14 +35,14 @@ class FolderManager {
     initFilterEvents() {
         const searchInput = document.getElementById('search');
         const searchBtn = document.querySelector('.btn-search');
-        
+
         if (searchInput) {
             let timeout = null;
             searchInput.addEventListener('input', () => {
                 clearTimeout(timeout);
                 // Auto-search after 3 seconds of inactivity
                 timeout = setTimeout(() => {
-                     this.appliquerFiltres(true); 
+                    this.appliquerFiltres(true);
                 }, 3000);
             });
 
@@ -120,19 +120,19 @@ class FolderManager {
                 field.classList.remove('input-disabled');
             }
         });
-        
+
         const btnMod = document.getElementById('btn-modifier');
         const btnSave = document.getElementById('btn-enregistrer');
         const btnCancel = document.getElementById('btn-annuler');
         const fileInputs = document.querySelectorAll('input[type="file"]');
 
         if (btnMod) btnMod.style.display = 'none';
-        
+
         if (btnSave) {
             btnSave.style.display = 'inline-block';
             btnSave.classList.remove('btn-hidden');
         }
-        
+
         if (btnCancel) {
             btnCancel.style.display = 'inline-block';
             btnCancel.classList.remove('btn-hidden');
@@ -161,7 +161,7 @@ class FolderManager {
      */
     appliquerFiltres(resetPage = false) {
         const url = new URL(window.location.href);
-        
+
         // Text search
         const searchInput = document.getElementById('search');
         if (searchInput && searchInput.value.trim() !== '') {
@@ -195,4 +195,242 @@ class FolderManager {
 // Instantiate globally
 document.addEventListener('DOMContentLoaded', () => {
     window.folderManager = new FolderManager();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Uniquement sur la page de vue d'un dossier
+    const btnEnregistrer = document.getElementById('btn-enregistrer');
+    const btnModifier = document.getElementById('btn-modifier');
+
+    if (!btnEnregistrer || !btnModifier) {
+        return; // Pas sur la bonne page
+    }
+
+    const modal = document.getElementById('modal-validation');
+    const btnCancel = document.getElementById('btn-modal-cancel');
+    const formValidation = document.getElementById('form-validation');
+    const formPrincipal = document.querySelector('.creation-form');
+
+    // Récupérer la langue
+    const appConfig = document.getElementById('app-config');
+    const lang = appConfig ? appConfig.dataset.lang : 'fr';
+
+    // Traductions
+    const translations = {
+        photo: lang === 'fr' ? 'Photo d\'identité' : 'ID Photo',
+        cv: lang === 'fr' ? 'CV' : 'Resume',
+        convention: lang === 'fr' ? 'Convention de stage' : 'Internship Agreement',
+        lettre_motivation: lang === 'fr' ? 'Lettre de motivation' : 'Motivation Letter',
+        conforme: lang === 'fr' ? 'Conforme' : 'Compliant',
+        non_conforme: lang === 'fr' ? 'Non conforme' : 'Non-compliant',
+        manquant: lang === 'fr' ? 'Manquant' : 'Missing',
+        present: lang === 'fr' ? 'Déposé' : 'Uploaded',
+        aucun_manquant: lang === 'fr' ? '✅ Aucun document manquant' : '✅ No missing documents'
+    };
+
+    // Récupérer les données d'analyse depuis PHP (injectées dans la page)
+    const analyseDocuments = window.analyseDocumentsData || {
+        manquants: [],
+        presents: [],
+        statuts: {}
+    };
+
+    // Stocker les valeurs originales lors du clic sur "Modifier"
+    if (btnModifier) {
+        btnModifier.addEventListener('click', function() {
+            setTimeout(() => {
+                const inputs = formPrincipal.querySelectorAll('input:not([type="file"]):not([type="hidden"]), select');
+                inputs.forEach(input => {
+                    if (!input.disabled && input.name !== 'numetu') {
+                        input.setAttribute('data-original-value', input.value);
+                    }
+                });
+            }, 100);
+        });
+    }
+
+    // Ouvrir la modale au clic sur "Enregistrer"
+    btnEnregistrer.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        // Détecter les modifications
+        const modifications = detecterModifications();
+        afficherModifications(modifications);
+
+        // Afficher les documents
+        afficherDocuments();
+
+        // Ouvrir la modale
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
+
+    // Fermer la modale
+    btnCancel.addEventListener('click', function() {
+        fermerModale();
+    });
+
+    // Fermer en cliquant sur l'overlay
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            fermerModale();
+        }
+    });
+
+    function fermerModale() {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+
+    /**
+     * Détecte les champs modifiés du formulaire
+     */
+    function detecterModifications() {
+        const modifications = [];
+        const inputs = formPrincipal.querySelectorAll('input:not([type="file"]):not([type="hidden"]), select');
+
+        inputs.forEach(input => {
+            if (input.disabled) return;
+            if (!input.name || input.name === 'numetu' || input.name === 'mobilite_type') return;
+
+            const valeurActuelle = input.value;
+            const valeurOriginale = input.getAttribute('data-original-value') ?? '';
+
+            if (valeurActuelle !== valeurOriginale) {
+                let label = input.name;
+                if (input.id) {
+                    const labelEl = formPrincipal.querySelector(`label[for="${input.id}"]`);
+                    if (labelEl) label = labelEl.textContent.trim().replace('*', '').trim();
+                }
+
+                modifications.push({
+                    champ: label,
+                    ancienne: valeurOriginale || '(vide)',
+                    nouvelle: valeurActuelle || '(vide)'
+                });
+            }
+        });
+
+        return modifications;
+    }
+
+    /**
+     * Affiche les modifications dans la modale
+     */
+    function afficherModifications(modifications) {
+        const section = document.getElementById('section-modifications');
+        const liste = document.getElementById('liste-modifications');
+
+        if (modifications.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+
+        section.style.display = 'block';
+        liste.innerHTML = modifications.map(m =>
+            `<li><strong>${m.champ}</strong> : 
+             <span style="color: #dc3545; text-decoration: line-through;">${m.ancienne}</span> 
+             → <span style="color: #28a745; font-weight: 600;">${m.nouvelle}</span>
+            </li>`
+        ).join('');
+    }
+
+    /**
+     * Affiche les documents manquants et présents
+     */
+    function afficherDocuments() {
+        const manquants = analyseDocuments.manquants || [];
+        const presents = analyseDocuments.presents || [];
+        const statuts = analyseDocuments.statuts || {};
+
+        // Documents manquants
+        const listeManquants = document.getElementById('liste-manquants');
+        if (manquants.length === 0) {
+            listeManquants.innerHTML = `<p style="color: #28a745; font-weight: 600;">${translations.aucun_manquant}</p>`;
+        } else {
+            listeManquants.innerHTML = manquants.map(doc => `
+                <div class="document-validation-item manquant">
+                    <span class="document-name">${translations[doc] || doc}</span>
+                    <span class="document-status-badge badge-manquant">${translations.manquant}</span>
+                </div>
+            `).join('');
+        }
+
+        // Documents présents à valider
+        // NOUVEAU
+        const listePresents = document.getElementById('liste-presents');
+
+// Lire les statuts depuis les boutons actifs dans la vue principale
+        const statutsVue = {};
+        document.querySelectorAll('.statut-document-buttons').forEach(block => {
+            const doc = block.dataset.doc;
+            const actif = block.querySelector('.btn-status.active');
+            if (actif) statutsVue[doc] = actif.dataset.statut;
+        });
+
+// Injecter les statuts comme inputs hidden dans le form modal
+        presents.forEach(doc => {
+            let input = document.getElementById('statut_modal_' + doc);
+            if (!input) {
+                input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'statut_' + doc;
+                input.id = 'statut_modal_' + doc;
+                formValidation.appendChild(input);
+            }
+            input.value = statutsVue[doc] || statuts[doc] || '';
+        });
+
+        listePresents.innerHTML = presents.map(doc => {
+            const s = statutsVue[doc] || statuts[doc] || '';
+            const badge = s === 'conforme'
+                ? `<span class="document-status-badge" style="background:#28a745;color:white;">✓ ${translations.conforme}</span>`
+                : s === 'non_conforme'
+                    ? `<span class="document-status-badge" style="background:#dc3545;color:white;">✗ ${translations.non_conforme}</span>`
+                    : `<span class="document-status-badge badge-present">${translations.present}</span>`;
+            return `
+        <div class="document-validation-item present">
+            <span class="document-name">${translations[doc] || doc}</span>
+            ${badge}
+        </div>
+    `;
+        }).join('');
+    }
+
+    // Boutons conforme/non-conforme dans la vue principale
+    document.querySelectorAll('.statut-document-buttons .btn-status').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const doc = this.dataset.doc;
+            document.querySelectorAll(`.statut-document-buttons[data-doc="${doc}"] .btn-status`).forEach(b => {
+                b.classList.remove('active');
+            });
+            this.classList.add('active');
+        });
+    });
+
+
+    // Toast de confirmation
+    const msgDiv = document.querySelector('.message');
+    if (msgDiv && msgDiv.textContent.trim() !== '') {
+        msgDiv.classList.add('message-toast');
+        msgDiv.style.display = 'block';
+        setTimeout(() => msgDiv.remove(), 3500);
+    }
+
+    // Bannière date limite — toggle formulaire
+    const btnEditDate = document.getElementById('btn-edit-date-limite');
+    const formDateLimite = document.getElementById('form-date-limite');
+    const btnCancelDate = document.getElementById('btn-cancel-date');
+
+    if (btnEditDate && formDateLimite) {
+        btnEditDate.addEventListener('click', function() {
+            formDateLimite.style.display = formDateLimite.style.display === 'none' ? 'block' : 'none';
+        });
+    }
+    if (btnCancelDate) {
+        btnCancelDate.addEventListener('click', function() {
+            formDateLimite.style.display = 'none';
+        });
+    }
+
 });

@@ -25,7 +25,7 @@ interface FolderRepositoryInterface
      * @return array<int, array<string, mixed>>
      */
     public function getAll(): array;
-    
+
     /**
      * @return array<int, array<string, mixed>>
      */

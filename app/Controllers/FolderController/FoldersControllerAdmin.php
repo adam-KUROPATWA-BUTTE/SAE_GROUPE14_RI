@@ -17,7 +17,7 @@ class FoldersControllerAdmin
 
     public static function support(string $page, string $method): bool
     {
-        return in_array($page, ['folders', 'save_student', 'folders-admin', 'toggle_complete', 'update_student', 'import_folders']);
+        return in_array($page, ['folders', 'save_student', 'folders-admin', 'toggle_complete', 'update_student', 'import_folders', 'valider_documents']);
     }
 
     public function control(): void
@@ -56,6 +56,10 @@ class FoldersControllerAdmin
                 $this->updateStudent($lang);
                 return;
             }
+            if ($page === 'valider_documents') {  // ← NOUVEAU
+                $this->validerDocuments($lang);
+                return;
+            }
         }
 
         $studentData = null;
@@ -65,15 +69,15 @@ class FoldersControllerAdmin
 
         $currentPage = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
         $filters = [
-            'type'    => $_GET['type'] ?? 'all',   
-            'zone'    => $_GET['zone'] ?? 'all',   
-            'search'  => $_GET['search'] ?? '',    
+            'type'    => $_GET['type'] ?? 'all',
+            'zone'    => $_GET['zone'] ?? 'all',
+            'search'  => $_GET['search'] ?? '',
             'complet' => $_GET['complet'] ?? 'all',
         ];
 
         $perPage = 10;
         $result = $this->folderUseCase->rechercherAvecPagination($filters, $currentPage, $perPage);
- 
+
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
@@ -96,17 +100,17 @@ class FoldersControllerAdmin
         if (isset($_FILES['excel_file']) && $_FILES['excel_file']['error'] === UPLOAD_ERR_OK) {
             $filePath = $_FILES['excel_file']['tmp_name'];
             $fileName = $_FILES['excel_file']['name'];
-            
+
             $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-            
+
             $allowedExtensions = ['csv', 'xlsx', 'xls'];
-            
+
             if (!in_array($ext, $allowedExtensions)) {
-                $_SESSION['message'] = ($lang === 'fr') 
-                    ? 'Erreur : Format non supporté. Utilisez .csv ou .xlsx' 
+                $_SESSION['message'] = ($lang === 'fr')
+                    ? 'Erreur : Format non supporté. Utilisez .csv ou .xlsx'
                     : 'Error: Unsupported format. Use .csv or .xlsx';
             } else {
-                $success = $this->folderUseCase->importFoldersFromCSV($filePath); 
+                $success = $this->folderUseCase->importFoldersFromCSV($filePath);
 
                 $_SESSION['message'] = $success
                     ? (($lang === 'fr') ? 'Importation réussie' : 'Import successful')
@@ -115,7 +119,7 @@ class FoldersControllerAdmin
         } else {
             $_SESSION['message'] = ($lang === 'fr') ? 'Erreur lors du téléchargement du fichier.' : 'File upload error.';
         }
-        
+
         header('Location: index.php?page=folders-admin&lang=' . $lang);
         exit;
     }
@@ -201,6 +205,58 @@ class FoldersControllerAdmin
             : (($lang === 'fr') ? 'Erreur lors de la mise à jour' : 'Error updating folder');
 
         header('Location: index.php?page=folders-admin&action=view&numetu=' . urlencode($data['NumEtu']) . '&lang=' . $lang);
+        exit;
+    }
+
+
+    /**
+     * Gère la validation des documents avec date limite et commentaires
+     *
+     * @param string $lang
+     */
+    private function validerDocuments(string $lang): void
+    {
+        $numetu = $_POST['numetu'] ?? '';
+
+        if (empty($numetu)) {
+            $_SESSION['message'] = ($lang === 'fr')
+                ? 'Erreur : Numéro étudiant manquant'
+                : 'Error: Student ID missing';
+            header('Location: index.php?page=folders-admin&lang=' . $lang);
+            exit;
+        }
+
+        // Récupérer les statuts des documents
+        $statutsDocuments = [];
+        foreach (['photo', 'cv', 'convention', 'lettre_motivation'] as $doc) {
+            if (isset($_POST['statut_' . $doc]) && !empty($_POST['statut_' . $doc])) {
+                $statutsDocuments[$doc] = $_POST['statut_' . $doc];
+            }
+        }
+
+        // Récupérer la date limite et le commentaire
+        $dateLimite = !empty($_POST['date_limite']) ? $_POST['date_limite'] : null;
+        $commentaire = !empty($_POST['commentaire_admin']) ? trim($_POST['commentaire_admin']) : null;
+
+        // Enregistrer via le UseCase
+        $success = $this->folderUseCase->enregistrerValidation(
+            $numetu,
+            $statutsDocuments,
+            $dateLimite,
+            $commentaire
+        );
+
+        if ($success) {
+            $_SESSION['message'] = ($lang === 'fr')
+                ? 'Validation enregistrée avec succès'
+                : 'Validation saved successfully';
+        } else {
+            $_SESSION['message'] = ($lang === 'fr')
+                ? 'Erreur lors de l\'enregistrement'
+                : 'Error saving validation';
+        }
+
+        header('Location: index.php?page=folders-admin&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
         exit;
     }
 }
