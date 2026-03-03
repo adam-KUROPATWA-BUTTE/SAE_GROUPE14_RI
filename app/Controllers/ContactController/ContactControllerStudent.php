@@ -5,6 +5,7 @@ namespace Controllers\ContactController;
 use Controllers\ControllerInterface;
 use Model\Persistence\ContactMessageRepository;
 use Service\ContactService;
+use Core\View; // Ajout de l'import pour la classe View
 
 class ContactControllerStudent implements ControllerInterface
 {
@@ -115,6 +116,17 @@ class ContactControllerStudent implements ControllerInterface
 
         $studentMessages = $this->contactService->getStudentMessages($numEtu);
 
-        require_once ROOT_PATH . '/app/View/Contact/contact_student.php';
+        // Utilisation de View::render au lieu de require_once
+        View::render('Contact/contact_student', [
+            'lang'            => $lang,
+            'numEtu'          => $numEtu,
+            'action'          => $action,
+            't'               => $t,
+            'buildUrl'        => $buildUrl,
+            'messageSent'     => $messageSent,
+            'error'           => $error,
+            'contactInfo'     => $contactInfo,
+            'studentMessages' => $studentMessages
+        ]);
     }
 }
