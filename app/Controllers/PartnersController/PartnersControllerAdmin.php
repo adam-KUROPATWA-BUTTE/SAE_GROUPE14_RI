@@ -64,7 +64,7 @@ class PartnersControllerAdmin implements ControllerInterface
             }
         }
 
-        $titre = $lang === 'en' ? 'Partner Universities' : 'Universités Partenaires';
+        $titre = $lang === 'en' ? 'Destinaions Universities' : 'Universités Destinations';
 
         $t = function (array $frEn) use ($lang): string {
             return $lang === 'en' ? $frEn['en'] : $frEn['fr'];
