@@ -40,8 +40,8 @@ $currentPage = $_GET['page'] ?? 'home-' . ($userRole === 'admin' ? 'admin' : 'st
                 'en' => ($userRole === 'admin' ? 'Dashboard' : 'My Dashboard')
             ],
             'partners' => [
-                'fr' => 'Partenaires',
-                'en' => 'Partners'
+                'fr' => 'Destinations',
+                'en' => 'Destinations'
             ],
             'folders' => [
                 'fr' => ($userRole === 'admin' ? 'Dossiers' : 'Mon Dossier'),
@@ -63,12 +63,27 @@ $currentPage = $_GET['page'] ?? 'home-' . ($userRole === 'admin' ? 'admin' : 'st
             $isActive = $activeMenu === $key;
             $page = $key . $suffix;
             $url = 'index.php?page=' . urlencode($page) . '&lang=' . urlencode($lang);
-            ?>
-            <button
-                <?= $isActive ? 'class="active"' : '' ?>
+
+            if ($key === 'partners' && $userRole === 'student'):
+                $urlAmu = 'index.php?page=partners-student&partner=amu&lang=' . urlencode($lang);
+                $urlIut = 'index.php?page=partners-student&partner=iut&lang=' . urlencode($lang);
+                ?>
+                <div class="dropdown <?= $isActive ? 'active' : '' ?>">
+                    <button <?= $isActive ? 'class="active"' : '' ?>>
+                        <?= $t($labels) ?>
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="<?= htmlspecialchars($urlAmu) ?>">AMU</a>
+                        <a href="<?= htmlspecialchars($urlIut) ?>">IUT</a>
+                    </div>
+                </div>
+            <?php else: ?>
+                <button
+                    <?= $isActive ? 'class="active"' : '' ?>
                     onclick="window.location.href='<?= htmlspecialchars($url) ?>'">
-                <?= $t($labels) ?>
-            </button>
-        <?php endforeach; ?>
+                    <?= $t($labels) ?>
+                </button>
+            <?php endif;
+        endforeach; ?>
     </nav>
 </header>

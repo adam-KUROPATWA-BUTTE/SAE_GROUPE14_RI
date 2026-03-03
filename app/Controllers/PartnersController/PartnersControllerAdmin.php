@@ -42,13 +42,15 @@ class PartnersControllerAdmin implements ControllerInterface
             $country     = trim($_POST['country'] ?? '');
             $city        = trim($_POST['city'] ?? '');
             $institution = trim($_POST['institution'] ?? '');
+            $type        = trim($_POST['type'] ?? '');
+            $validTypes = ['amu', 'iut'];
 
-            if ($continent && $country && $city && $institution) {
+            if ($continent && $country && $city && $institution && in_array($type, $validTypes, true)) {
                 try {
                     $repository = new PartnerRepositoryPDO();
-                    $useCase = new AddPartnerUseCase($repository);
+                    $useCase    = new AddPartnerUseCase($repository);
 
-                    $partner = new Partner($continent, $country, $city, $institution);
+                    $partner = new Partner($continent, $country, $city, $institution, $type);
                     $useCase->execute($partner);
 
                     header('Location: index.php?page=partners-admin&success=1&lang=' . $lang);
@@ -64,7 +66,7 @@ class PartnersControllerAdmin implements ControllerInterface
             }
         }
 
-        $titre = $lang === 'en' ? 'Partner Universities' : 'Universités Partenaires';
+        $titre = $lang === 'en' ? 'Destinaions Universities' : 'Universités Destinations';
 
         $t = function (array $frEn) use ($lang): string {
             return $lang === 'en' ? $frEn['en'] : $frEn['fr'];
