@@ -658,12 +658,12 @@ body.tritanopie .mobilite-filter {
 }
 
 .mobilite-filter__label {
-    font-size: var(--text-size);
     color: #003d7a;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     white-space: nowrap;
+    font-size: var(--h2-size);
 }
 
 body.tritanopie .mobilite-filter__label {
@@ -686,7 +686,6 @@ body.tritanopie .mobilite-filter__label {
     color: #555;
     font-size: var(--text-size);
     font-weight: 700;
-    font-family: inherit;
     text-decoration: none;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s, box-shadow 0.15s;
@@ -788,7 +787,6 @@ body.tritanopie .mobilite-btn--stage.active {
     align-items: center;
     gap: 0.4rem;
     font-size: var(--button-small-size);
-    font-family: inherit;
     padding: 0.4rem 1.1rem;
     border-radius: 999px;
     background: rgba(0, 61, 122, 0.07);
