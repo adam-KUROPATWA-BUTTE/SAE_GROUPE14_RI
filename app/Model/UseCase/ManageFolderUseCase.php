@@ -3,10 +3,10 @@
 namespace Model\UseCase;
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Shared\Date;
+use PhpOffice\PhpSpreadsheet\Shared\Date; 
 use Model\Repository\DossierRepositoryInterface;
 use Model\Persistence\DossierRepositoryPDO;
-
+ 
 class ManageFolderUseCase
 {
     private DossierRepositoryInterface $dossierRepo;
@@ -28,13 +28,13 @@ class ManageFolderUseCase
 
         $piecesJson = $result['PiecesJustificatives'] ?? '';
         $pieces = (is_string($piecesJson) && $piecesJson !== '') ? (json_decode($piecesJson, true) ?? []) : [];
-
+        
         foreach ($pieces as $key => $val) {
             if (is_string($val)) {
                 $pieces[$key] = ['file' => $val, 'status' => 'pending', 'comment' => ''];
             }
         }
-
+            
         $result['pieces'] = $pieces;
         return $result;
     }
@@ -63,7 +63,7 @@ class ManageFolderUseCase
     {
         $dossier = $this->getStudentDetails($numEtu);
         if (!$dossier) return false;
-
+        
         $pieces = $dossier['pieces'] ?? [];
         if (!isset($pieces[$docType])) {
             $pieces[$docType] = ['file' => '', 'status' => $status, 'comment' => $comment];
@@ -71,7 +71,7 @@ class ManageFolderUseCase
             $pieces[$docType]['status'] = $status;
             $pieces[$docType]['comment'] = $comment;
         }
-
+        
         return $this->dossierRepo->update($numEtu, [':PiecesJustificatives' => json_encode($pieces)]);
     }
 
@@ -114,7 +114,7 @@ class ManageFolderUseCase
             'EmailPersonnel' => $data['email_perso'] ?? ($data['EmailPersonnel'] ?? null),
             'EmailAMU' => $data['email_amu'] ?? ($data['EmailAMU'] ?? null),
             'Telephone' => $data['telephone'] ?? ($data['Telephone'] ?? null),
-            'CodeDepartement' => $data['departement'] ?? ($data['CodeDepartement'] ?? null),
+            'CodeDepartement' => $data['departement'] ?? ($data['CodeDepartement'] ?? null), 
             'Composante' => $data['composante'] ?? ($data['Composante'] ?? null),
             'Type' => $data['type'] ?? ($data['Type'] ?? null),
             'Zone' => $data['zone'] ?? ($data['Zone'] ?? null),
@@ -146,7 +146,7 @@ class ManageFolderUseCase
 
         $existing = $this->getStudentDetails($numEtu);
         if (!$existing) return false;
-
+        
         $oldPieces = isset($existing['pieces']) && is_array($existing['pieces']) ? $existing['pieces'] : [];
 
         $updatePiece = function(array &$arr, string $key, ?string $fileData) {
@@ -212,12 +212,12 @@ class ManageFolderUseCase
             if ($ext === 'csv') {
                 $oldSetting = ini_get('auto_detect_line_endings');
                 ini_set('auto_detect_line_endings', '1');
-
+                
                 if (($handle = fopen($filePath, "r")) !== false) {
                     $firstLine = fgets($handle);
                     $delimiter = substr_count((string)$firstLine, ';') > substr_count((string)$firstLine, ',') ? ';' : ',';
                     rewind($handle);
-
+                    
                     while (($data = fgetcsv($handle, 0, $delimiter)) !== false) {
                         $rows[] = $data;
                     }
@@ -229,7 +229,7 @@ class ManageFolderUseCase
                 $worksheet = $spreadsheet->getActiveSheet();
                 $rows = $worksheet->toArray();
             }
-
+            
             if (empty($rows) || count($rows) < 2) return false;
 
             $normalize = function($string) {
@@ -243,13 +243,13 @@ class ManageFolderUseCase
                     'ç'=>'c', 'ñ'=>'n', 'œ'=>'oe'
                 ];
                 $string = strtr($string, $unwanted);
-                $string = preg_replace('/[^a-z0-9\s]/', ' ', $string);
+                $string = preg_replace('/[^a-z0-9\s]/', ' ', $string); 
                 $string = preg_replace('/\s+/', ' ', $string);
                 return trim($string);
             };
 
             $headers = array_map($normalize, array_shift($rows));
-
+            
             $keywords = [
                 'NumEtu'             => ['individus identifiant', 'individu identifiant', 'identifiant utilisateur', 'identifiant', 'individu', 'numetu', 'numero etudiant'],
                 'Candidat'           => ['candidat nom prenom', 'candidat'],
@@ -265,7 +265,7 @@ class ManageFolderUseCase
                 'Telephone'          => ['telephone', 'mobile', 'tel', 'phone'],
                 'CodeDepartement'    => ['departement', 'filiere'],
                 'Composante'         => ['sejour origine', 'sejour', 'composante', 'faculte', 'institut'],
-                'Type'               => ['type de mobilite', 'type'],
+                'Type'               => ['type de mobilite', 'type'], 
                 'Zone'               => ['zone'],
                 'Pays'               => ['pays 1', 'pays', 'country'],
                 'Campus'             => ['campus'],
@@ -319,14 +319,14 @@ class ManageFolderUseCase
                 if (!is_array($data)) continue;
 
                 $numEtu = $getVal('NumEtu');
-                $numEtu = preg_replace('/[^a-zA-Z0-9]/', '', $numEtu);
+                $numEtu = preg_replace('/[^a-zA-Z0-9]/', '', $numEtu); 
                 if (empty($numEtu)) continue;
 
                 $candidatVal = $getVal('Candidat');
                 $nomVal = $getVal('Nom');
                 $nom = '';
                 $prenom = '';
-
+                
                 if (!empty($candidatVal)) {
                     if (strpos($candidatVal, ',') !== false) {
                         $parts = explode(',', $candidatVal, 2);
@@ -355,13 +355,13 @@ class ManageFolderUseCase
                             $dateObj = Date::excelToDateTimeObject($rawDate);
                             $dateNaissance = $dateObj->format('Y-m-d');
                         } catch (\Exception $e) {}
-                    }
+                    } 
                     if (!$dateNaissance) {
                         if (preg_match('#^(\d{2})[-/](\d{2})[-/](\d{4})$#', $rawDate, $matches)) {
                             $dateNaissance = $matches[3] . '-' . $matches[2] . '-' . $matches[1];
                         } else {
                             $parsed = strtotime($rawDate);
-                            $dateNaissance = ($parsed !== false) ? date('Y-m-d', $parsed) : null;
+                            $dateNaissance = ($parsed !== false) ? date('Y-m-d', $parsed) : null; 
                         }
                     }
                 }
@@ -409,7 +409,7 @@ class ManageFolderUseCase
                 return $this->dossierRepo->upsertMultiple($dossiersToInsert) > 0;
             }
             return false;
-
+            
         } catch (\Exception $e) {
             error_log("Import Error: " . $e->getMessage());
             return false;

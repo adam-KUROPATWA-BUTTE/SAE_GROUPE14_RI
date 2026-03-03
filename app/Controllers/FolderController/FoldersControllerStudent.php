@@ -6,6 +6,7 @@ namespace Controllers\FolderController;
 
 use Controllers\ControllerInterface;
 use Model\UseCase\ManageFolderUseCase;
+use Core\View;
 
 /**
  * Class FoldersControllerStudent
@@ -72,7 +73,7 @@ class FoldersControllerStudent implements ControllerInterface
         $data = is_array($studentData) ? $studentData : [];
 
         // Appel à la vue via la classe Core\View
-        \Core\View::render('Folder/folders_student', [
+        View::render('Folder/folders_student', [
             'dossier'   => $data,
             'studentId' => $numetu,
             'message'   => $message,
@@ -87,11 +88,11 @@ class FoldersControllerStudent implements ControllerInterface
     {
         $errors = [];
         $fileFields = ['photo', 'cv', 'convention', 'lettre_motivation', 'langues_file'];
-
+        
         foreach ($fileFields as $field) {
             if (isset($_FILES[$field])) {
                 $error = $_FILES[$field]['error'];
-
+                
                 if ($error === UPLOAD_ERR_OK) {
                     $content = file_get_contents($_FILES[$field]['tmp_name']);
                     if ($content !== false) {

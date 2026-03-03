@@ -103,7 +103,7 @@ class FolderManager {
                 const targetId = barre.getAttribute('data-target');
                 const contenu = document.getElementById(targetId);
                 const fleche = barre.querySelector('.fleche');
-
+                
                 if (contenu) contenu.classList.toggle('afficher');
                 if (fleche) fleche.classList.toggle('ouverte');
             });
@@ -120,11 +120,11 @@ class FolderManager {
         sections.forEach((section) => {
             const tbody = section.querySelector('.table-etudiants tbody');
             const paginationContainer = section.querySelector('.accordion-pagination');
-
+            
             if (!tbody || !paginationContainer) return;
 
             const rows = Array.from(tbody.querySelectorAll('tr'));
-
+            
             // Si pas assez de lignes, on cache la pagination
             if (rows.length <= itemsPerPage) {
                 paginationContainer.style.display = 'none';
@@ -145,7 +145,7 @@ class FolderManager {
 
             const renderButtons = (currentPage) => {
                 paginationContainer.innerHTML = '';
-
+                
                 // Bouton Précédent
                 const btnPrev = document.createElement('button');
                 btnPrev.textContent = '‹';
@@ -235,7 +235,7 @@ class FolderManager {
      */
     appliquerFiltres(resetPage = false) {
         const url = new URL(window.location.href);
-
+        
         const searchInput = document.getElementById('search');
         if (searchInput && searchInput.value.trim() !== '') url.searchParams.set('search', searchInput.value.trim());
         else url.searchParams.delete('search');
@@ -291,7 +291,7 @@ class FolderManager {
         try {
             const response = await fetch('index.php?page=update_document_status', { method: 'POST', body: formData });
             const result = await response.json();
-
+            
             if (result.success) {
                 indicator.textContent = "Enregistré";
                 indicator.style.color = "green";
@@ -316,7 +316,7 @@ class FolderManager {
         if (!statusSelect) return;
 
         const newStatus = statusSelect.value;
-
+        
         indicator.textContent = "Sauvegarde en cours...";
         indicator.style.color = "orange";
 
@@ -327,7 +327,7 @@ class FolderManager {
         try {
             const response = await fetch('index.php?page=update_global_status', { method: 'POST', body: formData });
             const result = await response.json();
-
+            
             if (result.success) {
                 indicator.textContent = "Statut mis à jour";
                 indicator.style.color = "green";

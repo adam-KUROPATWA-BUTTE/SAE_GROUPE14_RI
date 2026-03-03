@@ -5,6 +5,7 @@
 namespace Controllers\FolderController;
 
 use Model\UseCase\ManageFolderUseCase;
+use Core\View;
 
 class FoldersControllerAdmin
 {
@@ -81,11 +82,11 @@ class FoldersControllerAdmin
         ];
 
         $result = $this->folderUseCase->searchWithoutPagination($filters);
-
+ 
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-        \Core\View::render('Folder/folders_admin', [
+        View::render('Folder/folders_admin', [
             'action'        => $action,
             'filters'       => $filters,
             'page'          => 1,
@@ -94,22 +95,22 @@ class FoldersControllerAdmin
             'studentData'   => $studentData,
             'paginatedData' => $result['data'],
             'totalCount'    => $result['total'],
-            'totalPages'    => 1
+            'totalPages'    => 1 
         ]);
     }
 
     private function updateGlobalStatus(): void
     {
         header('Content-Type: application/json');
-
+        
         $numEtu = $_POST['numetu'] ?? '';
         $status = $_POST['status'] ?? 'depot';
-
+        
         if (empty($numEtu)) {
             echo json_encode(['success' => false, 'message' => 'Paramètre manquant']);
             exit;
         }
-
+        
         $success = $this->folderUseCase->setFolderStatus($numEtu, $status);
         echo json_encode(['success' => $success]);
         exit;
@@ -118,17 +119,17 @@ class FoldersControllerAdmin
     private function updateDocumentStatus(): void
     {
         header('Content-Type: application/json');
-
+        
         $numEtu = $_POST['numetu'] ?? '';
         $docType = $_POST['doc_type'] ?? '';
         $status = $_POST['status'] ?? 'pending';
         $comment = $_POST['comment'] ?? '';
-
+        
         if (empty($numEtu) || empty($docType)) {
             echo json_encode(['success' => false, 'message' => 'Paramètres manquants']);
             exit;
         }
-
+        
         $success = $this->folderUseCase->updateDocumentStatus($numEtu, $docType, $status, $comment);
         echo json_encode(['success' => $success]);
         exit;
@@ -149,7 +150,7 @@ class FoldersControllerAdmin
                     : 'Error: Unsupported format. Use .csv or .xlsx';
             } else {
                 // SÉCURITÉ : On envoie bien le $fileName au UseCase pour activer le lecteur CSV !
-                $success = $this->folderUseCase->importFoldersFromCSV($filePath, $fileName);
+                $success = $this->folderUseCase->importFoldersFromCSV($filePath, $fileName); 
 
                 $_SESSION['message'] = $success
                     ? (($lang === 'fr') ? 'Importation réussie' : 'Import successful')
@@ -167,11 +168,11 @@ class FoldersControllerAdmin
     {
         $errors = [];
         $fileFields = ['photo', 'cv', 'convention', 'lettre_motivation', 'langues_file'];
-
+        
         foreach ($fileFields as $field) {
             if (isset($_FILES[$field])) {
                 $error = $_FILES[$field]['error'];
-
+                
                 if ($error === UPLOAD_ERR_OK) {
                     $content = file_get_contents($_FILES[$field]['tmp_name']);
                     if ($content !== false) {

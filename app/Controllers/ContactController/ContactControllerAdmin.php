@@ -5,6 +5,7 @@ namespace Controllers\ContactController;
 use Controllers\ControllerInterface;
 use Model\Persistence\ContactMessageRepository;
 use Service\ContactService;
+use Core\View; // Ajout de l'import pour la classe View
 
 class ContactControllerAdmin implements ControllerInterface
 {
@@ -79,7 +80,6 @@ class ContactControllerAdmin implements ControllerInterface
         if ($action === 'view' && $messageId) {
             $message = $this->contactService->getMessageById($messageId);
 
-
             if (!$message) {
                 header('Location: index.php?page=messages-admin');
                 exit;
@@ -89,7 +89,15 @@ class ContactControllerAdmin implements ControllerInterface
                 $this->contactService->markAsRead($messageId);
             }
 
-            require_once ROOT_PATH . '/app/View/Contact/messages_admin_view.php';
+            // Utilisation de View::render au lieu de require_once
+            View::render('Contact/messages_admin_view', [
+                'message'   => $message,
+                'lang'      => $lang,
+                't'         => $t,
+                'buildUrl'  => $buildUrl,
+                'action'    => $action,
+                'messageId' => $messageId
+            ]);
         } else {
             // Liste de tous les messages
             $filter = $_GET['filter'] ?? 'all';
@@ -100,7 +108,15 @@ class ContactControllerAdmin implements ControllerInterface
                 $messages = $this->contactService->getAllMessages();
             }
 
-            require_once ROOT_PATH . '/app/View/Contact/messages_admin_list.php';
+            // Utilisation de View::render au lieu de require_once
+            View::render('Contact/messages_admin_list', [
+                'messages' => $messages,
+                'filter'   => $filter,
+                'lang'     => $lang,
+                't'        => $t,
+                'buildUrl' => $buildUrl,
+                'action'   => $action
+            ]);
         }
     }
 }

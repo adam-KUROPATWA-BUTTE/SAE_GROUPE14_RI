@@ -443,6 +443,15 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             // Astuce : Fais un error_log pour voir l'erreur dans tes logs PHP si ça plante encore
             error_log("Update Error: " . $e->getMessage());
             return false;
+            
+            // FIXED : On garde juste le NumEtu, on enlève la ligne avec :Mobilite
+            $data[':NumEtu'] = $numEtu;
+            
+            return $stmt->execute($data);
+        } catch (\PDOException $e) { 
+            // Astuce : Fais un error_log pour voir l'erreur dans tes logs PHP si ça plante encore
+            error_log("Update Error: " . $e->getMessage()); 
+            return false; 
         }
     }
 
@@ -589,11 +598,24 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         $pdo = Database::getInstance()->getConnection();
         try {
             $pdo->beginTransaction();
+            
+            // 1. Préparation de la requête pour la table ETUDIANTS
+            $stmtEtu = $pdo->prepare("
+                INSERT INTO etudiants (
+                    numetu, nom, prenom, email, password, departement, campus, annee_etude, type_etudiant, telephone, adresse, code_postal, ville, sexe, date_naissance, created_at
+                ) VALUES (
+                    :numetu, :nom, :prenom, :email, :pass, :dept, :campus, :annee, :type, :tel, :adr, :cp, :ville, :sexe, :dob, NOW()
+                ) ON DUPLICATE KEY UPDATE 
+                    nom = VALUES(nom), prenom = VALUES(prenom), email = VALUES(email), 
+                    departement = VALUES(departement), campus = VALUES(campus), type_etudiant = VALUES(type_etudiant)
+            ");
 
             // LA SÉCURITÉ ABSOLUE EST ICI :
             // 1. On remplace les cases vides par des chaînes vides '' (pour éviter de froisser les contraintes NOT NULL de la BDD).
             // 2. Si on écrase une ligne existante avec une valeur vide, on ordonne à MySQL de GARDER l'ancienne valeur.
             $stmt = $pdo->prepare("
+            // 2. Préparation de la requête pour la table DOSSIERS (votre requête actuelle)
+            $stmtDossier = $pdo->prepare("
                 INSERT INTO dossiers (
                     NumEtu, Nom, Prenom, DateNaissance, Sexe, Adresse, CodePostal, Ville,
                     EmailPersonnel, EmailAMU, Telephone, CodeDepartement, Composante, Type, Zone, Pays,
@@ -662,6 +684,67 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                     ':AvisDRI'        => $dossier['AvisDRI'] ?? '',
                     ':DateDebut'      => $dossier['DateDebut'] ?? '',
                     ':MobiliteAnterieure' => $dossier['MobiliteAnterieure'] ?? ''
+                ) ON DUPLICATE KEY UPDATE 
+                    Nom = IF(VALUES(Nom) = 'INCONNU', dossiers.Nom, VALUES(Nom)), 
+                    Prenom = IF(VALUES(Prenom) = '-', dossiers.Prenom, VALUES(Prenom))
+                    /* ... reste de votre logique IF(...) existante ... */
+            ");
+
+            $count = 0;
+            foreach ($dossiers as $d) {
+                // --- ÉTAPE A : CRÉATION/MAJ ÉTUDIANT ---
+                // On définit l'identifiant et mot de passe par défaut
+                $numEtu = $d['NumEtu'];
+                $email = !empty($d['EmailAMU']) ? $d['EmailAMU'] : $d['EmailPersonnel'];
+                
+                // Hachage du mot de passe (NumEtu par défaut)
+                $hashedPass = password_hash($numEtu, PASSWORD_DEFAULT);
+
+                $stmtEtu->execute([
+                    ':numetu' => $numEtu,
+                    ':nom'    => $d['Nom'],
+                    ':prenom' => $d['Prenom'],
+                    ':email'  => $email,
+                    ':pass'   => $hashedPass,
+                    ':dept'   => $d['CodeDepartement'] ?? '',
+                    ':campus' => $d['Campus'] ?? '',
+                    ':annee'  => $d['NiveauEtude'] ?? '',
+                    ':type'   => $d['Type'] ?? 'sortant',
+                    ':tel'    => $d['Telephone'] ?? '',
+                    ':adr'    => $d['Adresse'] ?? '',
+                    ':cp'     => $d['CodePostal'] ?? '',
+                    ':ville'  => $d['Ville'] ?? '',
+                    ':sexe'   => $d['Sexe'] ?? null,
+                    ':dob'    => $d['DateNaissance'] ?? null
+                ]);
+
+                // --- ÉTAPE B : CRÉATION/MAJ DOSSIER ---
+                $stmtDossier->execute([
+                    ':NumEtu'         => $numEtu, 
+                    ':Nom'            => $d['Nom'], 
+                    ':Prenom'         => $d['Prenom'],
+                    ':DateNaissance'  => $d['DateNaissance'] ?: null,
+                    ':Sexe'           => $d['Sexe'] ?: null,
+                    ':Adresse'        => $d['Adresse'] ?? '',
+                    ':CodePostal'     => $d['CodePostal'] ?? '',
+                    ':Ville'          => $d['Ville'] ?? '',
+                    ':EmailPersonnel' => $d['EmailPersonnel'] ?? '',
+                    ':EmailAMU'       => $d['EmailAMU'] ?? '',
+                    ':Telephone'      => $d['Telephone'] ?? '',
+                    ':CodeDepartement'=> $d['CodeDepartement'] ?? '',
+                    ':Composante'     => $d['Composante'] ?? '',
+                    ':Type'           => !empty($d['Type']) ? $d['Type'] : 'sortant',
+                    ':Zone'           => !empty($d['Zone']) ? $d['Zone'] : 'europe',
+                    ':Pays'           => $d['Pays'] ?? '',
+                    ':Campus'         => $d['Campus'] ?? '',
+                    ':Discipline'     => $d['Discipline'] ?? '',
+                    ':NiveauEtude'    => $d['NiveauEtude'] ?? '',
+                    ':Formation'      => $d['Formation'] ?? '',
+                    ':MoyenneBac'     => $d['MoyenneBac'] ?? '',
+                    ':MoyenneSansBac' => $d['MoyenneSansBac'] ?? '',
+                    ':AvisDRI'        => $d['AvisDRI'] ?? '',
+                    ':DateDebut'      => $d['DateDebut'] ?? '',
+                    ':MobiliteAnterieure' => $d['MobiliteAnterieure'] ?? ''
                 ]);
                 $count++;
             }
@@ -670,7 +753,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             return $count;
         } catch (\PDOException $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
-            error_log("DB Upsert Error: " . $e->getMessage());
+            error_log("DB Upsert Error: " . $e->getMessage()); 
             return 0;
         }
     }

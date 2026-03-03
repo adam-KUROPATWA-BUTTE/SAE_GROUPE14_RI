@@ -80,7 +80,7 @@ $currentPage = $_GET['page'] ?? 'home-' . ($userRole === 'admin' ? 'admin' : 'st
             <?php else: ?>
                 <button
                     <?= $isActive ? 'class="active"' : '' ?>
-                        onclick="window.location.href='<?= htmlspecialchars($url) ?>'">
+                    onclick="window.location.href='<?= htmlspecialchars($url) ?>'">
                     <?= $t($labels) ?>
                 </button>
             <?php endif;
