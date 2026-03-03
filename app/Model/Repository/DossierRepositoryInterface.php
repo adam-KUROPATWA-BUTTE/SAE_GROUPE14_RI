@@ -25,8 +25,6 @@ interface DossierRepositoryInterface
     public function update(string $numEtu, array $data): bool;
 
     public function toggleCompleteStatus(string $numEtu): bool;
-    public function toggleStatus(string $numEtu): bool;
-
 
 
     public function setStatus(string $numEtu, string $status): bool;

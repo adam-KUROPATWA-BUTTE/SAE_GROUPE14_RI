@@ -9,12 +9,15 @@ class Partner
     private string $city;
     private string $institution;
 
+    private string $type;
+
     public function __construct(string $continent, string $country, string $city, string $institution)
     {
         $this->continent = $continent;
         $this->country = $country;
         $this->city = $city;
         $this->institution = $institution;
+        $this->type = $type;
     }
 
     public function getContinent(): string
@@ -32,5 +35,10 @@ class Partner
     public function getInstitution(): string
     {
         return $this->institution;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
     }
 }

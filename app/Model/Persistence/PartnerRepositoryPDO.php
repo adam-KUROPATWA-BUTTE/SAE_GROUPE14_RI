@@ -14,15 +14,17 @@ class PartnerRepositoryPDO implements PartnerRepositoryInterface
         $pdo = Database::getInstance()->getConnection();
 
         $stmt = $pdo->prepare("
-            INSERT INTO Partenaires (continent, pays, ville, universite_institution)
-            VALUES (:continent, :pays, :ville, :universite)
+            INSERT INTO Partenaires (continent, pays, ville, universite_institution, type)
+            VALUES (:continent, :pays, :ville, :universite, :type)
         ");
 
         $stmt->execute([
             'continent'  => $partner->getContinent(),
             'pays'       => $partner->getCountry(),
             'ville'      => $partner->getCity(),
-            'universite' => $partner->getInstitution()
+            'universite' => $partner->getInstitution(),
+            'type'       => $partner->getType()
+
         ]);
     }
 }

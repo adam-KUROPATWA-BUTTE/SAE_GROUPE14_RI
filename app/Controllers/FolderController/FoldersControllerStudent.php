@@ -6,7 +6,7 @@ namespace Controllers\FolderController;
 
 use Controllers\ControllerInterface;
 use Model\UseCase\ManageFolderUseCase;
- 
+
 /**
  * Class FoldersControllerStudent
  * Handles the HTTP requests and routing for student-facing folder operations.
@@ -70,7 +70,7 @@ class FoldersControllerStudent implements ControllerInterface
         unset($_SESSION['message']);
 
         $data = is_array($studentData) ? $studentData : [];
-        
+
         // Appel à la vue via la classe Core\View
         \Core\View::render('Folder/folders_student', [
             'dossier'   => $data,
@@ -78,6 +78,37 @@ class FoldersControllerStudent implements ControllerInterface
             'message'   => $message,
             'lang'      => $lang
         ]);
+    }
+
+    /**
+     * Method to process file uploads safely and catch any server limits/errors
+     */
+    private function handleFileUploads(array &$data, string $lang): array
+    {
+        $errors = [];
+        $fileFields = ['photo', 'cv', 'convention', 'lettre_motivation', 'langues_file'];
+
+        foreach ($fileFields as $field) {
+            if (isset($_FILES[$field])) {
+                $error = $_FILES[$field]['error'];
+
+                if ($error === UPLOAD_ERR_OK) {
+                    $content = file_get_contents($_FILES[$field]['tmp_name']);
+                    if ($content !== false) {
+                        $data[$field] = $content;
+                    } else {
+                        $errors[] = ($lang === 'fr') ? "Impossible de lire le fichier '$field'." : "Cannot read file '$field'.";
+                    }
+                } elseif ($error !== UPLOAD_ERR_NO_FILE) {
+                    $msg = ($lang === 'fr') ? "Erreur upload pour '$field' (Code: $error)" : "Upload error for '$field' (Code: $error)";
+                    if ($error === UPLOAD_ERR_INI_SIZE || $error === UPLOAD_ERR_FORM_SIZE) {
+                        $msg .= ($lang === 'fr') ? " : Le fichier est trop lourd (limite dépassée)." : " : File is too large.";
+                    }
+                    $errors[] = $msg;
+                }
+            }
+        }
+        return $errors;
     }
 
     /**
@@ -93,36 +124,49 @@ class FoldersControllerStudent implements ControllerInterface
 
         $data = [
             'NumEtu' => $numetu,
-            'Nom' => isset($_POST['nom']) ? (string)$_POST['nom'] : '',
-            'Prenom' => isset($_POST['prenom']) ? (string)$_POST['prenom'] : '',
-            'DateNaissance' => isset($_POST['naissance']) ? (string)$_POST['naissance'] : null,
-            'Sexe' => isset($_POST['sexe']) ? (string)$_POST['sexe'] : null,
-            'Adresse' => isset($_POST['adresse']) ? (string)$_POST['adresse'] : null,
-            'CodePostal' => isset($_POST['cp']) ? (string)$_POST['cp'] : null,
-            'Ville' => isset($_POST['ville']) ? (string)$_POST['ville'] : null,
-            'EmailPersonnel' => isset($_POST['email_perso']) ? (string)$_POST['email_perso'] : '',
-            'EmailAMU' => isset($_POST['email_amu']) ? (string)$_POST['email_amu'] : null,
-            'Telephone' => isset($_POST['telephone']) ? (string)$_POST['telephone'] : '',
-            'CodeDepartement' => isset($_POST['departement']) ? (string)$_POST['departement'] : null,
-            'Type' => isset($_POST['type']) ? (string)$_POST['type'] : null,
-            'Zone' => isset($_POST['zone']) ? (string)$_POST['zone'] : null
+            'Nom' => $_POST['nom'] ?? '',
+            'Prenom' => $_POST['prenom'] ?? '',
+            'DateNaissance' => $_POST['naissance'] ?? null,
+            'Sexe' => $_POST['sexe'] ?? null,
+            'Adresse' => $_POST['adresse'] ?? null,
+            'CodePostal' => $_POST['cp'] ?? null,
+            'Ville' => $_POST['ville'] ?? null,
+            'EmailPersonnel' => $_POST['email_perso'] ?? '',
+            'EmailAMU' => $_POST['email_amu'] ?? null,
+            'Telephone' => $_POST['telephone'] ?? '',
+            'CodeDepartement' => $_POST['departement'] ?? null,
+            'Composante' => $_POST['composante'] ?? null,
+            'Discipline' => $_POST['discipline'] ?? null,
+            'Formation' => $_POST['formation'] ?? null,
+            'Pays' => $_POST['pays'] ?? null,
+            'Type' => $_POST['type'] ?? null,
+            'Zone' => $_POST['zone'] ?? null,
+            // SÉCURITÉ : Les champs administratifs sont forcés à null pour ne pas lire d'éventuelles valeurs injectées
+            'Campus' => null,
+            'NiveauEtude' => null,
+            'MoyenneBac' => null,
+            'MoyenneSansBac' => null,
+            'DateDebut' => null,
+            'MobiliteAnterieure' => null,
         ];
 
         $errors = $this->validateFolderData($data, $lang);
 
         if (!empty($errors)) {
-            $_SESSION['message'] = implode(' ', $errors);
+            $_SESSION['message'] = implode('<br>', $errors);
             header('Location: index.php?page=folders-student&lang=' . $lang);
             exit;
         }
 
-        $success = $this->folderUseCase->creerDossier(
-            $data,
-            $this->getUploadedFileContent('photo'),
-            $this->getUploadedFileContent('cv'),
-            $this->getUploadedFileContent('convention'),
-            $this->getUploadedFileContent('lettre_motivation')
-        );
+        // Process file uploads safely and catch limits
+        $uploadErrors = $this->handleFileUploads($data, $lang);
+        if (!empty($uploadErrors)) {
+            $_SESSION['message'] = implode('<br>', $uploadErrors);
+            header('Location: index.php?page=folders-student&lang=' . $lang);
+            exit;
+        }
+
+        $success = $this->folderUseCase->creerDossier($data);
 
         $_SESSION['message'] = $success
             ? ($lang === 'fr' ? 'Votre demande a été déposée avec succès.' : 'Application submitted successfully.')
@@ -139,11 +183,25 @@ class FoldersControllerStudent implements ControllerInterface
     {
         $data = [
             'NumEtu' => $numetu,
-            'Adresse' => isset($_POST['adresse']) ? (string)$_POST['adresse'] : null,
-            'CodePostal' => isset($_POST['cp']) ? (string)$_POST['cp'] : null,
-            'Ville' => isset($_POST['ville']) ? (string)$_POST['ville'] : null,
-            'Telephone' => isset($_POST['telephone']) ? (string)$_POST['telephone'] : null,
-            'EmailPersonnel' => isset($_POST['email_perso']) ? (string)$_POST['email_perso'] : null,
+            'Nom' => $_POST['nom'] ?? null,
+            'Prenom' => $_POST['prenom'] ?? null,
+            'DateNaissance' => $_POST['naissance'] ?? null,
+            'Sexe' => $_POST['sexe'] ?? null,
+            'Adresse' => $_POST['adresse'] ?? null,
+            'CodePostal' => $_POST['cp'] ?? null,
+            'Ville' => $_POST['ville'] ?? null,
+            'EmailPersonnel' => $_POST['email_perso'] ?? null,
+            'EmailAMU' => $_POST['email_amu'] ?? null,
+            'Telephone' => $_POST['telephone'] ?? null,
+            'CodeDepartement' => $_POST['departement'] ?? null,
+            'Composante' => $_POST['composante'] ?? null,
+            'Discipline' => $_POST['discipline'] ?? null,
+            'Formation' => $_POST['formation'] ?? null,
+            'Pays' => $_POST['pays'] ?? null,
+            'Type' => $_POST['type'] ?? null,
+            'Zone' => $_POST['zone'] ?? null,
+            // SÉCURITÉ : La fonction Update utilisera la commande SQL 'COALESCE' qui conservera
+            // les anciennes valeurs pour ces champs administratifs puisqu'on passe null.
         ];
 
         if (empty($data['EmailPersonnel'])) {
@@ -152,13 +210,15 @@ class FoldersControllerStudent implements ControllerInterface
             exit;
         }
 
-        $success = $this->folderUseCase->updateDossier(
-            $data,
-            $this->getUploadedFileContent('photo'),
-            $this->getUploadedFileContent('cv'),
-            $this->getUploadedFileContent('convention'),
-            $this->getUploadedFileContent('lettre_motivation')
-        );
+        // Process file uploads safely and catch limits
+        $uploadErrors = $this->handleFileUploads($data, $lang);
+        if (!empty($uploadErrors)) {
+            $_SESSION['message'] = implode('<br>', $uploadErrors);
+            header('Location: index.php?page=folders-student&lang=' . $lang);
+            exit;
+        }
+
+        $success = $this->folderUseCase->updateDossier($data);
 
         $_SESSION['message'] = $success
             ? ($lang === 'fr' ? 'Dossier mis à jour avec succès.' : 'Folder updated successfully.')
@@ -187,18 +247,5 @@ class FoldersControllerStudent implements ControllerInterface
             $errors[] = $lang === 'fr' ? "Type et Zone requis." : "Type and Zone required.";
         }
         return $errors;
-    }
-
-    /**
-     * Safely reads the binary content of an uploaded file.
-     */
-    private function getUploadedFileContent(string $fieldName): ?string
-    {
-        if (!isset($_FILES[$fieldName]) || !is_array($_FILES[$fieldName])) return null;
-        if ($_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) return null;
-        $tmpName = $_FILES[$fieldName]['tmp_name'];
-        if (!is_string($tmpName) || !file_exists($tmpName)) return null;
-        $content = file_get_contents($tmpName);
-        return $content !== false ? $content : null;
     }
 }

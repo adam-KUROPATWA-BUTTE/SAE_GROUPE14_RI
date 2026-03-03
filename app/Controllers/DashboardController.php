@@ -4,7 +4,7 @@ namespace Controllers;
 
 use Controllers\ControllerInterface;
 use Model\UseCase\ManageFolderUseCase;
-use View\Dashboard\DashboardPageStudent; 
+use View\Dashboard\DashboardPageStudent;
 use Core\View;
 
 class DashboardController implements ControllerInterface
@@ -143,7 +143,7 @@ class DashboardController implements ControllerInterface
 
     private function showStudentDashboard(): void
     {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'student') {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
             header('Location: index.php?page=login');
             exit;
         }
@@ -156,7 +156,7 @@ class DashboardController implements ControllerInterface
         }
 
         $numetu = $_SESSION['numetu'];
-        
+
         // Remplacement par le nouveau Use Case
         $folder = $this->folderUseCase->getStudentDetails($numetu);
 

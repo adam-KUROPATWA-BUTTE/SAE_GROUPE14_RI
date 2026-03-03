@@ -6,64 +6,77 @@ use Model\Persistence\UserRepositoryPDO;
 
 class SuperAdminService
 {
-    private UserRepositoryPDO $repository;
+    private UserRepositoryPDO $userRepo;
 
-    public function __construct(UserRepositoryPDO $repository)
+    public function __construct(UserRepositoryPDO $userRepo)
     {
-        $this->repository = $repository;
+        $this->userRepo = $userRepo;
     }
 
-    /** @throws \RuntimeException */
-    public function createAccount(string $login, string $password, string $role): void
+    /** @return array<int, string> */
+    public function getAvailableDepartments(): array
     {
-        if ($this->repository->loginExists($login)) {
-            throw new \RuntimeException("Ce login existe déjà.");
-        }
-
-        $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
-        $created = $this->repository->createAdmin($login, $hashedPassword, $role);
-
-        if (!$created) {
-            throw new \RuntimeException("Erreur lors de la création du compte.");
-        }
-
-        $this->sendCredentialsMail($login, $password, $role);
+        return $this->userRepo->getDistinctDepartments();
     }
 
-    public function deleteAccount(string $login): bool
+    public function addDepartment(string $code): void
     {
-        return $this->repository->deleteAdminByEmail($login);
+        $this->userRepo->addCustomDepartment($code);
     }
 
-    /** @return array<int, array{login: string, role: string, created_at: string}> */
+    /** @return array<int, string> */
+    public function getAvailableSites(): array
+    {
+        return $this->userRepo->getDistinctSites();
+    }
+
+    public function addSite(string $name): void
+    {
+        $this->userRepo->addCustomSite($name);
+    }
+
+    /** @return array<int, array{login: string, role: string, departement: string|null, site: string|null, created_at: string}> */
     public function getAllAccounts(): array
     {
-        return $this->repository->getAllAdmins();
+        return $this->userRepo->findAll();
     }
 
-    private function sendCredentialsMail(string $login, string $password, string $role): void
+    public function createAccount(
+        string $email,
+        string $password,
+        string $role,
+        ?string $departement = null,
+        ?string $site = null
+    ): void {
+        if ($this->userRepo->findByLogin($email)) {
+            throw new \RuntimeException("Ce compte existe déjà.");
+        }
+        $hashed = password_hash($password, PASSWORD_BCRYPT);
+        $this->userRepo->create($email, $hashed, $role, $departement, $site);
+        $this->sendWelcomeEmail($email, $password, $role, $departement, $site);
+    }
+
+    public function deleteAccount(string $email): bool
     {
-        $roleLabel = match($role) {
-            'admin'        => 'Secrétaire / Administrateur',
-            'coordinateur' => 'Coordinateur',
-            default        => $role,
-        };
+        return $this->userRepo->deleteByLogin($email);
+    }
 
-        $subject = "=?UTF-8?B?" . base64_encode("Vos identifiants - Service Relations Internationales AMU") . "?=";
-        $body    = "Bonjour,\r\n\r\n"
-            . "Un compte a été créé pour vous sur la plateforme Relations Internationales AMU.\r\n\r\n"
-            . "Vos identifiants :\r\n"
-            . "  Login        : $login\r\n"
-            . "  Mot de passe : $password\r\n"
-            . "  Rôle         : $roleLabel\r\n\r\n"
-            . "Veuillez changer votre mot de passe dès la première connexion.\r\n\r\n"
-            . "Cordialement,\r\nService des Relations Internationales — AMU\r\n";
+    private function sendWelcomeEmail(
+        string $email,
+        string $password,
+        string $role,
+        ?string $departement,
+        ?string $site
+    ): void {
+        $extra = '';
+        if ($departement) $extra .= " (Département : $departement)";
+        if ($site)        $extra .= " (Site : $site)";
 
-        $headers  = "From: noreply@univ-amu.fr\r\n";
-        $headers .= "Reply-To: relations.internationales@univ-amu.fr\r\n";
-        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
-        $headers .= "MIME-Version: 1.0\r\n";
+        $subject = "Votre accès à la plateforme AMU Relations Internationales";
+        $body    = "Bonjour,\n\nVotre compte a été créé.\n"
+            . "Login : $email\nMot de passe : $password\nRôle : $role$extra\n\n"
+            . "Connectez-vous sur : https://votre-site.fr\n\nCordialement,\nL'équipe AMU";
 
-        mail($login, $subject, $body, $headers);
+        mail($email, $subject, $body, "From: noreply@univ-amu.fr");
     }
 }

@@ -10,8 +10,8 @@
     --h2-size: 1.8rem;
     --text-size: 1rem;
     --text-small-size: 0.9rem;
-    --button-size: 1.5rem;
-    --button-small-size: 1rem;
+    --button-size: 1rem;
+    --button-small-size: 0.8rem;
 }
 
 body.tritanopie {
@@ -34,6 +34,7 @@ header {
 button{
     border-radius: 20px;
     border-color: white;
+    font-size: var(--button-size);
 }
 
 .logo_amu {
@@ -53,11 +54,11 @@ button{
 body {
     background-color: var(--background-color);
     margin: 0;
-    font-family: sans-serif;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
     font-size: var(--text-size);
+    font-family: inherit;
 }
 
 h2{
@@ -72,9 +73,6 @@ h2{
 
 }
 
-button{
-    font-size: var(--button-size)
-}
 
 
 .lang-dropdown {
@@ -116,7 +114,8 @@ nav.menu {
     margin-top: 15px;
 }
 
-nav.menu button {
+nav.menu button,nav .dropdown button {
+    flex: 1;
     width: 100%;
     border: solid #ffffff;
     border-radius: 20px;
@@ -136,6 +135,46 @@ nav.menu button:hover {
 nav.menu button.active {
     background-color: var(--primary-color);
     color: var(--text-color);
+}
+
+nav.menu .dropdown {
+    position: relative;
+    display: flex;
+    flex: 1;
+}
+
+nav.menu .dropdown > button {
+    flex: 1;
+}
+
+nav.menu .dropdown:hover .dropdown-content {
+    display: block;
+}
+
+nav.menu .dropdown .dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 100;
+    background-color: white;
+    min-width: 120px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+nav.menu .dropdown .dropdown-content a {
+    display: block;
+    padding: 8px 16px;
+    text-decoration: none;
+    color: var(--primary-color);
+}
+
+nav.menu .dropdown .dropdown-content a:hover {
+    background-color: #f0f0f0;
+}
+
+nav.menu .dropdown > button {
+    flex: 1;
 }
 
 button {

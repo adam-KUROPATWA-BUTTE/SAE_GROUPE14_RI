@@ -88,7 +88,7 @@ ob_start();
                 <?= $t(['fr' => 'Tableau de bord', 'en' => 'Dashboard']) ?>
             </button>
             <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'partners-admin']) ?>'">
-                <?= $t(['fr' => 'Partenaires', 'en' => 'Partners']) ?>
+                <?= $t(['fr' => 'Destinations', 'en' => 'Destinations']) ?>
             </button>
             <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'folders-admin']) ?>'">
                 <?= $t(['fr' => 'Dossiers', 'en' => 'Folders']) ?>

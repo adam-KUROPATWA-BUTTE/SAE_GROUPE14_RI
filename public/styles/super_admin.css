@@ -1,5 +1,9 @@
+/* ============================================
+   Super Admin — styles/super_admin.css
+   Adapted to AMU site colors
+   ============================================ */
 
-
+/* Police identique à index.css : sans-serif par défaut */
 
 :root {
     --sa-bg:          #F9F1D7;
@@ -490,4 +494,145 @@ body.tritanopie .sa-role-badge--admin {
 
 body.tritanopie .sa-account-item:hover {
     border-color: var(--accent-color);
+}
+
+/* ── Badge département ─────────────────────────── */
+.sa-dept-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: #e8f0fe;
+    color: #1a56db;
+    border: 1px solid #c3d7fa;
+    border-radius: 999px;
+    padding: 0.2rem 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+body.tritanopie .sa-dept-badge {
+    background: #e8f5e9;
+    color: #1a5c2a;
+    border-color: #a8d5b0;
+}
+
+/* Champ ajout département */
+.sa-add-dept {
+    background: #f8faff;
+    border: 1px dashed #c3d7fa;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+}
+
+body.tritanopie .sa-add-dept {
+    background: #f4faf5;
+    border-color: #a8d5b0;
+}
+
+/* ── Coordinator type grid ───────────────────── */
+.sa-coord-type-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+}
+
+.sa-coord-option input[type="radio"] { display: none; }
+
+.sa-coord-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.9rem;
+    border: 2px solid var(--sa-border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: sans-serif;
+    transition: border-color 0.15s, background 0.15s;
+    background: var(--sa-bg);
+}
+
+.sa-coord-option input[type="radio"]:checked + .sa-coord-card {
+    border-color: var(--sa-accent);
+    background: var(--sa-accent-glow);
+    color: var(--sa-accent);
+    font-weight: 600;
+}
+
+.sa-coord-card:hover {
+    border-color: var(--sa-accent-2);
+}
+
+.sa-coord-icon { font-size: 1.1rem; }
+
+body.tritanopie .sa-coord-option input[type="radio"]:checked + .sa-coord-card {
+    border-color: var(--primary-color);
+    background: rgba(0, 92, 69, 0.08);
+    color: var(--primary-color);
+}
+
+/* ── Add dept / site block ───────────────────── */
+.sa-add-dept {
+    background: #f8faff;
+    border: 1px dashed var(--sa-border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.sa-add-dept-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+body.tritanopie .sa-add-dept {
+    background: #f4faf5;
+    border-color: #a8d5b0;
+}
+
+/* ── Inline message ──────────────────────────── */
+.sa-inline-msg {
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+/* ── Dept / site badges ──────────────────────── */
+.sa-dept-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: #e8f0fe;
+    color: #1a56db;
+    border: 1px solid #c3d7fa;
+    border-radius: 999px;
+    padding: 0.2rem 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-family: sans-serif;
+}
+
+.sa-dept-badge--site {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fcd34d;
+}
+
+body.tritanopie .sa-dept-badge {
+    background: #e8f5e9;
+    color: #1a5c2a;
+    border-color: #a8d5b0;
+}
+
+/* ── Badge roles coordinateur ────────────────── */
+.sa-role-badge--coordinateur_etude,
+.sa-role-badge--coordinateur_stage,
+.sa-role-badge--chef_departement {
+    background: rgba(235, 197, 94, 0.2);
+    color: #8a6800;
+    border: 1px solid rgba(235, 197, 94, 0.5);
 }
