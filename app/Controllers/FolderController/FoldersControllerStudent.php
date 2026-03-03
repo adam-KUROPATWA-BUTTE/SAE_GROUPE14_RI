@@ -6,7 +6,8 @@ namespace Controllers\FolderController;
 
 use Controllers\ControllerInterface;
 use Model\UseCase\ManageFolderUseCase;
- 
+use Core\View;
+
 /**
  * Class FoldersControllerStudent
  * Handles the HTTP requests and routing for student-facing folder operations.
@@ -72,7 +73,7 @@ class FoldersControllerStudent implements ControllerInterface
         $data = is_array($studentData) ? $studentData : [];
         
         // Appel à la vue via la classe Core\View
-        \Core\View::render('Folder/folders_student', [
+        View::render('Folder/folders_student', [
             'dossier'   => $data,
             'studentId' => $numetu,
             'message'   => $message,

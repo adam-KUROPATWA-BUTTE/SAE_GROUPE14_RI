@@ -5,6 +5,7 @@
 namespace Controllers\FolderController;
 
 use Model\UseCase\ManageFolderUseCase;
+use Core\View;
 
 class FoldersControllerAdmin
 {
@@ -85,7 +86,7 @@ class FoldersControllerAdmin
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-        \Core\View::render('Folder/folders_admin', [
+        View::render('Folder/folders_admin', [
             'action'        => $action,
             'filters'       => $filters,
             'page'          => 1,
