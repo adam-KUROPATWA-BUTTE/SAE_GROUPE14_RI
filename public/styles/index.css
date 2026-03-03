@@ -114,7 +114,8 @@ nav.menu {
     margin-top: 15px;
 }
 
-nav.menu button {
+nav.menu button,nav .dropdown button {
+    flex: 1;
     width: 100%;
     border: solid #ffffff;
     border-radius: 20px;
@@ -134,6 +135,46 @@ nav.menu button:hover {
 nav.menu button.active {
     background-color: var(--primary-color);
     color: var(--text-color);
+}
+
+nav.menu .dropdown {
+    position: relative;
+    display: flex;
+    flex: 1;
+}
+
+nav.menu .dropdown > button {
+    flex: 1;
+}
+
+nav.menu .dropdown:hover .dropdown-content {
+    display: block;
+}
+
+nav.menu .dropdown .dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 100;
+    background-color: white;
+    min-width: 120px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+nav.menu .dropdown .dropdown-content a {
+    display: block;
+    padding: 8px 16px;
+    text-decoration: none;
+    color: var(--primary-color);
+}
+
+nav.menu .dropdown .dropdown-content a:hover {
+    background-color: #f0f0f0;
+}
+
+nav.menu .dropdown > button {
+    flex: 1;
 }
 
 button {

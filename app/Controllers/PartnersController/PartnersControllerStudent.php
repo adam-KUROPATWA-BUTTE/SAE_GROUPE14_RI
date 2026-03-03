@@ -30,7 +30,15 @@ class PartnersControllerStudent implements ControllerInterface
             $_SESSION['tritanopia'] = (strval($_GET['tritanopia']) === '1');
         }
 
-        $titre = $lang === 'en' ? 'Partner Universities' : 'Universités Partenaires';
+        $partner = isset($_GET['partner']) && $_GET['partner'] === 'iut' ? 'iut' : 'amu';
+
+
+        $titre = match(true) {
+            $partner === 'amu' && $lang === 'fr' => 'Universités Partenaires AMU',
+            $partner === 'amu' && $lang === 'en' => 'AMU Partner Universities',
+            $partner === 'iut' && $lang === 'fr' => 'Universités Partenaires IUT',
+            $partner === 'iut' && $lang === 'en' => 'IUT Partner Universities',
+        };
 
         $t = function (array $frEn) use ($lang): string {
             return $lang === 'en' ? $frEn['en'] : $frEn['fr'];
@@ -45,6 +53,7 @@ class PartnersControllerStudent implements ControllerInterface
         View::render('Partners/partners_student', [
             'titre'    => $titre,
             'lang'     => $lang,
+            'partner'  => $partner,
             't'        => $t,
             'buildUrl' => $buildUrl
         ]);
