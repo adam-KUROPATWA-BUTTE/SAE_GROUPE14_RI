@@ -40,8 +40,8 @@ $currentPage = $_GET['page'] ?? 'home-' . ($userRole === 'admin' ? 'admin' : 'st
                 'en' => ($userRole === 'admin' ? 'Dashboard' : 'My Dashboard')
             ],
             'partners' => [
-                'fr' => 'Partenaires',
-                'en' => 'Partners'
+                'fr' => 'Destinations',
+                'en' => 'Destinations'
             ],
             'folders' => [
                 'fr' => ($userRole === 'admin' ? 'Dossiers' : 'Mon Dossier'),

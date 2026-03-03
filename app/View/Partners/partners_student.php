@@ -16,8 +16,8 @@ ob_start();
 
     <p>
         <?= $t([
-                'fr' => 'Veuillez trouver la liste des partenaires d\'AMU en cliquant sur ce lien :',
-                'en' => 'Please find the list of AMU\'s partners by clicking on this link:'
+                'fr' => 'Veuillez trouver la liste des destinations d\'AMU en cliquant sur ce lien :',
+                'en' => 'Please find the list of AMU\'s destinations by clicking on this link:'
         ]) ?>
     </p>
     <p class="lien">
@@ -30,8 +30,8 @@ ob_start();
 
     <p>
         <?= $t([
-                'fr' => 'Veuillez trouver la liste des partenaires de l\'IUT en cliquant sur ce lien :',
-                'en' => 'Please find the list of IUT\'s partners by clicking on this link:'
+                'fr' => 'Veuillez trouver la liste des destinations de l\'IUT en cliquant sur ce lien :',
+                'en' => 'Please find the list of IUT\'s destinations by clicking on this link:'
         ]) ?>
     </p>
     <p class="lien">

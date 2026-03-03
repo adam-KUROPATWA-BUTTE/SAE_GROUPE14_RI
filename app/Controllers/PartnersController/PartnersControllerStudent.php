@@ -34,10 +34,10 @@ class PartnersControllerStudent implements ControllerInterface
 
 
         $titre = match(true) {
-            $partner === 'amu' && $lang === 'fr' => 'Universités Partenaires AMU',
-            $partner === 'amu' && $lang === 'en' => 'AMU Partner Universities',
-            $partner === 'iut' && $lang === 'fr' => 'Universités Partenaires IUT',
-            $partner === 'iut' && $lang === 'en' => 'IUT Partner Universities',
+            $partner === 'amu' && $lang === 'fr' => 'Universités Destinations AMU',
+            $partner === 'amu' && $lang === 'en' => 'AMU Destinations Universities',
+            $partner === 'iut' && $lang === 'fr' => 'Universités Desinations IUT',
+            $partner === 'iut' && $lang === 'en' => 'IUT Destinations Universities',
         };
 
         $t = function (array $frEn) use ($lang): string {
