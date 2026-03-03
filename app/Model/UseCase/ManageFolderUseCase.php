@@ -415,7 +415,7 @@ class ManageFolderUseCase
             return false;
         }
     }
-    
+
     public function cycleFolderStatus(string $numEtu): bool
     {
         return $this->dossierRepo->cycleStatus($numEtu);

@@ -434,6 +434,15 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                     PiecesJustificatives = COALESCE(:PiecesJustificatives, PiecesJustificatives), status = COALESCE(:status, status)
                 WHERE NumEtu = :NumEtu
             ");
+
+            // FIXED : On garde juste le NumEtu, on enlève la ligne avec :Mobilite
+            $data[':NumEtu'] = $numEtu;
+
+            return $stmt->execute($data);
+        } catch (\PDOException $e) {
+            // Astuce : Fais un error_log pour voir l'erreur dans tes logs PHP si ça plante encore
+            error_log("Update Error: " . $e->getMessage());
+            return false;
             
             // FIXED : On garde juste le NumEtu, on enlève la ligne avec :Mobilite
             $data[':NumEtu'] = $numEtu;
@@ -601,6 +610,10 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                     departement = VALUES(departement), campus = VALUES(campus), type_etudiant = VALUES(type_etudiant)
             ");
 
+            // LA SÉCURITÉ ABSOLUE EST ICI :
+            // 1. On remplace les cases vides par des chaînes vides '' (pour éviter de froisser les contraintes NOT NULL de la BDD).
+            // 2. Si on écrase une ligne existante avec une valeur vide, on ordonne à MySQL de GARDER l'ancienne valeur.
+            $stmt = $pdo->prepare("
             // 2. Préparation de la requête pour la table DOSSIERS (votre requête actuelle)
             $stmtDossier = $pdo->prepare("
                 INSERT INTO dossiers (
@@ -613,6 +626,64 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                     :EmailPersonnel, :EmailAMU, :Telephone, :CodeDepartement, :Composante, :Type, :Zone, :Pays,
                     :Campus, :Discipline, :NiveauEtude, :Formation, :MoyenneBac, :MoyenneSansBac, :AvisDRI,
                     :DateDebut, :MobiliteAnterieure, 0, '{}', 'depot'
+                )
+                ON DUPLICATE KEY UPDATE 
+                    Nom = IF(VALUES(Nom) = 'INCONNU', dossiers.Nom, VALUES(Nom)), 
+                    Prenom = IF(VALUES(Prenom) = '-', dossiers.Prenom, VALUES(Prenom)),
+                    DateNaissance = IF(VALUES(DateNaissance) IS NULL, dossiers.DateNaissance, VALUES(DateNaissance)),
+                    Sexe = IF(VALUES(Sexe) IS NULL, dossiers.Sexe, VALUES(Sexe)),
+                    Adresse = IF(VALUES(Adresse) = '', dossiers.Adresse, VALUES(Adresse)),
+                    CodePostal = IF(VALUES(CodePostal) = '', dossiers.CodePostal, VALUES(CodePostal)),
+                    Ville = IF(VALUES(Ville) = '', dossiers.Ville, VALUES(Ville)),
+                    EmailPersonnel = IF(VALUES(EmailPersonnel) = '', dossiers.EmailPersonnel, VALUES(EmailPersonnel)),
+                    EmailAMU = IF(VALUES(EmailAMU) = '', dossiers.EmailAMU, VALUES(EmailAMU)),
+                    Telephone = IF(VALUES(Telephone) = '', dossiers.Telephone, VALUES(Telephone)),
+                    CodeDepartement = IF(VALUES(CodeDepartement) = '', dossiers.CodeDepartement, VALUES(CodeDepartement)),
+                    Composante = IF(VALUES(Composante) = '', dossiers.Composante, VALUES(Composante)),
+                    Type = IF(VALUES(Type) = '', dossiers.Type, VALUES(Type)),
+                    Zone = IF(VALUES(Zone) = '', dossiers.Zone, VALUES(Zone)),
+                    Pays = IF(VALUES(Pays) = '', dossiers.Pays, VALUES(Pays)),
+                    Campus = IF(VALUES(Campus) = '', dossiers.Campus, VALUES(Campus)),
+                    Discipline = IF(VALUES(Discipline) = '', dossiers.Discipline, VALUES(Discipline)),
+                    NiveauEtude = IF(VALUES(NiveauEtude) = '', dossiers.NiveauEtude, VALUES(NiveauEtude)),
+                    Formation = IF(VALUES(Formation) = '', dossiers.Formation, VALUES(Formation)),
+                    MoyenneBac = IF(VALUES(MoyenneBac) = '', dossiers.MoyenneBac, VALUES(MoyenneBac)),
+                    MoyenneSansBac = IF(VALUES(MoyenneSansBac) = '', dossiers.MoyenneSansBac, VALUES(MoyenneSansBac)),
+                    AvisDRI = IF(VALUES(AvisDRI) = '', dossiers.AvisDRI, VALUES(AvisDRI)),
+                    DateDebut = IF(VALUES(DateDebut) = '', dossiers.DateDebut, VALUES(DateDebut)),
+                    MobiliteAnterieure = IF(VALUES(MobiliteAnterieure) = '', dossiers.MobiliteAnterieure, VALUES(MobiliteAnterieure))
+            ");
+
+            $count = 0;
+            foreach ($dossiers as $dossier) {
+                $pays = is_string($dossier['Pays'] ?? null) ? $dossier['Pays'] : '';
+                $zone = is_string($dossier['Zone'] ?? null) ? $dossier['Zone'] : '';
+                $stmt->execute([
+                    ':NumEtu'         => $dossier['NumEtu'],
+                    ':Nom'            => $dossier['Nom'],
+                    ':Prenom'         => $dossier['Prenom'],
+                    ':DateNaissance'  => $dossier['DateNaissance'] ?: null,
+                    ':Sexe'           => $dossier['Sexe'] ?: null,
+                    ':Adresse'        => $dossier['Adresse'] ?? '',
+                    ':CodePostal'     => $dossier['CodePostal'] ?? '',
+                    ':Ville'          => $dossier['Ville'] ?? '',
+                    ':EmailPersonnel' => $dossier['EmailPersonnel'] ?? '',
+                    ':EmailAMU'       => $dossier['EmailAMU'] ?? '',
+                    ':Telephone'      => $dossier['Telephone'] ?? '',
+                    ':CodeDepartement'=> $dossier['CodeDepartement'] ?? '',
+                    ':Composante'     => $dossier['Composante'] ?? '',
+                    ':Type'           => !empty($dossier['Type']) ? $dossier['Type'] : 'sortant',
+                    ':Zone'           => !empty($dossier['Zone']) ? $dossier['Zone'] : 'europe',
+                    ':Pays'           => $dossier['Pays'] ?? '',
+                    ':Campus'         => $dossier['Campus'] ?? '',
+                    ':Discipline'     => $dossier['Discipline'] ?? '',
+                    ':NiveauEtude'    => $dossier['NiveauEtude'] ?? '',
+                    ':Formation'      => $dossier['Formation'] ?? '',
+                    ':MoyenneBac'     => $dossier['MoyenneBac'] ?? '',
+                    ':MoyenneSansBac' => $dossier['MoyenneSansBac'] ?? '',
+                    ':AvisDRI'        => $dossier['AvisDRI'] ?? '',
+                    ':DateDebut'      => $dossier['DateDebut'] ?? '',
+                    ':MobiliteAnterieure' => $dossier['MobiliteAnterieure'] ?? ''
                 ) ON DUPLICATE KEY UPDATE 
                     Nom = IF(VALUES(Nom) = 'INCONNU', dossiers.Nom, VALUES(Nom)), 
                     Prenom = IF(VALUES(Prenom) = '-', dossiers.Prenom, VALUES(Prenom))

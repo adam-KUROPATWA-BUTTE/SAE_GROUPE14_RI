@@ -27,7 +27,7 @@ class AuthController implements ControllerInterface
     public function control(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
-            session_start(); // ✅ Important
+            session_start();
         }
 
         $page = $_GET['page'] ?? 'login';
@@ -52,34 +52,34 @@ class AuthController implements ControllerInterface
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $identifier = $_POST['identifier'] ?? '';
-            $password   = $_POST['password'] ?? '';
+            $password   = $_POST['password']   ?? '';
 
             $result = $this->userRepository->login(
                 is_string($identifier) ? $identifier : '',
-                is_string($password) ? $password : ''
+                is_string($password)   ? $password   : ''
             );
 
             if ($result['success']) {
 
-                // ✅ Variable unifiée
                 $_SESSION['role'] = $result['role'];
 
                 if ($result['role'] === 'student' && isset($result['numetu'])) {
                     $_SESSION['numetu'] = $result['numetu'];
                 }
 
-                // Redirections
-                if ($result['role'] === 'super_admin') {
-                    header('Location: index.php?page=super-admin');
-                } elseif ($result['role'] === 'admin') {
-                    header('Location: index.php?page=home-admin');
-                } elseif (in_array($result['role'], ['coordinateur', 'coordinateur_etude', 'coordinateur_stage', 'chef_departement'], true)) {
-                    header('Location: index.php?page=home-coordinateur');
-                } else {
-                    header('Location: index.php?page=home-student');
-                }
+                $destination = match($result['role']) {
+                    'super_admin'          => 'index.php?page=super-admin',
+                    'admin'                => 'index.php?page=home-admin',
+                    'coordinateur_etude'   => 'index.php?page=coordinateur-etude',
+                    'coordinateur_stage'   => 'index.php?page=coordinateur-stage',
+                    'chef_departement'     => 'index.php?page=chef-departement',
+                    'coordinateur'         => 'index.php?page=home-coordinateur',
+                    default                => 'index.php?page=home-student',
+                };
 
+                header('Location: ' . $destination);
                 exit;
+
             } else {
                 $message = 'Identifiants incorrects';
             }
@@ -126,7 +126,7 @@ class AuthController implements ControllerInterface
 
             if ($isTokenReset) {
 
-                $password = $_POST['password'] ?? '';
+                $password        = $_POST['password']         ?? '';
                 $passwordConfirm = $_POST['password_confirm'] ?? '';
 
                 if ($password !== $passwordConfirm) {
@@ -139,7 +139,7 @@ class AuthController implements ControllerInterface
 
             } else {
 
-                $email = $_POST['email'] ?? '';
+                $email  = $_POST['email'] ?? '';
                 $result = $this->userRepository->resetPassword(is_string($email) ? $email : '');
 
                 $message = $result
@@ -150,9 +150,9 @@ class AuthController implements ControllerInterface
 
         if ($isTokenReset) {
             View::render('reset_password', [
-                'token' => $token,
-                'error' => $error,
-                'success' => $success,
+                'token'        => $token,
+                'error'        => $error,
+                'success'      => $success,
                 'isTritanopia' => $isTritanopia
             ]);
         } else {

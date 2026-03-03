@@ -73,9 +73,9 @@ class FoldersControllerAdmin
         }
 
         $filters = [
-            'type'    => $_GET['type'] ?? 'all',   
-            'zone'    => $_GET['zone'] ?? 'all',   
-            'search'  => $_GET['search'] ?? '',    
+            'type'    => $_GET['type'] ?? 'all',
+            'zone'    => $_GET['zone'] ?? 'all',
+            'search'  => $_GET['search'] ?? '',
             'complet' => $_GET['complet'] ?? 'all',
             'composante' => $_GET['composante'] ?? 'all',
             'accord'  => $_GET['accord'] ?? 'all',
@@ -140,13 +140,13 @@ class FoldersControllerAdmin
         if (isset($_FILES['excel_file']) && $_FILES['excel_file']['error'] === UPLOAD_ERR_OK) {
             $filePath = $_FILES['excel_file']['tmp_name'];
             $fileName = $_FILES['excel_file']['name'];
-            
+
             $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
             $allowedExtensions = ['csv', 'xlsx', 'xls'];
-            
+
             if (!in_array($ext, $allowedExtensions)) {
-                $_SESSION['message'] = ($lang === 'fr') 
-                    ? 'Erreur : Format non supporté. Utilisez .csv ou .xlsx' 
+                $_SESSION['message'] = ($lang === 'fr')
+                    ? 'Erreur : Format non supporté. Utilisez .csv ou .xlsx'
                     : 'Error: Unsupported format. Use .csv or .xlsx';
             } else {
                 // SÉCURITÉ : On envoie bien le $fileName au UseCase pour activer le lecteur CSV !
@@ -159,7 +159,7 @@ class FoldersControllerAdmin
         } else {
             $_SESSION['message'] = ($lang === 'fr') ? 'Erreur lors du téléchargement du fichier.' : 'File upload error.';
         }
-        
+
         header('Location: index.php?page=folders-admin&lang=' . $lang);
         exit;
     }

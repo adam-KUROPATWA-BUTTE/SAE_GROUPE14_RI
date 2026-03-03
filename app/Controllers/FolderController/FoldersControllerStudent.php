@@ -71,7 +71,7 @@ class FoldersControllerStudent implements ControllerInterface
         unset($_SESSION['message']);
 
         $data = is_array($studentData) ? $studentData : [];
-        
+
         // Appel à la vue via la classe Core\View
         View::render('Folder/folders_student', [
             'dossier'   => $data,

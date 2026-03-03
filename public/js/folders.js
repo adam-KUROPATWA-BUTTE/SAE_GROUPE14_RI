@@ -37,14 +37,14 @@ class FolderManager {
     initFilterEvents() {
         const searchInput = document.getElementById('search');
         const searchBtn = document.querySelector('.btn-search');
-        
+
         if (searchInput) {
             let timeout = null;
             searchInput.addEventListener('input', () => {
                 clearTimeout(timeout);
                 // Auto-search after 3 seconds of inactivity
                 timeout = setTimeout(() => {
-                     this.appliquerFiltres(true); 
+                    this.appliquerFiltres(true);
                 }, 3000);
             });
 
@@ -204,7 +204,7 @@ class FolderManager {
                 field.classList.remove('input-disabled');
             }
         });
-        
+
         const btnMod = document.getElementById('btn-modifier');
         const btnSave = document.getElementById('btn-enregistrer');
         const btnCancel = document.getElementById('btn-annuler');

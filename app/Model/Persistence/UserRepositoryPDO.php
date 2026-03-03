@@ -17,25 +17,22 @@ class UserRepositoryPDO implements UserRepositoryInterface
         $this->pdo = Database::getInstance()->getConnection();
     }
 
+    // ─────────────────────────────────────────────
+    // Méthodes originales (login étudiant/admin)
+    // ─────────────────────────────────────────────
+
     public function findByEmail(string $email): ?User
     {
-        // Chercher d'abord dans admins avec le VRAI rôle
-        $sql = "SELECT * FROM admins WHERE email = :email";
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->pdo->prepare("SELECT * FROM admins WHERE email = :email");
         $stmt->execute([':email' => $email]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
-
         if (is_array($data)) {
-            $realRole = is_string($data['role']) ? $data['role'] : 'admin';
-            return $this->mapToUser($data, $realRole);
+            return $this->mapToUser($data, is_string($data['role']) ? $data['role'] : 'admin');
         }
 
-        // Sinon chercher dans etudiants
-        $sql = "SELECT * FROM etudiants WHERE email = :email";
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->pdo->prepare("SELECT * FROM etudiants WHERE email = :email");
         $stmt->execute([':email' => $email]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
-
         if (is_array($data)) {
             return $this->mapToUser($data, 'student');
         }
@@ -45,47 +42,24 @@ class UserRepositoryPDO implements UserRepositoryInterface
 
     public function findByStudentNumber(string $numetu): ?User
     {
-        // Chercher uniquement dans etudiants
-        $sql = "SELECT *, 'student' as role FROM etudiants WHERE numetu = :numetu";
-        $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->pdo->prepare("SELECT *, 'student' as role FROM etudiants WHERE numetu = :numetu");
         $stmt->execute(['numetu' => $numetu]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!is_array($data)) {
-            return null;
-        }
-
-        return $this->mapToUser($data, 'student');
+        return is_array($data) ? $this->mapToUser($data, 'student') : null;
     }
 
     public function save(User $user): bool
     {
         try {
             if ($user->getRole() === 'admin') {
-                $sql = "INSERT INTO admins (email, password, role) 
-                    VALUES (:email, :password, :role)";
-
-                $stmt = $this->pdo->prepare($sql);
-
-                return $stmt->execute([
-                    'email' => $user->getEmail(),
-                    'password' => $user->getPassword(),
-                    'role' => $user->getRole()
-                ]);
+                $stmt = $this->pdo->prepare("INSERT INTO admins (email, password, role) VALUES (:email, :password, :role)");
+                return $stmt->execute(['email' => $user->getEmail(), 'password' => $user->getPassword(), 'role' => $user->getRole()]);
             } else {
-                $sql = "INSERT INTO etudiants (email, password, numetu) 
-                    VALUES (:email, :password, :numetu)";
-
-                $stmt = $this->pdo->prepare($sql);
-
-                return $stmt->execute([
-                    'email' => $user->getEmail(),
-                    'password' => $user->getPassword(),
-                    'numetu' => $user->getNumetu()
-                ]);
+                $stmt = $this->pdo->prepare("INSERT INTO etudiants (email, password, numetu) VALUES (:email, :password, :numetu)");
+                return $stmt->execute(['email' => $user->getEmail(), 'password' => $user->getPassword(), 'numetu' => $user->getNumetu()]);
             }
         } catch (PDOException $e) {
-            error_log("Error saving user: " . $e->getMessage());
+            error_log("save Error: " . $e->getMessage());
             return false;
         }
     }
@@ -93,27 +67,21 @@ class UserRepositoryPDO implements UserRepositoryInterface
     public function updatePassword(string $email, string $hashedPassword): bool
     {
         try {
-            // Essayer d'abord dans admins
-            $sql = "UPDATE admins SET password = :password WHERE email = :email";
-            $stmt = $this->pdo->prepare($sql);
-            $result = $stmt->execute(['password' => $hashedPassword, 'email' => $email]);
+            $stmt = $this->pdo->prepare("UPDATE admins SET password = :password WHERE email = :email");
+            $stmt->execute(['password' => $hashedPassword, 'email' => $email]);
+            if ($stmt->rowCount() > 0) return true;
 
-            if ($stmt->rowCount() > 0) {
-                return true;
-            }
-
-            // Sinon dans etudiants
-            $sql = "UPDATE etudiants SET password = :password WHERE email = :email";
-            $stmt = $this->pdo->prepare($sql);
+            $stmt = $this->pdo->prepare("UPDATE etudiants SET password = :password WHERE email = :email");
             return $stmt->execute(['password' => $hashedPassword, 'email' => $email]);
         } catch (PDOException $e) {
-            error_log("Error updating password: " . $e->getMessage());
+            error_log("updatePassword Error: " . $e->getMessage());
             return false;
         }
     }
 
     /**
-     * @return array<string, mixed>
+     * Login universel : admin/coordinateur/super_admin + étudiant
+     * @return array{success: bool, role?: string, numetu?: string|null}
      */
     public function login(string $identifier, string $password): array
     {
@@ -122,10 +90,17 @@ class UserRepositoryPDO implements UserRepositoryInterface
             : $this->findByStudentNumber($identifier);
 
         if ($user && password_verify($password, $user->getPassword())) {
+            // Mise à jour last_login pour les admins
+            if ($user->getRole() !== 'student') {
+                try {
+                    $upd = $this->pdo->prepare("UPDATE admins SET last_login = NOW() WHERE email = :email");
+                    $upd->execute([':email' => $identifier]);
+                } catch (PDOException $e) { /* silencieux */ }
+            }
             return [
                 'success' => true,
-                'role' => $user->getRole(),
-                'numetu' => $user->getNumetu()
+                'role'    => $user->getRole(),
+                'numetu'  => $user->getNumetu(),
             ];
         }
 
@@ -137,11 +112,7 @@ class UserRepositoryPDO implements UserRepositoryInterface
         $existing = $user->getNumetu()
             ? $this->findByStudentNumber($user->getNumetu())
             : $this->findByEmail($user->getEmail());
-
-        if ($existing) {
-            return false;
-        }
-
+        if ($existing) return false;
         $user->setPassword(password_hash($user->getPassword(), PASSWORD_DEFAULT));
         return $this->save($user);
     }
@@ -149,104 +120,172 @@ class UserRepositoryPDO implements UserRepositoryInterface
     public function resetPassword(string $email): bool
     {
         $user = $this->findByEmail($email);
-        if (!$user) {
-            return false;
-        }
-
+        if (!$user) return false;
         $newPassword = bin2hex(random_bytes(4));
         $hashed = password_hash($newPassword, PASSWORD_DEFAULT);
         $this->updatePassword($email, $hashed);
-
-        // TODO: Envoyer l'email avec $newPassword
         return true;
     }
 
-    /**
-     * @param array<string, mixed> $data
-     * @param string $role
-     * @return User
-     */
     private function mapToUser(array $data, string $role): User
     {
-        // Fix: Explicit check for scalar/numeric types before casting mixed
-        $id = (isset($data['id']) && is_numeric($data['id'])) ? (int)$data['id'] : null;
-        $email = (isset($data['email']) && is_scalar($data['email'])) ? (string)$data['email'] : '';
-        $numetu = (isset($data['numetu']) && is_scalar($data['numetu'])) ? (string)$data['numetu'] : null;
+        $id       = (isset($data['id'])       && is_numeric($data['id']))       ? (int)$data['id']       : null;
+        $email    = (isset($data['email'])    && is_scalar($data['email']))    ? (string)$data['email']    : '';
+        $numetu   = (isset($data['numetu'])   && is_scalar($data['numetu']))   ? (string)$data['numetu']   : null;
         $password = (isset($data['password']) && is_scalar($data['password'])) ? (string)$data['password'] : '';
-
-        return new User(
-            $id,
-            $email,
-            $numetu,
-            $password,
-            $role
-        );
+        return new User($id, $email, $numetu, $password, $role);
     }
-    // Ajoute ces méthodes dans ton UserRepositoryPDO existant
+
+    // ─────────────────────────────────────────────
+    // Méthodes Super Admin (création/liste comptes)
+    // ─────────────────────────────────────────────
+
+    public function findByLogin(string $email): ?array
+    {
+        try {
+            $stmt = $this->pdo->prepare("SELECT * FROM admins WHERE email = :email LIMIT 1");
+            $stmt->execute([':email' => $email]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return is_array($result) ? $result : null;
+        } catch (PDOException $e) {
+            error_log("findByLogin Error: " . $e->getMessage());
+            return null;
+        }
+    }
 
     public function loginExists(string $email): bool
     {
-        try {
-            $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM admins WHERE email = :email");
-            $stmt->execute([':email' => $email]);
-            return (int) $stmt->fetchColumn() > 0;
-        } catch (PDOException $e) {
-            error_log("loginExists Error: " . $e->getMessage());
-            return false;
-        }
+        return $this->findByLogin($email) !== null;
     }
 
-    public function createAdmin(string $email, string $hashedPassword, string $role): bool
+    public function create(string $email, string $hashedPassword, string $role, ?string $departement = null, ?string $site = null): bool
     {
         try {
             $stmt = $this->pdo->prepare("
-            INSERT INTO admins (email, password, role, created_at)
-            VALUES (:email, :password, :role, NOW())
-        ");
+                INSERT INTO admins (email, password, role, departement, site, created_at)
+                VALUES (:email, :password, :role, :departement, :site, NOW())
+            ");
             return $stmt->execute([
-                ':email'    => $email,
-                ':password' => $hashedPassword,
-                ':role'     => $role,
+                ':email'       => $email,
+                ':password'    => $hashedPassword,
+                ':role'        => $role,
+                ':departement' => $departement,
+                ':site'        => $site,
             ]);
         } catch (PDOException $e) {
-            error_log("createAdmin Error: " . $e->getMessage());
+            error_log("create Error: " . $e->getMessage());
             return false;
         }
     }
 
-    public function deleteAdminByEmail(string $email): bool
+    public function deleteByLogin(string $email): bool
     {
         try {
-            $stmt = $this->pdo->prepare("
-            DELETE FROM admins WHERE email = :email AND role != 'super_admin'
-        ");
+            $stmt = $this->pdo->prepare("DELETE FROM admins WHERE email = :email AND role != 'super_admin'");
             return $stmt->execute([':email' => $email]);
         } catch (PDOException $e) {
-            error_log("deleteAdminByEmail Error: " . $e->getMessage());
+            error_log("deleteByLogin Error: " . $e->getMessage());
             return false;
         }
     }
 
-    /** @return array<int, array{login: string, role: string, created_at: string}> */
-    public function getAllAdmins(): array
+    /**
+     * @return array<int, array{login: string, role: string, departement: string|null, site: string|null, created_at: string}>
+     */
+    public function findAll(): array
     {
         try {
             $stmt = $this->pdo->query("
-            SELECT email as login, role, created_at
-            FROM admins
-            WHERE role != 'super_admin'
-            ORDER BY created_at DESC
-        ");
+                SELECT email AS login, role, departement, site, created_at
+                FROM admins
+                WHERE role != 'super_admin'
+                ORDER BY created_at DESC
+            ");
             if ($stmt === false) return [];
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return is_array($results) ? array_map(fn($r) => [
-                'login'      => is_string($r['login'])      ? $r['login']      : '',
-                'role'       => is_string($r['role'])        ? $r['role']       : '',
-                'created_at' => is_string($r['created_at']) ? $r['created_at'] : '',
+                'login'       => is_string($r['login']       ?? null) ? $r['login']       : '',
+                'role'        => is_string($r['role']        ?? null) ? $r['role']        : '',
+                'departement' => is_string($r['departement'] ?? null) ? $r['departement'] : null,
+                'site'        => is_string($r['site']        ?? null) ? $r['site']        : null,
+                'created_at'  => is_string($r['created_at'] ?? null) ? $r['created_at']  : '',
             ], $results) : [];
         } catch (PDOException $e) {
-            error_log("getAllAdmins Error: " . $e->getMessage());
+            error_log("findAll Error: " . $e->getMessage());
             return [];
         }
+    }
+
+    /** @deprecated */
+    public function getAllNonSuperAdmin(): array { return $this->findAll(); }
+    /** @deprecated */
+    public function getAllAdmins(): array { return $this->findAll(); }
+    /** @deprecated */
+    public function createAdmin(string $email, string $hashedPassword, string $role): bool { return $this->create($email, $hashedPassword, $role); }
+    /** @deprecated */
+    public function deleteAdminByEmail(string $email): bool { return $this->deleteByLogin($email); }
+    /** @deprecated */
+    public function createUser(string $login, string $hashedPassword, string $role): bool { return $this->create($login, $hashedPassword, $role); }
+
+    // ─────────────────────────────────────────────
+    // Départements & Sites
+    // ─────────────────────────────────────────────
+
+    public function getDistinctDepartments(): array
+    {
+        $depts = [];
+        try {
+            $stmt = $this->pdo->query("SELECT DISTINCT CodeDepartement FROM dossiers WHERE CodeDepartement IS NOT NULL AND CodeDepartement != '' ORDER BY CodeDepartement ASC");
+            if ($stmt) {
+                $rows  = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                $depts = is_array($rows) ? array_values(array_filter($rows, 'is_string')) : [];
+            }
+        } catch (PDOException $e) { error_log("getDistinctDepartments Error: " . $e->getMessage()); }
+
+        try {
+            $stmt = $this->pdo->query("SELECT code FROM custom_departments ORDER BY code ASC");
+            if ($stmt) {
+                $custom = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                if (is_array($custom)) $depts = array_values(array_unique(array_merge($depts, $custom)));
+            }
+        } catch (PDOException $e) { /* silencieux */ }
+
+        sort($depts);
+        return $depts;
+    }
+
+    public function addCustomDepartment(string $code): void
+    {
+        try {
+            $this->pdo->exec("CREATE TABLE IF NOT EXISTS custom_departments (id INT AUTO_INCREMENT PRIMARY KEY, code VARCHAR(50) NOT NULL UNIQUE)");
+            $stmt = $this->pdo->prepare("INSERT IGNORE INTO custom_departments (code) VALUES (:code)");
+            $stmt->execute([':code' => $code]);
+        } catch (PDOException $e) { error_log("addCustomDepartment Error: " . $e->getMessage()); }
+    }
+
+    public function getDistinctSites(): array
+    {
+        $defaults = ['Site Gaston Berger'];
+        $custom   = [];
+        try {
+            $stmt = $this->pdo->query("SELECT name FROM custom_sites ORDER BY name ASC");
+            if ($stmt) {
+                $rows   = $stmt->fetchAll(PDO::FETCH_COLUMN);
+                $custom = is_array($rows) ? array_values(array_filter($rows, 'is_string')) : [];
+            }
+        } catch (PDOException $e) { /* silencieux */ }
+
+        $all = array_values(array_unique(array_merge($defaults, $custom)));
+        sort($all);
+        return $all;
+    }
+
+    public function addCustomSite(string $name): void
+    {
+        try {
+            $this->pdo->exec("CREATE TABLE IF NOT EXISTS custom_sites (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100) NOT NULL UNIQUE)");
+            $stmt = $this->pdo->prepare("INSERT IGNORE INTO custom_sites (name) VALUES (:name)");
+            $stmt->execute([':name' => $name]);
+        } catch (PDOException $e) { error_log("addCustomSite Error: " . $e->getMessage()); }
     }
 }

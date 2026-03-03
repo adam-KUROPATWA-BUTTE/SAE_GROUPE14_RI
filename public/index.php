@@ -84,6 +84,10 @@ use Controllers\WebPlanController\WebPlanController;
 use Controllers\ContactController\ContactControllerAdmin;
 use Controllers\ContactController\ContactControllerStudent;
 
+// coordinator controllers
+use Controllers\CoordinatorController\InternershipCoordinatorController;
+use Controllers\CoordinatorController\StudyCoordinatorController;
+use Controllers\CoordinatorController\DepartmentHeadController;
 // --- 5. Initialize Controllers ---
 
 /**
@@ -110,6 +114,9 @@ $controllers = [
     ContactControllerAdmin::class,
     SuperAdminController::class,
     HomeControllerCoordinateur::class,
+    InternershipCoordinatorController::class,
+    StudyCoordinatorController::class,
+    DepartmentHeadController::class,
 ];
 
 // --- 6. Routing Logic ---

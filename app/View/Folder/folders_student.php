@@ -35,7 +35,7 @@ if (!$isCreateMode) {
     } elseif (!empty($pieces['lettre_motivation']['file'])) {
         $detectedType = 'etudes';
     }
-} 
+}
 
 $valNom = htmlspecialchars(strval($dossier['Nom'] ?? ''));
 $valPrenom = htmlspecialchars(strval($dossier['Prenom'] ?? ''));
@@ -67,9 +67,9 @@ ob_start();
 
     <h1><?= $t(['fr' => 'Mon dossier étudiant','en' => 'My Student Folder']) ?></h1>
 
-    <?php if (!empty($message)) : ?>
-        <div class="message"><?= htmlspecialchars($message) ?></div>
-    <?php endif; ?>
+<?php if (!empty($message)) : ?>
+    <div class="message"><?= htmlspecialchars($message) ?></div>
+<?php endif; ?>
 
     <form method="post"
           action="<?= $buildUrl('index.php', ['page' => $formAction]) ?>"
@@ -82,16 +82,16 @@ ob_start();
             <input type="hidden" name="numetu" value="<?= htmlspecialchars($studentId) ?>">
 
             <label><?= $t(['fr' => 'Nom *','en' => 'Last Name *']) ?></label>
-            <input type="text" name="nom" value="<?= $valNom ?>" 
-                   <?= $isCreateMode ? 'required' : 'readonly style="background:#f7f7f7;"' ?>>
+            <input type="text" name="nom" value="<?= $valNom ?>"
+                <?= $isCreateMode ? 'required' : 'readonly style="background:#f7f7f7;"' ?>>
 
             <label><?= $t(['fr' => 'Prénom *','en' => 'First Name *']) ?></label>
-            <input type="text" name="prenom" value="<?= $valPrenom ?>" 
-                   <?= $isCreateMode ? 'required' : 'readonly style="background:#f7f7f7;"' ?>>
+            <input type="text" name="prenom" value="<?= $valPrenom ?>"
+                <?= $isCreateMode ? 'required' : 'readonly style="background:#f7f7f7;"' ?>>
 
             <label><?= $t(['fr' => 'Date de naissance','en' => 'Date of Birth']) ?></label>
             <input type="date" name="naissance" value="<?= $valDate ?>"
-                   <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
+                <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
 
             <label><?= $t(['fr' => 'Sexe','en' => 'Gender']) ?></label>
             <select name="sexe" id="sexe" <?= $isCreateMode ? '' : 'disabled style="background:#f7f7f7;"' ?>>
@@ -114,7 +114,7 @@ ob_start();
 
             <label><?= $t(['fr' => 'Email AMU','en' => 'AMU Email']) ?></label>
             <input type="email" name="email_amu" value="<?= $valEmailA ?>"
-                   <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
+                <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
 
             <label><?= $t(['fr' => 'Téléphone *','en' => 'Phone *']) ?></label>
             <input type="text" name="telephone" value="<?= $valTel ?>" required>
@@ -125,7 +125,36 @@ ob_start();
 
             <label><?= $t(['fr' => 'Code Département','en' => 'Department Code']) ?></label>
             <input type="text" name="departement" value="<?= $valDept ?>"
-                   <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
+                <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
+
+            <label><?= $t(['fr' => 'Discipline','en' => 'Discipline']) ?></label>
+            <input type="text" name="discipline" value="<?= $valDiscipline ?>">
+
+            <label><?= $t(['fr' => 'Formation','en' => 'Degree Program']) ?></label>
+            <input type="text" name="formation" value="<?= $valFormation ?>">
+
+            <label><?= $t(['fr' => 'Campus','en' => 'Campus']) ?></label>
+            <input type="text" name="campus" value="<?= $valCampus ?>" disabled style="background:#eee; cursor:not-allowed;" title="<?= $t(['fr' => 'Réservé à l\'administration', 'en' => 'Administration only']) ?>">
+
+            <label><?= $t(['fr' => 'Niveau d\'étude','en' => 'Study Level']) ?></label>
+            <input type="text" name="niveau_etude" value="<?= $valNiveauEtude ?>" disabled style="background:#eee; cursor:not-allowed;" title="<?= $t(['fr' => 'Réservé à l\'administration', 'en' => 'Administration only']) ?>">
+
+            <label><?= $t(['fr' => 'Moyenne Bac','en' => 'High School Average']) ?></label>
+            <input type="text" name="moyenne_bac" value="<?= $valMoyenneBac ?>" disabled style="background:#eee; cursor:not-allowed;" title="<?= $t(['fr' => 'Réservé à l\'administration', 'en' => 'Administration only']) ?>">
+
+            <label><?= $t(['fr' => 'Moyenne sans Bac','en' => 'Average w/o High School']) ?></label>
+            <input type="text" name="moyenne_sans_bac" value="<?= $valMoyenneSansBac ?>" disabled style="background:#eee; cursor:not-allowed;" title="<?= $t(['fr' => 'Réservé à l\'administration', 'en' => 'Administration only']) ?>">
+
+            <label><?= $t(['fr' => 'Avis DRI','en' => 'DRI Advice']) ?></label>
+            <input type="text" name="avis_dri" value="<?= $valAvisDRI ?>" disabled style="background:#eee; cursor:not-allowed;" title="<?= $t(['fr' => 'Réservé à l\'administration', 'en' => 'Administration only']) ?>">
+
+            <label><?= $t(['fr' => 'Date de début','en' => 'Start Date']) ?></label>
+            <input type="text" name="date_debut" value="<?= $valDateDebut ?>" disabled style="background:#eee; cursor:not-allowed;" title="<?= $t(['fr' => 'Réservé à l\'administration', 'en' => 'Administration only']) ?>">
+
+            <label><?= $t(['fr' => 'A déjà effectué une mobilité','en' => 'Previous Mobility']) ?></label>
+            <input type="text" name="mobilite_anterieure" value="<?= $valMobiliteAnterieure ?>" disabled style="background:#eee; cursor:not-allowed;" title="<?= $t(['fr' => 'Réservé à l\'administration', 'en' => 'Administration only']) ?>">
+            <label><?= $t(['fr' => 'Pays','en' => 'Country']) ?></label>
+            <input type="text" name="pays" value="<?= $valPays ?>">
 
             <label><?= $t(['fr' => 'Discipline','en' => 'Discipline']) ?></label>
             <input type="text" name="discipline" value="<?= $valDiscipline ?>">
@@ -171,7 +200,7 @@ ob_start();
             </select>
 
             <label for="mobilite_type"><?= $t(['fr' => 'Type de mobilité','en' => 'Mobility Type']) ?></label>
-            <select name="mobilite_type" id="mobilite_type" 
+            <select name="mobilite_type" id="mobilite_type"
                 <?= $isCreateMode ? '' : 'disabled style="background:#f7f7f7;"' ?>>
                 <option value=""><?= $t(['fr' => '-- Choisir --','en' => '-- Choose --']) ?></option>
                 <option value="stage" <?= $detectedType === 'stage' ? 'selected' : '' ?>><?= $t(['fr' => 'Stage','en' => 'Internship']) ?></option>
