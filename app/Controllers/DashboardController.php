@@ -56,16 +56,16 @@ class DashboardController implements ControllerInterface
 
         $lang = is_string($_GET['lang'] ?? null) ? $_GET['lang'] : 'fr';
 
+        // J'ai supprimé la ligne 'type' ici
         $filters = [
             'student' => strtolower(trim(is_string($_GET['student'] ?? null) ? $_GET['student'] : '')),
             'dept'    => is_string($_GET['dept'] ?? null) ? $_GET['dept'] : '',
-            'type'    => is_string($_GET['type'] ?? null) ? $_GET['type'] : '',
             'year'    => is_string($_GET['year'] ?? null) ? $_GET['year'] : '',
-            'dest'    => is_string($_GET['dest'] ?? null) ? $_GET['dest'] : '',
+            'dest'    => strtolower(trim(is_string($_GET['dest'] ?? null) ? $_GET['dest'] : '')), 
             'camp'    => is_string($_GET['camp'] ?? null) ? $_GET['camp'] : '',
+            'cadre'   => is_string($_GET['cadre'] ?? null) ? $_GET['cadre'] : '',
         ];
 
-        // Remplacement par le nouveau Use Case
         $folders = $this->folderUseCase->getAllFolders();
         if (!is_array($folders)) {
             $folders = [];
@@ -79,12 +79,17 @@ class DashboardController implements ControllerInterface
             $prenom     = strval($d['Prenom'] ?? '');
             $numEtu     = strval($d['NumEtu'] ?? '');
             $dept       = strval($d['CodeDepartement'] ?? '');
-            $type       = strval($d['Type'] ?? '');
+            $type       = strval($d['Type'] ?? ''); // On garde ça pour séparer Entrants/Sortants plus bas
             $zone       = strval($d['Zone'] ?? '');
             $annee      = strval($d['Annee'] ?? '2024-2025');
             $campagne   = strval($d['Campagne'] ?? 'Automne 2024');
             $isComplete = intval($d['IsComplete'] ?? 0);
+            
+            $composante  = strval($d['Composante'] ?? '');
+            $accord      = strval($d['Accord'] ?? '');
+            $destination = strval($d['Destination'] ?? '');
 
+            // Filtre Étudiant
             if ($filters['student'] !== '') {
                 $fullName = strtolower("$nom $prenom $numEtu");
                 if (strpos($fullName, $filters['student']) === false) {
@@ -92,10 +97,24 @@ class DashboardController implements ControllerInterface
                 }
             }
             if ($filters['dept'] !== '' && $dept !== $filters['dept']) continue;
-            if ($filters['type'] !== '' && $type !== $filters['type']) continue;
+            // J'ai supprimé la condition de filtrage sur le type ici
             if ($filters['year'] !== '' && $annee !== $filters['year']) continue;
-            if ($filters['dest'] !== '' && strpos(strtolower($zone), strtolower($filters['dest'])) === false) continue;
             if ($filters['camp'] !== '' && $campagne !== $filters['camp']) continue;
+
+            // Filtre Destination
+            if ($filters['dest'] !== '') {
+                if (strpos(strtolower($destination), $filters['dest']) === false) {
+                    continue; 
+                }
+            }
+
+            // Filtre Cadre
+            if ($filters['cadre'] !== '') {
+                $cadreRecherche = $filters['cadre'];
+                if (stripos($composante, $cadreRecherche) === false && stripos($accord, $cadreRecherche) === false) {
+                    continue; 
+                }
+            }
 
             $piecesJson = strval($d['PiecesJustificatives'] ?? '');
             $pieces = (!empty($piecesJson)) ? json_decode($piecesJson, true) : [];
@@ -115,6 +134,7 @@ class DashboardController implements ControllerInterface
             $d['calc_annee']      = $annee;
             $d['calc_camp']       = $campagne;
 
+            // Séparation dans les tableaux Entrants et Sortants (on utilise toujours la variable $type ici)
             if (stripos($type, 'incoming') !== false || stripos($type, 'entrant') !== false) {
                 $incoming[] = $d;
             } else {
@@ -138,64 +158,6 @@ class DashboardController implements ControllerInterface
             'lang'     => $lang,
             't'        => $t,
             'buildUrl' => $buildUrl
-        ]);
-    }
-
-    private function showStudentDashboard(): void
-    {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'student') {
-            header('Location: index.php?page=login');
-            exit;
-        }
-
-        $lang = is_string($_GET['lang'] ?? null) ? $_GET['lang'] : 'fr';
-
-        if (!isset($_SESSION['numetu'])) {
-            header('Location: index.php?page=login');
-            exit;
-        }
-
-        $numetu = $_SESSION['numetu'];
-        
-        // Remplacement par le nouveau Use Case
-        $folder = $this->folderUseCase->getStudentDetails($numetu);
-
-        if (!is_array($folder)) {
-            $folder = [];
-        }
-
-        // --- DÉBUT DU NOUVEAU CODE (Logique métier déplacée ici) ---
-        $status = strval($folder['status'] ?? 'depot');
-        $steps = ['depot', 'instruction', 'decision'];
-
-        $currentStepIndex = array_search($status, $steps, true);
-        if ($currentStepIndex === false) {
-            $currentStepIndex = 0;
-        }
-
-        $totalSteps = count($steps);
-        $currentStepInt = (int)$currentStepIndex;
-        $progressPercentage = ($currentStepInt / ($totalSteps - 1)) * 100;
-        $progressStyle = "width: {$progressPercentage}%;";
-
-        $t = function (array $frEn) use ($lang): string {
-            return ($lang === 'en') ? $frEn['en'] : $frEn['fr'];
-        };
-
-        $buildUrl = function (string $path, array $params = []) use ($lang): string {
-            $params['lang'] = $lang;
-            $separator = (strpos($path, '?') === false) ? '?' : '&';
-            return $path . $separator . http_build_query($params);
-        };
-
-        // Appel de la vue
-        View::render('Dashboard/dashboard_student', [
-            'folder'        => $folder,
-            'lang'          => $lang,
-            'status'        => $status,
-            'progressStyle' => $progressStyle,
-            't'             => $t,
-            'buildUrl'      => $buildUrl
         ]);
     }
 }
