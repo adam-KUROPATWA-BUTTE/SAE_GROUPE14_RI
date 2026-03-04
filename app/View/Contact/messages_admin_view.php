@@ -79,8 +79,14 @@ $subjects = [
                     <div class="response-text">
                         <?= nl2br(htmlspecialchars($message->getAdminResponse())) ?>
                     </div>
-                    <small><?= $t(['fr' => 'Envoyée le', 'en' => 'Sent on']) ?>
-                        <?= $message->getRespondedAt()->format('d/m/Y H:i') ?>
+                    <?php
+                    $respondedAt = $message->getRespondedAt();
+                    ?>
+                    <small>
+                        <?= $t(['fr' => 'Envoyée le', 'en' => 'Sent on']) ?>
+                        <?= $respondedAt
+                            ? $respondedAt->format('d/m/Y H:i')
+                            : $t(['fr' => 'Date inconnue', 'en' => 'Unknown date']) ?>
                     </small>
                 </div>
             <?php else: ?>

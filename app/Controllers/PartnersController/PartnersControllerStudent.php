@@ -32,12 +32,15 @@ class PartnersControllerStudent implements ControllerInterface
 
         $partner = isset($_GET['partner']) && $_GET['partner'] === 'iut' ? 'iut' : 'amu';
 
-
+        // FIX: match(true) requires an exhaustive list of conditions or a default branch.
+        // PHPStan cannot prove all combinations are covered, so "remaining value: true" is raised.
+        // Adding a default arm fixes it.
         $titre = match(true) {
             $partner === 'amu' && $lang === 'fr' => 'Universités Destinations AMU',
             $partner === 'amu' && $lang === 'en' => 'AMU Destinations Universities',
-            $partner === 'iut' && $lang === 'fr' => 'Universités Desinations IUT',
+            $partner === 'iut' && $lang === 'fr' => 'Universités Destinations IUT',
             $partner === 'iut' && $lang === 'en' => 'IUT Destinations Universities',
+            default                              => 'Universités Destinations AMU',
         };
 
         $t = function (array $frEn) use ($lang): string {

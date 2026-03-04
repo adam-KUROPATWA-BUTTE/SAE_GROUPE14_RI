@@ -214,8 +214,11 @@ ob_start();
                                             <?php endif; ?>
                                             <span class="sa-account-date">
                                             <?= $t(['fr' => 'Créé le', 'en' => 'Created on']) ?>
-                                            <?= htmlspecialchars(date('d/m/Y', strtotime($account['created_at']))) ?>
-                                        </span>
+                                            <?php
+                                            $ts = strtotime($account['created_at']);
+                                            echo htmlspecialchars($ts !== false ? date('d/m/Y', $ts) : '');
+                                            ?>
+                                            </span>
                                         </div>
                                     </div>
                                 </div>

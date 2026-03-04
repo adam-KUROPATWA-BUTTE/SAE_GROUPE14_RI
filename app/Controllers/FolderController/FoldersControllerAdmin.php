@@ -163,6 +163,10 @@ class FoldersControllerAdmin
         header('Location: index.php?page=folders-admin&lang=' . $lang);
         exit;
     }
+    /**
+    * @param array<string, mixed> $data
+    * @return array<int, string>
+    */
 
     private function handleFileUploads(array &$data, string $lang): array
     {

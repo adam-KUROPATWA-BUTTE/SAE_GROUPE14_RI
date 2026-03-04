@@ -11,10 +11,10 @@ class DashboardManager {
     toggleAccordion(section) {
         const contenu = document.getElementById('contenu-' + section);
         const fleche = document.getElementById('fleche-' + section);
-        
+
         // Vérification de sécurité au cas où l'élément n'existe pas
         if (!contenu || !fleche) return;
-        
+
         if (contenu.classList.contains('afficher')) {
             contenu.classList.remove('afficher');
             fleche.classList.remove('ouverte');

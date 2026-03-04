@@ -3,7 +3,7 @@
  * @var string $lang
  * @var Closure(array<string, string>): string $t
  * @var Closure(string, array<string, mixed>=): string $buildUrl
- * @var array{student: string, dept: string, year: string, type: string, camp: string, dest: string, cadres: array} $filters
+ * @var array{student: string, dept: string, year: string, type: string, camp: string, dest: string, cadre: string} $filters
  * @var array<int, array<string, mixed>> $outgoing
  * @var array<int, array<string, mixed>> $incoming
  */
@@ -31,7 +31,6 @@ ob_start();
             <option value="2024-2025" <?= $filters['year'] === '2024-2025' ? 'selected' : '' ?>>24-25</option>
         </select>
 
-
         <select name="camp" onchange="this.form.submit()">
             <option value=""><?= $t(['fr' => 'Campagne', 'en' => 'Campaign']) ?></option>
             <option value="Automne 2024" <?= $filters['camp'] === 'Automne 2024' ? 'selected' : '' ?>>Automne 24</option>
@@ -41,25 +40,25 @@ ob_start();
 
         <div class="filter-group" style="grid-column: 1 / -1; display: flex; gap: 15px; flex-wrap: wrap; margin-top: 5px; align-items: center; padding: 10px; background: #fff; border: 1px solid #ccc; border-radius: 4px;">
             <strong style="margin-right: 10px;"><?= $t(['fr' => 'Cadre :', 'en' => 'Framework:']) ?></strong>
-            
+
             <label>
-                <input type="radio" name="cadre" value="" onchange="this.form.submit()" <?= empty($filters['cadre']) ? 'checked' : '' ?>> 
+                <input type="radio" name="cadre" value="" onchange="this.form.submit()" <?= $filters['cadre'] === '' ? 'checked' : '' ?>>
                 <?= $t(['fr' => 'Tous', 'en' => 'All']) ?>
             </label>
             <label>
-                <input type="radio" name="cadre" value="AMU CIVIS" onchange="this.form.submit()" <?= ($filters['cadre'] ?? '') === 'AMU CIVIS' ? 'checked' : '' ?>> 
+                <input type="radio" name="cadre" value="AMU CIVIS" onchange="this.form.submit()" <?= $filters['cadre'] === 'AMU CIVIS' ? 'checked' : '' ?>>
                 AMU CIVIS
             </label>
             <label>
-                <input type="radio" name="cadre" value="IUT" onchange="this.form.submit()" <?= ($filters['cadre'] ?? '') === 'IUT' ? 'checked' : '' ?>> 
+                <input type="radio" name="cadre" value="IUT" onchange="this.form.submit()" <?= $filters['cadre'] === 'IUT' ? 'checked' : '' ?>>
                 IUT
             </label>
             <label>
-                <input type="radio" name="cadre" value="Erasmus" onchange="this.form.submit()" <?= ($filters['cadre'] ?? '') === 'Erasmus' ? 'checked' : '' ?>> 
+                <input type="radio" name="cadre" value="Erasmus" onchange="this.form.submit()" <?= $filters['cadre'] === 'Erasmus' ? 'checked' : '' ?>>
                 ERASMUS
             </label>
             <label>
-                <input type="radio" name="cadre" value="Bilatéral" onchange="this.form.submit()" <?= ($filters['cadre'] ?? '') === 'Bilatéral' ? 'checked' : '' ?>> 
+                <input type="radio" name="cadre" value="Bilatéral" onchange="this.form.submit()" <?= $filters['cadre'] === 'Bilatéral' ? 'checked' : '' ?>>
                 BILATÉRAL
             </label>
         </div>
@@ -70,7 +69,7 @@ ob_start();
             <span><?= $t(['fr' => 'Dossiers Sortants', 'en' => 'Outgoing Files']) ?> (<?= count($outgoing) ?>)</span>
             <span class="fleche" id="fleche-sortants">▼</span>
         </div>
-                
+
         <div id="contenu-sortants" class="contenu-dossiers">
             <div class="table-responsive" style="padding: 15px;">
                 <?php if (empty($outgoing)) : ?>
@@ -78,14 +77,14 @@ ob_start();
                 <?php else : ?>
                     <table>
                         <thead>
-                            <tr>
-                                <th>Étudiant</th>
-                                <th>Dept</th>
-                                <th>Dest</th>
-                                <th>Campagne</th>
-                                <th>Année</th>
-                                <th>État</th>
-                            </tr>
+                        <tr>
+                            <th>Étudiant</th>
+                            <th>Dept</th>
+                            <th>Dest</th>
+                            <th>Campagne</th>
+                            <th>Année</th>
+                            <th>État</th>
+                        </tr>
                         </thead>
                         <tbody>
                         <?php foreach ($outgoing as $d) :
@@ -131,13 +130,13 @@ ob_start();
                 <?php else : ?>
                     <table>
                         <thead>
-                            <tr>
-                                <th>Étudiant</th>
-                                <th>Dept</th>
-                                <th>Type</th>
-                                <th>Année</th>
-                                <th>État</th>
-                            </tr>
+                        <tr>
+                            <th>Étudiant</th>
+                            <th>Dept</th>
+                            <th>Type</th>
+                            <th>Année</th>
+                            <th>État</th>
+                        </tr>
                         </thead>
                         <tbody>
                         <?php foreach ($incoming as $d) :
@@ -171,8 +170,8 @@ ob_start();
 $content = ob_get_clean();
 
 $title = $t(['fr' => 'Tableau de bord Admin', 'en' => 'Admin Dashboard']);
-$styles = ['styles/folders.css', 'styles/dashboard.css','styles/index.css', 'styles/chatbot.css'];
-$scripts = ['js/dashboard.js']; 
+$styles = ['styles/folders.css', 'styles/dashboard.css', 'styles/index.css', 'styles/chatbot.css'];
+$scripts = ['js/dashboard.js'];
 $activeMenu = 'dashboard';
 $userRole = 'admin';
 

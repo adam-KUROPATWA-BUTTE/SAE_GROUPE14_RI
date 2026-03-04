@@ -17,17 +17,13 @@ class UserRepositoryPDO implements UserRepositoryInterface
         $this->pdo = Database::getInstance()->getConnection();
     }
 
-    // ─────────────────────────────────────────────
-    // Méthodes originales (login étudiant/admin)
-    // ─────────────────────────────────────────────
-
     public function findByEmail(string $email): ?User
     {
         $stmt = $this->pdo->prepare("SELECT * FROM admins WHERE email = :email");
         $stmt->execute([':email' => $email]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
         if (is_array($data)) {
-            return $this->mapToUser($data, is_string($data['role']) ? $data['role'] : 'admin');
+            return $this->mapToUser($data, is_string($data['role'] ?? null) ? $data['role'] : 'admin');
         }
 
         $stmt = $this->pdo->prepare("SELECT * FROM etudiants WHERE email = :email");
@@ -80,7 +76,6 @@ class UserRepositoryPDO implements UserRepositoryInterface
     }
 
     /**
-     * Login universel : admin/coordinateur/super_admin + étudiant
      * @return array{success: bool, role?: string, numetu?: string|null}
      */
     public function login(string $identifier, string $password): array
@@ -90,7 +85,6 @@ class UserRepositoryPDO implements UserRepositoryInterface
             : $this->findByStudentNumber($identifier);
 
         if ($user && password_verify($password, $user->getPassword())) {
-            // Mise à jour last_login pour les admins
             if ($user->getRole() !== 'student') {
                 try {
                     $upd = $this->pdo->prepare("UPDATE admins SET last_login = NOW() WHERE email = :email");
@@ -127,19 +121,23 @@ class UserRepositoryPDO implements UserRepositoryInterface
         return true;
     }
 
+    /**
+     * FIX line 130: add value type to $data parameter.
+     * @param array<string, mixed> $data
+     */
     private function mapToUser(array $data, string $role): User
     {
-        $id       = (isset($data['id'])       && is_numeric($data['id']))       ? (int)$data['id']       : null;
+        $id       = (isset($data['id'])       && is_numeric($data['id']))       ? (int)$data['id']          : null;
         $email    = (isset($data['email'])    && is_scalar($data['email']))    ? (string)$data['email']    : '';
         $numetu   = (isset($data['numetu'])   && is_scalar($data['numetu']))   ? (string)$data['numetu']   : null;
         $password = (isset($data['password']) && is_scalar($data['password'])) ? (string)$data['password'] : '';
         return new User($id, $email, $numetu, $password, $role);
     }
 
-    // ─────────────────────────────────────────────
-    // Méthodes Super Admin (création/liste comptes)
-    // ─────────────────────────────────────────────
-
+    /**
+     * FIX line 143: add value type to return array.
+     * @return array<string, mixed>|null
+     */
     public function findByLogin(string $email): ?array
     {
         try {
@@ -197,33 +195,44 @@ class UserRepositoryPDO implements UserRepositoryInterface
         try {
             $stmt = $this->pdo->query("
                 SELECT email AS login, role, departement, site, created_at
-                FROM admins
-                WHERE role != 'super_admin'
-                ORDER BY created_at DESC
+                FROM admins WHERE role != 'super_admin' ORDER BY created_at DESC
             ");
             if ($stmt === false) return [];
+            // fetchAll() always returns array — no ternary needed.
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            return is_array($results) ? array_map(fn($r) => [
+            return array_map(fn($r) => [
                 'login'       => is_string($r['login']       ?? null) ? $r['login']       : '',
                 'role'        => is_string($r['role']        ?? null) ? $r['role']        : '',
                 'departement' => is_string($r['departement'] ?? null) ? $r['departement'] : null,
                 'site'        => is_string($r['site']        ?? null) ? $r['site']        : null,
                 'created_at'  => is_string($r['created_at'] ?? null) ? $r['created_at']  : '',
-            ], $results) : [];
+            ], $results);
         } catch (PDOException $e) {
             error_log("findAll Error: " . $e->getMessage());
             return [];
         }
     }
 
-    /** @deprecated */
+    // FIX lines 220/222: @deprecated aliases — add return type annotations so PHPStan is satisfied.
+
+    /**
+     * @deprecated Use findAll() instead.
+     * @return array<int, array{login: string, role: string, departement: string|null, site: string|null, created_at: string}>
+     */
     public function getAllNonSuperAdmin(): array { return $this->findAll(); }
-    /** @deprecated */
+
+    /**
+     * @deprecated Use findAll() instead.
+     * @return array<int, array{login: string, role: string, departement: string|null, site: string|null, created_at: string}>
+     */
     public function getAllAdmins(): array { return $this->findAll(); }
+
     /** @deprecated */
     public function createAdmin(string $email, string $hashedPassword, string $role): bool { return $this->create($email, $hashedPassword, $role); }
+
     /** @deprecated */
     public function deleteAdminByEmail(string $email): bool { return $this->deleteByLogin($email); }
+
     /** @deprecated */
     public function createUser(string $login, string $hashedPassword, string $role): bool { return $this->create($login, $hashedPassword, $role); }
 
@@ -231,6 +240,10 @@ class UserRepositoryPDO implements UserRepositoryInterface
     // Départements & Sites
     // ─────────────────────────────────────────────
 
+    /**
+     * FIX line 234: add return value type.
+     * @return array<int, string>
+     */
     public function getDistinctDepartments(): array
     {
         $depts = [];
@@ -238,7 +251,7 @@ class UserRepositoryPDO implements UserRepositoryInterface
             $stmt = $this->pdo->query("SELECT DISTINCT CodeDepartement FROM dossiers WHERE CodeDepartement IS NOT NULL AND CodeDepartement != '' ORDER BY CodeDepartement ASC");
             if ($stmt) {
                 $rows  = $stmt->fetchAll(PDO::FETCH_COLUMN);
-                $depts = is_array($rows) ? array_values(array_filter($rows, 'is_string')) : [];
+                $depts = array_values(array_filter($rows, 'is_string'));
             }
         } catch (PDOException $e) { error_log("getDistinctDepartments Error: " . $e->getMessage()); }
 
@@ -263,6 +276,10 @@ class UserRepositoryPDO implements UserRepositoryInterface
         } catch (PDOException $e) { error_log("addCustomDepartment Error: " . $e->getMessage()); }
     }
 
+    /**
+     * FIX line 266: add return value type.
+     * @return array<int, string>
+     */
     public function getDistinctSites(): array
     {
         $defaults = ['Site Gaston Berger'];
@@ -271,7 +288,7 @@ class UserRepositoryPDO implements UserRepositoryInterface
             $stmt = $this->pdo->query("SELECT name FROM custom_sites ORDER BY name ASC");
             if ($stmt) {
                 $rows   = $stmt->fetchAll(PDO::FETCH_COLUMN);
-                $custom = is_array($rows) ? array_values(array_filter($rows, 'is_string')) : [];
+                $custom = array_values(array_filter($rows, 'is_string'));
             }
         } catch (PDOException $e) { /* silencieux */ }
 

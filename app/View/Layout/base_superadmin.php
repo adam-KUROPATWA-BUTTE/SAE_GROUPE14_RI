@@ -1,4 +1,4 @@
-<?php global $currentPage;
+<?php
 /**
  * Layout Super Admin
  *
@@ -15,17 +15,17 @@ $isTritanopia = isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === tr
 $isLoggedIn   = isset($_SESSION['role']);
 
 $t = function (array $frEn) use ($lang): string {
-    return ($lang ?? 'fr') === 'en' ? $frEn['en'] : $frEn['fr'];
+    return $lang === 'en' ? $frEn['en'] : $frEn['fr'];
 };
 
 $buildUrl = function (string $path, array $params = []) use ($lang): string {
-    $params['lang'] = $lang ?? 'fr';
+    $params['lang'] = $lang;
     $separator = (strpos($path, '?') === false) ? '?' : '&';
     return $path . $separator . http_build_query($params);
 };
 ?>
 <!DOCTYPE html>
-<html lang="<?= htmlspecialchars($lang ?? 'fr') ?>">
+<html lang="<?= htmlspecialchars($lang) ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -53,7 +53,7 @@ $buildUrl = function (string $path, array $params = []) use ($lang): string {
 
         <div class="right-buttons">
             <div class="lang-dropdown">
-                <button class="dropbtn"><?= htmlspecialchars($lang ?? 'fr') ?></button>
+                <button class="dropbtn"><?= htmlspecialchars($lang) ?></button>
                 <div class="dropdown-content">
                     <a href="?page=super-admin&lang=fr">Français</a>
                     <a href="?page=super-admin&lang=en">English</a>
