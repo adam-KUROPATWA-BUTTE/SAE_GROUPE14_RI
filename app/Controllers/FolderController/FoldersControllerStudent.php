@@ -8,10 +8,6 @@ use Controllers\ControllerInterface;
 use Model\UseCase\ManageFolderUseCase;
 use Core\View;
 
-/**
- * Class FoldersControllerStudent
- * Handles the HTTP requests and routing for student-facing folder operations.
- */
 class FoldersControllerStudent implements ControllerInterface
 {
     private ManageFolderUseCase $folderUseCase;
@@ -21,17 +17,11 @@ class FoldersControllerStudent implements ControllerInterface
         $this->folderUseCase = new ManageFolderUseCase();
     }
 
-    /**
-     * Determines if this controller supports the requested page.
-     */
     public static function support(string $page, string $method): bool
     {
         return in_array($page, ['folders-student', 'update_my_folder', 'create_folder'], true);
     }
 
-    /**
-     * Main control entry point for the student folder module.
-     */
     public function control(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -44,8 +34,8 @@ class FoldersControllerStudent implements ControllerInterface
         }
 
         $numetu = (string)$_SESSION['numetu'];
-        $lang = isset($_GET['lang']) && is_string($_GET['lang']) ? $_GET['lang'] : 'fr';
-        $page = isset($_GET['page']) && is_string($_GET['page']) ? $_GET['page'] : '';
+        $lang   = isset($_GET['lang']) && is_string($_GET['lang']) ? $_GET['lang'] : 'fr';
+        $page   = isset($_GET['page']) && is_string($_GET['page']) ? $_GET['page'] : '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($page === 'update_my_folder') {
@@ -61,9 +51,6 @@ class FoldersControllerStudent implements ControllerInterface
         $this->displayFolderPage($numetu, $lang);
     }
 
-    /**
-     * Renders the student folder management view.
-     */
     private function displayFolderPage(string $numetu, string $lang): void
     {
         $studentData = $this->folderUseCase->getStudentDetails($numetu);
@@ -72,38 +59,39 @@ class FoldersControllerStudent implements ControllerInterface
 
         $data = is_array($studentData) ? $studentData : [];
 
-        // Appel à la vue via la classe Core\View
         View::render('Folder/folders_student', [
             'dossier'   => $data,
             'studentId' => $numetu,
             'message'   => $message,
-            'lang'      => $lang
+            'lang'      => $lang,
         ]);
     }
 
     /**
-     * Method to process file uploads safely and catch any server limits/errors
+     * FIX line 87: add PHPDoc types to satisfy PHPStan level 9.
+     * @param array<string, mixed> $data
+     * @return array<int, string>
      */
     private function handleFileUploads(array &$data, string $lang): array
     {
-        $errors = [];
+        $errors     = [];
         $fileFields = ['photo', 'cv', 'convention', 'lettre_motivation', 'langues_file'];
-        
+
         foreach ($fileFields as $field) {
             if (isset($_FILES[$field])) {
                 $error = $_FILES[$field]['error'];
-                
+
                 if ($error === UPLOAD_ERR_OK) {
                     $content = file_get_contents($_FILES[$field]['tmp_name']);
                     if ($content !== false) {
                         $data[$field] = $content;
                     } else {
-                        $errors[] = ($lang === 'fr') ? "Impossible de lire le fichier '$field'." : "Cannot read file '$field'.";
+                        $errors[] = $lang === 'fr' ? "Impossible de lire le fichier '$field'." : "Cannot read file '$field'.";
                     }
                 } elseif ($error !== UPLOAD_ERR_NO_FILE) {
-                    $msg = ($lang === 'fr') ? "Erreur upload pour '$field' (Code: $error)" : "Upload error for '$field' (Code: $error)";
+                    $msg = $lang === 'fr' ? "Erreur upload pour '$field' (Code: $error)" : "Upload error for '$field' (Code: $error)";
                     if ($error === UPLOAD_ERR_INI_SIZE || $error === UPLOAD_ERR_FORM_SIZE) {
-                        $msg .= ($lang === 'fr') ? " : Le fichier est trop lourd (limite dépassée)." : " : File is too large.";
+                        $msg .= $lang === 'fr' ? " : Le fichier est trop lourd (limite dépassée)." : " : File is too large.";
                     }
                     $errors[] = $msg;
                 }
@@ -112,9 +100,6 @@ class FoldersControllerStudent implements ControllerInterface
         return $errors;
     }
 
-    /**
-     * Processes the creation of a new student folder.
-     */
     private function handleCreateFolder(string $numetu, string $lang): void
     {
         if ($this->folderUseCase->getStudentDetails($numetu)) {
@@ -124,42 +109,39 @@ class FoldersControllerStudent implements ControllerInterface
         }
 
         $data = [
-            'NumEtu' => $numetu,
-            'Nom' => $_POST['nom'] ?? '',
-            'Prenom' => $_POST['prenom'] ?? '',
-            'DateNaissance' => $_POST['naissance'] ?? null,
-            'Sexe' => $_POST['sexe'] ?? null,
-            'Adresse' => $_POST['adresse'] ?? null,
-            'CodePostal' => $_POST['cp'] ?? null,
-            'Ville' => $_POST['ville'] ?? null,
-            'EmailPersonnel' => $_POST['email_perso'] ?? '',
-            'EmailAMU' => $_POST['email_amu'] ?? null,
-            'Telephone' => $_POST['telephone'] ?? '',
-            'CodeDepartement' => $_POST['departement'] ?? null,
-            'Composante' => $_POST['composante'] ?? null,
-            'Discipline' => $_POST['discipline'] ?? null,
-            'Formation' => $_POST['formation'] ?? null,
-            'Pays' => $_POST['pays'] ?? null,
-            'Type' => $_POST['type'] ?? null,
-            'Zone' => $_POST['zone'] ?? null,
-            // SÉCURITÉ : Les champs administratifs sont forcés à null pour ne pas lire d'éventuelles valeurs injectées
-            'Campus' => null,
-            'NiveauEtude' => null,
-            'MoyenneBac' => null,
-            'MoyenneSansBac' => null,
-            'DateDebut' => null,
+            'NumEtu'          => $numetu,
+            'Nom'             => $_POST['nom']             ?? '',
+            'Prenom'          => $_POST['prenom']          ?? '',
+            'DateNaissance'   => $_POST['naissance']       ?? null,
+            'Sexe'            => $_POST['sexe']            ?? null,
+            'Adresse'         => $_POST['adresse']         ?? null,
+            'CodePostal'      => $_POST['cp']              ?? null,
+            'Ville'           => $_POST['ville']           ?? null,
+            'EmailPersonnel'  => $_POST['email_perso']     ?? '',
+            'EmailAMU'        => $_POST['email_amu']       ?? null,
+            'Telephone'       => $_POST['telephone']       ?? '',
+            'CodeDepartement' => $_POST['departement']     ?? null,
+            'Composante'      => $_POST['composante']      ?? null,
+            'Discipline'      => $_POST['discipline']      ?? null,
+            'Formation'       => $_POST['formation']       ?? null,
+            'Pays'            => $_POST['pays']            ?? null,
+            'Type'            => $_POST['type']            ?? null,
+            'Zone'            => $_POST['zone']            ?? null,
+            'Campus'          => null,
+            'NiveauEtude'     => null,
+            'MoyenneBac'      => null,
+            'MoyenneSansBac'  => null,
+            'DateDebut'       => null,
             'MobiliteAnterieure' => null,
         ];
 
         $errors = $this->validateFolderData($data, $lang);
-
         if (!empty($errors)) {
             $_SESSION['message'] = implode('<br>', $errors);
             header('Location: index.php?page=folders-student&lang=' . $lang);
             exit;
         }
 
-        // Process file uploads safely and catch limits
         $uploadErrors = $this->handleFileUploads($data, $lang);
         if (!empty($uploadErrors)) {
             $_SESSION['message'] = implode('<br>', $uploadErrors);
@@ -177,32 +159,27 @@ class FoldersControllerStudent implements ControllerInterface
         exit;
     }
 
-    /**
-     * Processes the update of an existing student folder.
-     */
     private function handleUpdateFolder(string $numetu, string $lang): void
     {
         $data = [
-            'NumEtu' => $numetu,
-            'Nom' => $_POST['nom'] ?? null,
-            'Prenom' => $_POST['prenom'] ?? null,
-            'DateNaissance' => $_POST['naissance'] ?? null,
-            'Sexe' => $_POST['sexe'] ?? null,
-            'Adresse' => $_POST['adresse'] ?? null,
-            'CodePostal' => $_POST['cp'] ?? null,
-            'Ville' => $_POST['ville'] ?? null,
-            'EmailPersonnel' => $_POST['email_perso'] ?? null,
-            'EmailAMU' => $_POST['email_amu'] ?? null,
-            'Telephone' => $_POST['telephone'] ?? null,
+            'NumEtu'          => $numetu,
+            'Nom'             => $_POST['nom']         ?? null,
+            'Prenom'          => $_POST['prenom']      ?? null,
+            'DateNaissance'   => $_POST['naissance']   ?? null,
+            'Sexe'            => $_POST['sexe']        ?? null,
+            'Adresse'         => $_POST['adresse']     ?? null,
+            'CodePostal'      => $_POST['cp']          ?? null,
+            'Ville'           => $_POST['ville']       ?? null,
+            'EmailPersonnel'  => $_POST['email_perso'] ?? null,
+            'EmailAMU'        => $_POST['email_amu']   ?? null,
+            'Telephone'       => $_POST['telephone']   ?? null,
             'CodeDepartement' => $_POST['departement'] ?? null,
-            'Composante' => $_POST['composante'] ?? null,
-            'Discipline' => $_POST['discipline'] ?? null,
-            'Formation' => $_POST['formation'] ?? null,
-            'Pays' => $_POST['pays'] ?? null,
-            'Type' => $_POST['type'] ?? null,
-            'Zone' => $_POST['zone'] ?? null,
-            // SÉCURITÉ : La fonction Update utilisera la commande SQL 'COALESCE' qui conservera
-            // les anciennes valeurs pour ces champs administratifs puisqu'on passe null.
+            'Composante'      => $_POST['composante']  ?? null,
+            'Discipline'      => $_POST['discipline']  ?? null,
+            'Formation'       => $_POST['formation']   ?? null,
+            'Pays'            => $_POST['pays']        ?? null,
+            'Type'            => $_POST['type']        ?? null,
+            'Zone'            => $_POST['zone']        ?? null,
         ];
 
         if (empty($data['EmailPersonnel'])) {
@@ -211,7 +188,6 @@ class FoldersControllerStudent implements ControllerInterface
             exit;
         }
 
-        // Process file uploads safely and catch limits
         $uploadErrors = $this->handleFileUploads($data, $lang);
         if (!empty($uploadErrors)) {
             $_SESSION['message'] = implode('<br>', $uploadErrors);
@@ -230,7 +206,9 @@ class FoldersControllerStudent implements ControllerInterface
     }
 
     /**
-     * Validates required student data.
+     * FIX line 235: add PHPDoc types.
+     * @param array<string, mixed> $data
+     * @return array<int, string>
      */
     private function validateFolderData(array $data, string $lang): array
     {

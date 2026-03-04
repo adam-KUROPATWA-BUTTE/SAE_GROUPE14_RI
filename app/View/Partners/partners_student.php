@@ -4,6 +4,7 @@
  *
  * @var string $lang
  * @var string $titre
+ * @var string $partner
  * @var Closure(array<string, string>): string $t
  */
 
@@ -16,8 +17,8 @@ ob_start();
 
     <p>
         <?= $t([
-                'fr' => 'Veuillez trouver la liste des destinations d\'AMU en cliquant sur ce lien :',
-                'en' => 'Please find the list of AMU\'s destinations by clicking on this link:'
+            'fr' => 'Veuillez trouver la liste des destinations d\'AMU en cliquant sur ce lien :',
+            'en' => 'Please find the list of AMU\'s destinations by clicking on this link:',
         ]) ?>
     </p>
     <p class="lien">
@@ -30,8 +31,8 @@ ob_start();
 
     <p>
         <?= $t([
-                'fr' => 'Veuillez trouver la liste des destinations de l\'IUT en cliquant sur ce lien :',
-                'en' => 'Please find the list of IUT\'s destinations by clicking on this link:'
+            'fr' => 'Veuillez trouver la liste des destinations de l\'IUT en cliquant sur ce lien :',
+            'en' => 'Please find the list of IUT\'s destinations by clicking on this link:',
         ]) ?>
     </p>
     <p class="lien">
@@ -41,6 +42,7 @@ ob_start();
     </p>
 
 <?php endif; ?>
+
     <img id="Université_partenaires"
          src="img/<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'University_green.png' : 'University.png' ?>"
          alt="Partner Universities">

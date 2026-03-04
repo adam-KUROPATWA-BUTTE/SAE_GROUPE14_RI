@@ -4,9 +4,10 @@ namespace Controllers\CoordinatorController;
 
 use Controllers\ControllerInterface;
 use Model\UseCase\ManageFolderUseCase;
-class StudyCoordinatorController implements  ControllerInterface
-{
+use Core\View;
 
+class StudyCoordinatorController implements ControllerInterface
+{
     private ManageFolderUseCase $folderUseCase;
 
     public function __construct()
@@ -35,8 +36,8 @@ class StudyCoordinatorController implements  ControllerInterface
             $_SESSION['lang'] = $_GET['lang'];
         }
 
-        $lang = $_SESSION['lang'] ?? 'fr';
-        $action = $_GET['action'] ?? 'list';
+        $lang   = $_SESSION['lang'] ?? 'fr';
+        $action = $_GET['action']   ?? 'list';
 
         $t = function (array $translations) use ($lang): string {
             return $translations[$lang] ?? $translations['fr'] ?? '';
@@ -49,35 +50,40 @@ class StudyCoordinatorController implements  ControllerInterface
 
         $isLoggedIn = isset($_SESSION['user_id']);
 
-        // Vue détail
         $studentData = null;
         if ($action === 'view' && !empty($_GET['numetu'])) {
             $studentData = $this->folderUseCase->getStudentDetails($_GET['numetu']);
         }
 
-        // Filtres — mobilite forcée à 'etude'
         $filters = [
-            'type' => $_GET['type'] ?? 'all',
-            'zone' => $_GET['zone'] ?? 'all',
-            'complet' => $_GET['complet'] ?? 'all',
-            'search' => $_GET['search'] ?? '',
+            'type'     => $_GET['type']    ?? 'all',
+            'zone'     => $_GET['zone']    ?? 'all',
+            'complet'  => $_GET['complet'] ?? 'all',
+            'search'   => $_GET['search']  ?? '',
             'mobilite' => 'etude',
         ];
 
         $currentPage = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
-        $perPage = 10;
+        $perPage     = 10;
 
         $result = $this->folderUseCase->rechercherAvecPagination($filters, $currentPage, $perPage);
 
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-        // Variables explicitement déclarées pour la vue
-        $paginatedData = $result['data'];
-        $totalCount = $result['total'];
-        $totalPages = $result['totalPages'];
-        $page = $currentPage;
-
-        require_once ROOT_PATH . '/app/View/Coordinator/study_coordinator.php';
+        View::render('Coordinator/study_coordinator', [
+            'action'        => $action,
+            'filters'       => $filters,
+            'page'          => $currentPage,
+            'message'       => $message,
+            'lang'          => $lang,
+            'studentData'   => $studentData,
+            'paginatedData' => $result['data'],
+            'totalCount'    => $result['total'],
+            'totalPages'    => $result['totalPages'],
+            'isLoggedIn'    => $isLoggedIn,
+            't'             => $t,
+            'buildUrl'      => $buildUrl,
+        ]);
     }
 }

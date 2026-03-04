@@ -5,7 +5,7 @@ namespace Controllers\ContactController;
 use Controllers\ControllerInterface;
 use Model\Persistence\ContactMessageRepository;
 use Service\ContactService;
-use Core\View; // Ajout de l'import pour la classe View
+use Core\View;
 
 class ContactControllerAdmin implements ControllerInterface
 {

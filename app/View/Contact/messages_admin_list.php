@@ -103,8 +103,7 @@ $messagesJson = json_encode(array_map(function ($m) {
          data-lang="<?= htmlspecialchars($lang) ?>"
          data-role="admin"
          data-base="index.php?page=messages-admin"
-         data-messages="<?= htmlspecialchars($messagesJson) ?>"
-         style="display:none;">
+         data-messages="<?= htmlspecialchars($messagesJson ?: '') ?>"         style="display:none;">
     </div>
 
 <?php

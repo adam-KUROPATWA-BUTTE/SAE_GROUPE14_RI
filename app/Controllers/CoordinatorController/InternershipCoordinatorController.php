@@ -4,8 +4,9 @@ namespace Controllers\CoordinatorController;
 
 use Controllers\ControllerInterface;
 use Model\UseCase\ManageFolderUseCase;
+use Core\View;
 
-class InternershipCoordinatorController implements  ControllerInterface
+class InternershipCoordinatorController implements ControllerInterface
 {
     private ManageFolderUseCase $folderUseCase;
 
@@ -35,8 +36,8 @@ class InternershipCoordinatorController implements  ControllerInterface
             $_SESSION['lang'] = $_GET['lang'];
         }
 
-        $lang = $_SESSION['lang'] ?? 'fr';
-        $action = $_GET['action'] ?? 'list';
+        $lang   = $_SESSION['lang'] ?? 'fr';
+        $action = $_GET['action']   ?? 'list';
 
         $t = function (array $translations) use ($lang): string {
             return $translations[$lang] ?? $translations['fr'] ?? '';
@@ -55,26 +56,34 @@ class InternershipCoordinatorController implements  ControllerInterface
         }
 
         $filters = [
-            'type' => $_GET['type'] ?? 'all',
-            'zone' => $_GET['zone'] ?? 'all',
-            'complet' => $_GET['complet'] ?? 'all',
-            'search' => $_GET['search'] ?? '',
+            'type'     => $_GET['type']    ?? 'all',
+            'zone'     => $_GET['zone']    ?? 'all',
+            'complet'  => $_GET['complet'] ?? 'all',
+            'search'   => $_GET['search']  ?? '',
             'mobilite' => 'stage',
         ];
 
         $currentPage = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
-        $perPage = 10;
+        $perPage     = 10;
 
         $result = $this->folderUseCase->rechercherAvecPagination($filters, $currentPage, $perPage);
 
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-        $paginatedData = $result['data'];
-        $totalCount = $result['total'];
-        $totalPages = $result['totalPages'];
-        $page = $currentPage;
-
-        require_once ROOT_PATH . '/app/View/Coordinator/internship_coordinator.php';
+        View::render('Coordinator/internship_coordinator', [
+            'action'        => $action,
+            'filters'       => $filters,
+            'page'          => $currentPage,
+            'message'       => $message,
+            'lang'          => $lang,
+            'studentData'   => $studentData,
+            'paginatedData' => $result['data'],
+            'totalCount'    => $result['total'],
+            'totalPages'    => $result['totalPages'],
+            'isLoggedIn'    => $isLoggedIn,
+            't'             => $t,
+            'buildUrl'      => $buildUrl,
+        ]);
     }
 }

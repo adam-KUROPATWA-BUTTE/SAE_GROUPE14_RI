@@ -21,7 +21,7 @@ $subjects = [
     'other'     => $t(['fr' => 'Autre',                     'en' => 'Other']),
 ];
 
-$unreadCount = count(array_filter($studentMessages ?? [], fn($m) => !$m->isRead() && $m->getAdminResponse() !== null));
+$unreadCount = count(array_filter($studentMessages, fn($m) => !$m->isRead() && $m->getAdminResponse() !== null));
 ?>
 
     <div class="contact-container">
@@ -82,8 +82,7 @@ $unreadCount = count(array_filter($studentMessages ?? [], fn($m) => !$m->isRead(
                                         <span class="history-response-date">— <?= $msg->getRespondedAt()?->format('d/m/Y H:i') ?></span>
                                     </div>
                                     <div class="history-response-text">
-                                        <?= nl2br(htmlspecialchars($msg->getAdminResponse())) ?>
-                                    </div>
+                                        <?= nl2br(htmlspecialchars((string) $msg->getAdminResponse())) ?>                                    </div>
                                 </div>
 
                                 <?php if ($hasStudentReply): ?>
@@ -95,8 +94,7 @@ $unreadCount = count(array_filter($studentMessages ?? [], fn($m) => !$m->isRead(
                                             <span class="history-response-date">— <?= $msg->getStudentRepliedAt()?->format('d/m/Y H:i') ?></span>
                                         </div>
                                         <div class="history-student-reply-text">
-                                            <?= nl2br(htmlspecialchars($msg->getStudentReply())) ?>
-                                        </div>
+                                            <?= nl2br(htmlspecialchars((string) $msg->getStudentReply())) ?>                                        </div>
                                     </div>
 
                                 <?php else: ?>

@@ -4,6 +4,7 @@ namespace Controllers\CoordinatorController;
 
 use Controllers\ControllerInterface;
 use Model\UseCase\ManageFolderUseCase;
+use Core\View;
 
 class DepartmentHeadController implements ControllerInterface
 {
@@ -25,8 +26,7 @@ class DepartmentHeadController implements ControllerInterface
             session_start();
         }
 
-
-        $allowedRoles = ['coordinateur','chef_departement', 'admin'];
+        $allowedRoles = ['coordinateur', 'chef_departement', 'admin'];
 
         if (
             empty($_SESSION['role']) ||
@@ -40,8 +40,8 @@ class DepartmentHeadController implements ControllerInterface
             $_SESSION['lang'] = $_GET['lang'];
         }
 
-        $lang = $_SESSION['lang'] ?? 'fr';
-        $action = $_GET['action'] ?? 'list';
+        $lang   = $_SESSION['lang'] ?? 'fr';
+        $action = $_GET['action']   ?? 'list';
 
         $t = function (array $translations) use ($lang): string {
             return $translations[$lang] ?? $translations['fr'] ?? '';
@@ -60,35 +60,36 @@ class DepartmentHeadController implements ControllerInterface
         }
 
         $filters = [
-            'type' => $_GET['type'] ?? 'all',
-            'zone' => $_GET['zone'] ?? 'all',
-            'complet' => $_GET['complet'] ?? 'all',
-            'search' => $_GET['search'] ?? '',
+            'type'        => $_GET['type']        ?? 'all',
+            'zone'        => $_GET['zone']        ?? 'all',
+            'complet'     => $_GET['complet']     ?? 'all',
+            'search'      => $_GET['search']      ?? '',
             'departement' => $_GET['departement'] ?? 'all',
-            'mobilite' => 'all'
+            'mobilite'    => 'all',
         ];
 
-        $currentPage = isset($_GET['p'])
-            ? max(1, intval($_GET['p']))
-            : 1;
+        $currentPage = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
+        $perPage     = 10;
 
-        $perPage = 10;
-
-        $result = $this->folderUseCase->rechercherAvecPagination(
-            $filters,
-            $currentPage,
-            $perPage
-        );
+        $result = $this->folderUseCase->rechercherAvecPagination($filters, $currentPage, $perPage);
 
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-        $paginatedData = $result['data'] ?? [];
-        $totalCount = $result['total'] ?? 0;
-        $totalPages = $result['totalPages'] ?? 0;
 
-        $page = $currentPage;
-
-        require_once ROOT_PATH . '/app/View/Coordinator/department_head.php';
+        View::render('Coordinator/department_head', [
+            'action'        => $action,
+            'filters'       => $filters,
+            'page'          => $currentPage,
+            'message'       => $message,
+            'lang'          => $lang,
+            'studentData'   => $studentData,
+            'paginatedData' => $result['data'],
+            'totalCount'    => $result['total'],
+            'totalPages'    => $result['totalPages'],
+            'isLoggedIn'    => $isLoggedIn,
+            't'             => $t,
+            'buildUrl'      => $buildUrl,
+        ]);
     }
 }

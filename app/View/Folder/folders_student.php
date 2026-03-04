@@ -1,14 +1,12 @@
 <?php
 /**
  * Vue : Dossiers Étudiant
- *
- * Variables attendues (extraites par View::render) :
- * @var array<string, mixed> $dossier
- * @var string $studentId
- * @var string $message
- * @var string $lang
- * @var Closure(array<string, string>): string $t
  */
+
+/** @var array<string, mixed> $dossier */
+/** @var string $studentId */
+/** @var string $message */
+/** @var string $lang */
 
 if (!isset($t)) {
     $t = function(array $translations) use ($lang) {
