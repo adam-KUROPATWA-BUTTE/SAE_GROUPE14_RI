@@ -4,6 +4,7 @@
  * Home Coordinateur
  *
  * @var string $lang
+ * @var string $userRole
  * @var Closure(array<string, string>): string $t
  * @var Closure(string, array<string, mixed>=): string $buildUrl
  * @var float|int $completionPercentage
@@ -14,6 +15,11 @@
 
 $isTritanopia   = !empty($_SESSION['tritanopia']) && ((bool) $_SESSION['tritanopia'] === true);
 $mobiliteFilter = $mobiliteFilter ?? null;
+
+// Lire le rôle depuis la session si non transmis par le contrôleur
+if (empty($userRole)) {
+    $userRole = $_SESSION['role'] ?? 'coordinateur_etude';
+}
 
 $dossierStats   = $stats?->getDossierStats();
 $genderStats    = $stats?->getGenderStats();
@@ -50,51 +56,6 @@ $maxDept = !empty($departments)
 
 ob_start();
 ?>
-
-    <header>
-        <div class="top-bar">
-            <img class="logo_amu" src="img/logo.png" alt="AMU Logo">
-
-            <div class="right-buttons">
-                <div class="lang-dropdown">
-                    <button class="dropbtn"><?= htmlspecialchars($lang) ?></button>
-                    <div class="dropdown-content">
-                        <a href="#" onclick="window.mainApp.changeLang('fr'); return false;">Français</a>
-                        <a href="#" onclick="window.mainApp.changeLang('en'); return false;">English</a>
-                    </div>
-                </div>
-
-                <?php if ($isLoggedIn) : ?>
-                    <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'logout']) ?>'">
-                        <?= $t(['fr' => 'Se déconnecter', 'en' => 'Log out']) ?>
-                    </button>
-                <?php else : ?>
-                    <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'login']) ?>'">
-                        <?= $t(['fr' => 'Se connecter', 'en' => 'Log in']) ?>
-                    </button>
-                <?php endif; ?>
-
-                <button id="theme-toggle" title="Enable tritanopia accessibility mode">
-                    <span class="toggle-switch"></span>
-                </button>
-            </div>
-        </div>
-
-        <nav class="menu">
-            <button class="active" onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'home-coordinateur']) ?>'">
-                <?= $t(['fr' => 'Accueil', 'en' => 'Home']) ?>
-            </button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'coordinateur-etude']) ?>'">
-                <?= $t(['fr' => 'Coordinateur d\'étude', 'en' => 'Study Coordinator']) ?>
-            </button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'coordinateur-stage']) ?>'">
-                <?= $t(['fr' => 'Coordinateur de stage', 'en' => 'Internship Coordinator']) ?>
-            </button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'chef-departement']) ?>'">
-                <?= $t(['fr' => 'Chef de département', 'en' => 'Department Head']) ?>
-            </button>
-        </nav>
-    </header>
 
     <section class="hero-section">
         <img class="hero_logo" src="img/amu.png" alt="AMU Logo">
@@ -138,7 +99,7 @@ ob_start();
         </div>
     </section>
 
-    <!-- Carrousel — identique à home admin -->
+    <!-- Carrousel -->
     <section class="stats-section">
         <button class="carousel-btn prev" onclick="window.carousel.changeSlide(-1)">‹</button>
         <button class="carousel-btn next" onclick="window.carousel.changeSlide(1)">›</button>
@@ -292,7 +253,7 @@ ob_start();
 
     <div id="app-config"
          data-lang="<?= htmlspecialchars($lang) ?>"
-         data-role="coordinateur"
+         data-role="<?= htmlspecialchars($userRole) ?>"
          style="display:none;">
     </div>
 
@@ -304,14 +265,13 @@ $title = $t([
     'en' => 'Home - Coordinator - International Relations AMU',
 ]);
 
-$styles     = ['styles/homepage.css'];
-$scripts    = ['js/carousel.js'];
-$activeMenu = 'home';
-$userRole   = 'coordinateur';
-
+$styles          = ['styles/homepage.css'];
+$scripts         = ['js/carousel.js'];
+$activeMenu      = 'home-coordinateur';
+$noMain          = true;
 $metaDescription = $t([
     'fr' => "Espace coordinateur du service des relations internationales de l'AMU.",
     'en' => 'Coordinator space of the International Relations Service of AMU.',
 ]);
 
-include __DIR__ . '/../Layout/base_home.php';
+include __DIR__ . '/../Layout/base.php';

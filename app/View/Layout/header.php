@@ -4,13 +4,21 @@
  *
  * @var string $lang
  * @var string $activeMenu
- * @var string $userRole - 'admin' ou 'student'
+ * @var string $userRole - 'admin', 'student', 'coordinateur_etude', 'coordinateur_stage', 'chef_departement'
  * @var Closure(array<string, string>): string $t
  */
 
+// Fallback : lire le rôle depuis la session si non transmis par la vue
+if (empty($userRole) && !empty($_SESSION['role'])) {
+    $userRole = $_SESSION['role'];
+}
 
-// Récupérer la page actuelle
-$currentPage = $_GET['page'] ?? 'home-' . ($userRole === 'admin' ? 'admin' : 'student');
+$isCoordinateur = in_array($userRole, ['coordinateur_etude', 'coordinateur_stage', 'chef_departement'], true);
+
+$currentPage = $_GET['page'] ?? (
+$userRole === 'admin'        ? 'home-admin'        :
+    ($isCoordinateur             ? 'home-coordinateur' : 'home-student')
+);
 ?>
 <header>
     <div class="top-bar">
@@ -27,63 +35,106 @@ $currentPage = $_GET['page'] ?? 'home-' . ($userRole === 'admin' ? 'admin' : 'st
     </div>
 
     <nav class="menu">
-        <?php
-        $suffix = $userRole === 'admin' ? '-admin' : '-student';
 
-        $menus = [
-            'home' => [
-                'fr' => 'Accueil',
-                'en' => 'Home'
-            ],
-            'dashboard' => [
-                'fr' => ($userRole === 'admin' ? 'Tableau de bord' : 'Mon Tableau de bord'),
-                'en' => ($userRole === 'admin' ? 'Dashboard' : 'My Dashboard')
-            ],
-            'partners' => [
-                'fr' => 'Destinations',
-                'en' => 'Destinations'
-            ],
-            'folders' => [
-                'fr' => ($userRole === 'admin' ? 'Dossiers' : 'Mon Dossier'),
-                'en' => ($userRole === 'admin' ? 'Folders' : 'My Folder')
-            ],
-        ];
-        if ($userRole === 'admin') {
-            $menus['messages'] = ['fr' => 'Messages', 'en' => 'Messages'];
-        }
+        <?php if ($userRole === 'coordinateur_etude') : ?>
 
-        if ($userRole === 'student') {
-            $menus['contact'] = [
-                'fr' => 'Contact',
-                'en' => 'Contact'
+            <button
+                <?= $activeMenu === 'home-coordinateur' ? 'class="active"' : '' ?>
+                    onclick="window.location.href='index.php?page=home-coordinateur&lang=<?= urlencode($lang) ?>'">
+                <?= $t(['fr' => 'Accueil', 'en' => 'Home']) ?>
+            </button>
+            <button
+                <?= $activeMenu === 'coordinateur-etude' ? 'class="active"' : '' ?>
+                    onclick="window.location.href='index.php?page=coordinateur-etude&lang=<?= urlencode($lang) ?>'">
+                <?= $t(['fr' => "Coordinateur d'étude", 'en' => 'Study Coordinator']) ?>
+            </button>
+
+        <?php elseif ($userRole === 'coordinateur_stage') : ?>
+
+            <button
+                <?= $activeMenu === 'home-coordinateur' ? 'class="active"' : '' ?>
+                    onclick="window.location.href='index.php?page=home-coordinateur&lang=<?= urlencode($lang) ?>'">
+                <?= $t(['fr' => 'Accueil', 'en' => 'Home']) ?>
+            </button>
+            <button
+                <?= $activeMenu === 'coordinateur-stage' ? 'class="active"' : '' ?>
+                    onclick="window.location.href='index.php?page=coordinateur-stage&lang=<?= urlencode($lang) ?>'">
+                <?= $t(['fr' => 'Coordinateur de stage', 'en' => 'Internship Coordinator']) ?>
+            </button>
+
+        <?php elseif ($userRole === 'chef_departement') : ?>
+
+            <button
+                <?= $activeMenu === 'home-coordinateur' ? 'class="active"' : '' ?>
+                    onclick="window.location.href='index.php?page=home-coordinateur&lang=<?= urlencode($lang) ?>'">
+                <?= $t(['fr' => 'Accueil', 'en' => 'Home']) ?>
+            </button>
+            <button
+                <?= $activeMenu === 'chef-departement' ? 'class="active"' : '' ?>
+                    onclick="window.location.href='index.php?page=chef-departement&lang=<?= urlencode($lang) ?>'">
+                <?= $t(['fr' => "Chef de département", 'en' => 'Department Head']) ?>
+            </button>
+
+        <?php else : ?>
+
+            <?php
+            $suffix = $userRole === 'admin' ? '-admin' : '-student';
+
+            $menus = [
+                'home' => [
+                    'fr' => 'Accueil',
+                    'en' => 'Home',
+                ],
+                'dashboard' => [
+                    'fr' => ($userRole === 'admin' ? 'Tableau de bord' : 'Mon Tableau de bord'),
+                    'en' => ($userRole === 'admin' ? 'Dashboard' : 'My Dashboard'),
+                ],
+                'partners' => [
+                    'fr' => 'Destinations',
+                    'en' => 'Destinations',
+                ],
+                'folders' => [
+                    'fr' => ($userRole === 'admin' ? 'Dossiers' : 'Mon Dossier'),
+                    'en' => ($userRole === 'admin' ? 'Folders' : 'My Folder'),
+                ],
             ];
-        }
 
-        foreach ($menus as $key => $labels):
-            $isActive = $activeMenu === $key;
-            $page = $key . $suffix;
-            $url = 'index.php?page=' . urlencode($page) . '&lang=' . urlencode($lang);
+            if ($userRole === 'admin') {
+                $menus['messages'] = ['fr' => 'Messages', 'en' => 'Messages'];
+            }
 
-            if ($key === 'partners' && $userRole === 'student'):
-                $urlAmu = 'index.php?page=partners-student&partner=amu&lang=' . urlencode($lang);
-                $urlIut = 'index.php?page=partners-student&partner=iut&lang=' . urlencode($lang);
-                ?>
-                <div class="dropdown <?= $isActive ? 'active' : '' ?>">
-                    <button <?= $isActive ? 'class="active"' : '' ?>>
+            if ($userRole === 'student') {
+                $menus['contact'] = ['fr' => 'Contact', 'en' => 'Contact'];
+            }
+
+            foreach ($menus as $key => $labels):
+                $isActive = $activeMenu === $key;
+                $page     = $key . $suffix;
+                $url      = 'index.php?page=' . urlencode($page) . '&lang=' . urlencode($lang);
+
+                if ($key === 'partners' && $userRole === 'student'):
+                    $urlAmu = 'index.php?page=partners-student&partner=amu&lang=' . urlencode($lang);
+                    $urlIut = 'index.php?page=partners-student&partner=iut&lang=' . urlencode($lang);
+                    ?>
+                    <div class="dropdown <?= $isActive ? 'active' : '' ?>">
+                        <button <?= $isActive ? 'class="active"' : '' ?>>
+                            <?= $t($labels) ?>
+                        </button>
+                        <div class="dropdown-content">
+                            <a href="<?= htmlspecialchars($urlAmu) ?>">AMU</a>
+                            <a href="<?= htmlspecialchars($urlIut) ?>">IUT</a>
+                        </div>
+                    </div>
+                <?php else : ?>
+                    <button
+                        <?= $isActive ? 'class="active"' : '' ?>
+                            onclick="window.location.href='<?= htmlspecialchars($url) ?>'">
                         <?= $t($labels) ?>
                     </button>
-                    <div class="dropdown-content">
-                        <a href="<?= htmlspecialchars($urlAmu) ?>">AMU</a>
-                        <a href="<?= htmlspecialchars($urlIut) ?>">IUT</a>
-                    </div>
-                </div>
-            <?php else: ?>
-                <button
-                    <?= $isActive ? 'class="active"' : '' ?>
-                    onclick="window.location.href='<?= htmlspecialchars($url) ?>'">
-                    <?= $t($labels) ?>
-                </button>
-            <?php endif;
-        endforeach; ?>
+                <?php endif;
+            endforeach; ?>
+
+        <?php endif; ?>
+
     </nav>
 </header>
