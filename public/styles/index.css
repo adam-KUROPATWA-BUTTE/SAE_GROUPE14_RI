@@ -352,19 +352,6 @@ li a:hover {
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-    .footer-sitemap-btn {
-        width: 100%;
-        max-width: 300px;
-        justify-content: center;
-    }
-
-    .footer-separator {
-        display: none;
-    }
-}
-
-
 @media (max-width: 810px) {
 
     header {
