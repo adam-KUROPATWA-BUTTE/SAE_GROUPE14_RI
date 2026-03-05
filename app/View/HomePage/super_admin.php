@@ -55,6 +55,9 @@ ob_start();
                         <label class="sa-label" for="password"><?= $t(['fr' => 'Mot de passe', 'en' => 'Password']) ?></label>
                         <div class="sa-input-group">
                             <input class="sa-input" type="text" id="password" name="password" required
+                                   minlength="12" 
+                                   pattern="(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{12,}" 
+                                   title="<?= $t(['fr' => 'Le mot de passe doit contenir au moins 12 caractères, une majuscule et un caractère spécial.', 'en' => 'The password must contain at least 12 characters, one uppercase letter, and one special character.']) ?>"
                                    placeholder="<?= $t(['fr' => 'Mot de passe temporaire', 'en' => 'Temporary password']) ?>"
                                    autocomplete="new-password">
                             <button type="button" class="sa-btn-generate" onclick="SuperAdmin.generatePassword()">
