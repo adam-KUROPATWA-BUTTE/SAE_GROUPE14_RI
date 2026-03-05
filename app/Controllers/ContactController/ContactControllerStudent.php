@@ -3,9 +3,9 @@
 namespace Controllers\ContactController;
 
 use Controllers\ControllerInterface;
-use Model\Persistence\ContactMessageRepository;
+use Model\Persistence\ConversationPDO;
 use Service\ContactService;
-use Core\View; // Ajout de l'import pour la classe View
+use Core\View; 
 
 class ContactControllerStudent implements ControllerInterface
 {
@@ -13,7 +13,7 @@ class ContactControllerStudent implements ControllerInterface
 
     public function __construct()
     {
-        $repository = new ContactMessageRepository();
+        $repository = new ConversationPDO();
         $this->contactService = new ContactService($repository);
     }
 
@@ -24,9 +24,7 @@ class ContactControllerStudent implements ControllerInterface
 
     public function control(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        if (session_status() === PHP_SESSION_NONE) session_start();
 
         if (!isset($_SESSION['numetu'])) {
             header('Location: index.php?page=login');
@@ -41,72 +39,50 @@ class ContactControllerStudent implements ControllerInterface
         $numEtu = $_SESSION['numetu'];
         $action = $_GET['action'] ?? 'form';
 
-        $t = function (array $translations) use ($lang): string {
-            return $translations[$lang] ?? $translations['fr'] ?? '';
-        };
-
-        $buildUrl = function (string $url, array $params = []) use ($lang): string {
+        $t = fn(array $translations) => $translations[$lang] ?? $translations['fr'] ?? '';
+        $buildUrl = function(string $url, array $params = []) use ($lang) {
             $params['lang'] = $lang;
             return $url . '?' . http_build_query($params);
         };
 
-        // ── Action : réponse étudiant à la réponse admin ──
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply') {
-            $messageId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
-            $reply     = trim($_POST['student_reply'] ?? '');
+            $conversationId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+            $reply          = trim($_POST['student_reply'] ?? '');
 
-            if ($messageId > 0 && !empty($reply)) {
-                $this->contactService->replyToAdminResponse($messageId, $reply);
-                $_SESSION['message'] = $lang === 'fr'
-                    ? 'Votre réponse a été envoyée !'
-                    : 'Your reply has been sent!';
+            if ($conversationId > 0 && !empty($reply)) {
+                $this->contactService->addMessage($conversationId, 'student', $reply);
+                $_SESSION['message'] = $lang === 'fr' ? 'Votre message a été envoyé !' : 'Message sent!';
             }
-
             header('Location: index.php?page=contact-student&lang=' . $lang . '#messagesPanel');
             exit;
         }
 
-        // ── Action : envoi nouveau message ──
         $messageSent = false;
         $error       = null;
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'form') {
             try {
-                $name    = trim($_POST['name']    ?? '');
-                $email   = trim($_POST['email']   ?? '');
-                $subject = trim($_POST['subject'] ?? '');
-                $message = trim($_POST['message'] ?? '');
-
-                $this->contactService->sendMessage(
+                $this->contactService->createConversation(
                     studentNumEtu: $numEtu,
-                    name: $name,
-                    email: $email,
-                    subject: $subject,
-                    messageContent: $message
+                    name: trim($_POST['name'] ?? ''),
+                    email: trim($_POST['email'] ?? ''),
+                    subject: trim($_POST['subject'] ?? ''),
+                    initialMessage: trim($_POST['message'] ?? '')
                 );
-
                 $messageSent = true;
-                $_SESSION['message'] = $lang === 'fr'
-                    ? 'Votre message a été envoyé avec succès !'
-                    : 'Your message has been sent successfully!';
-
-            } catch (\InvalidArgumentException $e) {
-                $error = $lang === 'fr'
-                    ? 'Veuillez remplir tous les champs correctement.'
-                    : 'Please fill in all fields correctly.';
             } catch (\Exception $e) {
-                $error = $lang === 'fr'
-                    ? 'Une erreur est survenue. Veuillez réessayer.'
-                    : 'An error occurred. Please try again.';
+                $error = $lang === 'fr' ? 'Erreur lors de l\'envoi.' : 'Error sending message.';
             }
         }
+
+        $studentConversations = $this->contactService->getStudentConversations($numEtu);
 
         $contactInfo = [
             'email' => 'relations.internationales@univ-amu.fr',
             'phone' => '+33 4 13 55 00 00',
             'address' => [
-                'fr' => 'Aix-Marseille Université<br>58 Boulevard Charles Livon<br>13007 Marseille, France',
-                'en' => 'Aix-Marseille University<br>58 Boulevard Charles Livon<br>13007 Marseille, France',
+                'fr' => 'Aix-Marseille Université<br>13007 Marseille, France',
+                'en' => 'Aix-Marseille University<br>13007 Marseille, France',
             ],
             'hours' => [
                 'fr' => 'Lundi - Vendredi : 9h00 - 17h00',
@@ -114,19 +90,16 @@ class ContactControllerStudent implements ControllerInterface
             ],
         ];
 
-        $studentMessages = $this->contactService->getStudentMessages($numEtu);
-
-        // Utilisation de View::render au lieu de require_once
         View::render('Contact/contact_student', [
-            'lang'            => $lang,
-            'numEtu'          => $numEtu,
-            'action'          => $action,
-            't'               => $t,
-            'buildUrl'        => $buildUrl,
-            'messageSent'     => $messageSent,
-            'error'           => $error,
-            'contactInfo'     => $contactInfo,
-            'studentMessages' => $studentMessages
+            'lang'                 => $lang,
+            'numEtu'               => $numEtu,
+            'action'               => $action,
+            't'                    => $t,
+            'buildUrl'             => $buildUrl,
+            'messageSent'          => $messageSent,
+            'error'                => $error,
+            'contactInfo'          => $contactInfo,
+            'studentConversations' => $studentConversations
         ]);
     }
 }
