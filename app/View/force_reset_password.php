@@ -37,7 +37,7 @@ $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'
 
     <form method="POST" action="index.php?page=force-reset-password">
         <label for="password">Nouveau mot de passe (8 caractères min.)</label>
-        <input type="password" name="password" id="password" required minlength="8" placeholder="Minimum 8 caractères">
+        <input type="password" name="password" id="password" required minlength="12" placeholder="Minimum 12 caractères">
 
         <label for="password_confirm">Confirmez le mot de passe</label>
         <input type="password" name="password_confirm" id="password_confirm" required placeholder="Confirmez votre mot de passe">

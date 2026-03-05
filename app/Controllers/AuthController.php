@@ -124,8 +124,8 @@ class AuthController implements ControllerInterface
 
             if ($password !== $passwordConfirm) {
                 $error = "Les mots de passe ne correspondent pas.";
-            } elseif (strlen($password) < 8) {
-                $error = "Le mot de passe doit faire au moins 8 caractères.";
+            } elseif (strlen($password) < 12) {
+                $error = "Le mot de passe doit faire au moins 12 caractères.";
             } else {
                 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                 $this->userRepository->updatePasswordAndUnlock($_SESSION['numetu'], $hashedPassword);
