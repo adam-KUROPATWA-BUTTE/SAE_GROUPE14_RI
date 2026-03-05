@@ -10,7 +10,9 @@ use Model\Entity\GenderStats;
  */
 interface DossierRepositoryInterface
 {
-
+    // ---------------------------------------------------------------
+    // CRUD
+    // ---------------------------------------------------------------
 
     /** @return array<int, array<string, mixed>> */
     public function findAll(): array;
@@ -24,12 +26,23 @@ interface DossierRepositoryInterface
     /** @param array<string, mixed> $data */
     public function update(string $numEtu, array $data): bool;
 
+    // ---------------------------------------------------------------
+    // Status
+    // ---------------------------------------------------------------
+
+    /** Toggle via direct flip (NewDev collègue) */
+    public function toggleStatus(string $numEtu): bool;
+
+    /** Toggle via PDO select+update (NewDev toi) — kept for compatibility */
     public function toggleCompleteStatus(string $numEtu): bool;
 
-
     public function setStatus(string $numEtu, string $status): bool;
+
     public function cycleStatus(string $numEtu): bool;
 
+    // ---------------------------------------------------------------
+    // Pagination & search
+    // ---------------------------------------------------------------
 
     /**
      * @param array<string, mixed> $filters
@@ -37,10 +50,16 @@ interface DossierRepositoryInterface
      */
     public function searchWithPagination(array $filters, int $page, int $perPage): array;
 
+    // ---------------------------------------------------------------
+    // Import
+    // ---------------------------------------------------------------
+
     /** @param array<int, array<string, mixed>> $dossiers */
     public function upsertMultiple(array $dossiers): int;
 
-
+    // ---------------------------------------------------------------
+    // Statistics
+    // ---------------------------------------------------------------
 
     public function getDossierStats(?string $mobilite = null): DossierStats;
 
@@ -77,4 +96,23 @@ interface DossierRepositoryInterface
      * @return array<int, array{name: string, count: int}>
      */
     public function getZoneStats(?string $mobilite = null): array;
+
+    // ---------------------------------------------------------------
+    // Document validation (ta branche)
+    // ---------------------------------------------------------------
+
+    /**
+     * @return array{manquants: array<int, string>, presents: array<int, string>, statuts: array<string, string>}
+     */
+    public function analyserDocuments(string $numetu): array;
+
+    /**
+     * @param array<string, string> $statutsDocuments
+     */
+    public function enregistrerValidation(
+        string $numetu,
+        array $statutsDocuments,
+        ?string $dateLimite = null,
+        ?string $commentaire = null
+    ): bool;
 }
