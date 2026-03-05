@@ -313,8 +313,8 @@ h2 { color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin
     margin: 20px 0;
 }
 
-/* ======= RESPONSIVE 810px ======= */
-@media (max-width: 810px) {
+/* ======= RESPONSIVE  ======= */
+@media (max-width: 1024px) {
     main {
         width: 90%;
         padding: 40px 30px;
@@ -366,7 +366,7 @@ h2 { color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin
 }
 
 /* ======= RESPONSIVE 500px ======= */
-@media (max-width: 500px) {
+@media (max-width: 480px) {
     main {
         width: 95%;
         padding: 20px 15px;

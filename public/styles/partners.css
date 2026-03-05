@@ -199,7 +199,7 @@ a {
 }
 
 
-@media (max-width: 810px) {
+@media (max-width: 1024px) {
     main {
         width: 95%;
         margin: 1em auto;
@@ -245,7 +245,7 @@ a {
 }
 
 
-@media (max-width: 500px) {
+@media (max-width: 480px) {
     main {
         width: 98%;
         margin: 0.8em auto;

@@ -274,32 +274,32 @@ body.tritanopie .chat-input-area button {
 @media (max-width: 1024px) {
     /*a changer */
     #help-bubble {
-        width: 55px;
-        height: 55px;
-        font-size: 26px;
-        bottom: 15px;
-        right: 15px;
+        width: 65px;
+        height: 65px;
+        font-size: 30px;
+        bottom: 20px;
+        right: 20px;
     }
 
     .chat-popup {
-        bottom: 80px;
+        bottom: 95px;
         right: 10px;
         width: 95vw;
-        height: 70vh;
-        border-radius: 16px;
+        height: 75vh;
+        border-radius: 18px;
     }
 
     .help-popup-header {
-        font-size: 1em;
-        padding: 12px;
+        font-size: 1.15em;
+        padding: 16px;
     }
 
     .chat-input-area input {
-        font-size: 1em;
+        font-size: 1.1em;
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 480px) {
     #help-bubble {
         width: 55px;
         height: 55px;

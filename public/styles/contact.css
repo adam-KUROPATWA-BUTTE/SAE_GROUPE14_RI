@@ -344,7 +344,7 @@
    RESPONSIVE
    ============================================================ */
 
-@media (max-width: 968px) {
+@media (max-width: 1024px) {
     .contact-content {
         grid-template-columns: 1fr;
         gap: 2rem;
@@ -355,7 +355,7 @@
     }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 480px) {
     .contact-container {
         padding: 1rem;
     }
