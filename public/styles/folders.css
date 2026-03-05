@@ -171,7 +171,6 @@ tr:nth-child(even) {
     display: none;
 }
 
-/* Pagination globale (peut-être conservée si besoin ailleurs) */
 .pagination {
     display: flex;
     justify-content: center;
@@ -182,7 +181,7 @@ tr:nth-child(even) {
 }
 
 .pagination button {
-    background-color: #004080; /* Valeur par défaut */
+    background-color: #004080;
     color: white;
     border: none;
     padding: 8px 12px;
@@ -207,7 +206,6 @@ tr:nth-child(even) {
     opacity: 0.6;
 }
 
-/* ------------------- STYLES ACCORDÉON ET PAGINATION INTERNE ------------------- */
 .conteneur-composantes {
     margin-top: 20px;
 }
@@ -257,14 +255,13 @@ tr:nth-child(even) {
     display: block;
 }
 
-/* Spécifique à la pagination dans l'accordéon */
 .accordion-pagination {
     margin: 0;
     padding: 15px;
     background-color: #f9f9f9;
     border-top: 1px solid #e0e0e0;
 }
-/* ------------------------------------------------------------------------------- */
+
 
 .table-etudiants {
     table-layout: fixed;
@@ -452,9 +449,9 @@ tr:nth-child(even) {
 #justificatif_convention, #lettre_motivation { display: none; }
 .btn-download { margin-top: 10px; display: inline-block; }
 
-/* ------------------- NOUVELLE REVUE DES DOCUMENTS ------------------- */
 .doc-review-list {
     display: flex;
+    grid-column: 1 / -1;
     flex-direction: column;
     gap: 15px;
     margin-top: 20px;
@@ -475,7 +472,7 @@ tr:nth-child(even) {
     flex: 1;
     border-right: 1px solid #eee;
     padding-right: 15px;
-    min-width: 400px; 
+    min-width: 400px;
 }
 
 .doc-info h4 {
@@ -510,7 +507,7 @@ tr:nth-child(even) {
 .doc-actions textarea {
     width: 100%;
     height: 80px;
-    padding: 10px; 
+    padding: 10px;
     box-sizing: border-box;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -539,12 +536,10 @@ tr:nth-child(even) {
     font-size: 0.95rem;
 }
 
-/* Utilitaire pour prendre toute la largeur */
 .full-width {
     grid-column: 1 / -1;
 }
 
-/* Section du statut global tout en bas */
 .global-status-section {
     margin-top: 30px;
     margin-bottom: 20px;
@@ -552,11 +547,18 @@ tr:nth-child(even) {
     background: #f8f9fa;
     border-radius: 8px;
     border-left: 5px solid var(--primary-color);
+    text-align: center;
+}
+
+.global-status-section .global-status-select {
+    width: auto;
+    min-width: 300px;
 }
 
 .global-status-title {
     font-size: 1.1em;
     display: block;
+    padding:10px;
 }
 
 .global-status-controls {
@@ -564,6 +566,10 @@ tr:nth-child(even) {
     gap: 15px;
     align-items: center;
     margin-top: 15px;
+    justify-content: center;
+}
+.global-status-section.form-section {
+    display: block;
 }
 
 .global-status-select {
@@ -578,7 +584,6 @@ tr:nth-child(even) {
     margin-left: 10px;
 }
 
-/* Pièces justificatives */
 .update-file-label {
     font-size: 0.85em;
     text-align: left;
@@ -596,7 +601,6 @@ tr:nth-child(even) {
     margin-top: 5px;
 }
 
-/* Barre d'outils et formulaires cachés */
 .toolbar-actions {
     display: flex;
     gap: 10px;
@@ -606,22 +610,342 @@ tr:nth-child(even) {
     display: none;
 }
 
-/* Couleurs des badges de statuts dans le tableau */
 .status-badge {
     font-weight: bold;
     padding: 4px 8px;
     border-radius: 4px;
 }
-.status-badge.accepte { color: green; }
-.status-badge.refuse { color: red; }
+.status-badge.accepte    { color: green; }
+.status-badge.refuse     { color: red; }
 .status-badge.instruction { color: orange; }
-.status-badge.depot { color: grey; }
+.status-badge.depot      { color: grey; }
 
-@media (max-width: 768px) {
-    .doc-review-item { flex-direction: column; }
-    .doc-info { border-right: none; border-bottom: 1px solid #eee; padding-bottom: 15px; width: 100%; }
+/* ═══════════════════════════════════════════════════════════
+   AJOUT — Bannière date limite (style jaune)
+   ═══════════════════════════════════════════════════════════ */
+.banniere-date-limite {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    font-size: 1rem;
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+    color: #856404;
 }
-/* Média queries (inchangées) */
+
+.banniere-date-limite.sans-date {
+    border-style: dashed;
+}
+
+.banniere-icone {
+    font-size: 1.4rem;
+}
+
+.banniere-texte {
+    flex: 1;
+}
+
+.banniere-btn-edit {
+    background: #ffc107;
+    color: #333;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.banniere-btn-edit:hover {
+    background: #e0a800;
+}
+
+.banniere-date-form {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.date-limite-input {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 0.95rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AJOUT — "Revue des Pièces Justificatives" centré
+   ═══════════════════════════════════════════════════════════ */
+.documents-section.full-width {
+    grid-column: 1 / -1;
+    width: 100%;
+}
+
+.documents-section h2 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.statut-document-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.btn-status {
+    padding: 6px 14px;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    background: #f0f0f0;
+    color: #333;
+    transition: all 0.2s;
+}
+
+.btn-status.conforme {
+    border-color: #28a745;
+    color: #28a745;
+}
+
+
+.btn-status.conforme:hover,
+.btn-status.conforme.active {
+    background: #28a745;
+    color: white;
+}
+
+.btn-status.non-conforme {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-status.non-conforme:hover,
+.btn-status.non-conforme.active {
+    background: #dc3545;
+    color: white;
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════
+   AJOUT — Modale de validation (popup récapitulatif)
+   ═══════════════════════════════════════════════════════════ */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-content {
+    background: #fff;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    animation: modalFadeIn 0.25s ease;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+    background: var(--primary-color, #004080);
+    color: white;
+    padding: 18px 24px;
+    border-radius: 10px 10px 0 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: white;
+    text-align: left;
+    font-size: 1.2rem;
+    margin-top: 0;
+}
+
+.modal-section {
+    padding: 16px 24px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-section h3 {
+    margin-top: 0;
+    font-size: 1rem;
+    color: #333;
+}
+
+.modifications-list ul {
+    margin: 8px 0 0 0;
+    padding-left: 18px;
+}
+
+.modifications-list li {
+    margin-bottom: 6px;
+    line-height: 1.5;
+}
+
+.document-validation-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background: #f8f9fa;
+}
+
+.document-validation-item.manquant { border-left: 4px solid #dc3545; }
+.document-validation-item.present  { border-left: 4px solid #28a745; }
+
+.document-name {
+    font-weight: 500;
+}
+
+.document-status-badge {
+    font-size: 0.8rem;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.badge-manquant {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-present {
+    background: #d4edda;
+    color: #155724;
+}
+
+.commentaire-textarea {
+    width: 100%;
+    min-height: 90px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: vertical;
+    box-sizing: border-box;
+    margin-top: 8px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+}
+
+.btn-modal {
+    padding: 10px 22px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.95rem;
+    transition: opacity 0.2s;
+}
+
+.btn-modal:hover { opacity: 0.85; }
+
+.btn-modal-cancel {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.btn-modal-submit {
+    background: var(--accent-color, #0066cc);
+    color: white;
+}
+
+#h2-titre2 {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Boutons Accepter / Refuser (style NewDev)
+   ═══════════════════════════════════════════════════════════ */
+.statut-document-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.btn-status {
+    padding: 6px 14px;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    background: #f0f0f0;
+    color: #333;
+    transition: all 0.2s;
+}
+
+.btn-status.conforme {
+    border-color: #28a745;
+    color: #28a745;
+}
+
+.btn-status.conforme:hover,
+.btn-status.conforme.active {
+    background: #28a745;
+    color: white;
+}
+
+.btn-status.non-conforme {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-status.non-conforme:hover,
+.btn-status.non-conforme.active {
+    background: #dc3545;
+    color: white;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   "Revue des Pièces Justificatives" centré dans le bloc
+   ═══════════════════════════════════════════════════════════ */
+.documents-section.full-width {
+    grid-column: 1 / -1;
+    width: 100%;
+}
+
+.documents-section h2 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+    .doc-review-item  { flex-direction: column; }
+    .doc-info         { border-right: none; border-bottom: 1px solid #eee; padding-bottom: 15px; width: 100%; min-width: unset; }
+    .modal-content    { max-width: 100%; }
+    .global-status-controls { flex-direction: column; align-items: stretch; }
+}
+
 @media (max-width: 900px) and (min-width: 801px) {
     main { padding: 1.5em; margin: 1.5em auto; }
     .student-toolbar input[type="text"] { width: 220px; }

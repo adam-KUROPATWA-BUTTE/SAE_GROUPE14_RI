@@ -18,7 +18,11 @@ class FoldersControllerAdmin
 
     public static function support(string $page, string $method): bool
     {
-        return in_array($page, ['folders', 'save_student', 'folders-admin', 'toggle_complete', 'update_student', 'import_folders', 'update_document_status', 'update_global_status']);
+        return in_array($page, [
+            'folders', 'save_student', 'folders-admin', 'toggle_complete',
+            'update_student', 'import_folders', 'update_document_status',
+            'update_global_status', 'valider_documents'
+        ]);
     }
 
     public function control(): void
@@ -27,14 +31,14 @@ class FoldersControllerAdmin
             session_start();
         }
 
-        $page = $_GET['page'] ?? 'folders';
+        $page   = $_GET['page']   ?? 'folders';
         $action = $_GET['action'] ?? 'list';
-        $lang = $_GET['lang'] ?? 'fr';
+        $lang   = $_GET['lang']   ?? 'fr';
 
         if ($page === 'toggle_complete') {
             $numetu = $_GET['numetu'] ?? null;
             if ($numetu) {
-                $numetu = urldecode($numetu);
+                $numetu  = urldecode($numetu);
                 $success = $this->folderUseCase->toggleCompleteStatus($numetu);
                 $_SESSION['message'] = $success
                     ? (($lang === 'fr') ? "Statut du dossier mis à jour." : "Folder status updated.")
@@ -65,6 +69,10 @@ class FoldersControllerAdmin
                 $this->updateStudent($lang);
                 return;
             }
+            if ($page === 'valider_documents') {
+                $this->validerDocuments($lang);
+                return;
+            }
         }
 
         $studentData = null;
@@ -73,16 +81,16 @@ class FoldersControllerAdmin
         }
 
         $filters = [
-            'type'    => $_GET['type'] ?? 'all',
-            'zone'    => $_GET['zone'] ?? 'all',
-            'search'  => $_GET['search'] ?? '',
-            'complet' => $_GET['complet'] ?? 'all',
+            'type'       => $_GET['type']       ?? 'all',
+            'zone'       => $_GET['zone']       ?? 'all',
+            'search'     => $_GET['search']     ?? '',
+            'complet'    => $_GET['complet']    ?? 'all',
             'composante' => $_GET['composante'] ?? 'all',
-            'accord'  => $_GET['accord'] ?? 'all',
+            'accord'     => $_GET['accord']     ?? 'all',
         ];
 
         $result = $this->folderUseCase->searchWithoutPagination($filters);
- 
+
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
@@ -95,22 +103,22 @@ class FoldersControllerAdmin
             'studentData'   => $studentData,
             'paginatedData' => $result['data'],
             'totalCount'    => $result['total'],
-            'totalPages'    => 1 
+            'totalPages'    => 1,
         ]);
     }
 
     private function updateGlobalStatus(): void
     {
         header('Content-Type: application/json');
-        
+
         $numEtu = $_POST['numetu'] ?? '';
         $status = $_POST['status'] ?? 'depot';
-        
+
         if (empty($numEtu)) {
             echo json_encode(['success' => false, 'message' => 'Paramètre manquant']);
             exit;
         }
-        
+
         $success = $this->folderUseCase->setFolderStatus($numEtu, $status);
         echo json_encode(['success' => $success]);
         exit;
@@ -119,64 +127,35 @@ class FoldersControllerAdmin
     private function updateDocumentStatus(): void
     {
         header('Content-Type: application/json');
-        
-        $numEtu = $_POST['numetu'] ?? '';
+
+        $numEtu  = $_POST['numetu']   ?? '';
         $docType = $_POST['doc_type'] ?? '';
-        $status = $_POST['status'] ?? 'pending';
-        $comment = $_POST['comment'] ?? '';
-        
+        $status  = $_POST['status']   ?? 'pending';
+        $comment = $_POST['comment']  ?? '';
+
         if (empty($numEtu) || empty($docType)) {
             echo json_encode(['success' => false, 'message' => 'Paramètres manquants']);
             exit;
         }
-        
+
         $success = $this->folderUseCase->updateDocumentStatus($numEtu, $docType, $status, $comment);
         echo json_encode(['success' => $success]);
         exit;
     }
 
-    private function importFolders(string $lang): void
-    {
-        if (isset($_FILES['excel_file']) && $_FILES['excel_file']['error'] === UPLOAD_ERR_OK) {
-            $filePath = $_FILES['excel_file']['tmp_name'];
-            $fileName = $_FILES['excel_file']['name'];
-
-            $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-            $allowedExtensions = ['csv', 'xlsx', 'xls'];
-
-            if (!in_array($ext, $allowedExtensions)) {
-                $_SESSION['message'] = ($lang === 'fr')
-                    ? 'Erreur : Format non supporté. Utilisez .csv ou .xlsx'
-                    : 'Error: Unsupported format. Use .csv or .xlsx';
-            } else {
-                // SÉCURITÉ : On envoie bien le $fileName au UseCase pour activer le lecteur CSV !
-                $success = $this->folderUseCase->importFoldersFromCSV($filePath, $fileName); 
-
-                $_SESSION['message'] = $success
-                    ? (($lang === 'fr') ? 'Importation réussie' : 'Import successful')
-                    : (($lang === 'fr') ? 'Erreur lors de l\'importation (fichier vide ou format invalide)' : 'Error during import');
-            }
-        } else {
-            $_SESSION['message'] = ($lang === 'fr') ? 'Erreur lors du téléchargement du fichier.' : 'File upload error.';
-        }
-
-        header('Location: index.php?page=folders-admin&lang=' . $lang);
-        exit;
-    }
     /**
-    * @param array<string, mixed> $data
-    * @return array<int, string>
-    */
-
+     * @param array<string, mixed> $data
+     * @return array<int, string>
+     */
     private function handleFileUploads(array &$data, string $lang): array
     {
-        $errors = [];
+        $errors     = [];
         $fileFields = ['photo', 'cv', 'convention', 'lettre_motivation', 'langues_file'];
-        
+
         foreach ($fileFields as $field) {
             if (isset($_FILES[$field])) {
                 $error = $_FILES[$field]['error'];
-                
+
                 if ($error === UPLOAD_ERR_OK) {
                     $content = file_get_contents($_FILES[$field]['tmp_name']);
                     if ($content !== false) {
@@ -196,26 +175,67 @@ class FoldersControllerAdmin
         return $errors;
     }
 
+    private function importFolders(string $lang): void
+    {
+        if (isset($_FILES['excel_file']) && $_FILES['excel_file']['error'] === UPLOAD_ERR_OK) {
+            $filePath = $_FILES['excel_file']['tmp_name'];
+            $fileName = $_FILES['excel_file']['name'];
+
+            $ext               = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+            $allowedExtensions = ['csv', 'xlsx', 'xls'];
+
+            if (!in_array($ext, $allowedExtensions)) {
+                $_SESSION['message'] = ($lang === 'fr')
+                    ? 'Erreur : Format non supporté. Utilisez .csv ou .xlsx'
+                    : 'Error: Unsupported format. Use .csv or .xlsx';
+            } else {
+                $success = $this->folderUseCase->importFoldersFromCSV($filePath, $fileName);
+
+                $_SESSION['message'] = $success
+                    ? (($lang === 'fr') ? 'Importation réussie' : 'Import successful')
+                    : (($lang === 'fr') ? 'Erreur lors de l\'importation (fichier vide ou format invalide)' : 'Error during import');
+            }
+        } else {
+            $_SESSION['message'] = ($lang === 'fr') ? 'Erreur lors du téléchargement du fichier.' : 'File upload error.';
+        }
+
+        header('Location: index.php?page=folders-admin&lang=' . $lang);
+        exit;
+    }
+
     private function saveStudent(string $lang): void
     {
         $data = [
-            'NumEtu' => $_POST['numetu'] ?? '', 'Nom' => $_POST['nom'] ?? '', 'Prenom' => $_POST['prenom'] ?? '',
-            'DateNaissance' => $_POST['naissance'] ?? null, 'Sexe' => $_POST['sexe'] ?? null,
-            'Adresse' => $_POST['adresse'] ?? null, 'CodePostal' => $_POST['cp'] ?? null,
-            'Ville' => $_POST['ville'] ?? null, 'EmailPersonnel' => $_POST['email_perso'] ?? '',
-            'EmailAMU' => $_POST['email_amu'] ?? null, 'Telephone' => $_POST['telephone'] ?? '',
-            'CodeDepartement' => $_POST['departement'] ?? null, 'Composante' => $_POST['composante'] ?? null,
-            'Type' => $_POST['type'] ?? null, 'Zone' => $_POST['zone'] ?? 'europe',
-            'Pays' => $_POST['pays'] ?? null, 'Campus' => $_POST['campus'] ?? null,
-            'Discipline' => $_POST['discipline'] ?? null, 'NiveauEtude' => $_POST['niveau_etude'] ?? null,
-            'Formation' => $_POST['formation'] ?? null, 'MoyenneBac' => $_POST['moyenne_bac'] ?? null,
-            'MoyenneSansBac' => $_POST['moyenne_sans_bac'] ?? null, 'AvisDRI' => $_POST['avis_dri'] ?? null,
-            'DateDebut' => $_POST['date_debut'] ?? null, 'MobiliteAnterieure' => $_POST['mobilite_anterieure'] ?? null,
+            'NumEtu'             => $_POST['numetu']              ?? '',
+            'Nom'                => $_POST['nom']                 ?? '',
+            'Prenom'             => $_POST['prenom']              ?? '',
+            'DateNaissance'      => $_POST['naissance']           ?? null,
+            'Sexe'               => $_POST['sexe']                ?? null,
+            'Adresse'            => $_POST['adresse']             ?? null,
+            'CodePostal'         => $_POST['cp']                  ?? null,
+            'Ville'              => $_POST['ville']               ?? null,
+            'EmailPersonnel'     => $_POST['email_perso']         ?? '',
+            'EmailAMU'           => $_POST['email_amu']           ?? null,
+            'Telephone'          => $_POST['telephone']           ?? '',
+            'CodeDepartement'    => $_POST['departement']         ?? null,
+            'Composante'         => $_POST['composante']          ?? null,
+            'Type'               => $_POST['type']                ?? null,
+            'Zone'               => $_POST['zone']                ?? 'europe',
+            'Pays'               => $_POST['pays']                ?? null,
+            'Campus'             => $_POST['campus']              ?? null,
+            'Discipline'         => $_POST['discipline']          ?? null,
+            'NiveauEtude'        => $_POST['niveau_etude']        ?? null,
+            'Formation'          => $_POST['formation']           ?? null,
+            'MoyenneBac'         => $_POST['moyenne_bac']         ?? null,
+            'MoyenneSansBac'     => $_POST['moyenne_sans_bac']    ?? null,
+            'AvisDRI'            => $_POST['avis_dri']            ?? null,
+            'DateDebut'          => $_POST['date_debut']          ?? null,
+            'MobiliteAnterieure' => $_POST['mobilite_anterieure'] ?? null,
         ];
 
         $errors = [];
         if (empty($data['NumEtu'])) $errors[] = ($lang === 'fr') ? 'Numéro étudiant requis' : 'Student ID required';
-        if (empty($data['Nom'])) $errors[] = ($lang === 'fr') ? 'Nom requis' : 'Name required';
+        if (empty($data['Nom']))    $errors[] = ($lang === 'fr') ? 'Nom requis'              : 'Name required';
 
         if (!empty($errors)) {
             $_SESSION['message'] = implode(', ', $errors);
@@ -249,18 +269,31 @@ class FoldersControllerAdmin
     private function updateStudent(string $lang): void
     {
         $data = [
-            'NumEtu' => $_POST['numetu'] ?? '', 'Nom' => $_POST['nom'] ?? '', 'Prenom' => $_POST['prenom'] ?? '',
-            'EmailPersonnel' => $_POST['email_perso'] ?? '', 'Telephone' => $_POST['telephone'] ?? '',
-            'Type' => $_POST['type'] ?? null, 'DateNaissance' => $_POST['naissance'] ?? null,
-            'Sexe' => $_POST['sexe'] ?? null, 'Adresse' => $_POST['adresse'] ?? null,
-            'CodePostal' => $_POST['cp'] ?? null, 'Ville' => $_POST['ville'] ?? null,
-            'EmailAMU' => $_POST['email_amu'] ?? null, 'CodeDepartement' => $_POST['departement'] ?? null,
-            'Zone' => $_POST['zone'] ?? 'europe', 'Composante' => $_POST['composante'] ?? null,
-            'Pays' => $_POST['pays'] ?? null, 'Campus' => $_POST['campus'] ?? null,
-            'Discipline' => $_POST['discipline'] ?? null, 'NiveauEtude' => $_POST['niveau_etude'] ?? null,
-            'Formation' => $_POST['formation'] ?? null, 'MoyenneBac' => $_POST['moyenne_bac'] ?? null,
-            'MoyenneSansBac' => $_POST['moyenne_sans_bac'] ?? null, 'AvisDRI' => $_POST['avis_dri'] ?? null,
-            'DateDebut' => $_POST['date_debut'] ?? null, 'MobiliteAnterieure' => $_POST['mobilite_anterieure'] ?? null,
+            'NumEtu'             => $_POST['numetu']              ?? '',
+            'Nom'                => $_POST['nom']                 ?? '',
+            'Prenom'             => $_POST['prenom']              ?? '',
+            'EmailPersonnel'     => $_POST['email_perso']         ?? '',
+            'Telephone'          => $_POST['telephone']           ?? '',
+            'Type'               => $_POST['type']                ?? null,
+            'DateNaissance'      => $_POST['naissance']           ?? null,
+            'Sexe'               => $_POST['sexe']                ?? null,
+            'Adresse'            => $_POST['adresse']             ?? null,
+            'CodePostal'         => $_POST['cp']                  ?? null,
+            'Ville'              => $_POST['ville']               ?? null,
+            'EmailAMU'           => $_POST['email_amu']           ?? null,
+            'CodeDepartement'    => $_POST['departement']         ?? null,
+            'Zone'               => $_POST['zone']                ?? 'europe',
+            'Composante'         => $_POST['composante']          ?? null,
+            'Pays'               => $_POST['pays']                ?? null,
+            'Campus'             => $_POST['campus']              ?? null,
+            'Discipline'         => $_POST['discipline']          ?? null,
+            'NiveauEtude'        => $_POST['niveau_etude']        ?? null,
+            'Formation'          => $_POST['formation']           ?? null,
+            'MoyenneBac'         => $_POST['moyenne_bac']         ?? null,
+            'MoyenneSansBac'     => $_POST['moyenne_sans_bac']    ?? null,
+            'AvisDRI'            => $_POST['avis_dri']            ?? null,
+            'DateDebut'          => $_POST['date_debut']          ?? null,
+            'MobiliteAnterieure' => $_POST['mobilite_anterieure'] ?? null,
         ];
 
         $uploadErrors = $this->handleFileUploads($data, $lang);
@@ -277,6 +310,43 @@ class FoldersControllerAdmin
             : (($lang === 'fr') ? 'Erreur lors de la mise à jour' : 'Error updating folder');
 
         header('Location: index.php?page=folders-admin&action=view&numetu=' . urlencode($data['NumEtu']) . '&lang=' . $lang);
+        exit;
+    }
+
+    private function validerDocuments(string $lang): void
+    {
+        $numetu = $_POST['numetu'] ?? '';
+
+        if (empty($numetu)) {
+            $_SESSION['message'] = ($lang === 'fr')
+                ? 'Erreur : Numéro étudiant manquant'
+                : 'Error: Student ID missing';
+            header('Location: index.php?page=folders-admin&lang=' . $lang);
+            exit;
+        }
+
+        $statutsDocuments = [];
+        foreach (['photo', 'cv', 'convention', 'lettre_motivation', 'langues'] as $doc) {
+            if (!empty($_POST['statut_' . $doc])) {
+                $statutsDocuments[$doc] = $_POST['statut_' . $doc];
+            }
+        }
+
+        $dateLimite  = !empty($_POST['date_limite'])        ? $_POST['date_limite']        : null;
+        $commentaire = !empty($_POST['commentaire_admin'])  ? trim($_POST['commentaire_admin']) : null;
+
+        $success = $this->folderUseCase->enregistrerValidation(
+            $numetu,
+            $statutsDocuments,
+            $dateLimite,
+            $commentaire
+        );
+
+        $_SESSION['message'] = $success
+            ? (($lang === 'fr') ? 'Validation enregistrée avec succès' : 'Validation saved successfully')
+            : (($lang === 'fr') ? 'Erreur lors de l\'enregistrement'   : 'Error saving validation');
+
+        header('Location: index.php?page=folders-admin&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
         exit;
     }
 }

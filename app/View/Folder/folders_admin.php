@@ -23,14 +23,14 @@ $buildUrl = function(string $path, array $params = []) use ($lang): string {
     return $path . $separator . http_build_query($params);
 };
 
-$hasActiveFilters = (strval($filters['type'] ?? 'all')) !== 'all'
-    || (strval($filters['zone'] ?? 'all')) !== 'all'
-    || (strval($filters['complet'] ?? 'all')) !== 'all'
-    || (strval($filters['composante'] ?? 'all')) !== 'all'
-    || (strval($filters['accord'] ?? 'all')) !== 'all'
-    || !empty($filters['date_debut'])
-    || !empty($filters['date_fin'])
-    || !empty($filters['search']);
+$hasActiveFilters = (strval($filters['type']       ?? 'all')) !== 'all'
+        || (strval($filters['zone']       ?? 'all')) !== 'all'
+        || (strval($filters['complet']    ?? 'all')) !== 'all'
+        || (strval($filters['composante'] ?? 'all')) !== 'all'
+        || (strval($filters['accord']     ?? 'all')) !== 'all'
+        || !empty($filters['date_debut'])
+        || !empty($filters['date_fin'])
+        || !empty($filters['search']);
 
 ob_start();
 ?>
@@ -177,13 +177,15 @@ ob_start();
     <?php else : ?>
         <?php
         $pieces = (isset($studentData['pieces']) && is_array($studentData['pieces'])) ? $studentData['pieces'] : [];
+        $statuts = (isset($studentData['statuts']) && is_array($studentData['statuts'])) ? $studentData['statuts'] : [];
         $detectedType = '';
         if (!empty($pieces['convention']['file'])) {
             $detectedType = 'stage';
         } elseif (!empty($pieces['lettre_motivation']['file'])) {
             $detectedType = 'etudes';
         }
-        $numEtu = htmlspecialchars(strval($studentData['NumEtu'] ?? ''));
+        $numEtu    = htmlspecialchars(strval($studentData['NumEtu'] ?? ''));
+        $dateLimite = $studentData['DateLimite'] ?? null;
         ?>
 
         <h1><?= $t(['fr' => 'Dossier étudiant', 'en' => 'Student Folder']) ?></h1>
@@ -191,6 +193,33 @@ ob_start();
             <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'folders-admin']) ?>'" class="btn-secondary">
                 <?= $t(['fr' => 'Retour à la liste', 'en' => 'Back to List']) ?>
             </button>
+        </div>
+
+        <?php if (!empty($message)) : ?>
+            <div class="message"><?= htmlspecialchars($message) ?></div>
+        <?php endif; ?>
+
+        <div class="banniere-date-limite <?= $dateLimite ? 'avec-date' : 'sans-date' ?>">
+            <span class="banniere-icone">📅</span>
+            <?php if ($dateLimite) : ?>
+                <span class="banniere-texte">
+                    <?= $t(['fr' => 'Date limite de dépôt :', 'en' => 'Submission deadline:']) ?>
+                    <strong><?= htmlspecialchars(date('d/m/Y', strtotime($dateLimite))) ?></strong>
+                </span>
+            <?php else : ?>
+                <span class="banniere-texte"><?= $t(['fr' => 'Aucune date limite définie', 'en' => 'No deadline set']) ?></span>
+            <?php endif; ?>
+            <button type="button" class="banniere-btn-edit" id="btn-edit-date-limite">
+                <?= $dateLimite ? $t(['fr' => '✏️ Modifier', 'en' => '✏️ Edit']) : $t(['fr' => '+ Définir une date', 'en' => '+ Set a date']) ?>
+            </button>
+            <div class="banniere-date-form" id="form-date-limite" style="display:none;">
+                <form method="POST" action="index.php?page=valider_documents&lang=<?= htmlspecialchars($lang) ?>" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <input type="hidden" name="numetu" value="<?= $numEtu ?>">
+                    <input type="date" name="date_limite" value="<?= htmlspecialchars($dateLimite ?? '') ?>" min="<?= date('Y-m-d') ?>" class="date-limite-input" style="width:auto;">
+                    <button type="submit" class="btn-secondary"><?= $t(['fr' => 'Enregistrer', 'en' => 'Save']) ?></button>
+                    <button type="button" id="btn-cancel-date" class="btn-secondary"><?= $t(['fr' => 'Annuler', 'en' => 'Cancel']) ?></button>
+                </form>
+            </div>
         </div>
 
         <form method="post" action="index.php?page=update_student&lang=<?= htmlspecialchars($lang) ?>" enctype="multipart/form-data" class="creation-form">
@@ -210,9 +239,9 @@ ob_start();
 
                 <label for="sexe"><?= $t(['fr' => 'Sexe', 'en' => 'Gender']) ?></label>
                 <select name="sexe" id="sexe" disabled class="input-disabled">
-                    <option value="M" <?= ($studentData['Sexe'] ?? '') === 'M' ? 'selected' : '' ?>><?= $t(['fr' => 'Masculin', 'en' => 'Male']) ?></option>
-                    <option value="F" <?= ($studentData['Sexe'] ?? '') === 'F' ? 'selected' : '' ?>><?= $t(['fr' => 'Féminin', 'en' => 'Female']) ?></option>
-                    <option value="Autre" <?= ($studentData['Sexe'] ?? '') === 'Autre' ? 'selected' : '' ?>><?= $t(['fr' => 'Autre', 'en' => 'Other']) ?></option>
+                    <option value="M"    <?= ($studentData['Sexe'] ?? '') === 'M'     ? 'selected' : '' ?>><?= $t(['fr' => 'Masculin', 'en' => 'Male'])   ?></option>
+                    <option value="F"    <?= ($studentData['Sexe'] ?? '') === 'F'     ? 'selected' : '' ?>><?= $t(['fr' => 'Féminin',  'en' => 'Female']) ?></option>
+                    <option value="Autre"<?= ($studentData['Sexe'] ?? '') === 'Autre' ? 'selected' : '' ?>><?= $t(['fr' => 'Autre',    'en' => 'Other'])  ?></option>
                 </select>
 
                 <label for="adresse"><?= $t(['fr' => 'Adresse', 'en' => 'Address']) ?></label>
@@ -279,35 +308,36 @@ ob_start();
                 <label for="zone"><?= $t(['fr' => 'Zone *', 'en' => 'Zone *']) ?></label>
                 <select name="zone" id="zone" disabled class="input-disabled" required>
                     <option value=""><?= $t(['fr' => '-- Choisir --', 'en' => '-- Choose --']) ?></option>
-                    <option value="europe" <?= ($studentData['Zone'] ?? '') === 'europe' ? 'selected' : '' ?>><?= $t(['fr' => 'Europe', 'en' => 'Europe']) ?></option>
+                    <option value="europe"      <?= ($studentData['Zone'] ?? '') === 'europe'      ? 'selected' : '' ?>><?= $t(['fr' => 'Europe',      'en' => 'Europe'])     ?></option>
                     <option value="hors_europe" <?= ($studentData['Zone'] ?? '') === 'hors_europe' ? 'selected' : '' ?>><?= $t(['fr' => 'Hors Europe', 'en' => 'Non-Europe']) ?></option>
                 </select>
 
                 <label for="mobilite_type"><?= $t(['fr' => 'Type de mobilité', 'en' => 'Mobility Type']) ?></label>
                 <select name="mobilite_type" id="mobilite_type" disabled class="input-disabled">
                     <option value=""><?= $t(['fr' => '-- Choisir --', 'en' => '-- Choose --']) ?></option>
-                    <option value="stage" <?= $detectedType === 'stage' ? 'selected' : '' ?>><?= $t(['fr' => 'Stage', 'en' => 'Internship']) ?></option>
-                    <option value="etudes" <?= $detectedType === 'etudes' ? 'selected' : '' ?>><?= $t(['fr' => 'Études', 'en' => 'Studies']) ?></option>
+                    <option value="stage"  <?= $detectedType === 'stage'  ? 'selected' : '' ?>><?= $t(['fr' => 'Stage',  'en' => 'Internship']) ?></option>
+                    <option value="etudes" <?= $detectedType === 'etudes' ? 'selected' : '' ?>><?= $t(['fr' => 'Études', 'en' => 'Studies'])    ?></option>
                 </select>
             </div>
 
+            <h2><?= $t(['fr' => 'Revue des Pièces Justificatives', 'en' => 'Documents Review']) ?></h2>
             <div class="form-section documents-section full-width">
-                <h2><?= $t(['fr' => 'Revue des Pièces Justificatives', 'en' => 'Documents Review']) ?></h2>
+
 
                 <div class="doc-review-list">
                     <?php
                     $docTypes = [
-                        'photo'            => $t(['fr' => 'Photo', 'en' => 'Photo']),
-                        'cv'               => $t(['fr' => 'CV', 'en' => 'CV']),
-                        'convention'       => $t(['fr' => 'Convention de stage', 'en' => 'Internship Agreement']),
-                        'lettre_motivation' => $t(['fr' => 'Lettre de motivation', 'en' => 'Motivation Letter']),
-                        'langues'          => $t(['fr' => 'Attestation de langues', 'en' => 'Language Certificate']),
+                            'photo'             => $t(['fr' => 'Photo',                  'en' => 'Photo']),
+                            'cv'                => $t(['fr' => 'CV',                     'en' => 'CV']),
+                            'convention'        => $t(['fr' => 'Convention de stage',    'en' => 'Internship Agreement']),
+                            'lettre_motivation' => $t(['fr' => 'Lettre de motivation',   'en' => 'Motivation Letter']),
+                            'langues'           => $t(['fr' => 'Attestation de langues', 'en' => 'Language Certificate']),
                     ];
 
                     foreach ($docTypes as $key => $label) :
-                        $doc    = $pieces[$key] ?? null;
-                        $hasDoc = !empty($doc['file']);
-                        $status  = $doc['status'] ?? 'pending';
+                        $doc     = $pieces[$key] ?? null;
+                        $hasDoc  = !empty($doc['file']);
+                        $statut  = $statuts[$key] ?? ($doc['status'] ?? 'pending');
                         $comment = $doc['comment'] ?? '';
                         ?>
                         <div class="doc-review-item" data-doctype="<?= $key ?>">
@@ -321,7 +351,6 @@ ob_start();
                                 <?php else : ?>
                                     <span class="no-document"><?= $t(['fr' => 'Non fourni', 'en' => 'Not provided']) ?></span>
                                 <?php endif; ?>
-
                                 <br><br>
                                 <label class="update-file-label">
                                     <?= $t(['fr' => 'Mettre à jour le fichier (Optionnel) :', 'en' => 'Update file (Optional):']) ?>
@@ -332,18 +361,19 @@ ob_start();
                                        disabled class="input-disabled file-input-margin">
                             </div>
 
+
                             <div class="doc-actions <?= !$hasDoc ? 'disabled-area' : '' ?>">
                                 <div class="status-radios">
                                     <label class="radio-accept">
                                         <input type="radio" name="status_<?= $key ?>" value="accepted"
-                                            <?= ($status === 'accepted' || $status === 'pending') ? 'checked' : '' ?>
-                                            <?= !$hasDoc ? 'disabled' : '' ?>>
+                                                <?= ($statut === 'accepted' || $statut === 'pending') ? 'checked' : '' ?>
+                                                <?= !$hasDoc ? 'disabled' : '' ?>>
                                         <?= $t(['fr' => 'Accepter', 'en' => 'Accept']) ?>
                                     </label>
                                     <label class="radio-refuse">
                                         <input type="radio" name="status_<?= $key ?>" value="refused"
-                                            <?= $status === 'refused' ? 'checked' : '' ?>
-                                            <?= !$hasDoc ? 'disabled' : '' ?>>
+                                                <?= $statut === 'refused' ? 'checked' : '' ?>
+                                                <?= !$hasDoc ? 'disabled' : '' ?>>
                                         <?= $t(['fr' => 'Refuser', 'en' => 'Refuse']) ?>
                                     </label>
                                 </div>
@@ -354,7 +384,7 @@ ob_start();
                                 <div class="doc-confirm-wrapper">
                                     <button type="button" class="btn-confirm-doc"
                                             onclick="window.folderManager.confirmDocument('<?= $numEtu ?>', '<?= $key ?>')"
-                                        <?= !$hasDoc ? 'disabled' : '' ?>>
+                                            <?= !$hasDoc ? 'disabled' : '' ?>>
                                         <?= $t(['fr' => 'Confirmer la pièce', 'en' => 'Confirm Document']) ?>
                                     </button>
                                     <span class="doc-save-indicator" id="indicator_<?= $key ?>"></span>
@@ -364,6 +394,7 @@ ob_start();
                     <?php endforeach; ?>
                 </div>
             </div>
+
 
             <div class="form-section global-status-section full-width">
                 <?php $currentStatus = $studentData['status'] ?? 'depot'; ?>
@@ -376,7 +407,7 @@ ob_start();
                             <option value="accepte"     <?= $currentStatus === 'accepte'     ? 'selected' : '' ?>><?= $t(['fr' => 'Accepté',        'en' => 'Accepted'])     ?></option>
                             <option value="refuse"      <?= $currentStatus === 'refuse'      ? 'selected' : '' ?>><?= $t(['fr' => 'Refusé',         'en' => 'Refused'])      ?></option>
                         </select>
-                        <button type="button" class="btn-primary" onclick="window.folderManager.updateGlobalStatus('<?= $numEtu ?>')">
+                        <button type="button" class="btn-secondary" onclick="window.folderManager.updateGlobalStatus('<?= $numEtu ?>')">
                             <?= $t(['fr' => 'Mettre à jour le statut', 'en' => 'Update Status']) ?>
                         </button>
                         <span id="global_status_indicator" class="status-indicator"></span>
@@ -386,7 +417,7 @@ ob_start();
 
             <div class="form-actions">
                 <button type="button" id="btn-modifier" class="btn-danger"><?= $t(['fr' => 'Modifier', 'en' => 'Edit']) ?></button>
-                <button type="submit" id="btn-enregistrer" class="btn-secondary btn-hidden"><?= $t(['fr' => 'Enregistrer', 'en' => 'Save']) ?></button>
+                <button type="button" id="btn-enregistrer" class="btn-secondary btn-hidden"><?= $t(['fr' => 'Enregistrer', 'en' => 'Save']) ?></button>
                 <button type="button" id="btn-annuler" class="btn-secondary btn-hidden"
                         onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'folders-admin']) ?>'">
                     <?= $t(['fr' => 'Annuler', 'en' => 'Cancel']) ?>
@@ -397,6 +428,55 @@ ob_start();
                 </button>
             </div>
         </form>
+
+        <div id="modal-validation" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2><?= $t(['fr' => '📋 Validation du dossier', 'en' => '📋 Folder Validation']) ?></h2>
+                </div>
+                <form id="form-validation" method="POST" action="index.php?page=valider_documents&lang=<?= htmlspecialchars($lang) ?>">
+                    <input type="hidden" name="numetu" value="<?= $numEtu ?>">
+
+                    <div class="modal-section" id="section-modifications" style="display:none;">
+                        <h3>📝 <?= $t(['fr' => 'Modifications effectuées', 'en' => 'Changes Made']) ?></h3>
+                        <div class="modifications-list"><ul id="liste-modifications"></ul></div>
+                    </div>
+
+                    <div class="modal-section" id="section-manquants">
+                        <h3>⚠️ <?= $t(['fr' => 'Documents manquants', 'en' => 'Missing Documents']) ?></h3>
+                        <div id="liste-manquants"></div>
+                    </div>
+
+                    <div class="modal-section" id="section-presents">
+                        <h3>✅ <?= $t(['fr' => 'Documents à valider', 'en' => 'Documents to Validate']) ?></h3>
+                        <div id="liste-presents"></div>
+                    </div>
+
+                    <div class="modal-section">
+                        <h3>💬 <?= $t(['fr' => 'Commentaire pour l\'étudiant (optionnel)', 'en' => 'Comment for Student (optional)']) ?></h3>
+                        <textarea name="commentaire_admin" id="commentaire_admin" class="commentaire-textarea"
+                                  placeholder="<?= $t(['fr' => 'Ex: Votre attestation d\'assurance doit être à jour...', 'en' => 'Ex: Your insurance certificate must be valid...']) ?>"></textarea>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn-modal btn-modal-cancel" id="btn-modal-cancel">
+                            <?= $t(['fr' => 'Annuler', 'en' => 'Cancel']) ?>
+                        </button>
+                        <button type="submit" class="btn-modal btn-modal-submit">
+                            <?= $t(['fr' => '✉️ Enregistrer et notifier', 'en' => '✉️ Save and Notify']) ?>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            <?php
+            $repoTemp    = new \Model\Persistence\DossierRepositoryPDO();
+            $analyseData = $repoTemp->analyserDocuments($numEtu);
+            ?>
+            window.analyseDocumentsData = <?= json_encode($analyseData) ?>;
+        </script>
 
     <?php endif; ?>
 
@@ -458,8 +538,8 @@ ob_start();
             <div class="filter-group">
                 <label for="filter-complet"><?= $t(['fr' => 'Statut :', 'en' => 'Status:']) ?></label>
                 <select id="filter-complet">
-                    <option value="all" <?= (strval($filters['complet'] ?? 'all')) === 'all' ? 'selected' : '' ?>><?= $t(['fr' => 'Tous',      'en' => 'All'])      ?></option>
-                    <option value="1"   <?= (strval($filters['complet'] ?? ''))    === '1'   ? 'selected' : '' ?>><?= $t(['fr' => 'Complet',   'en' => 'Complete']) ?></option>
+                    <option value="all" <?= (strval($filters['complet'] ?? 'all')) === 'all' ? 'selected' : '' ?>><?= $t(['fr' => 'Tous',      'en' => 'All'])        ?></option>
+                    <option value="1"   <?= (strval($filters['complet'] ?? ''))    === '1'   ? 'selected' : '' ?>><?= $t(['fr' => 'Complet',   'en' => 'Complete'])   ?></option>
                     <option value="0"   <?= (strval($filters['complet'] ?? ''))    === '0'   ? 'selected' : '' ?>><?= $t(['fr' => 'Incomplet', 'en' => 'Incomplete']) ?></option>
                 </select>
             </div>
@@ -467,9 +547,9 @@ ob_start();
             <div class="filter-group">
                 <label for="filter-composante"><?= $t(['fr' => 'Composante :', 'en' => 'Component:']) ?></label>
                 <select id="filter-composante" name="composante">
-                    <option value="all"      <?= (strval($filters['composante'] ?? 'all'))  === 'all'       ? 'selected' : '' ?>><?= $t(['fr' => 'Toutes', 'en' => 'All']) ?></option>
-                    <option value="AMU CIVIS" <?= (strval($filters['composante'] ?? ''))    === 'AMU CIVIS'  ? 'selected' : '' ?>>AMU CIVIS</option>
-                    <option value="IUT"       <?= (strval($filters['composante'] ?? ''))    === 'IUT'        ? 'selected' : '' ?>>IUT</option>
+                    <option value="all"      <?= (strval($filters['composante'] ?? 'all')) === 'all'       ? 'selected' : '' ?>><?= $t(['fr' => 'Toutes', 'en' => 'All']) ?></option>
+                    <option value="AMU CIVIS" <?= (strval($filters['composante'] ?? ''))   === 'AMU CIVIS'  ? 'selected' : '' ?>>AMU CIVIS</option>
+                    <option value="IUT"       <?= (strval($filters['composante'] ?? ''))   === 'IUT'        ? 'selected' : '' ?>>IUT</option>
                 </select>
             </div>
 
@@ -517,13 +597,13 @@ ob_start();
                         <table class="table-etudiants">
                             <thead>
                             <tr>
-                                <th><?= $t(['fr' => 'Nom',                    'en' => 'Last Name'])           ?></th>
-                                <th><?= $t(['fr' => 'Prénom',                 'en' => 'First Name'])          ?></th>
-                                <th><?= $t(['fr' => 'Type',                   'en' => 'Type'])                ?></th>
-                                <th><?= $t(['fr' => 'Composante / Accord',    'en' => 'Component / Agreement']) ?></th>
-                                <th><?= $t(['fr' => 'Département',            'en' => 'Department'])          ?></th>
-                                <th><?= $t(['fr' => 'Mobilité',               'en' => 'Mobility'])            ?></th>
-                                <th><?= $t(['fr' => 'Statut',                 'en' => 'Status'])              ?></th>
+                                <th><?= $t(['fr' => 'Nom',                 'en' => 'Last Name'])            ?></th>
+                                <th><?= $t(['fr' => 'Prénom',              'en' => 'First Name'])           ?></th>
+                                <th><?= $t(['fr' => 'Type',                'en' => 'Type'])                 ?></th>
+                                <th><?= $t(['fr' => 'Composante / Accord', 'en' => 'Component / Agreement']) ?></th>
+                                <th><?= $t(['fr' => 'Département',         'en' => 'Department'])           ?></th>
+                                <th><?= $t(['fr' => 'Mobilité',            'en' => 'Mobility'])             ?></th>
+                                <th><?= $t(['fr' => 'Statut',              'en' => 'Status'])               ?></th>
                             </tr>
                             </thead>
                             <tbody>
@@ -534,9 +614,9 @@ ob_start();
                                 $ePieces     = is_array($decoded) ? $decoded : [];
 
                                 $mobilityType = '-';
-                                if (!empty($ePieces['convention']['file'])) {
+                                if (!empty($ePieces['convention']['file']) || !empty($ePieces['convention'])) {
                                     $mobilityType = $t(['fr' => 'Stage',  'en' => 'Internship']);
-                                } elseif (!empty($ePieces['lettre_motivation']['file'])) {
+                                } elseif (!empty($ePieces['lettre_motivation']['file']) || !empty($ePieces['lettre_motivation'])) {
                                     $mobilityType = $t(['fr' => 'Études', 'en' => 'Studies']);
                                 }
 
@@ -575,14 +655,16 @@ ob_start();
                 </div>
             <?php endforeach; ?>
         </div>
-    </div><?php endif; ?>
+    </div>
+
+<?php endif; ?>
 
 <?php
 $content = ob_get_clean();
 
 $title = $t([
-    'fr' => 'Gestion des dossiers - Admin',
-    'en' => 'Folders Management - Admin',
+        'fr' => 'Gestion des dossiers - Admin',
+        'en' => 'Folders Management - Admin',
 ]);
 
 $styles     = ['styles/index.css', 'styles/folders.css', 'styles/chatbot.css'];
