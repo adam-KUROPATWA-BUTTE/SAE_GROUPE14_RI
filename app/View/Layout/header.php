@@ -8,12 +8,10 @@
  * @var Closure(array<string, string>): string $t
  */
 
-// Fallback : lire le rôle depuis la session si non transmis par la vue
 if (empty($userRole) && !empty($_SESSION['role'])) {
     $userRole = $_SESSION['role'];
 }
 
-// Fallback : définir $t si non transmis par le contrôleur
 if (!isset($t) || !is_callable($t)) {
     $lang = $lang ?? $_SESSION['lang'] ?? 'fr';
     $t = function(array $frEn) use ($lang): string {
@@ -21,7 +19,6 @@ if (!isset($t) || !is_callable($t)) {
     };
 }
 
-// Fallback : définir $lang si non transmis
 if (!isset($lang)) {
     $lang = $_SESSION['lang'] ?? 'fr';
 }
