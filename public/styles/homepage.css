@@ -575,12 +575,16 @@ body.tritanopie .dept-count {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    font-size: var(--h1-size);
+    font-size: var(--h2-size);
     cursor: pointer;
     transition: all 0.3s;
     z-index: 100;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
+
 
 body.tritanopie .carousel-btn {
     background: #1a5c2a;

@@ -93,8 +93,8 @@ ob_start();
 
     <!-- Carrousel -->
     <section class="stats-section">
-        <button class="carousel-btn prev" onclick="window.carousel.changeSlide(-1)">‹</button>
-        <button class="carousel-btn next" onclick="window.carousel.changeSlide(1)">›</button>
+        <button class="carousel-btn prev" onclick="window.carousel.changeSlide(-1)">←</button>
+        <button class="carousel-btn next" onclick="window.carousel.changeSlide(1)">→</button>
 
         <div class="stats-carousel">
             <div class="carousel-container">
