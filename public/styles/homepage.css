@@ -816,7 +816,66 @@ body.tritanopie .mobilite-filter__badge {
 body.tritanopie .mobilite-filter__badge::before {
     color: #1a5c2a;
 }
+.dept-dropdown {
+    position: relative;
+}
 
+.dept-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dept-btn .arrow {
+    font-size: 0.7rem;
+    transition: transform 0.3s ease;
+}
+
+.dept-dropdown:hover .arrow {
+    transform: rotate(180deg);
+}
+
+.dept-dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 100;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    min-width: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.dept-dropdown:hover .dept-dropdown-content {
+    display: block;
+}
+
+.dept-dropdown-content a {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: #333;
+    text-decoration: none;
+    transition: background 0.3s ease;
+}
+
+.dept-dropdown-content a:hover {
+    background: #f0f4ff;
+    color: var(--primary-color);
+}
+
+.dept-dropdown-content a:first-child {
+    border-radius: 8px 8px 0 0;
+    font-weight: 600;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.dept-dropdown-content a:last-child {
+    border-radius: 0 0 8px 8px;
+}
 /* ================================================================
    Responsive
 ================================================================ */

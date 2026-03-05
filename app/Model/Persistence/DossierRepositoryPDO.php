@@ -36,6 +36,21 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     }
 
     /**
+     * @return array{clause: string, bindings: array<string, string>}
+     */
+    private function departementWhere(?string $departement, bool $hasExistingWhere = false): array
+    {
+        if (empty($departement)) {
+            return ['clause' => '', 'bindings' => []];
+        }
+        $keyword = $hasExistingWhere ? 'AND' : 'WHERE';
+        return [
+            'clause'   => "$keyword CodeDepartement = :departement",
+            'bindings' => ['departement' => $departement],
+        ];
+    }
+
+    /**
      * @param array<string, mixed> $bindings
      */
     private function run(string $sql, array $bindings = []): \PDOStatement|false
@@ -53,10 +68,13 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         return $this->getDossierStats();
     }
 
-    public function getDossierStats(?string $mobilite = null): DossierStats
+    public function getDossierStats(?string $mobilite = null, ?string $departement = null): DossierStats
     {
         try {
-            ['clause' => $where, 'bindings' => $bindings] = $this->mobiliteWhere($mobilite);
+            ['clause' => $where,  'bindings' => $bindings]  = $this->mobiliteWhere($mobilite);
+            ['clause' => $where2, 'bindings' => $bindings2] = $this->departementWhere($departement, !empty($where));
+            $where    .= $where2;
+            $bindings  = array_merge($bindings, $bindings2);
             $stmt = $this->run("
                 SELECT
                     COUNT(*) AS total,
@@ -71,12 +89,16 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         } catch (\PDOException $e) { return new DossierStats(0, 0); }
     }
 
-    public function getGenderStats(?string $mobilite = null): GenderStats
+    public function getGenderStats(?string $mobilite = null, ?string $departement = null): GenderStats
     {
         try {
             $mobiliteValid  = $this->validMobilite($mobilite);
-            $mobiliteClause = $mobiliteValid ? "AND Mobilite = :mobilite" : '';
-            $bindings       = $mobiliteValid ? ['mobilite' => $mobiliteValid] : [];
+            $mobiliteClause = $mobiliteValid    ? "AND Mobilite          = :mobilite"    : '';
+            $deptClause     = !empty($departement) ? "AND CodeDepartement = :departement" : '';
+            $bindings       = array_filter([
+                'mobilite'    => $mobiliteValid       ?: null,
+                'departement' => !empty($departement) ? $departement : null,
+            ]);
             $stmt = $this->run("
                 SELECT
                     SUM(CASE WHEN LOWER(Sexe) IN ('m','homme','male','masculin')             THEN 1 ELSE 0 END) AS male,
@@ -84,6 +106,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                 FROM dossiers
                 WHERE Sexe IS NOT NULL AND Sexe != ''
                 $mobiliteClause
+                $deptClause
             ", $bindings);
             $result = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : false;
             $male   = (is_array($result) && isset($result['male'])   && is_numeric($result['male']))   ? (int) $result['male']   : 0;
@@ -98,17 +121,22 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     /**
      * @return array<int, array{name: string, count: int}>
      */
-    public function getTopCountries(int $limit, ?string $mobilite = null): array
+    public function getTopCountries(int $limit, ?string $mobilite = null, ?string $departement = null): array
     {
         try {
             $mobiliteValid  = $this->validMobilite($mobilite);
-            $mobiliteClause = $mobiliteValid ? "AND Mobilite = :mobilite" : '';
-            $bindings       = $mobiliteValid ? ['mobilite' => $mobiliteValid] : [];
+            $mobiliteClause = $mobiliteValid       ? "AND Mobilite          = :mobilite"    : '';
+            $deptClause     = !empty($departement) ? "AND CodeDepartement   = :departement" : '';
+            $bindings       = array_filter([
+                'mobilite'    => $mobiliteValid       ?: null,
+                'departement' => !empty($departement) ? $departement : null,
+            ]);
             $stmt = $this->db->prepare("
                 SELECT Pays AS name, COUNT(*) AS count
                 FROM dossiers
                 WHERE Pays IS NOT NULL AND Pays != ''
                 $mobiliteClause
+                $deptClause
                 GROUP BY Pays
                 ORDER BY count DESC
                 LIMIT :limit
@@ -126,17 +154,22 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     /**
      * @return array<int, array{name: string, count: int}>
      */
-    public function getDepartmentStats(int $limit, ?string $mobilite = null): array
+    public function getDepartmentStats(int $limit, ?string $mobilite = null, ?string $departement = null): array
     {
         try {
             $mobiliteValid  = $this->validMobilite($mobilite);
-            $mobiliteClause = $mobiliteValid ? "AND Mobilite = :mobilite" : '';
-            $bindings       = $mobiliteValid ? ['mobilite' => $mobiliteValid] : [];
+            $mobiliteClause = $mobiliteValid       ? "AND Mobilite          = :mobilite"    : '';
+            $deptClause     = !empty($departement) ? "AND CodeDepartement   = :departement" : '';
+            $bindings       = array_filter([
+                'mobilite'    => $mobiliteValid       ?: null,
+                'departement' => !empty($departement) ? $departement : null,
+            ]);
             $stmt = $this->db->prepare("
                 SELECT CodeDepartement AS name, COUNT(*) AS count
                 FROM dossiers
                 WHERE CodeDepartement IS NOT NULL AND CodeDepartement != ''
                 $mobiliteClause
+                $deptClause
                 GROUP BY CodeDepartement
                 ORDER BY count DESC
                 LIMIT :limit
@@ -154,10 +187,13 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     /**
      * @return array{incoming: int, outgoing: int}
      */
-    public function getIncomingOutgoingStats(?string $mobilite = null): array
+    public function getIncomingOutgoingStats(?string $mobilite = null, ?string $departement = null): array
     {
         try {
-            ['clause' => $where, 'bindings' => $bindings] = $this->mobiliteWhere($mobilite);
+            ['clause' => $where,  'bindings' => $bindings]  = $this->mobiliteWhere($mobilite);
+            ['clause' => $where2, 'bindings' => $bindings2] = $this->departementWhere($departement, !empty($where));
+            $where    .= $where2;
+            $bindings  = array_merge($bindings, $bindings2);
             $stmt = $this->run("
                 SELECT
                     SUM(CASE WHEN LOWER(Type) = 'entrant' THEN 1 ELSE 0 END) AS incoming,
@@ -181,17 +217,22 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     /**
      * @return array<int, array{name: string, count: int}>
      */
-    public function getContinentStats(?string $mobilite = null): array
+    public function getContinentStats(?string $mobilite = null, ?string $departement = null): array
     {
         try {
             $mobiliteValid  = $this->validMobilite($mobilite);
-            $mobiliteClause = $mobiliteValid ? "AND Mobilite = :mobilite" : '';
-            $bindings       = $mobiliteValid ? ['mobilite' => $mobiliteValid] : [];
+            $mobiliteClause = $mobiliteValid       ? "AND Mobilite          = :mobilite"    : '';
+            $deptClause     = !empty($departement) ? "AND CodeDepartement   = :departement" : '';
+            $bindings       = array_filter([
+                'mobilite'    => $mobiliteValid       ?: null,
+                'departement' => !empty($departement) ? $departement : null,
+            ]);
             $stmt = $this->run("
                 SELECT Continent AS name, COUNT(*) AS count
                 FROM dossiers
                 WHERE Continent IS NOT NULL AND Continent != ''
                 $mobiliteClause
+                $deptClause
                 GROUP BY Continent
                 ORDER BY count DESC
             ", $bindings);
@@ -210,12 +251,16 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     /**
      * @return array{europe_countries: int, non_europe_countries: int}
      */
-    public function getEuropeVsNonEuropeStats(?string $mobilite = null): array
+    public function getEuropeVsNonEuropeStats(?string $mobilite = null, ?string $departement = null): array
     {
         try {
             $mobiliteValid  = $this->validMobilite($mobilite);
-            $mobiliteClause = $mobiliteValid ? "AND Mobilite = :mobilite" : '';
-            $bindings       = $mobiliteValid ? ['mobilite' => $mobiliteValid] : [];
+            $mobiliteClause = $mobiliteValid       ? "AND Mobilite          = :mobilite"    : '';
+            $deptClause     = !empty($departement) ? "AND CodeDepartement   = :departement" : '';
+            $bindings       = array_filter([
+                'mobilite'    => $mobiliteValid       ?: null,
+                'departement' => !empty($departement) ? $departement : null,
+            ]);
             $stmt = $this->run("
                 SELECT
                     COUNT(DISTINCT CASE WHEN LOWER(Zone) = 'europe'      THEN Pays END) AS europe_countries,
@@ -223,6 +268,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                 FROM dossiers
                 WHERE Pays IS NOT NULL AND Pays != ''
                 $mobiliteClause
+                $deptClause
             ", $bindings);
             if ($stmt === false) return ['europe_countries' => 0, 'non_europe_countries' => 0];
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -240,17 +286,22 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     /**
      * @return array<int, array{name: string, count: int}>
      */
-    public function getZoneStats(?string $mobilite = null): array
+    public function getZoneStats(?string $mobilite = null, ?string $departement = null): array
     {
         try {
             $mobiliteValid  = $this->validMobilite($mobilite);
-            $mobiliteClause = $mobiliteValid ? "AND Mobilite = :mobilite" : '';
-            $bindings       = $mobiliteValid ? ['mobilite' => $mobiliteValid] : [];
+            $mobiliteClause = $mobiliteValid       ? "AND Mobilite          = :mobilite"    : '';
+            $deptClause     = !empty($departement) ? "AND CodeDepartement   = :departement" : '';
+            $bindings       = array_filter([
+                'mobilite'    => $mobiliteValid       ?: null,
+                'departement' => !empty($departement) ? $departement : null,
+            ]);
             $stmt = $this->run("
                 SELECT Zone AS name, COUNT(*) AS count
                 FROM dossiers
                 WHERE Zone IS NOT NULL AND Zone != ''
                 $mobiliteClause
+                $deptClause
                 GROUP BY Zone
                 ORDER BY count DESC
             ", $bindings);
@@ -635,5 +686,23 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             error_log("DB Upsert Error: " . $e->getMessage());
             return 0;
         }
+    }
+
+    public function getAllDepartements(): array
+    {
+        $sql = "SELECT DISTINCT CodeDepartement 
+            FROM dossiers 
+            WHERE CodeDepartement IS NOT NULL 
+              AND CodeDepartement != '' 
+            ORDER BY CodeDepartement ASC";
+
+        $stmt = $this->db->query($sql);
+        $departments = [];
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $departments[] = $row['CodeDepartement'];
+        }
+
+        return $departments;
     }
 }
