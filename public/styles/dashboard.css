@@ -282,6 +282,37 @@ h2 { color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin
     display: none;
 }
 
+/* Conteneur des boutons radio pour le cadre */
+.framework-group {
+    grid-column: 1 / -1; 
+    display: flex; 
+    gap: 15px; 
+    flex-wrap: wrap; 
+    margin-top: 5px; 
+    align-items: center; 
+    padding: 10px; 
+    background: #fff; 
+    border: 1px solid #ccc; 
+    border-radius: 4px;
+}
+
+.framework-label {
+    margin-right: 10px;
+}
+
+/* Conteneur des tableaux de dossiers */
+.table-responsive {
+    padding: 15px;
+}
+
+/* Ligne de séparation horizontale */
+.separator {
+    border: 0; 
+    height: 1px; 
+    background: #eee; 
+    margin: 20px 0;
+}
+
 /* ======= RESPONSIVE 810px ======= */
 @media (max-width: 810px) {
     main {

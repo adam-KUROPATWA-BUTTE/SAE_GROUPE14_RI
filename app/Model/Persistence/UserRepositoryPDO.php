@@ -75,8 +75,26 @@ class UserRepositoryPDO implements UserRepositoryInterface
         }
     }
 
+    public function updatePasswordAndUnlock(string $numEtu, string $hashedPassword): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                UPDATE etudiants
+                SET password = :password, force_change_password = 0
+                WHERE numetu = :numetu
+            ");
+            return $stmt->execute([
+                ':password' => $hashedPassword,
+                ':numetu'   => $numEtu,
+            ]);
+        } catch (PDOException $e) {
+            error_log("updatePasswordAndUnlock Error: " . $e->getMessage());
+            return false;
+        }
+    }
+
     /**
-     * @return array{success: bool, role?: string, numetu?: string|null, departement?: string|null}
+     * @return array{success: bool, role?: string, numetu?: string|null, departement?: string|null, force_change_password?: bool}
      */
     public function login(string $identifier, string $password): array
     {
@@ -91,11 +109,25 @@ class UserRepositoryPDO implements UserRepositoryInterface
                     $upd->execute([':email' => $identifier]);
                 } catch (PDOException $e) { /* silencieux */ }
             }
+
+            $forceChange = false;
+            if ($user->getRole() === 'student' && $user->getNumetu()) {
+                try {
+                    $stmtCheck = $this->pdo->prepare("SELECT force_change_password FROM etudiants WHERE numetu = :numetu");
+                    $stmtCheck->execute(['numetu' => $user->getNumetu()]);
+                    $res = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+                    if (is_array($res) && isset($res['force_change_password']) && $res['force_change_password'] == 1) {
+                        $forceChange = true;
+                    }
+                } catch (PDOException $e) { /* silencieux */ }
+            }
+
             return [
-                'success'     => true,
-                'role'        => $user->getRole(),
-                'numetu'      => $user->getNumetu(),
-                'departement' => $user->getDepartement(),
+                'success'              => true,
+                'role'                 => $user->getRole(),
+                'numetu'               => $user->getNumetu(),
+                'departement'          => $user->getDepartement(),
+                'force_change_password' => $forceChange,
             ];
         }
 
@@ -215,12 +247,14 @@ class UserRepositoryPDO implements UserRepositoryInterface
         }
     }
 
-    /** @deprecated Use findAll() instead.
+    /**
+     * @deprecated Use findAll() instead.
      * @return array<int, array{login: string, role: string, departement: string|null, site: string|null, created_at: string}>
      */
     public function getAllNonSuperAdmin(): array { return $this->findAll(); }
 
-    /** @deprecated Use findAll() instead.
+    /**
+     * @deprecated Use findAll() instead.
      * @return array<int, array{login: string, role: string, departement: string|null, site: string|null, created_at: string}>
      */
     public function getAllAdmins(): array { return $this->findAll(); }

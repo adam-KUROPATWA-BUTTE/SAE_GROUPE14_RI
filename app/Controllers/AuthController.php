@@ -21,7 +21,7 @@ class AuthController implements ControllerInterface
 
     public static function support(string $page, string $method): bool
     {
-        return in_array($page, ['login', 'register', 'reset-password']);
+        return in_array($page, ['login', 'register', 'reset-password', 'force-reset-password']);
     }
 
     public function control(): void
@@ -41,6 +41,9 @@ class AuthController implements ControllerInterface
                 break;
             case 'reset-password':
                 $this->handleResetPassword();
+                break;
+            case 'force-reset-password':
+                $this->handleForceResetPassword();
                 break;
         }
     }
@@ -72,6 +75,12 @@ class AuthController implements ControllerInterface
                     $_SESSION['departement'] = $result['departement'];
                 }
 
+                // SÉCURITÉ : Interception pour première connexion
+                if (!empty($result['force_change_password'])) {
+                    header('Location: index.php?page=force-reset-password');
+                    exit;
+                }
+
                 $destination = match($role) {
                     'super_admin'        => 'index.php?page=super-admin',
                     'admin'              => 'index.php?page=home-admin',
@@ -96,6 +105,39 @@ class AuthController implements ControllerInterface
             'isReset'      => false,
             'isTokenReset' => false,
             'token'        => ''
+        ]);
+    }
+
+    private function handleForceResetPassword(): void
+    {
+        if (empty($_SESSION['numetu'])) {
+            header('Location: index.php?page=login');
+            exit;
+        }
+
+        $error   = '';
+        $success = '';
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $password        = $_POST['password']         ?? '';
+            $passwordConfirm = $_POST['password_confirm'] ?? '';
+
+            if ($password !== $passwordConfirm) {
+                $error = "Les mots de passe ne correspondent pas.";
+            } elseif (strlen($password) < 8) {
+                $error = "Le mot de passe doit faire au moins 8 caractères.";
+            } else {
+                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+                $this->userRepository->updatePasswordAndUnlock($_SESSION['numetu'], $hashedPassword);
+
+                header('Location: index.php?page=home-student');
+                exit;
+            }
+        }
+
+        View::render('force_reset_password', [
+            'error'   => $error,
+            'success' => $success
         ]);
     }
 
