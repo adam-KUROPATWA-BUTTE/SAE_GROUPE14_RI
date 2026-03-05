@@ -38,8 +38,8 @@ ob_start();
 
         <input type="text" name="dest" placeholder="<?= $t(['fr' => 'Destination', 'en' => 'Destination']) ?>" value="<?= htmlspecialchars($filters['dest']) ?>" onchange="this.form.submit()">
 
-        <div class="filter-group" style="grid-column: 1 / -1; display: flex; gap: 15px; flex-wrap: wrap; margin-top: 5px; align-items: center; padding: 10px; background: #fff; border: 1px solid #ccc; border-radius: 4px;">
-            <strong style="margin-right: 10px;"><?= $t(['fr' => 'Cadre :', 'en' => 'Framework:']) ?></strong>
+        <div class="filter-group framework-group">
+            <strong class="framework-label"><?= $t(['fr' => 'Cadre :', 'en' => 'Framework:']) ?></strong>
 
             <label>
                 <input type="radio" name="cadre" value="" onchange="this.form.submit()" <?= $filters['cadre'] === '' ? 'checked' : '' ?>>
@@ -71,7 +71,7 @@ ob_start();
         </div>
 
         <div id="contenu-sortants" class="contenu-dossiers">
-            <div class="table-responsive" style="padding: 15px;">
+            <div class="table-responsive">
                 <?php if (empty($outgoing)) : ?>
                     <p class="no-files"><?= $t(['fr' => 'Aucun dossier.', 'en' => 'No files.']) ?></p>
                 <?php else : ?>
@@ -115,7 +115,7 @@ ob_start();
         </div>
     </div>
 
-    <hr class="separator" style="border: 0; height: 1px; background: #eee; margin: 20px 0;">
+    <hr class="separator">
 
     <div class="section-composante">
         <div class="barre-titre" onclick="window.dashboardManager.toggleAccordion('entrants')">
@@ -124,7 +124,7 @@ ob_start();
         </div>
 
         <div id="contenu-entrants" class="contenu-dossiers">
-            <div class="table-responsive" style="padding: 15px;">
+            <div class="table-responsive">
                 <?php if (empty($incoming)) : ?>
                     <p class="no-files"><?= $t(['fr' => 'Aucun dossier.', 'en' => 'No files.']) ?></p>
                 <?php else : ?>

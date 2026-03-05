@@ -75,8 +75,26 @@ class UserRepositoryPDO implements UserRepositoryInterface
         }
     }
 
+    public function updatePasswordAndUnlock(string $numEtu, string $hashedPassword): bool
+    {
+        try {
+            $stmt = $this->pdo->prepare("
+                UPDATE etudiants 
+                SET password = :password, force_change_password = 0 
+                WHERE numetu = :numetu
+            ");
+            return $stmt->execute([
+                ':password' => $hashedPassword,
+                ':numetu'   => $numEtu
+            ]);
+        } catch (PDOException $e) {
+            error_log("updatePasswordAndUnlock Error: " . $e->getMessage());
+            return false;
+        }
+    }
+
     /**
-     * @return array{success: bool, role?: string, numetu?: string|null}
+     * @return array{success: bool, role?: string, numetu?: string|null, force_change_password?: bool}
      */
     public function login(string $identifier, string $password): array
     {
@@ -91,10 +109,25 @@ class UserRepositoryPDO implements UserRepositoryInterface
                     $upd->execute([':email' => $identifier]);
                 } catch (PDOException $e) { /* silencieux */ }
             }
+
+            $forceChange = false;
+            if ($user->getRole() === 'student' && $user->getNumetu()) {
+                try {
+                    $stmtCheck = $this->pdo->prepare("SELECT force_change_password FROM etudiants WHERE numetu = :numetu");
+                    $stmtCheck->execute(['numetu' => $user->getNumetu()]);
+                    $res = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+                    // FIXED : On vérifie que $res est bien un tableau avant de lire ses clés
+                    if (is_array($res) && isset($res['force_change_password']) && $res['force_change_password'] == 1) {
+                        $forceChange = true;
+                    }
+                } catch (PDOException $e) { /* silencieux */ }
+            }
+
             return [
                 'success' => true,
                 'role'    => $user->getRole(),
                 'numetu'  => $user->getNumetu(),
+                'force_change_password' => $forceChange
             ];
         }
 
@@ -122,7 +155,6 @@ class UserRepositoryPDO implements UserRepositoryInterface
     }
 
     /**
-     * FIX line 130: add value type to $data parameter.
      * @param array<string, mixed> $data
      */
     private function mapToUser(array $data, string $role): User
@@ -135,7 +167,6 @@ class UserRepositoryPDO implements UserRepositoryInterface
     }
 
     /**
-     * FIX line 143: add value type to return array.
      * @return array<string, mixed>|null
      */
     public function findByLogin(string $email): ?array
@@ -198,7 +229,6 @@ class UserRepositoryPDO implements UserRepositoryInterface
                 FROM admins WHERE role != 'super_admin' ORDER BY created_at DESC
             ");
             if ($stmt === false) return [];
-            // fetchAll() always returns array — no ternary needed.
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return array_map(fn($r) => [
                 'login'       => is_string($r['login']       ?? null) ? $r['login']       : '',
@@ -212,8 +242,6 @@ class UserRepositoryPDO implements UserRepositoryInterface
             return [];
         }
     }
-
-    // FIX lines 220/222: @deprecated aliases — add return type annotations so PHPStan is satisfied.
 
     /**
      * @deprecated Use findAll() instead.
@@ -236,12 +264,7 @@ class UserRepositoryPDO implements UserRepositoryInterface
     /** @deprecated */
     public function createUser(string $login, string $hashedPassword, string $role): bool { return $this->create($login, $hashedPassword, $role); }
 
-    // ─────────────────────────────────────────────
-    // Départements & Sites
-    // ─────────────────────────────────────────────
-
     /**
-     * FIX line 234: add return value type.
      * @return array<int, string>
      */
     public function getDistinctDepartments(): array
@@ -277,7 +300,6 @@ class UserRepositoryPDO implements UserRepositoryInterface
     }
 
     /**
-     * FIX line 266: add return value type.
      * @return array<int, string>
      */
     public function getDistinctSites(): array

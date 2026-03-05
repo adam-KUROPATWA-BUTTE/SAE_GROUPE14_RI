@@ -291,7 +291,7 @@ ob_start();
                 </select>
             </div>
 
-            <div class="form-section documents-section" style="grid-column: 1 / -1;">
+            <div class="form-section documents-section full-width">
                 <h2><?= $t(['fr' => 'Revue des Pièces Justificatives', 'en' => 'Documents Review']) ?></h2>
 
                 <div class="doc-review-list">
@@ -323,13 +323,13 @@ ob_start();
                                 <?php endif; ?>
 
                                 <br><br>
-                                <label style="font-size:0.85em;text-align:left;color:#666;">
+                                <label class="update-file-label">
                                     <?= $t(['fr' => 'Mettre à jour le fichier (Optionnel) :', 'en' => 'Update file (Optional):']) ?>
                                 </label>
                                 <input type="file"
                                        name="<?= $key === 'langues' ? 'langues_file' : $key ?>"
                                        accept="<?= $key === 'photo' ? 'image/*' : '.pdf,.doc,.docx' ?>"
-                                       disabled class="input-disabled file-input-margin" style="margin-top:5px;">
+                                       disabled class="input-disabled file-input-margin">
                             </div>
 
                             <div class="doc-actions <?= !$hasDoc ? 'disabled-area' : '' ?>">
@@ -351,7 +351,7 @@ ob_start();
                                           placeholder="<?= $t(['fr' => 'Ajouter un commentaire pour l\'étudiant...', 'en' => 'Add a comment for the student...']) ?>"
                                           <?= !$hasDoc ? 'disabled' : '' ?>><?= htmlspecialchars($comment) ?></textarea>
 
-                                <div style="display:flex;align-items:center;margin-top:5px;">
+                                <div class="doc-confirm-wrapper">
                                     <button type="button" class="btn-confirm-doc"
                                             onclick="window.folderManager.confirmDocument('<?= $numEtu ?>', '<?= $key ?>')"
                                         <?= !$hasDoc ? 'disabled' : '' ?>>
@@ -363,12 +363,14 @@ ob_start();
                         </div>
                     <?php endforeach; ?>
                 </div>
+            </div>
 
+            <div class="form-section global-status-section full-width">
                 <?php $currentStatus = $studentData['status'] ?? 'depot'; ?>
-                <div class="global-status-block" style="margin-top:30px;margin-bottom:20px;padding:20px;background:#f8f9fa;border-radius:8px;border-left:5px solid var(--primary-color);">
-                    <strong style="font-size:1.1em;"><?= $t(['fr' => 'Statut GLOBAL du dossier :', 'en' => 'GLOBAL Folder status:']) ?></strong>
-                    <div style="display:flex;gap:15px;align-items:center;margin-top:15px;">
-                        <select id="global_status_select" class="form-control" style="width:auto;padding:8px;border-radius:5px;border:1px solid #ccc;">
+                <div class="global-status-block">
+                    <strong class="global-status-title"><?= $t(['fr' => 'Statut GLOBAL du dossier :', 'en' => 'GLOBAL Folder status:']) ?></strong>
+                    <div class="global-status-controls">
+                        <select id="global_status_select" class="global-status-select">
                             <option value="depot"       <?= $currentStatus === 'depot'       ? 'selected' : '' ?>><?= $t(['fr' => 'Dépôt',         'en' => 'Submitted'])    ?></option>
                             <option value="instruction" <?= $currentStatus === 'instruction' ? 'selected' : '' ?>><?= $t(['fr' => 'En instruction', 'en' => 'Under Review']) ?></option>
                             <option value="accepte"     <?= $currentStatus === 'accepte'     ? 'selected' : '' ?>><?= $t(['fr' => 'Accepté',        'en' => 'Accepted'])     ?></option>
@@ -377,7 +379,7 @@ ob_start();
                         <button type="button" class="btn-primary" onclick="window.folderManager.updateGlobalStatus('<?= $numEtu ?>')">
                             <?= $t(['fr' => 'Mettre à jour le statut', 'en' => 'Update Status']) ?>
                         </button>
-                        <span id="global_status_indicator" style="font-weight:bold;margin-left:10px;"></span>
+                        <span id="global_status_indicator" class="status-indicator"></span>
                     </div>
                 </div>
             </div>
@@ -414,11 +416,11 @@ ob_start();
                 <img src="img/loupe.png" alt="Rechercher">
             </button>
         </div>
-        <div style="display:flex;gap:10px;">
+        <div class="toolbar-actions">
             <button id="btn-import-excel" class="btn-search" onclick="document.getElementById('file-import').click()">
                 <?= $t(['fr' => 'Importer Excel/CSV', 'en' => 'Import Excel/CSV']) ?>
             </button>
-            <form id="form-import" method="post" action="index.php?page=import_folders&lang=<?= htmlspecialchars($lang) ?>" enctype="multipart/form-data" style="display:none;">
+            <form id="form-import" method="post" action="index.php?page=import_folders&lang=<?= htmlspecialchars($lang) ?>" enctype="multipart/form-data" class="hidden-element">
                 <input type="file" id="file-import" name="excel_file" accept=".csv,.xlsx,.xls" onchange="document.getElementById('form-import').submit()">
             </form>
             <button id="btn-creer-dossier" onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'folders-admin', 'action' => 'create']) ?>'">
@@ -555,13 +557,13 @@ ob_start();
                                     <td><?= htmlspecialchars($mobilityType) ?></td>
                                     <td>
                                         <?php if ($eStatus === 'accepte') : ?>
-                                            <span class="status-complete"    style="color:green;">Accepté</span>
+                                            <span class="status-badge accepte">Accepté</span>
                                         <?php elseif ($eStatus === 'refuse') : ?>
-                                            <span class="status-incomplete"  style="color:red;">Refusé</span>
+                                            <span class="status-badge refuse">Refusé</span>
                                         <?php elseif ($eStatus === 'instruction') : ?>
-                                            <span class="status-incomplete"  style="color:orange;">En instruction</span>
+                                            <span class="status-badge instruction">En instruction</span>
                                         <?php else : ?>
-                                            <span class="status-incomplete"  style="color:grey;">Dépôt</span>
+                                            <span class="status-badge depot">Dépôt</span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
@@ -573,9 +575,7 @@ ob_start();
                 </div>
             <?php endforeach; ?>
         </div>
-    </div><!-- /.filters-container -->
-
-<?php endif; ?>
+    </div><?php endif; ?>
 
 <?php
 $content = ob_get_clean();
