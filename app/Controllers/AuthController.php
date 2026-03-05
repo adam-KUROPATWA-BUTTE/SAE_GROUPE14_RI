@@ -21,7 +21,7 @@ class AuthController implements ControllerInterface
 
     public static function support(string $page, string $method): bool
     {
-        return in_array($page, ['login', 'register', 'reset-password']);
+        return in_array($page, ['login', 'register', 'reset-password', 'force-reset-password']);
     }
 
     public function control(): void
@@ -42,6 +42,9 @@ class AuthController implements ControllerInterface
             case 'reset-password':
                 $this->handleResetPassword();
                 break;
+            case 'force-reset-password':
+                $this->handleForceResetPassword();
+                break;
         }
     }
 
@@ -59,8 +62,6 @@ class AuthController implements ControllerInterface
                 is_string($password)   ? $password   : ''
             );
 
-            // FIX: Guard with isset before accessing optional keys 'role' and 'numetu'.
-            // PHPStan sees them as role?: string — they may not exist even on success.
             if ($result['success'] && isset($result['role'])) {
 
                 $role = $result['role'];
@@ -68,6 +69,12 @@ class AuthController implements ControllerInterface
 
                 if ($role === 'student' && isset($result['numetu'])) {
                     $_SESSION['numetu'] = $result['numetu'];
+                }
+
+                // SÉCURITÉ : Interception pour première connexion !
+                if (!empty($result['force_change_password'])) {
+                    header('Location: index.php?page=force-reset-password');
+                    exit;
                 }
 
                 $destination = match($role) {
@@ -94,6 +101,42 @@ class AuthController implements ControllerInterface
             'isReset'      => false,
             'isTokenReset' => false,
             'token'        => ''
+        ]);
+    }
+
+    private function handleForceResetPassword(): void
+    {
+        // Interdire l'accès si l'utilisateur n'est pas "à moitié" connecté
+        if (empty($_SESSION['numetu'])) {
+            header('Location: index.php?page=login');
+            exit;
+        }
+
+        $error = '';
+        $success = '';
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $password = $_POST['password'] ?? '';
+            $passwordConfirm = $_POST['password_confirm'] ?? '';
+
+            if ($password !== $passwordConfirm) {
+                $error = "Les mots de passe ne correspondent pas.";
+            } elseif (strlen($password) < 8) {
+                $error = "Le mot de passe doit faire au moins 8 caractères.";
+            } else {
+                // Mise à jour du MDP
+                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+                $this->userRepository->updatePasswordAndUnlock($_SESSION['numetu'], $hashedPassword);
+                
+                // Redirection finale vers l'accueil de l'étudiant
+                header('Location: index.php?page=home-student');
+                exit;
+            }
+        }
+
+        View::render('force_reset_password', [
+            'error'   => $error,
+            'success' => $success
         ]);
     }
 
