@@ -1,5 +1,4 @@
 <?php
-
 namespace Model\Persistence;
 
 use Model\Repository\DossierRepositoryInterface;
@@ -39,6 +38,21 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     }
 
     /**
+     * @return array{clause: string, bindings: array<string, string>}
+     */
+    private function departementWhere(?string $departement, bool $hasExistingWhere = false): array
+    {
+        if (empty($departement)) {
+            return ['clause' => '', 'bindings' => []];
+        }
+        $keyword = $hasExistingWhere ? 'AND' : 'WHERE';
+        return [
+            'clause'   => "$keyword CodeDepartement = :departement",
+            'bindings' => ['departement' => $departement],
+        ];
+    }
+
+    /**
      * @param array<string, mixed> $bindings
      */
     private function run(string $sql, array $bindings = []): \PDOStatement|false
@@ -51,16 +65,25 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         return $stmt;
     }
 
+    // ===========================================================
+    // STATS
+    // ===========================================================
 
     public function getGlobalStats(): DossierStats
     {
         return $this->getDossierStats();
     }
 
-    public function getDossierStats(?string $mobilite = null): DossierStats
+    /**
+     * Ta branche : supporte $departement en plus
+     */
+    public function getDossierStats(?string $mobilite = null, ?string $departement = null): DossierStats
     {
         try {
-            ['clause' => $where, 'bindings' => $bindings] = $this->mobiliteWhere($mobilite);
+            ['clause' => $where,  'bindings' => $bindings]  = $this->mobiliteWhere($mobilite);
+            ['clause' => $where2, 'bindings' => $bindings2] = $this->departementWhere($departement, !empty($where));
+            $where    .= $where2;
+            $bindings  = array_merge($bindings, $bindings2);
             $stmt = $this->run("
                 SELECT
                     COUNT(*) AS total,
@@ -77,12 +100,19 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         }
     }
 
-    public function getGenderStats(?string $mobilite = null): GenderStats
+    /**
+     * Ta branche : supporte $departement en plus
+     */
+    public function getGenderStats(?string $mobilite = null, ?string $departement = null): GenderStats
     {
         try {
             $mobiliteValid  = $this->validMobilite($mobilite);
-            $mobiliteClause = $mobiliteValid ? "AND Mobilite = :mobilite" : '';
-            $bindings       = $mobiliteValid ? ['mobilite' => $mobiliteValid] : [];
+            $mobiliteClause = $mobiliteValid       ? "AND Mobilite          = :mobilite"    : '';
+            $deptClause     = !empty($departement) ? "AND CodeDepartement   = :departement" : '';
+            $bindings       = array_filter([
+                'mobilite'    => $mobiliteValid       ?: null,
+                'departement' => !empty($departement) ? $departement : null,
+            ]);
             $stmt = $this->run("
                 SELECT
                     SUM(CASE WHEN LOWER(Sexe) IN ('m','homme','male','masculin')             THEN 1 ELSE 0 END) AS male,
@@ -90,6 +120,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                 FROM dossiers
                 WHERE Sexe IS NOT NULL AND Sexe != ''
                 $mobiliteClause
+                $deptClause
             ", $bindings);
             $result = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : false;
             $male   = (is_array($result) && isset($result['male'])   && is_numeric($result['male']))   ? (int) $result['male']   : 0;
@@ -103,18 +134,24 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
 
     /**
      * @return array<int, array{name: string, count: int}>
+     * Ta branche : supporte $departement en plus
      */
-    public function getTopCountries(int $limit, ?string $mobilite = null): array
+    public function getTopCountries(int $limit, ?string $mobilite = null, ?string $departement = null): array
     {
         try {
             $mobiliteValid  = $this->validMobilite($mobilite);
-            $mobiliteClause = $mobiliteValid ? "AND Mobilite = :mobilite" : '';
-            $bindings       = $mobiliteValid ? ['mobilite' => $mobiliteValid] : [];
+            $mobiliteClause = $mobiliteValid       ? "AND Mobilite          = :mobilite"    : '';
+            $deptClause     = !empty($departement) ? "AND CodeDepartement   = :departement" : '';
+            $bindings       = array_filter([
+                'mobilite'    => $mobiliteValid       ?: null,
+                'departement' => !empty($departement) ? $departement : null,
+            ]);
             $stmt = $this->db->prepare("
                 SELECT Pays AS name, COUNT(*) AS count
                 FROM dossiers
                 WHERE Pays IS NOT NULL AND Pays != ''
                 $mobiliteClause
+                $deptClause
                 GROUP BY Pays
                 ORDER BY count DESC
                 LIMIT :limit
@@ -131,18 +168,24 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
 
     /**
      * @return array<int, array{name: string, count: int}>
+     * Ta branche : supporte $departement en plus
      */
-    public function getDepartmentStats(int $limit, ?string $mobilite = null): array
+    public function getDepartmentStats(int $limit, ?string $mobilite = null, ?string $departement = null): array
     {
         try {
             $mobiliteValid  = $this->validMobilite($mobilite);
-            $mobiliteClause = $mobiliteValid ? "AND Mobilite = :mobilite" : '';
-            $bindings       = $mobiliteValid ? ['mobilite' => $mobiliteValid] : [];
+            $mobiliteClause = $mobiliteValid       ? "AND Mobilite          = :mobilite"    : '';
+            $deptClause     = !empty($departement) ? "AND CodeDepartement   = :departement" : '';
+            $bindings       = array_filter([
+                'mobilite'    => $mobiliteValid       ?: null,
+                'departement' => !empty($departement) ? $departement : null,
+            ]);
             $stmt = $this->db->prepare("
                 SELECT CodeDepartement AS name, COUNT(*) AS count
                 FROM dossiers
                 WHERE CodeDepartement IS NOT NULL AND CodeDepartement != ''
                 $mobiliteClause
+                $deptClause
                 GROUP BY CodeDepartement
                 ORDER BY count DESC
                 LIMIT :limit
@@ -159,11 +202,15 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
 
     /**
      * @return array{incoming: int, outgoing: int}
+     * Ta branche : supporte $departement en plus
      */
-    public function getIncomingOutgoingStats(?string $mobilite = null): array
+    public function getIncomingOutgoingStats(?string $mobilite = null, ?string $departement = null): array
     {
         try {
-            ['clause' => $where, 'bindings' => $bindings] = $this->mobiliteWhere($mobilite);
+            ['clause' => $where,  'bindings' => $bindings]  = $this->mobiliteWhere($mobilite);
+            ['clause' => $where2, 'bindings' => $bindings2] = $this->departementWhere($departement, !empty($where));
+            $where    .= $where2;
+            $bindings  = array_merge($bindings, $bindings2);
             $stmt = $this->run("
                 SELECT
                     SUM(CASE WHEN LOWER(Type) = 'entrant' THEN 1 ELSE 0 END) AS incoming,
@@ -186,18 +233,24 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
 
     /**
      * @return array<int, array{name: string, count: int}>
+     * Ta branche : supporte $departement en plus
      */
-    public function getContinentStats(?string $mobilite = null): array
+    public function getContinentStats(?string $mobilite = null, ?string $departement = null): array
     {
         try {
             $mobiliteValid  = $this->validMobilite($mobilite);
-            $mobiliteClause = $mobiliteValid ? "AND Mobilite = :mobilite" : '';
-            $bindings       = $mobiliteValid ? ['mobilite' => $mobiliteValid] : [];
+            $mobiliteClause = $mobiliteValid       ? "AND Mobilite          = :mobilite"    : '';
+            $deptClause     = !empty($departement) ? "AND CodeDepartement   = :departement" : '';
+            $bindings       = array_filter([
+                'mobilite'    => $mobiliteValid       ?: null,
+                'departement' => !empty($departement) ? $departement : null,
+            ]);
             $stmt = $this->run("
                 SELECT Continent AS name, COUNT(*) AS count
                 FROM dossiers
                 WHERE Continent IS NOT NULL AND Continent != ''
                 $mobiliteClause
+                $deptClause
                 GROUP BY Continent
                 ORDER BY count DESC
             ", $bindings);
@@ -215,13 +268,18 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
 
     /**
      * @return array{europe_countries: int, non_europe_countries: int}
+     * Ta branche : supporte $departement en plus
      */
-    public function getEuropeVsNonEuropeStats(?string $mobilite = null): array
+    public function getEuropeVsNonEuropeStats(?string $mobilite = null, ?string $departement = null): array
     {
         try {
             $mobiliteValid  = $this->validMobilite($mobilite);
-            $mobiliteClause = $mobiliteValid ? "AND Mobilite = :mobilite" : '';
-            $bindings       = $mobiliteValid ? ['mobilite' => $mobiliteValid] : [];
+            $mobiliteClause = $mobiliteValid       ? "AND Mobilite          = :mobilite"    : '';
+            $deptClause     = !empty($departement) ? "AND CodeDepartement   = :departement" : '';
+            $bindings       = array_filter([
+                'mobilite'    => $mobiliteValid       ?: null,
+                'departement' => !empty($departement) ? $departement : null,
+            ]);
             $stmt = $this->run("
                 SELECT
                     COUNT(DISTINCT CASE WHEN LOWER(Zone) = 'europe'      THEN Pays END) AS europe_countries,
@@ -229,6 +287,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                 FROM dossiers
                 WHERE Pays IS NOT NULL AND Pays != ''
                 $mobiliteClause
+                $deptClause
             ", $bindings);
             if ($stmt === false) return ['europe_countries' => 0, 'non_europe_countries' => 0];
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -245,18 +304,24 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
 
     /**
      * @return array<int, array{name: string, count: int}>
+     * Ta branche : supporte $departement en plus
      */
-    public function getZoneStats(?string $mobilite = null): array
+    public function getZoneStats(?string $mobilite = null, ?string $departement = null): array
     {
         try {
             $mobiliteValid  = $this->validMobilite($mobilite);
-            $mobiliteClause = $mobiliteValid ? "AND Mobilite = :mobilite" : '';
-            $bindings       = $mobiliteValid ? ['mobilite' => $mobiliteValid] : [];
+            $mobiliteClause = $mobiliteValid       ? "AND Mobilite          = :mobilite"    : '';
+            $deptClause     = !empty($departement) ? "AND CodeDepartement   = :departement" : '';
+            $bindings       = array_filter([
+                'mobilite'    => $mobiliteValid       ?: null,
+                'departement' => !empty($departement) ? $departement : null,
+            ]);
             $stmt = $this->run("
                 SELECT Zone AS name, COUNT(*) AS count
                 FROM dossiers
                 WHERE Zone IS NOT NULL AND Zone != ''
                 $mobiliteClause
+                $deptClause
                 GROUP BY Zone
                 ORDER BY count DESC
             ", $bindings);
@@ -288,6 +353,9 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         return null;
     }
 
+    // ===========================================================
+    // CRUD
+    // ===========================================================
 
     /**
      * @return array<int, array<string, mixed>>
@@ -309,6 +377,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     }
 
     /**
+     * NewDev : inclut StatutDocuments, DateLimite, CommentaireAdmin
      * @return array<string, mixed>|null
      */
     public function findByNumEtu(string $numEtu): ?array
@@ -350,33 +419,33 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                 )
             ");
             return $stmt->execute([
-                ':NumEtu'             => $data['NumEtu']             ?? null,
-                ':Nom'                => $data['Nom']                ?? null,
-                ':Prenom'             => $data['Prenom']             ?? null,
-                ':DateNaissance'      => $data['DateNaissance']      ?? null,
-                ':Sexe'               => $data['Sexe']               ?? null,
-                ':Adresse'            => $data['Adresse']            ?? null,
-                ':CodePostal'         => $data['CodePostal']         ?? null,
-                ':Ville'              => $data['Ville']              ?? null,
-                ':EmailPersonnel'     => $data['EmailPersonnel']     ?? null,
-                ':EmailAMU'           => $data['EmailAMU']           ?? null,
-                ':Telephone'          => $data['Telephone']          ?? null,
-                ':CodeDepartement'    => $data['CodeDepartement']    ?? null,
-                ':Composante'         => $data['Composante']         ?? null,
-                ':Type'               => $data['Type']               ?? null,
-                ':Zone'               => $data['Zone']               ?? null,
-                ':Pays'               => $data['Pays']               ?? null,
-                ':Campus'             => $data['Campus']             ?? null,
-                ':Discipline'         => $data['Discipline']         ?? null,
-                ':NiveauEtude'        => $data['NiveauEtude']        ?? null,
-                ':Formation'          => $data['Formation']          ?? null,
-                ':MoyenneBac'         => $data['MoyenneBac']         ?? null,
-                ':MoyenneSansBac'     => $data['MoyenneSansBac']     ?? null,
-                ':AvisDRI'            => $data['AvisDRI']            ?? null,
-                ':DateDebut'          => $data['DateDebut']          ?? null,
-                ':MobiliteAnterieure' => $data['MobiliteAnterieure'] ?? null,
+                ':NumEtu'               => $data['NumEtu']               ?? null,
+                ':Nom'                  => $data['Nom']                  ?? null,
+                ':Prenom'               => $data['Prenom']               ?? null,
+                ':DateNaissance'        => $data['DateNaissance']        ?? null,
+                ':Sexe'                 => $data['Sexe']                 ?? null,
+                ':Adresse'              => $data['Adresse']              ?? null,
+                ':CodePostal'           => $data['CodePostal']           ?? null,
+                ':Ville'                => $data['Ville']                ?? null,
+                ':EmailPersonnel'       => $data['EmailPersonnel']       ?? null,
+                ':EmailAMU'             => $data['EmailAMU']             ?? null,
+                ':Telephone'            => $data['Telephone']            ?? null,
+                ':CodeDepartement'      => $data['CodeDepartement']      ?? null,
+                ':Composante'           => $data['Composante']           ?? null,
+                ':Type'                 => $data['Type']                 ?? null,
+                ':Zone'                 => $data['Zone']                 ?? null,
+                ':Pays'                 => $data['Pays']                 ?? null,
+                ':Campus'               => $data['Campus']               ?? null,
+                ':Discipline'           => $data['Discipline']           ?? null,
+                ':NiveauEtude'          => $data['NiveauEtude']          ?? null,
+                ':Formation'            => $data['Formation']            ?? null,
+                ':MoyenneBac'           => $data['MoyenneBac']           ?? null,
+                ':MoyenneSansBac'       => $data['MoyenneSansBac']       ?? null,
+                ':AvisDRI'              => $data['AvisDRI']              ?? null,
+                ':DateDebut'            => $data['DateDebut']            ?? null,
+                ':MobiliteAnterieure'   => $data['MobiliteAnterieure']   ?? null,
                 ':PiecesJustificatives' => $data['PiecesJustificatives'] ?? '{}',
-                ':status'             => $data['status']             ?? 'depot',
+                ':status'               => $data['status']               ?? 'depot',
             ]);
         } catch (\PDOException $e) {
             return false;
@@ -442,6 +511,9 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         }
     }
 
+    /**
+     * NewDev : alias de toggleCompleteStatus
+     */
     public function toggleStatus(string $numEtu): bool
     {
         return $this->toggleCompleteStatus($numEtu);
@@ -477,6 +549,10 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             return false;
         }
     }
+
+    // ===========================================================
+    // PAGINATION & SEARCH
+    // ===========================================================
 
     /**
      * @param array<string, mixed> $filters
@@ -554,6 +630,10 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             return ['data' => [], 'total' => 0, 'totalPages' => 0];
         }
     }
+
+    // ===========================================================
+    // IMPORT & COMPTES UTILISATEURS
+    // ===========================================================
 
     /**
      * @param array<int, array<string, mixed>> $dossiers
@@ -647,25 +727,25 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                     ':Prenom'             => strval($d['Prenom'] ?? ''),
                     ':DateNaissance'      => $d['DateNaissance']   ? strval($d['DateNaissance'])   : null,
                     ':Sexe'               => $d['Sexe']            ? strval($d['Sexe'])            : null,
-                    ':Adresse'            => strval($d['Adresse']        ?? ''),
-                    ':CodePostal'         => strval($d['CodePostal']     ?? ''),
-                    ':Ville'              => strval($d['Ville']          ?? ''),
-                    ':EmailPersonnel'     => strval($d['EmailPersonnel'] ?? ''),
-                    ':EmailAMU'           => strval($d['EmailAMU']       ?? ''),
-                    ':Telephone'          => strval($d['Telephone']      ?? ''),
+                    ':Adresse'            => strval($d['Adresse']         ?? ''),
+                    ':CodePostal'         => strval($d['CodePostal']      ?? ''),
+                    ':Ville'              => strval($d['Ville']           ?? ''),
+                    ':EmailPersonnel'     => strval($d['EmailPersonnel']  ?? ''),
+                    ':EmailAMU'           => strval($d['EmailAMU']        ?? ''),
+                    ':Telephone'          => strval($d['Telephone']       ?? ''),
                     ':CodeDepartement'    => strval($d['CodeDepartement'] ?? ''),
-                    ':Composante'         => strval($d['Composante']     ?? ''),
+                    ':Composante'         => strval($d['Composante']      ?? ''),
                     ':Type'               => !empty($d['Type']) ? strval($d['Type']) : 'sortant',
                     ':Zone'               => !empty($d['Zone']) ? strval($d['Zone']) : 'europe',
-                    ':Pays'               => strval($d['Pays']           ?? ''),
-                    ':Campus'             => strval($d['Campus']         ?? ''),
-                    ':Discipline'         => strval($d['Discipline']     ?? ''),
-                    ':NiveauEtude'        => strval($d['NiveauEtude']    ?? ''),
-                    ':Formation'          => strval($d['Formation']      ?? ''),
-                    ':MoyenneBac'         => strval($d['MoyenneBac']     ?? ''),
-                    ':MoyenneSansBac'     => strval($d['MoyenneSansBac'] ?? ''),
-                    ':AvisDRI'            => strval($d['AvisDRI']        ?? ''),
-                    ':DateDebut'          => strval($d['DateDebut']      ?? ''),
+                    ':Pays'               => strval($d['Pays']            ?? ''),
+                    ':Campus'             => strval($d['Campus']          ?? ''),
+                    ':Discipline'         => strval($d['Discipline']      ?? ''),
+                    ':NiveauEtude'        => strval($d['NiveauEtude']     ?? ''),
+                    ':Formation'          => strval($d['Formation']       ?? ''),
+                    ':MoyenneBac'         => strval($d['MoyenneBac']      ?? ''),
+                    ':MoyenneSansBac'     => strval($d['MoyenneSansBac']  ?? ''),
+                    ':AvisDRI'            => strval($d['AvisDRI']         ?? ''),
+                    ':DateDebut'          => strval($d['DateDebut']       ?? ''),
                     ':MobiliteAnterieure' => strval($d['MobiliteAnterieure'] ?? ''),
                 ]);
                 $count++;
@@ -679,6 +759,28 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             return 0;
         }
     }
+
+    public function getAllDepartements(): array
+    {
+        $sql = "SELECT DISTINCT CodeDepartement
+            FROM dossiers
+            WHERE CodeDepartement IS NOT NULL
+              AND CodeDepartement != ''
+            ORDER BY CodeDepartement ASC";
+
+        $stmt = $this->db->query($sql);
+        $departments = [];
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $departments[] = $row['CodeDepartement'];
+        }
+
+        return $departments;
+    }
+
+    // ===========================================================
+    // VALIDATION DOCUMENTS (NewDev)
+    // ===========================================================
 
     /**
      * @return array{manquants: array<int, string>, presents: array<int, string>, statuts: array<string, string>}
@@ -711,11 +813,10 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             } elseif (!empty($pieces['lettre_motivation']) || $type === 'entrant') {
                 $documentsRequis[] = 'lettre_motivation';
             } else {
-                if (empty($pieces['convention']))       $documentsRequis[] = 'convention';
+                if (empty($pieces['convention']))        $documentsRequis[] = 'convention';
                 if (empty($pieces['lettre_motivation'])) $documentsRequis[] = 'lettre_motivation';
             }
 
-            // Include langues if present or always required
             $documentsRequis[] = 'langues';
 
             $manquants = [];
