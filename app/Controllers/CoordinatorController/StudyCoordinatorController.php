@@ -38,6 +38,13 @@ class StudyCoordinatorController implements ControllerInterface
 
         $lang   = $_SESSION['lang'] ?? 'fr';
         $action = $_GET['action']   ?? 'list';
+        $role   = $_SESSION['role'];
+
+        $userDepartement = null;
+        $rolesAvecDepartement = ['chef_departement', 'coordinateur', 'coordinateur_stage', 'coordinateur_etude'];
+        if (in_array($role, $rolesAvecDepartement, true) && !empty($_SESSION['departement'])) {
+            $userDepartement = trim((string) $_SESSION['departement']);
+        }
 
         $t = function (array $translations) use ($lang): string {
             return $translations[$lang] ?? $translations['fr'] ?? '';
@@ -56,11 +63,12 @@ class StudyCoordinatorController implements ControllerInterface
         }
 
         $filters = [
-            'type'     => $_GET['type']    ?? 'all',
-            'zone'     => $_GET['zone']    ?? 'all',
-            'complet'  => $_GET['complet'] ?? 'all',
-            'search'   => $_GET['search']  ?? '',
-            'mobilite' => 'etude',
+            'type'        => $_GET['type']    ?? 'all',
+            'zone'        => $_GET['zone']    ?? 'all',
+            'complet'     => $_GET['complet'] ?? 'all',
+            'search'      => $_GET['search']  ?? '',
+            'mobilite'    => 'etude',
+            'departement' => $userDepartement ?? ($_GET['departement'] ?? 'all'),
         ];
 
         $currentPage = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
@@ -72,18 +80,20 @@ class StudyCoordinatorController implements ControllerInterface
         unset($_SESSION['message']);
 
         View::render('Coordinator/study_coordinator', [
-            'action'        => $action,
-            'filters'       => $filters,
-            'page'          => $currentPage,
-            'message'       => $message,
-            'lang'          => $lang,
-            'studentData'   => $studentData,
-            'paginatedData' => $result['data'],
-            'totalCount'    => $result['total'],
-            'totalPages'    => $result['totalPages'],
-            'isLoggedIn'    => $isLoggedIn,
-            't'             => $t,
-            'buildUrl'      => $buildUrl,
+            'action'          => $action,
+            'filters'         => $filters,
+            'page'            => $currentPage,
+            'message'         => $message,
+            'lang'            => $lang,
+            'userRole'        => $role,
+            'userDepartement' => $userDepartement,
+            'studentData'     => $studentData,
+            'paginatedData'   => $result['data'],
+            'totalCount'      => $result['total'],
+            'totalPages'      => $result['totalPages'],
+            'isLoggedIn'      => $isLoggedIn,
+            't'               => $t,
+            'buildUrl'        => $buildUrl,
         ]);
     }
 }

@@ -77,6 +77,7 @@ class HomeControllerCoordinateur implements ControllerInterface
         View::render('HomePage/home_coordinateur', [
             'isLoggedIn'           => true,
             'lang'                 => $lang,
+            'userRole'             => $_SESSION['role'],
             'completionPercentage' => $completionPercentage,
             'stats'                => $stats,
             'mobiliteFilter'       => $mobiliteFilter,

@@ -79,13 +79,13 @@ class UserRepositoryPDO implements UserRepositoryInterface
     {
         try {
             $stmt = $this->pdo->prepare("
-                UPDATE etudiants 
-                SET password = :password, force_change_password = 0 
+                UPDATE etudiants
+                SET password = :password, force_change_password = 0
                 WHERE numetu = :numetu
             ");
             return $stmt->execute([
                 ':password' => $hashedPassword,
-                ':numetu'   => $numEtu
+                ':numetu'   => $numEtu,
             ]);
         } catch (PDOException $e) {
             error_log("updatePasswordAndUnlock Error: " . $e->getMessage());
@@ -94,7 +94,7 @@ class UserRepositoryPDO implements UserRepositoryInterface
     }
 
     /**
-     * @return array{success: bool, role?: string, numetu?: string|null, force_change_password?: bool}
+     * @return array{success: bool, role?: string, numetu?: string|null, departement?: string|null, force_change_password?: bool}
      */
     public function login(string $identifier, string $password): array
     {
@@ -116,7 +116,6 @@ class UserRepositoryPDO implements UserRepositoryInterface
                     $stmtCheck = $this->pdo->prepare("SELECT force_change_password FROM etudiants WHERE numetu = :numetu");
                     $stmtCheck->execute(['numetu' => $user->getNumetu()]);
                     $res = $stmtCheck->fetch(PDO::FETCH_ASSOC);
-                    // FIXED : On vérifie que $res est bien un tableau avant de lire ses clés
                     if (is_array($res) && isset($res['force_change_password']) && $res['force_change_password'] == 1) {
                         $forceChange = true;
                     }
@@ -124,10 +123,11 @@ class UserRepositoryPDO implements UserRepositoryInterface
             }
 
             return [
-                'success' => true,
-                'role'    => $user->getRole(),
-                'numetu'  => $user->getNumetu(),
-                'force_change_password' => $forceChange
+                'success'              => true,
+                'role'                 => $user->getRole(),
+                'numetu'               => $user->getNumetu(),
+                'departement'          => $user->getDepartement(),
+                'force_change_password' => $forceChange,
             ];
         }
 
@@ -159,11 +159,15 @@ class UserRepositoryPDO implements UserRepositoryInterface
      */
     private function mapToUser(array $data, string $role): User
     {
-        $id       = (isset($data['id'])       && is_numeric($data['id']))       ? (int)$data['id']          : null;
-        $email    = (isset($data['email'])    && is_scalar($data['email']))    ? (string)$data['email']    : '';
-        $numetu   = (isset($data['numetu'])   && is_scalar($data['numetu']))   ? (string)$data['numetu']   : null;
-        $password = (isset($data['password']) && is_scalar($data['password'])) ? (string)$data['password'] : '';
-        return new User($id, $email, $numetu, $password, $role);
+        $id          = (isset($data['id'])          && is_numeric($data['id']))         ? (int)$data['id']              : null;
+        $email       = (isset($data['email'])       && is_scalar($data['email']))       ? (string)$data['email']        : '';
+        $numetu      = (isset($data['numetu'])      && is_scalar($data['numetu']))      ? (string)$data['numetu']       : null;
+        $password    = (isset($data['password'])    && is_scalar($data['password']))    ? (string)$data['password']     : '';
+        $departement = (isset($data['departement']) && is_scalar($data['departement'])) ? (string)$data['departement'] : null;
+
+        $user = new User($id, $email, $numetu, $password, $role);
+        $user->setDepartement($departement);
+        return $user;
     }
 
     /**

@@ -71,20 +71,24 @@ class AuthController implements ControllerInterface
                     $_SESSION['numetu'] = $result['numetu'];
                 }
 
-                // SÉCURITÉ : Interception pour première connexion !
+                if (isset($result['departement'])) {
+                    $_SESSION['departement'] = $result['departement'];
+                }
+
+                // SÉCURITÉ : Interception pour première connexion
                 if (!empty($result['force_change_password'])) {
                     header('Location: index.php?page=force-reset-password');
                     exit;
                 }
 
                 $destination = match($role) {
-                    'super_admin'          => 'index.php?page=super-admin',
-                    'admin'                => 'index.php?page=home-admin',
-                    'coordinateur_etude'   => 'index.php?page=coordinateur-etude',
-                    'coordinateur_stage'   => 'index.php?page=coordinateur-stage',
-                    'chef_departement'     => 'index.php?page=chef-departement',
-                    'coordinateur'         => 'index.php?page=home-coordinateur',
-                    default                => 'index.php?page=home-student',
+                    'super_admin'        => 'index.php?page=super-admin',
+                    'admin'              => 'index.php?page=home-admin',
+                    'coordinateur_etude',
+                    'coordinateur_stage',
+                    'chef_departement',
+                    'coordinateur'       => 'index.php?page=home-coordinateur',
+                    default              => 'index.php?page=home-student',
                 };
 
                 header('Location: ' . $destination);
@@ -106,17 +110,16 @@ class AuthController implements ControllerInterface
 
     private function handleForceResetPassword(): void
     {
-        // Interdire l'accès si l'utilisateur n'est pas "à moitié" connecté
         if (empty($_SESSION['numetu'])) {
             header('Location: index.php?page=login');
             exit;
         }
 
-        $error = '';
+        $error   = '';
         $success = '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $password = $_POST['password'] ?? '';
+            $password        = $_POST['password']         ?? '';
             $passwordConfirm = $_POST['password_confirm'] ?? '';
 
             if ($password !== $passwordConfirm) {
@@ -124,11 +127,9 @@ class AuthController implements ControllerInterface
             } elseif (strlen($password) < 8) {
                 $error = "Le mot de passe doit faire au moins 8 caractères.";
             } else {
-                // Mise à jour du MDP
                 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                 $this->userRepository->updatePasswordAndUnlock($_SESSION['numetu'], $hashedPassword);
-                
-                // Redirection finale vers l'accueil de l'étudiant
+
                 header('Location: index.php?page=home-student');
                 exit;
             }

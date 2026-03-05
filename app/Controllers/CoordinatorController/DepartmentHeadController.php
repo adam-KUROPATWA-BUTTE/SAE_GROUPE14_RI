@@ -42,6 +42,13 @@ class DepartmentHeadController implements ControllerInterface
 
         $lang   = $_SESSION['lang'] ?? 'fr';
         $action = $_GET['action']   ?? 'list';
+        $role   = $_SESSION['role'];
+
+        $userDepartement = null;
+        $rolesAvecDepartement = ['chef_departement', 'coordinateur', 'coordinateur_etude'];
+        if (in_array($role, $rolesAvecDepartement, true) && !empty($_SESSION['departement'])) {
+            $userDepartement = trim((string) $_SESSION['departement']);
+        }
 
         $t = function (array $translations) use ($lang): string {
             return $translations[$lang] ?? $translations['fr'] ?? '';
@@ -60,12 +67,14 @@ class DepartmentHeadController implements ControllerInterface
         }
 
         $filters = [
-            'type'        => $_GET['type']        ?? 'all',
-            'zone'        => $_GET['zone']        ?? 'all',
-            'complet'     => $_GET['complet']     ?? 'all',
-            'search'      => $_GET['search']      ?? '',
-            'departement' => $_GET['departement'] ?? 'all',
+            'type'        => $_GET['type']    ?? 'all',
+            'zone'        => $_GET['zone']    ?? 'all',
+            'complet'     => $_GET['complet'] ?? 'all',
+            'search'      => $_GET['search']  ?? '',
             'mobilite'    => 'all',
+            // Si chef_departement : forcer le filtre sur son département
+            // Si admin : utiliser le filtre GET ou 'all'
+            'departement' => $userDepartement ?? ($_GET['departement'] ?? 'all'),
         ];
 
         $currentPage = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
@@ -76,20 +85,21 @@ class DepartmentHeadController implements ControllerInterface
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-
         View::render('Coordinator/department_head', [
-            'action'        => $action,
-            'filters'       => $filters,
-            'page'          => $currentPage,
-            'message'       => $message,
-            'lang'          => $lang,
-            'studentData'   => $studentData,
-            'paginatedData' => $result['data'],
-            'totalCount'    => $result['total'],
-            'totalPages'    => $result['totalPages'],
-            'isLoggedIn'    => $isLoggedIn,
-            't'             => $t,
-            'buildUrl'      => $buildUrl,
+            'action'          => $action,
+            'filters'         => $filters,
+            'page'            => $currentPage,
+            'message'         => $message,
+            'lang'            => $lang,
+            'userRole'        => $role,
+            'userDepartement' => $userDepartement,
+            'studentData'     => $studentData,
+            'paginatedData'   => $result['data'],
+            'totalCount'      => $result['total'],
+            'totalPages'      => $result['totalPages'],
+            'isLoggedIn'      => $isLoggedIn,
+            't'               => $t,
+            'buildUrl'        => $buildUrl,
         ]);
     }
 }
