@@ -48,10 +48,16 @@ const SuperAdmin = (() => {
 
     function generatePassword() {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
+        const regex = /^(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{12,}$/;
         let pwd = '';
-        for (let i = 0; i < 12; i++) {
-            pwd += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
+
+        do {
+            pwd = '';
+            for (let i = 0; i < 12; i++) {
+                pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+        } while (!regex.test(pwd));
+
         const el = document.getElementById('password');
         if (el) el.value = pwd;
     }

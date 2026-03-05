@@ -99,6 +99,11 @@ class SuperAdminController implements ControllerInterface
                     ? 'Veuillez remplir tous les champs correctement.'
                     : 'Please fill in all fields correctly.';
 
+            } elseif (!preg_match('/^(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{12,}$/', $password)) {
+                $error = $lang === 'fr'
+                    ? 'Le mot de passe doit contenir au moins 12 caractères, dont une majuscule et un caractère spécial.'
+                    : 'Password must contain at least 12 characters, including one uppercase letter and one special character.';
+
             } elseif ($isCoord && $departement === '') {
                 $error = $lang === 'fr'
                     ? 'Veuillez sélectionner un département pour le coordinateur.'
