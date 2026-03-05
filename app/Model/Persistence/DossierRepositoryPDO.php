@@ -17,10 +17,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         $this->db = Database::getInstance()->getConnection();
     }
 
-    // ---------------------------------------------------------------
-    // Internal helpers
-    // ---------------------------------------------------------------
-
     private function validMobilite(?string $mobilite): ?string
     {
         return in_array($mobilite, ['etude', 'stage'], true) ? $mobilite : null;
@@ -55,9 +51,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         return $stmt;
     }
 
-    // ---------------------------------------------------------------
-    // Statistics
-    // ---------------------------------------------------------------
 
     public function getGlobalStats(): DossierStats
     {
@@ -295,9 +288,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         return null;
     }
 
-    // ---------------------------------------------------------------
-    // CRUD
-    // ---------------------------------------------------------------
 
     /**
      * @return array<int, array<string, mixed>>
@@ -437,10 +427,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         }
     }
 
-    // ---------------------------------------------------------------
-    // Status
-    // ---------------------------------------------------------------
-
     public function toggleCompleteStatus(string $numEtu): bool
     {
         try {
@@ -456,7 +442,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         }
     }
 
-    /** Alias kept for compatibility with older UseCase calls */
     public function toggleStatus(string $numEtu): bool
     {
         return $this->toggleCompleteStatus($numEtu);
@@ -492,10 +477,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             return false;
         }
     }
-
-    // ---------------------------------------------------------------
-    // Pagination & search
-    // ---------------------------------------------------------------
 
     /**
      * @param array<string, mixed> $filters
@@ -573,10 +554,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             return ['data' => [], 'total' => 0, 'totalPages' => 0];
         }
     }
-
-    // ---------------------------------------------------------------
-    // Import
-    // ---------------------------------------------------------------
 
     /**
      * @param array<int, array<string, mixed>> $dossiers
@@ -702,10 +679,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             return 0;
         }
     }
-
-    // ---------------------------------------------------------------
-    // Document validation (ta branche)
-    // ---------------------------------------------------------------
 
     /**
      * @return array{manquants: array<int, string>, presents: array<int, string>, statuts: array<string, string>}

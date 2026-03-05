@@ -1,6 +1,3 @@
-/**
- * FolderManager — gestion des dossiers étudiants (admin)
- */
 class FolderManager {
     constructor() {
         this.initFormEvents();
@@ -12,10 +9,6 @@ class FolderManager {
         this.initStatutDocumentButtons();
         this.initDateLimiteBanniere();
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // Formulaire
-    // ─────────────────────────────────────────────────────────────
 
     initFormEvents() {
         const mobiliteSelect = document.getElementById('mobilite_type');
@@ -47,14 +40,12 @@ class FolderManager {
         const formPrincipal = document.querySelector('.creation-form');
         if (!formPrincipal) return;
 
-        // Sauvegarder les valeurs originales AVANT de débloquer
         formPrincipal.querySelectorAll('input:not([type="file"]):not([type="hidden"]), select').forEach(field => {
             if (field.id !== 'numetu' && field.id !== 'numetu_display') {
                 field.setAttribute('data-original-value', field.value);
             }
         });
 
-        // Débloquer tous les champs sauf numetu
         formPrincipal.querySelectorAll('input, select').forEach(field => {
             if (field.id !== 'numetu' && field.id !== 'numetu_display') {
                 field.disabled = false;
@@ -85,10 +76,6 @@ class FolderManager {
         if (btnSave)   { btnSave.style.display = 'inline-block';   btnSave.classList.remove('btn-hidden'); }
         if (btnCancel) { btnCancel.style.display = 'inline-block'; btnCancel.classList.remove('btn-hidden'); }
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // Filtres
-    // ─────────────────────────────────────────────────────────────
 
     initFilterEvents() {
         const searchInput = document.getElementById('search');
@@ -155,10 +142,6 @@ class FolderManager {
         window.location.href = url.toString();
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Table
-    // ─────────────────────────────────────────────────────────────
-
     initTableEvents() {
         document.querySelectorAll('.table-etudiants tbody tr').forEach(row => {
             row.addEventListener('click', (e) => {
@@ -174,10 +157,6 @@ class FolderManager {
         url.searchParams.set('numetu', numetu);
         window.location.href = url.toString();
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // Accordion
-    // ─────────────────────────────────────────────────────────────
 
     initAccordionEvents() {
         document.querySelectorAll('.barre-titre').forEach(barre => {
@@ -241,10 +220,6 @@ class FolderManager {
         });
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // AJAX — confirmation document individuel
-    // ─────────────────────────────────────────────────────────────
-
     async confirmDocument(numEtu, docType) {
         const container = document.querySelector(`.doc-review-item[data-doctype="${docType}"]`);
         if (!container) return;
@@ -281,10 +256,6 @@ class FolderManager {
         }, 3000);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // AJAX — statut global
-    // ─────────────────────────────────────────────────────────────
-
     async updateGlobalStatus(numEtu) {
         const statusSelect = document.getElementById('global_status_select');
         const indicator    = document.getElementById('global_status_indicator');
@@ -311,10 +282,6 @@ class FolderManager {
         setTimeout(() => { if (indicator) indicator.textContent = ""; }, 3000);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    // Boutons Accepter / Refuser
-    // ─────────────────────────────────────────────────────────────
-
     initStatutDocumentButtons() {
         document.querySelectorAll('.statut-document-buttons .btn-status').forEach(btn => {
             btn.addEventListener('click', function () {
@@ -326,10 +293,6 @@ class FolderManager {
             });
         });
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // Bannière date limite
-    // ─────────────────────────────────────────────────────────────
 
     initDateLimiteBanniere() {
         const btnEditDate    = document.getElementById('btn-edit-date-limite');
@@ -347,17 +310,6 @@ class FolderManager {
             });
         }
     }
-
-    // ─────────────────────────────────────────────────────────────
-    // Modale de validation
-    //
-    // COMPORTEMENT :
-    //   • Clic "Enregistrer" → détection des modifications
-    //   • Si AUCUNE modification  → soumet le formulaire PHP directement
-    //   • Si DES modifications    → ouvre le popup récapitulatif
-    //   • "✉️ Enregistrer et notifier" → copie les champs du form principal
-    //     dans le form modal puis soumet
-    // ─────────────────────────────────────────────────────────────
 
     initValidationModal() {
         const btnEnregistrer = document.getElementById('btn-enregistrer');
@@ -386,7 +338,7 @@ class FolderManager {
 
         const analyseDocuments = window.analyseDocumentsData || { manquants: [], presents: [], statuts: {} };
 
-        // ── Clic "Enregistrer" ──
+
         btnEnregistrer.addEventListener('click', (e) => {
             e.preventDefault();
 
@@ -398,14 +350,12 @@ class FolderManager {
                 return;
             }
 
-            // Des modifications → remplir et afficher le popup
             this._afficherModifications(modifications);
             this._afficherDocuments(analyseDocuments, translations);
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
         });
 
-        // ── Fermeture de la modale ──
         if (btnModalCancel) {
             btnModalCancel.addEventListener('click', () => this._fermerModale(modal));
         }
@@ -418,9 +368,6 @@ class FolderManager {
             }
         });
 
-        // ── Soumission du formulaire modal ──
-        // On copie tous les champs du form principal dans le form modal
-        // puis on laisse le submit HTML classique envoyer vers l'action PHP
         if (formValidation) {
             formValidation.addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -429,7 +376,6 @@ class FolderManager {
             });
         }
 
-        // Toast message serveur
         const msgDiv = document.querySelector('.message');
         if (msgDiv && msgDiv.textContent.trim() !== '') {
             msgDiv.style.display = 'block';
@@ -442,11 +388,7 @@ class FolderManager {
         document.body.style.overflow = 'auto';
     }
 
-    /**
-     * Copie les champs du formulaire principal (qui contient les nouvelles valeurs)
-     * dans le formulaire de la modale avant soumission PHP.
-     * On ne copie pas les champs déjà présents dans le form modal.
-     */
+
     _syncFormToModal(formPrincipal, formModal) {
         // Nettoyer les anciens champs copiés
         formModal.querySelectorAll('.synced-field').forEach(el => el.remove());
@@ -466,11 +408,6 @@ class FolderManager {
         });
     }
 
-    /**
-     * Détecte les modifications en comparant la valeur actuelle
-     * à data-original-value (posé au moment du clic "Modifier").
-     * Un champ sans data-original-value n'a jamais été activé → ignoré.
-     */
     _detecterModifications(formPrincipal) {
         const modifications = [];
 
@@ -525,7 +462,6 @@ class FolderManager {
         const presents  = analyseDocuments.presents  || [];
         const statuts   = analyseDocuments.statuts   || {};
 
-        // Lire les statuts depuis les boutons actifs dans la vue principale
         const statutsVue = {};
         document.querySelectorAll('.statut-document-buttons').forEach(block => {
             const doc   = block.dataset.doc;
@@ -533,7 +469,6 @@ class FolderManager {
             if (actif) statutsVue[doc] = actif.dataset.statut;
         });
 
-        // Injecter les statuts comme hidden inputs dans le form modal
         const formValidation = document.getElementById('form-validation');
         presents.forEach(doc => {
             let input = document.getElementById('statut_modal_' + doc);
@@ -560,7 +495,6 @@ class FolderManager {
                 ).join('');
         }
 
-        // Documents présents avec badge de statut
         const listePresents = document.getElementById('liste-presents');
         if (listePresents) {
             listePresents.innerHTML = presents.map(doc => {
@@ -580,7 +514,7 @@ class FolderManager {
     }
 }
 
-// Instanciation globale
+
 document.addEventListener('DOMContentLoaded', () => {
     window.folderManager = new FolderManager();
 });

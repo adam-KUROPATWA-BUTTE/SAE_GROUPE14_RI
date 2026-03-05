@@ -199,7 +199,6 @@ ob_start();
             <div class="message"><?= htmlspecialchars($message) ?></div>
         <?php endif; ?>
 
-        <!-- Bannière date limite -->
         <div class="banniere-date-limite <?= $dateLimite ? 'avec-date' : 'sans-date' ?>">
             <span class="banniere-icone">📅</span>
             <?php if ($dateLimite) : ?>
@@ -322,7 +321,6 @@ ob_start();
             </div>
 
             <h2><?= $t(['fr' => 'Revue des Pièces Justificatives', 'en' => 'Documents Review']) ?></h2>
-            <!-- Documents section -->
             <div class="form-section documents-section full-width">
 
 
@@ -398,7 +396,6 @@ ob_start();
             </div>
 
 
-            <!-- Statut global -->
             <div class="form-section global-status-section full-width">
                 <?php $currentStatus = $studentData['status'] ?? 'depot'; ?>
                 <div class="global-status-block">
@@ -432,7 +429,6 @@ ob_start();
             </div>
         </form>
 
-        <!-- Modale de validation (ta branche) -->
         <div id="modal-validation" class="modal-overlay">
             <div class="modal-content">
                 <div class="modal-header">
@@ -474,7 +470,6 @@ ob_start();
             </div>
         </div>
 
-        <!-- Données pour le JS -->
         <script>
             <?php
             $repoTemp    = new \Model\Persistence\DossierRepositoryPDO();

@@ -16,9 +16,6 @@ class ManageFolderUseCase
         $this->dossierRepo = new DossierRepositoryPDO();
     }
 
-    // ---------------------------------------------------------------
-    // Read
-    // ---------------------------------------------------------------
 
     /**
      * @return array<int, array<string, mixed>>
@@ -63,10 +60,6 @@ class ManageFolderUseCase
         return $this->getStudentDetails($numetu);
     }
 
-    // ---------------------------------------------------------------
-    // Status
-    // ---------------------------------------------------------------
-
     public function toggleCompleteStatus(string $numetu): bool
     {
         return $this->dossierRepo->toggleCompleteStatus($numetu);
@@ -82,9 +75,6 @@ class ManageFolderUseCase
         return $this->dossierRepo->cycleStatus($numEtu);
     }
 
-    // ---------------------------------------------------------------
-    // Search / pagination
-    // ---------------------------------------------------------------
 
     /**
      * @param array<string, mixed> $filters
@@ -104,10 +94,6 @@ class ManageFolderUseCase
         return $this->dossierRepo->searchWithPagination($filters, 1, 0);
     }
 
-    // ---------------------------------------------------------------
-    // Document status (AJAX, NewDev collègue)
-    // ---------------------------------------------------------------
-
     public function updateDocumentStatus(string $numEtu, string $docType, string $status, string $comment): bool
     {
         $dossier = $this->getStudentDetails($numEtu);
@@ -123,10 +109,6 @@ class ManageFolderUseCase
 
         return $this->dossierRepo->update($numEtu, [':PiecesJustificatives' => json_encode($pieces)]);
     }
-
-    // ---------------------------------------------------------------
-    // Create / Update
-    // ---------------------------------------------------------------
 
     /**
      * @param array<string, mixed> $data
@@ -257,10 +239,6 @@ class ManageFolderUseCase
 
         return $this->dossierRepo->update($numEtu, $formattedData);
     }
-
-    // ---------------------------------------------------------------
-    // Import CSV/XLSX (NewDev collègue — rich mapper)
-    // ---------------------------------------------------------------
 
     public function importFoldersFromCSV(string $filePath, string $originalFileName = ''): bool
     {
@@ -476,10 +454,6 @@ class ManageFolderUseCase
             return false;
         }
     }
-
-    // ---------------------------------------------------------------
-    // Document validation (ta branche)
-    // ---------------------------------------------------------------
 
     /**
      * @return array{manquants: array<int, string>, presents: array<int, string>, statuts: array<string, string>}

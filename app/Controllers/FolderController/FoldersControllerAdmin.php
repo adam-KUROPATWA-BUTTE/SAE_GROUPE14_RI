@@ -107,10 +107,6 @@ class FoldersControllerAdmin
         ]);
     }
 
-    // ---------------------------------------------------------------
-    // AJAX handlers
-    // ---------------------------------------------------------------
-
     private function updateGlobalStatus(): void
     {
         header('Content-Type: application/json');
@@ -147,10 +143,6 @@ class FoldersControllerAdmin
         exit;
     }
 
-    // ---------------------------------------------------------------
-    // File helpers
-    // ---------------------------------------------------------------
-
     /**
      * @param array<string, mixed> $data
      * @return array<int, string>
@@ -182,10 +174,6 @@ class FoldersControllerAdmin
         }
         return $errors;
     }
-
-    // ---------------------------------------------------------------
-    // Form handlers
-    // ---------------------------------------------------------------
 
     private function importFolders(string $lang): void
     {
