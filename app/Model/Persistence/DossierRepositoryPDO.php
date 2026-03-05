@@ -468,7 +468,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             $params['type'] = $filters['type'];
         }
         if (!empty($filters['mobilite']) && $filters['mobilite'] !== 'all') {
-            // FIX line 511: cast to string|null before passing to validMobilite().
+
             $mobiliteVal = is_string($filters['mobilite']) ? $filters['mobilite'] : null;
             $valid = $this->validMobilite($mobiliteVal);
             if ($valid) {
@@ -493,7 +493,10 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             $where .= " AND (Nom LIKE :s1 OR Prenom LIKE :s2 OR NumEtu LIKE :s3 OR EmailPersonnel LIKE :s4)";
             $params['s1'] = $s; $params['s2'] = $s; $params['s3'] = $s; $params['s4'] = $s;
         }
-
+        if (!empty($filters['departement']) && $filters['departement'] !== 'all') {
+            $where .= " AND LOWER(CodeDepartement) = LOWER(:departement)";
+            $params['departement'] = $filters['departement'];
+        }
         $totalCount = 0;
         try {
             $countStmt = $this->db->prepare("SELECT COUNT(*) as total FROM dossiers" . $where);

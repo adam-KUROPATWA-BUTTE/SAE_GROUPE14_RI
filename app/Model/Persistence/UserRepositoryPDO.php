@@ -76,7 +76,7 @@ class UserRepositoryPDO implements UserRepositoryInterface
     }
 
     /**
-     * @return array{success: bool, role?: string, numetu?: string|null}
+     * @return array{success: bool, role?: string, numetu?: string|null, departement?: string|null}
      */
     public function login(string $identifier, string $password): array
     {
@@ -92,9 +92,10 @@ class UserRepositoryPDO implements UserRepositoryInterface
                 } catch (PDOException $e) { /* silencieux */ }
             }
             return [
-                'success' => true,
-                'role'    => $user->getRole(),
-                'numetu'  => $user->getNumetu(),
+                'success'     => true,
+                'role'        => $user->getRole(),
+                'numetu'      => $user->getNumetu(),
+                'departement' => $user->getDepartement(),
             ];
         }
 
@@ -122,20 +123,22 @@ class UserRepositoryPDO implements UserRepositoryInterface
     }
 
     /**
-     * FIX line 130: add value type to $data parameter.
      * @param array<string, mixed> $data
      */
     private function mapToUser(array $data, string $role): User
     {
-        $id       = (isset($data['id'])       && is_numeric($data['id']))       ? (int)$data['id']          : null;
-        $email    = (isset($data['email'])    && is_scalar($data['email']))    ? (string)$data['email']    : '';
-        $numetu   = (isset($data['numetu'])   && is_scalar($data['numetu']))   ? (string)$data['numetu']   : null;
-        $password = (isset($data['password']) && is_scalar($data['password'])) ? (string)$data['password'] : '';
-        return new User($id, $email, $numetu, $password, $role);
+        $id          = (isset($data['id'])          && is_numeric($data['id']))         ? (int)$data['id']              : null;
+        $email       = (isset($data['email'])       && is_scalar($data['email']))       ? (string)$data['email']        : '';
+        $numetu      = (isset($data['numetu'])      && is_scalar($data['numetu']))      ? (string)$data['numetu']       : null;
+        $password    = (isset($data['password'])    && is_scalar($data['password']))    ? (string)$data['password']     : '';
+        $departement = (isset($data['departement']) && is_scalar($data['departement'])) ? (string)$data['departement'] : null;
+
+        $user = new User($id, $email, $numetu, $password, $role);
+        $user->setDepartement($departement);
+        return $user;
     }
 
     /**
-     * FIX line 143: add value type to return array.
      * @return array<string, mixed>|null
      */
     public function findByLogin(string $email): ?array
@@ -198,7 +201,6 @@ class UserRepositoryPDO implements UserRepositoryInterface
                 FROM admins WHERE role != 'super_admin' ORDER BY created_at DESC
             ");
             if ($stmt === false) return [];
-            // fetchAll() always returns array — no ternary needed.
             $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return array_map(fn($r) => [
                 'login'       => is_string($r['login']       ?? null) ? $r['login']       : '',
@@ -213,16 +215,12 @@ class UserRepositoryPDO implements UserRepositoryInterface
         }
     }
 
-    // FIX lines 220/222: @deprecated aliases — add return type annotations so PHPStan is satisfied.
-
-    /**
-     * @deprecated Use findAll() instead.
+    /** @deprecated Use findAll() instead.
      * @return array<int, array{login: string, role: string, departement: string|null, site: string|null, created_at: string}>
      */
     public function getAllNonSuperAdmin(): array { return $this->findAll(); }
 
-    /**
-     * @deprecated Use findAll() instead.
+    /** @deprecated Use findAll() instead.
      * @return array<int, array{login: string, role: string, departement: string|null, site: string|null, created_at: string}>
      */
     public function getAllAdmins(): array { return $this->findAll(); }
@@ -236,12 +234,7 @@ class UserRepositoryPDO implements UserRepositoryInterface
     /** @deprecated */
     public function createUser(string $login, string $hashedPassword, string $role): bool { return $this->create($login, $hashedPassword, $role); }
 
-    // ─────────────────────────────────────────────
-    // Départements & Sites
-    // ─────────────────────────────────────────────
-
     /**
-     * FIX line 234: add return value type.
      * @return array<int, string>
      */
     public function getDistinctDepartments(): array
@@ -277,7 +270,6 @@ class UserRepositoryPDO implements UserRepositoryInterface
     }
 
     /**
-     * FIX line 266: add return value type.
      * @return array<int, string>
      */
     public function getDistinctSites(): array

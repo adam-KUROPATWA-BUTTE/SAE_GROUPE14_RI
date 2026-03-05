@@ -13,7 +13,20 @@ if (empty($userRole) && !empty($_SESSION['role'])) {
     $userRole = $_SESSION['role'];
 }
 
-$isCoordinateur = in_array($userRole, ['coordinateur_etude', 'coordinateur_stage', 'chef_departement'], true);
+// Fallback : définir $t si non transmis par le contrôleur
+if (!isset($t) || !is_callable($t)) {
+    $lang = $lang ?? $_SESSION['lang'] ?? 'fr';
+    $t = function(array $frEn) use ($lang): string {
+        return $frEn[$lang] ?? $frEn['fr'] ?? '';
+    };
+}
+
+// Fallback : définir $lang si non transmis
+if (!isset($lang)) {
+    $lang = $_SESSION['lang'] ?? 'fr';
+}
+
+$isCoordinateur = in_array($userRole, ['coordinateur_etude', 'coordinateur_stage', 'chef_departement', 'coordinateur'], true);
 
 $currentPage = $_GET['page'] ?? (
 $userRole === 'admin'        ? 'home-admin'        :
@@ -31,12 +44,50 @@ $userRole === 'admin'        ? 'home-admin'        :
                     <a href="?page=<?= urlencode($currentPage) ?>&lang=en">English</a>
                 </div>
             </div>
+
+            <?php
+            $isHomePage = in_array($activeMenu, ['home', 'home-coordinateur'], true);
+            ?>
+
+            <?php if ($isHomePage): ?>
+                <?php if (isset($_SESSION['role'])): ?>
+                    <button onclick="window.location.href='index.php?page=logout&lang=<?= urlencode($lang) ?>'">
+                        <?= $t(['fr' => 'Se déconnecter', 'en' => 'Log out']) ?>
+                    </button>
+                <?php else: ?>
+                    <button onclick="window.location.href='index.php?page=login&lang=<?= urlencode($lang) ?>'">
+                        <?= $t(['fr' => 'Se connecter', 'en' => 'Log in']) ?>
+                    </button>
+                <?php endif; ?>
+
+                <button id="theme-toggle" title="Enable tritanopia accessibility mode">
+                    <span class="toggle-switch"></span>
+                </button>
+            <?php endif; ?>
         </div>
     </div>
 
     <nav class="menu">
 
-        <?php if ($userRole === 'coordinateur_etude') : ?>
+        <?php if ($userRole === 'coordinateur') : ?>
+
+            <button
+                <?= $activeMenu === 'home-coordinateur' ? 'class="active"' : '' ?>
+                    onclick="window.location.href='index.php?page=home-coordinateur&lang=<?= urlencode($lang) ?>'">
+                <?= $t(['fr' => 'Accueil', 'en' => 'Home']) ?>
+            </button>
+            <button
+                <?= $activeMenu === 'coordinateur-etude' ? 'class="active"' : '' ?>
+                    onclick="window.location.href='index.php?page=coordinateur-etude&lang=<?= urlencode($lang) ?>'">
+                <?= $t(['fr' => "Coordinateur d'étude", 'en' => 'Study Coordinator']) ?>
+            </button>
+            <button
+                <?= $activeMenu === 'coordinateur-stage' ? 'class="active"' : '' ?>
+                    onclick="window.location.href='index.php?page=coordinateur-stage&lang=<?= urlencode($lang) ?>'">
+                <?= $t(['fr' => 'Coordinateur de stage', 'en' => 'Internship Coordinator']) ?>
+            </button>
+
+        <?php elseif ($userRole === 'coordinateur_etude') : ?>
 
             <button
                 <?= $activeMenu === 'home-coordinateur' ? 'class="active"' : '' ?>

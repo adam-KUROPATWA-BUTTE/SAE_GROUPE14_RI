@@ -59,8 +59,6 @@ class AuthController implements ControllerInterface
                 is_string($password)   ? $password   : ''
             );
 
-            // FIX: Guard with isset before accessing optional keys 'role' and 'numetu'.
-            // PHPStan sees them as role?: string — they may not exist even on success.
             if ($result['success'] && isset($result['role'])) {
 
                 $role = $result['role'];
@@ -70,14 +68,18 @@ class AuthController implements ControllerInterface
                     $_SESSION['numetu'] = $result['numetu'];
                 }
 
+                if (isset($result['departement'])) {
+                    $_SESSION['departement'] = $result['departement'];
+                }
+
                 $destination = match($role) {
-                    'super_admin'          => 'index.php?page=super-admin',
-                    'admin'                => 'index.php?page=home-admin',
-                    'coordinateur_etude'   => 'index.php?page=coordinateur-etude',
-                    'coordinateur_stage'   => 'index.php?page=coordinateur-stage',
-                    'chef_departement'     => 'index.php?page=chef-departement',
-                    'coordinateur'         => 'index.php?page=home-coordinateur',
-                    default                => 'index.php?page=home-student',
+                    'super_admin'        => 'index.php?page=super-admin',
+                    'admin'              => 'index.php?page=home-admin',
+                    'coordinateur_etude',
+                    'coordinateur_stage',
+                    'chef_departement',
+                    'coordinateur'       => 'index.php?page=home-coordinateur',
+                    default              => 'index.php?page=home-student',
                 };
 
                 header('Location: ' . $destination);

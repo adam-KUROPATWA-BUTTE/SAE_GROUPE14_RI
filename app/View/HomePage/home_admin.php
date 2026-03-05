@@ -4,6 +4,7 @@
  * Home Admin
  *
  * @var string $lang
+ * @var string $userRole
  * @var Closure(array<string, string>): string $t
  * @var Closure(string, array<string, mixed>=): string $buildUrl
  * @var float|int $completionPercentage
@@ -51,54 +52,6 @@ $maxDept = !empty($departments)
 ob_start();
 ?>
 
-    <header>
-        <div class="top-bar">
-            <img class="logo_amu" src="img/logo.png" alt="AMU Logo">
-
-            <div class="right-buttons">
-                <div class="lang-dropdown">
-                    <button class="dropbtn"><?= htmlspecialchars($lang) ?></button>
-                    <div class="dropdown-content">
-                        <a href="#" onclick="window.mainApp.changeLang('fr'); return false;">Français</a>
-                        <a href="#" onclick="window.mainApp.changeLang('en'); return false;">English</a>
-                    </div>
-                </div>
-
-                <?php if ($isLoggedIn) : ?>
-                    <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'logout']) ?>'">
-                        <?= $t(['fr' => 'Se déconnecter', 'en' => 'Log out']) ?>
-                    </button>
-                <?php else : ?>
-                    <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'login']) ?>'">
-                        <?= $t(['fr' => 'Se connecter', 'en' => 'Log in']) ?>
-                    </button>
-                <?php endif; ?>
-
-                <button id="theme-toggle" title="Enable tritanopia accessibility mode">
-                    <span class="toggle-switch"></span>
-                </button>
-            </div>
-        </div>
-
-        <nav class="menu">
-            <button class="active" onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'home-admin']) ?>'">
-                <?= $t(['fr' => 'Accueil', 'en' => 'Home']) ?>
-            </button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'dashboard-admin']) ?>'">
-                <?= $t(['fr' => 'Tableau de bord', 'en' => 'Dashboard']) ?>
-            </button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'partners-admin']) ?>'">
-                <?= $t(['fr' => 'Destinations', 'en' => 'Destinations']) ?>
-            </button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'folders-admin']) ?>'">
-                <?= $t(['fr' => 'Dossiers', 'en' => 'Folders']) ?>
-            </button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'messages-admin']) ?>'">
-                <?= $t(['fr' => 'Messages', 'en' => 'Messages']) ?>
-            </button>
-        </nav>
-    </header>
-
     <section class="hero-section">
         <img class="hero_logo" src="img/amu.png" alt="AMU Logo">
     </section>
@@ -118,11 +71,9 @@ ob_start();
     <!-- Filtre Mobilité -->
     <section class="mobilite-filter">
         <div class="mobilite-filter__inner">
-
             <span class="mobilite-filter__label">
                 <?= $t(['fr' => 'Statistiques :', 'en' => 'Statistics:']) ?>
             </span>
-
             <div class="mobilite-filter__buttons">
                 <a href="<?= $buildUrl('index.php', ['page' => 'home-admin']) ?>"
                    class="mobilite-btn <?= $mobiliteFilter === null ? 'active' : '' ?>">
@@ -137,9 +88,6 @@ ob_start();
                     💼 <?= $t(['fr' => 'Stage', 'en' => 'Internship']) ?>
                 </a>
             </div>
-
-
-
         </div>
     </section>
 
@@ -309,14 +257,14 @@ $title = $t([
     'en' => 'Home - International Relations Service AMU',
 ]);
 
-$styles     = ['styles/homepage.css'];
-$scripts    = ['js/carousel.js'];
-$activeMenu = 'home';
-$userRole   = 'admin';
-
+$styles          = ['styles/homepage.css'];
+$scripts         = ['js/carousel.js'];
+$activeMenu      = 'home';
+$userRole        = 'admin';
+$noMain          = true;
 $metaDescription = $t([
     'fr' => "Service des relations internationales de l'AMU. Informations pour étudiants internationaux, échanges universitaires et partenariats.",
     'en' => 'International Relations Service of AMU. Info for international students, university exchanges, and partnerships.',
 ]);
 
-include __DIR__ . '/../Layout/base_home.php';
+include __DIR__ . '/../Layout/base.php';
