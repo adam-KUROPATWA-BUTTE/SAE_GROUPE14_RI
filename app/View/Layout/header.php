@@ -156,8 +156,7 @@ $userRole === 'admin'        ? 'home-admin'        :
             }
 
             foreach ($menus as $key => $labels):
-                $isActive = $activeMenu === $key;
-                $page     = $key . $suffix;
+                $isActive = $activeMenu === $key || $activeMenu === $key . $suffix;                $page     = $key . $suffix;
                 $url      = 'index.php?page=' . urlencode($page) . '&lang=' . urlencode($lang);
 
                 if ($key === 'partners' && $userRole === 'student'):

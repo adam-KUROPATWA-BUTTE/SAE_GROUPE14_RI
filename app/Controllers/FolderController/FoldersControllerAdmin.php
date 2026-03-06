@@ -268,6 +268,8 @@ class FoldersControllerAdmin
 
     private function updateStudent(string $lang): void
     {
+        $redirectTo = $_POST['redirect_to'] ?? 'folders-admin';
+
         $data = [
             'NumEtu'             => $_POST['numetu']              ?? '',
             'Nom'                => $_POST['nom']                 ?? '',
@@ -299,7 +301,7 @@ class FoldersControllerAdmin
         $uploadErrors = $this->handleFileUploads($data, $lang);
         if (!empty($uploadErrors)) {
             $_SESSION['message'] = implode('<br>', $uploadErrors);
-            header('Location: index.php?page=folders-admin&action=view&numetu=' . urlencode($data['NumEtu']) . '&lang=' . $lang);
+            header('Location: index.php?page=' . $redirectTo . '&action=view&numetu=' . urlencode($data['NumEtu']) . '&lang=' . $lang);
             exit;
         }
 
@@ -309,22 +311,56 @@ class FoldersControllerAdmin
             ? (($lang === 'fr') ? 'Dossier mis à jour' : 'Folder updated')
             : (($lang === 'fr') ? 'Erreur lors de la mise à jour' : 'Error updating folder');
 
-        header('Location: index.php?page=folders-admin&action=view&numetu=' . urlencode($data['NumEtu']) . '&lang=' . $lang);
+        header('Location: index.php?page=' . $redirectTo . '&action=view&numetu=' . urlencode($data['NumEtu']) . '&lang=' . $lang);
         exit;
     }
 
     private function validerDocuments(string $lang): void
     {
-        $numetu = $_POST['numetu'] ?? '';
+        $numetu     = $_POST['numetu']      ?? '';
+        $redirectTo = $_POST['redirect_to'] ?? 'folders-admin';
 
         if (empty($numetu)) {
             $_SESSION['message'] = ($lang === 'fr')
                 ? 'Erreur : Numéro étudiant manquant'
                 : 'Error: Student ID missing';
-            header('Location: index.php?page=folders-admin&lang=' . $lang);
+            header('Location: index.php?page=' . $redirectTo . '&lang=' . $lang);
             exit;
         }
 
+        // Mise à jour des champs du dossier étudiant
+        // (les champs sont copiés depuis formPrincipal vers form-validation via _syncFormToModal)
+        $studentData = [
+            'NumEtu'             => $numetu,
+            'Nom'                => $_POST['nom']                 ?? '',
+            'Prenom'             => $_POST['prenom']              ?? '',
+            'EmailPersonnel'     => $_POST['email_perso']         ?? '',
+            'Telephone'          => $_POST['telephone']           ?? '',
+            'Type'               => $_POST['type']                ?? null,
+            'DateNaissance'      => $_POST['naissance']           ?? null,
+            'Sexe'               => $_POST['sexe']                ?? null,
+            'Adresse'            => $_POST['adresse']             ?? null,
+            'CodePostal'         => $_POST['cp']                  ?? null,
+            'Ville'              => $_POST['ville']               ?? null,
+            'EmailAMU'           => $_POST['email_amu']           ?? null,
+            'CodeDepartement'    => $_POST['departement']         ?? null,
+            'Zone'               => $_POST['zone']                ?? 'europe',
+            'Composante'         => $_POST['composante']          ?? null,
+            'Pays'               => $_POST['pays']                ?? null,
+            'Campus'             => $_POST['campus']              ?? null,
+            'Discipline'         => $_POST['discipline']          ?? null,
+            'NiveauEtude'        => $_POST['niveau_etude']        ?? null,
+            'Formation'          => $_POST['formation']           ?? null,
+            'MoyenneBac'         => $_POST['moyenne_bac']         ?? null,
+            'MoyenneSansBac'     => $_POST['moyenne_sans_bac']    ?? null,
+            'AvisDRI'            => $_POST['avis_dri']            ?? null,
+            'DateDebut'          => $_POST['date_debut']          ?? null,
+            'MobiliteAnterieure' => $_POST['mobilite_anterieure'] ?? null,
+        ];
+
+        $this->folderUseCase->updateDossier($studentData);
+
+        // Mise à jour des statuts de documents
         $statutsDocuments = [];
         foreach (['photo', 'cv', 'convention', 'lettre_motivation', 'langues'] as $doc) {
             if (!empty($_POST['statut_' . $doc])) {
@@ -332,8 +368,8 @@ class FoldersControllerAdmin
             }
         }
 
-        $dateLimite  = !empty($_POST['date_limite'])        ? $_POST['date_limite']        : null;
-        $commentaire = !empty($_POST['commentaire_admin'])  ? trim($_POST['commentaire_admin']) : null;
+        $dateLimite  = !empty($_POST['date_limite'])       ? $_POST['date_limite']            : null;
+        $commentaire = !empty($_POST['commentaire_admin']) ? trim($_POST['commentaire_admin']) : null;
 
         $success = $this->folderUseCase->enregistrerValidation(
             $numetu,
@@ -346,7 +382,7 @@ class FoldersControllerAdmin
             ? (($lang === 'fr') ? 'Validation enregistrée avec succès' : 'Validation saved successfully')
             : (($lang === 'fr') ? 'Erreur lors de l\'enregistrement'   : 'Error saving validation');
 
-        header('Location: index.php?page=folders-admin&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
+        header('Location: index.php?page=' . $redirectTo . '&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
         exit;
     }
 }

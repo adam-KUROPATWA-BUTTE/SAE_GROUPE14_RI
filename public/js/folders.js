@@ -40,18 +40,35 @@ class FolderManager {
         const formPrincipal = document.querySelector('.creation-form');
         if (!formPrincipal) return;
 
+        // Mémoriser les valeurs originales avant activation
         formPrincipal.querySelectorAll('input:not([type="file"]):not([type="hidden"]), select').forEach(field => {
             if (field.id !== 'numetu' && field.id !== 'numetu_display') {
                 field.setAttribute('data-original-value', field.value);
             }
         });
 
-        formPrincipal.querySelectorAll('input, select').forEach(field => {
+        // Retirer readonly sur les inputs texte
+        formPrincipal.querySelectorAll('input').forEach(field => {
+            if (field.id !== 'numetu' && field.id !== 'numetu_display') {
+                field.removeAttribute('readonly');
+                field.disabled = false;
+                field.style.backgroundColor = 'white';
+                field.style.color = 'black';
+                field.classList.remove('input-disabled');
+            }
+        });
+
+        // Retirer disabled sur les selects et désactiver les hidden miroirs pour éviter la double soumission
+        formPrincipal.querySelectorAll('select').forEach(field => {
             if (field.id !== 'numetu' && field.id !== 'numetu_display') {
                 field.disabled = false;
                 field.style.backgroundColor = 'white';
                 field.style.color = 'black';
                 field.classList.remove('input-disabled');
+
+                // Désactiver le hidden miroir pour éviter la double soumission
+                const mirror = formPrincipal.querySelector(`input[type="hidden"][name="${field.name}"].select-mirror`);
+                if (mirror) mirror.disabled = true;
             }
         });
 
@@ -324,20 +341,19 @@ class FolderManager {
         const lang      = appConfig ? appConfig.dataset.lang : 'fr';
 
         const translations = {
-            photo:             lang === 'fr' ? "Photo d'identité"       : 'ID Photo',
-            cv:                lang === 'fr' ? 'CV'                      : 'Resume',
-            convention:        lang === 'fr' ? 'Convention de stage'     : 'Internship Agreement',
-            lettre_motivation: lang === 'fr' ? 'Lettre de motivation'    : 'Motivation Letter',
-            langues:           lang === 'fr' ? 'Attestation de langues'  : 'Language Certificate',
-            conforme:          lang === 'fr' ? 'Accepté'                 : 'Accepted',
-            non_conforme:      lang === 'fr' ? 'Refusé'                  : 'Refused',
-            manquant:          lang === 'fr' ? 'Manquant'                : 'Missing',
-            present:           lang === 'fr' ? 'Déposé'                  : 'Uploaded',
-            aucun_manquant:    lang === 'fr' ? '✅ Aucun document manquant' : '✅ No missing documents',
+            photo:             lang === 'fr' ? "Photo d'identité"          : 'ID Photo',
+            cv:                lang === 'fr' ? 'CV'                         : 'Resume',
+            convention:        lang === 'fr' ? 'Convention de stage'        : 'Internship Agreement',
+            lettre_motivation: lang === 'fr' ? 'Lettre de motivation'       : 'Motivation Letter',
+            langues:           lang === 'fr' ? 'Attestation de langues'     : 'Language Certificate',
+            conforme:          lang === 'fr' ? 'Accepté'                    : 'Accepted',
+            non_conforme:      lang === 'fr' ? 'Refusé'                     : 'Refused',
+            manquant:          lang === 'fr' ? 'Manquant'                   : 'Missing',
+            present:           lang === 'fr' ? 'Déposé'                     : 'Uploaded',
+            aucun_manquant:    lang === 'fr' ? '✅ Aucun document manquant'  : '✅ No missing documents',
         };
 
         const analyseDocuments = window.analyseDocumentsData || { manquants: [], presents: [], statuts: {} };
-
 
         btnEnregistrer.addEventListener('click', (e) => {
             e.preventDefault();
@@ -345,7 +361,8 @@ class FolderManager {
             const modifications = this._detecterModifications(formPrincipal);
 
             if (modifications.length === 0) {
-                // Pas de modification → soumission directe, sans popup
+                // Pas de modification → soumission directe
+                // Les champs readonly sont inclus dans le POST nativement, pas besoin de JS supplémentaire
                 formPrincipal.submit();
                 return;
             }
@@ -388,18 +405,17 @@ class FolderManager {
         document.body.style.overflow = 'auto';
     }
 
-
     _syncFormToModal(formPrincipal, formModal) {
-        // Nettoyer les anciens champs copiés
         formModal.querySelectorAll('.synced-field').forEach(el => el.remove());
 
         formPrincipal.querySelectorAll('input:not([type="file"]), select, textarea').forEach(field => {
-            if (!field.name || field.disabled) return;
-            if (formModal.querySelector(`[name="${field.name}"]`)) return; // déjà présent
+            if (!field.name) return;
+            if (formModal.querySelector(`[name="${field.name}"]`)) return;
 
             const hidden = document.createElement('input');
             hidden.type  = 'hidden';
             hidden.name  = field.name;
+            // Récupère la valeur même si readonly ou disabled
             hidden.value = field.tagName === 'SELECT'
                 ? (field.options[field.selectedIndex]?.value ?? '')
                 : field.value;
@@ -416,7 +432,7 @@ class FolderManager {
             if (!input.name || input.name === 'numetu' || input.name === 'mobilite_type') return;
 
             const valeurOriginale = input.getAttribute('data-original-value');
-            if (valeurOriginale === null) return; // champ non débloqué
+            if (valeurOriginale === null) return; // champ non débloqué via activerModification()
 
             const valeurActuelle = input.value;
             if (valeurActuelle === valeurOriginale) return; // pas de changement
@@ -482,7 +498,6 @@ class FolderManager {
             input.value = statutsVue[doc] || statuts[doc] || '';
         });
 
-        // Documents manquants
         const listeManquants = document.getElementById('liste-manquants');
         if (listeManquants) {
             listeManquants.innerHTML = manquants.length === 0
@@ -513,7 +528,6 @@ class FolderManager {
         }
     }
 }
-
 
 document.addEventListener('DOMContentLoaded', () => {
     window.folderManager = new FolderManager();
