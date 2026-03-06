@@ -675,6 +675,119 @@ tr:nth-child(even) {
     border-radius: 5px;
     font-size: 0.95rem;
 }
+/* ============================================================
+   Champs éditables (niveau_etude, moyenne_sans_bac, langues)
+   ============================================================ */
+
+.label-editable {
+    font-weight: 600;
+}
+
+.input-editable {
+    border: 1px solid #9ca3af !important;
+    background-color: #ffffff !important;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.input-editable:focus {
+    outline: none;
+    border-color: #6b7280 !important;
+    box-shadow: none;
+}
+
+/* ============================================================
+   Bannière de décision (chef de département uniquement)
+   ============================================================ */
+
+.banniere-decision {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px 20px;
+    margin-bottom: 16px;
+}
+
+.banniere-decision-label {
+    font-weight: 600;
+    color: #374151;
+    white-space: nowrap;
+}
+
+.banniere-decision-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-decision {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 20px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.1s;
+}
+
+.btn-decision:active {
+    transform: scale(0.97);
+}
+
+/* Accepter */
+.btn-accepter {
+    background-color: #f0fdf4;
+    border-color: #86efac;
+    color: #15803d;
+}
+
+.btn-accepter:hover {
+    background-color: #dcfce7;
+    border-color: #4ade80;
+}
+
+.btn-accepter.btn-decision-active {
+    background-color: #16a34a;
+    border-color: #15803d;
+    color: #ffffff;
+}
+
+/* Refuser */
+.btn-refuser {
+    background-color: #fff1f2;
+    border-color: #fca5a5;
+    color: #b91c1c;
+}
+
+.btn-refuser:hover {
+    background-color: #fee2e2;
+    border-color: #f87171;
+}
+
+.btn-refuser.btn-decision-active {
+    background-color: #dc2626;
+    border-color: #b91c1c;
+    color: #ffffff;
+}
+
+/* Indicateur de statut générique (réutilisé) */
+.status-indicator.status-ok {
+    color: #16a34a;
+    font-weight: 600;
+}
+
+.status-indicator.status-error {
+    color: #dc2626;
+    font-weight: 600;
+}
 
 /* ═══════════════════════════════════════════════════════════
    AJOUT — "Revue des Pièces Justificatives" centré
