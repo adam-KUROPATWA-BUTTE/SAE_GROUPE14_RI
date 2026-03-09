@@ -460,4 +460,76 @@ class EmailReminderService
             return false;
         }
     }
+
+    /**
+     * Send notification when a new message is received
+     */
+    public static function sendMessageNotification(
+        string $toEmail,
+        string $recipientName,
+        string $senderName,
+        string $messagePreview,
+        string $platformLink
+    ): bool {
+        try {
+            $mj = new Client(
+                $_ENV['MAILJET_API_KEY'] ?? '',
+                $_ENV['MAILJET_SECRET_KEY'] ?? '',
+                true,
+                ['version' => 'v3.1']
+            );
+            // Disable SSL verification and increase timeout for local dev
+            $mj->addRequestOption('verify', false);
+            $mj->addRequestOption('timeout', 10);
+            $mj->addRequestOption('connect_timeout', 10);
+
+            $subject = "Nouveau message de {$senderName}";
+            
+            // Truncate message preview to 150 characters
+            $truncatedPreview = strlen($messagePreview) > 150 
+                ? substr($messagePreview, 0, 150) 
+                : $messagePreview;
+            
+            $htmlMessage = self::renderEmailTemplate('message_notification', [
+                'recipientName' => trim($recipientName),
+                'senderName' => trim($senderName),
+                'messagePreview' => $truncatedPreview,
+                'platformLink' => $platformLink
+            ]);
+
+            $body = [
+                'Messages' => [
+                    [
+                        'From' => [
+                            'Email' => self::$fromEmail,
+                            'Name' => self::$fromName
+                        ],
+                        'To' => [
+                            [
+                                'Email' => $toEmail,
+                                'Name' => $recipientName
+                            ]
+                        ],
+                        'Subject' => $subject,
+                        'HTMLPart' => $htmlMessage,
+                        'TextPart' => strip_tags($htmlMessage)
+                    ]
+                ]
+            ];
+
+            $response = $mj->post(Resources::$Email, ['body' => $body]);
+
+            if ($response->success()) {
+                error_log("✅ Message notification email sent to {$toEmail} from {$senderName}");
+                return true;
+            }
+
+            error_log("❌ Mailjet error: " . json_encode($response->getData()));
+            return false;
+
+        } catch (\Exception $e) {
+            error_log("❌ Mailjet exception for {$toEmail}: " . $e->getMessage());
+            return false;
+        }
+    }
 }
