@@ -351,6 +351,11 @@ li a:hover {
     margin-top: 1rem;
 }
 
+
+header .menu-toggle {
+    display: none;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
 
@@ -431,7 +436,7 @@ li a:hover {
 
 
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     header {
         padding: 5px;
     }
@@ -446,12 +451,18 @@ li a:hover {
         justify-content: space-between;
         align-items: center;
     }
-    .menu-toggle {
+
+    .right-buttons button {
+        padding : 6px 10px;
+        font-size: 0.7rem;
+    }
+
+    header .menu-toggle {
         display: flex;
-        font-size: 28px;
+        font-size: 1.8rem;
         background: none;
         border: none;
-        cursor: pointer;
+        color: var(--primary-color);
     }
 
     nav.menu {
@@ -495,13 +506,29 @@ li a:hover {
     }
 
     main {
-        margin: 1em;
-        padding: 1.5em;
+        margin: 0.5em;
+        padding: 1em;
+    }
+
+    h1{
+        font-size: 1rem;
+        text-align: center;
+    }
+
+    h2{
+        font-size: 1.2rem;
+    }
+
+    p, ul li, li a{
+        font-size: 0.9rem;
     }
 
     table {
-        font-size: 0.85em;
-    }
+        font-size: 0.72rem;
+        display: block;
+        overflow-x: auto;
+        width: 100%;
+}
 
     th, td {
         padding: 8px 6px;
