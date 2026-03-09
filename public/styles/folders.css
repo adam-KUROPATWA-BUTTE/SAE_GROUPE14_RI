@@ -654,11 +654,18 @@ tr:nth-child(even) {
     color: #333;
 }
 .banniere-modifie-par__icone {
-    font-size: 1rem;
     flex-shrink: 0;
 }
 .banniere-modifie-par__texte strong {
     color: #1a3ecf;
+}
+
+.banniere-modifie-par__texte{
+    font-size: var(--text-size);
+}
+
+.banniere-texte{
+    font-size: var(--text-size);
 }
 
 .doc-review-item.is-accepted {
