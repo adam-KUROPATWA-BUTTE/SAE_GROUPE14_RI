@@ -45,7 +45,6 @@ class SuperAdminController implements ControllerInterface
         $departments = $service->getAvailableDepartments();
         $sites       = $service->getAvailableSites();
 
-        // ── Ajout d'un nouveau département ──
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'add_department') {
             $newDept = strtoupper(trim((string) ($_POST['new_department'] ?? '')));
             if ($newDept !== '' && !in_array($newDept, $departments, true)) {
@@ -89,6 +88,8 @@ class SuperAdminController implements ControllerInterface
             $role        = trim((string) ($_POST['role']        ?? ''));
             $departement = trim((string) ($_POST['departement'] ?? ''));
             $site        = trim((string) ($_POST['site']        ?? ''));
+            $nom         = trim((string) ($_POST['nom']         ?? ''));
+            $prenom      = trim((string) ($_POST['prenom']      ?? ''));
 
             $coordRoles = ['coordinateur', 'coordinateur_etude', 'coordinateur_stage', 'chef_departement'];
             $allRoles   = array_merge(['admin'], $coordRoles);
@@ -126,7 +127,9 @@ class SuperAdminController implements ControllerInterface
                         $password,
                         $role,
                         $isCoord          ? $departement : null,
-                        $role === 'admin' ? $site        : null
+                        $role === 'admin' ? $site        : null,
+                        $nom    !== '' ? $nom    : null,
+                        $prenom !== '' ? $prenom : null
                     );
                     $success = $lang === 'fr'
                         ? "Compte créé avec succès. Un email a été envoyé à $login."
