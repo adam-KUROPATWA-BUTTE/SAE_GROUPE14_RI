@@ -388,7 +388,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                        EmailPersonnel, EmailAMU, Telephone, CodeDepartement, Composante, Type, Zone, Pays,
                        Campus, Discipline, NiveauEtude, Formation, MoyenneBac, MoyenneSansBac, AvisDRI,
                        DateDebut, MobiliteAnterieure, IsComplete, PiecesJustificatives, status,
-                       StatutDocuments, DateLimite, CommentaireAdmin
+                       StatutDocuments, DateLimite, CommentaireAdmin, ModifiePar, ModifieLe
                 FROM dossiers WHERE NumEtu = :numetu LIMIT 1
             ");
             $stmt->execute([':numetu' => $numEtu]);
@@ -485,7 +485,9 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                     DateDebut = COALESCE(:DateDebut, DateDebut),
                     MobiliteAnterieure = COALESCE(:MobiliteAnterieure, MobiliteAnterieure),
                     PiecesJustificatives = COALESCE(:PiecesJustificatives, PiecesJustificatives),
-                    status = COALESCE(:status, status)
+                    status = COALESCE(:status, status),
+                    ModifiePar = COALESCE(:ModifiePar, ModifiePar),
+                    ModifieLe  = COALESCE(:ModifieLe,  ModifieLe)
                 WHERE NumEtu = :NumEtu
             ");
             $data[':NumEtu'] = $numEtu;

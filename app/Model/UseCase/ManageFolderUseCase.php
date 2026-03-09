@@ -16,7 +16,6 @@ class ManageFolderUseCase
         $this->dossierRepo = new DossierRepositoryPDO();
     }
 
-
     /**
      * @return array<int, array<string, mixed>>
      */
@@ -94,11 +93,12 @@ class ManageFolderUseCase
         return $this->dossierRepo->searchWithPagination($filters, 1, 0);
     }
 
-    public function updateDocumentStatus(string $numEtu, string $docType, string $status, string $comment): bool
+    public function updateDocumentStatus(string $numEtu, string $docType, string $status, string $comment, ?string $fileContent = null): bool
     {
         $dossier = $this->getStudentDetails($numEtu);
         if (!$dossier) return false;
 
+        // 1. Mettre à jour PiecesJustificatives
         $pieces = isset($dossier['pieces']) && is_array($dossier['pieces']) ? $dossier['pieces'] : [];
         if (!isset($pieces[$docType])) {
             $pieces[$docType] = ['file' => '', 'status' => $status, 'comment' => $comment];
@@ -107,7 +107,55 @@ class ManageFolderUseCase
             $pieces[$docType]['comment'] = $comment;
         }
 
-        return $this->dossierRepo->update($numEtu, [':PiecesJustificatives' => json_encode($pieces)]);
+        // Mettre à jour le fichier si fourni
+        if ($fileContent !== null && $fileContent !== false) {
+            $pieces[$docType]['file'] = base64_encode($fileContent);
+        }
+
+        // On envoie TOUS les paramètres à NULL, la commande COALESCE SQL gardera les anciennes valeurs !
+        $formattedData = [
+            ':Nom'                => null,
+            ':Prenom'             => null,
+            ':DateNaissance'      => null,
+            ':Sexe'               => null,
+            ':Adresse'            => null,
+            ':CodePostal'         => null,
+            ':Ville'              => null,
+            ':EmailPersonnel'     => null,
+            ':EmailAMU'           => null,
+            ':Telephone'          => null,
+            ':CodeDepartement'    => null,
+            ':Composante'         => null,
+            ':Type'               => null,
+            ':Zone'               => null,
+            ':Pays'               => null,
+            ':Campus'             => null,
+            ':Discipline'         => null,
+            ':NiveauEtude'        => null,
+            ':Formation'          => null,
+            ':MoyenneBac'         => null,
+            ':MoyenneSansBac'     => null,
+            ':AvisDRI'            => null,
+            ':DateDebut'          => null,
+            ':MobiliteAnterieure' => null,
+            ':PiecesJustificatives' => json_encode($pieces),
+            ':status'             => null,
+            ':ModifiePar'         => null,
+            ':ModifieLe'          => null,
+        ];
+
+        $updatedPieces = $this->dossierRepo->update($numEtu, $formattedData);
+
+        // 2. Mettre à jour le statut dans "StatutDocuments" (Nouvelle architecture)
+        $statuts = isset($dossier['statuts']) && is_array($dossier['statuts']) ? $dossier['statuts'] : [];
+        $statuts[$docType] = $status;
+
+        $dateLimite = $dossier['DateLimite'] ?? null;
+        $commentaireGlobal = $dossier['CommentaireAdmin'] ?? null;
+
+        $updatedStatuts = $this->dossierRepo->enregistrerValidation($numEtu, $statuts, $dateLimite, $commentaireGlobal);
+
+        return $updatedPieces && $updatedStatuts;
     }
 
     /**
@@ -235,6 +283,8 @@ class ManageFolderUseCase
             ':MobiliteAnterieure' => $data['mobilite_anterieure'] ?? ($data['MobiliteAnterieure'] ?? null),
             ':PiecesJustificatives' => $piecesJson,
             ':status'             => is_string($existing['status'] ?? null) ? $existing['status'] : 'depot',
+            ':ModifiePar'         => !empty($data['ModifiePar']) ? $data['ModifiePar'] : null,
+            ':ModifieLe'          => !empty($data['ModifieLe'])  ? $data['ModifieLe']  : null,
         ];
 
         return $this->dossierRepo->update($numEtu, $formattedData);

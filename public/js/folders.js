@@ -8,6 +8,7 @@ class FolderManager {
         this.initValidationModal();
         this.initStatutDocumentButtons();
         this.initDateLimiteBanniere();
+        this.initFileUploadEvents();
     }
 
     initFormEvents() {
@@ -241,15 +242,53 @@ class FolderManager {
         const container = document.querySelector(`.doc-review-item[data-doctype="${docType}"]`);
         if (!container) return;
 
-        const activeBtn = container.querySelector('.btn-status.active');
-        const status    = activeBtn ? activeBtn.dataset.statut : 'pending';
-        const comment   = container.querySelector(`textarea[name="comment_${docType}"]`)?.value ?? '';
-        const indicator = document.getElementById(`indicator_${docType}`);
-        const btn       = container.querySelector('.btn-confirm-doc');
+        // Lire le radio coché
+        const checkedRadio = container.querySelector(`input[name="status_${docType}"]:checked`);
+        const status       = checkedRadio ? checkedRadio.value : 'pending';
+        const comment      = container.querySelector(`textarea[name="comment_${docType}"]`)?.value ?? '';
+        const indicator    = document.getElementById(`indicator_${docType}`);
+        const btn          = container.querySelector('.btn-confirm-doc');
+
+        // Vérifier si un fichier est sélectionné
+        const fileInputName = docType === 'langues' ? 'langues_file' : docType;
+        const fileInput     = container.querySelector(`input[type="file"][name="${fileInputName}"]`);
+        const hasNewFile    = fileInput && fileInput.files && fileInput.files.length > 0;
 
         if (btn) btn.disabled = true;
         if (indicator) { indicator.textContent = "Sauvegarde en cours..."; indicator.style.color = "orange"; }
 
+        if (hasNewFile) {
+            // ── Fichier à uploader : AJAX multipart vers update_document_status ──
+            const formData2 = new FormData();
+            formData2.append('numetu',   numEtu);
+            formData2.append('doc_type', docType);
+            formData2.append('status',   status);
+            formData2.append('comment',  comment);
+            formData2.append('file',     fileInput.files[0]);
+
+            try {
+                const response = await fetch('index.php?page=update_document_status', { method: 'POST', body: formData2 });
+                const result   = await response.json();
+                if (indicator) {
+                    indicator.textContent = result.success ? "Enregistré ✓" : (result.message || "Erreur serveur");
+                    indicator.style.color = result.success ? "green"        : "red";
+                }
+                if (result.success) {
+                    // Recharger la page pour afficher le fichier uploadé
+                    setTimeout(() => window.location.reload(), 800);
+                }
+            } catch {
+                if (indicator) { indicator.textContent = "Erreur réseau"; indicator.style.color = "red"; }
+            }
+
+            setTimeout(() => {
+                if (indicator) indicator.textContent = "";
+                if (btn) btn.disabled = false;
+            }, 3000);
+            return;
+        }
+
+        // ── Pas de fichier : AJAX classique ──
         const formData = new FormData();
         formData.append('numetu',   numEtu);
         formData.append('doc_type', docType);
@@ -360,13 +399,7 @@ class FolderManager {
 
             const modifications = this._detecterModifications(formPrincipal);
 
-            if (modifications.length === 0) {
-                // Pas de modification → soumission directe
-                // Les champs readonly sont inclus dans le POST nativement, pas besoin de JS supplémentaire
-                formPrincipal.submit();
-                return;
-            }
-
+            // Toujours ouvrir la modal pour permettre la notification des statuts de pièces
             this._afficherModifications(modifications);
             this._afficherDocuments(analyseDocuments, translations);
             modal.classList.add('active');
@@ -473,29 +506,52 @@ class FolderManager {
         ).join('');
     }
 
+    initFileUploadEvents() {
+        document.querySelectorAll('.doc-review-item input[type="file"]').forEach(fileInput => {
+            fileInput.addEventListener('change', function () {
+                if (!this.files || this.files.length === 0) return;
+
+                const item = this.closest('.doc-review-item');
+                if (!item) return;
+
+                item.querySelectorAll('input[type="radio"], textarea, .btn-confirm-doc').forEach(el => {
+                    el.disabled = false;
+                    el.classList.remove('input-disabled');
+                });
+
+                const docActions = item.querySelector('.doc-actions');
+                if (docActions) docActions.classList.remove('disabled-area');
+            });
+        });
+    }
+
     _afficherDocuments(analyseDocuments, translations) {
         const manquants = analyseDocuments.manquants || [];
         const presents  = analyseDocuments.presents  || [];
         const statuts   = analyseDocuments.statuts   || {};
 
+        // Lire les radios cochés dans _doc_review.php
         const statutsVue = {};
-        document.querySelectorAll('.statut-document-buttons').forEach(block => {
-            const doc   = block.dataset.doc;
-            const actif = block.querySelector('.btn-status.active');
-            if (actif) statutsVue[doc] = actif.dataset.statut;
+        document.querySelectorAll('.doc-review-item').forEach(item => {
+            const doc          = item.dataset.doctype;
+            const checkedRadio = doc ? item.querySelector(`input[name="status_${doc}"]:checked`) : null;
+            if (doc && checkedRadio) statutsVue[doc] = checkedRadio.value;
         });
 
         const formValidation = document.getElementById('form-validation');
+
+        // Supprimer les anciens hidden pour repartir propre
+        document.querySelectorAll('[id^="statut_modal_"]').forEach(el => el.remove());
+
+        // Créer un hidden par doc présent (valeur radio OU valeur BDD)
         presents.forEach(doc => {
-            let input = document.getElementById('statut_modal_' + doc);
-            if (!input) {
-                input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'statut_' + doc;
-                input.id   = 'statut_modal_' + doc;
-                if (formValidation) formValidation.appendChild(input);
-            }
-            input.value = statutsVue[doc] || statuts[doc] || '';
+            const val   = statutsVue[doc] || statuts[doc] || 'pending';
+            const input = document.createElement('input');
+            input.type  = 'hidden';
+            input.name  = 'statut_' + doc;
+            input.id    = 'statut_modal_' + doc;
+            input.value = val;
+            if (formValidation) formValidation.appendChild(input);
         });
 
         const listeManquants = document.getElementById('liste-manquants');
@@ -514,10 +570,10 @@ class FolderManager {
         if (listePresents) {
             listePresents.innerHTML = presents.map(doc => {
                 const s = statutsVue[doc] || statuts[doc] || '';
-                const badge = s === 'conforme'
-                    ? `<span class="document-status-badge" style="background:#28a745;color:white;">✓ ${translations.conforme}</span>`
-                    : s === 'non_conforme'
-                        ? `<span class="document-status-badge" style="background:#dc3545;color:white;">✗ ${translations.non_conforme}</span>`
+                const badge = s === 'accepted'
+                    ? `<span class="document-status-badge" style="background:#28a745;color:white;">✅ ${translations.conforme}</span>`
+                    : s === 'refused'
+                        ? `<span class="document-status-badge" style="background:#dc3545;color:white;">❌ ${translations.non_conforme}</span>`
                         : `<span class="document-status-badge badge-present">${translations.present}</span>`;
                 return `
                     <div class="document-validation-item present">
