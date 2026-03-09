@@ -401,6 +401,15 @@ main.messages {
     .outlook-reading-pane {
         flex: 1;
     }
+
+    header .menu-toggle {
+        display: block;
+        font-size: 28px;
+        color: var(--primary-color);
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
 }
 
 
