@@ -149,7 +149,9 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             $stmt = $this->db->prepare("
                 SELECT Pays AS name, COUNT(*) AS count
                 FROM dossiers
-                WHERE Pays IS NOT NULL AND Pays != ''
+                WHERE Pays IS NOT NULL 
+                  AND Pays != '' 
+                  AND LOWER(Pays) != 'france'
                 $mobiliteClause
                 $deptClause
                 GROUP BY Pays
