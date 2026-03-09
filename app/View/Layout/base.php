@@ -64,8 +64,9 @@ $noMain       = $noMain ?? false;
 
 <?php endif; ?>
 
-<?php include __DIR__ . '/chatbot.php'; ?>
-<?php include __DIR__ . '/footer.php'; ?>
+<?php if (!in_array($userRole ?? '', ['coordinateur', 'coordinateur_etude', 'coordinateur_stage', 'chef_departement'])): ?>
+    <?php include __DIR__ . '/chatbot.php'; ?>
+<?php endif; ?><?php include __DIR__ . '/footer.php'; ?>
 
 <!-- Scripts de base -->
 <script src="js/main.js"></script>
