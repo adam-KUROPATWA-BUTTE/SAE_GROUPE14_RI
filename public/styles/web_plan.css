@@ -84,3 +84,13 @@ footer::before {
 footer p {
     margin: 0;
 }
+
+@media (max-width: 1024px) {
+    ul{
+        font-size: 20px;
+    }
+    ul li a{
+        font-size: 25px;
+    }
+
+}

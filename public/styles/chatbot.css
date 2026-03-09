@@ -271,8 +271,35 @@ body.tritanopie .chat-input-area button {
 /* =========================================
    RESPONSIVE DESIGN (Mobile)
    ========================================= */
+@media (max-width: 1024px) {
+    /*a changer */
+    #help-bubble {
+        width: 65px;
+        height: 65px;
+        font-size: 30px;
+        bottom: 20px;
+        right: 20px;
+    }
 
-@media (max-width: 600px) {
+    .chat-popup {
+        bottom: 95px;
+        right: 10px;
+        width: 95vw;
+        height: 75vh;
+        border-radius: 18px;
+    }
+
+    .help-popup-header {
+        font-size: 1.15em;
+        padding: 16px;
+    }
+
+    .chat-input-area input {
+        font-size: 1.1em;
+    }
+}
+
+@media (max-width: 480px) {
     #help-bubble {
         width: 55px;
         height: 55px;
