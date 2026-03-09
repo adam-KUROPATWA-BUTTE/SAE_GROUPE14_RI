@@ -388,7 +388,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                        EmailPersonnel, EmailAMU, Telephone, CodeDepartement, Composante, Type, Zone, Pays,
                        Campus, Discipline, NiveauEtude, Formation, MoyenneBac, MoyenneSansBac, AvisDRI,
                        DateDebut, MobiliteAnterieure, IsComplete, PiecesJustificatives, status,
-                       StatutDocuments, DateLimite, CommentaireAdmin
+                       StatutDocuments, DateLimite, CommentaireAdmin, ModifiePar, ModifieLe
                 FROM dossiers WHERE NumEtu = :numetu LIMIT 1
             ");
             $stmt->execute([':numetu' => $numEtu]);
@@ -485,7 +485,9 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                     DateDebut = COALESCE(:DateDebut, DateDebut),
                     MobiliteAnterieure = COALESCE(:MobiliteAnterieure, MobiliteAnterieure),
                     PiecesJustificatives = COALESCE(:PiecesJustificatives, PiecesJustificatives),
-                    status = COALESCE(:status, status)
+                    status = COALESCE(:status, status),
+                    ModifiePar = COALESCE(:ModifiePar, ModifiePar),
+                    ModifieLe  = COALESCE(:ModifieLe,  ModifieLe)
                 WHERE NumEtu = :NumEtu
             ");
             $data[':NumEtu'] = $numEtu;
@@ -760,6 +762,9 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         }
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function getAllDepartements(): array
     {
         $sql = "SELECT DISTINCT CodeDepartement
@@ -769,10 +774,17 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             ORDER BY CodeDepartement ASC";
 
         $stmt = $this->db->query($sql);
+        
+        if ($stmt === false) {
+            return [];
+        }
+
         $departments = [];
 
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $departments[] = $row['CodeDepartement'];
+            if (is_array($row) && isset($row['CodeDepartement']) && is_scalar($row['CodeDepartement'])) {
+                $departments[] = (string) $row['CodeDepartement'];
+            }
         }
 
         return $departments;
@@ -830,9 +842,18 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             }
 
             $statutsJson = $result['StatutDocuments'] ?? '{}';
-            $statuts = is_string($statutsJson) && $statutsJson !== ''
+            $decodedStatuts = is_string($statutsJson) && $statutsJson !== ''
                 ? (json_decode($statutsJson, true) ?? [])
                 : [];
+
+            $statuts = [];
+            if (is_array($decodedStatuts)) {
+                foreach ($decodedStatuts as $key => $val) {
+                    if (is_scalar($key) && is_scalar($val)) {
+                        $statuts[(string)$key] = (string)$val;
+                    }
+                }
+            }
 
             return ['manquants' => $manquants, 'presents' => $presents, 'statuts' => $statuts];
 

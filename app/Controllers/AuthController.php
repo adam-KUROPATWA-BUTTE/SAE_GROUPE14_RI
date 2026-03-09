@@ -75,6 +75,10 @@ class AuthController implements ControllerInterface
                     $_SESSION['departement'] = $result['departement'];
                 }
 
+                // Stocker nom + prénom pour les bannières "modifié par"
+                if (isset($result['nom']))    $_SESSION['admin_nom']    = $result['nom'];
+                if (isset($result['prenom'])) $_SESSION['admin_prenom'] = $result['prenom'];
+
                 // SÉCURITÉ : Interception pour première connexion
                 if (!empty($result['force_change_password'])) {
                     header('Location: index.php?page=force-reset-password');

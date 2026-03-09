@@ -94,7 +94,17 @@ class UserRepositoryPDO implements UserRepositoryInterface
     }
 
     /**
-     * @return array{success: bool, role?: string, numetu?: string|null, departement?: string|null, force_change_password?: bool}
+     * @param string $identifier
+     * @param string $password
+     * @return array{
+     * success: bool, 
+     * role?: string, 
+     * numetu?: string|null, 
+     * departement?: string|null, 
+     * force_change_password?: bool,
+     * nom?: string|null,
+     * prenom?: string|null
+     * }
      */
     public function login(string $identifier, string $password): array
     {
@@ -103,10 +113,21 @@ class UserRepositoryPDO implements UserRepositoryInterface
             : $this->findByStudentNumber($identifier);
 
         if ($user && password_verify($password, $user->getPassword())) {
+            // Récupérer nom + prenom directement depuis admins (fiable, indépendant de User)
+            $nom    = null;
+            $prenom = null;
             if ($user->getRole() !== 'student') {
                 try {
                     $upd = $this->pdo->prepare("UPDATE admins SET last_login = NOW() WHERE email = :email");
                     $upd->execute([':email' => $identifier]);
+
+                    $stmtAdmin = $this->pdo->prepare("SELECT nom, prenom FROM admins WHERE email = :email LIMIT 1");
+                    $stmtAdmin->execute([':email' => $identifier]);
+                    $adminData = $stmtAdmin->fetch(PDO::FETCH_ASSOC);
+                    if (is_array($adminData)) {
+                        $nom    = !empty($adminData['nom'])    ? strval($adminData['nom'])    : null;
+                        $prenom = !empty($adminData['prenom']) ? strval($adminData['prenom']) : null;
+                    }
                 } catch (PDOException $e) { /* silencieux */ }
             }
 
@@ -123,10 +144,12 @@ class UserRepositoryPDO implements UserRepositoryInterface
             }
 
             return [
-                'success'              => true,
-                'role'                 => $user->getRole(),
-                'numetu'               => $user->getNumetu(),
-                'departement'          => $user->getDepartement(),
+                'success'               => true,
+                'role'                  => $user->getRole(),
+                'numetu'                => $user->getNumetu(),
+                'departement'           => $user->getDepartement(),
+                'nom'                   => $nom,
+                'prenom'                => $prenom,
                 'force_change_password' => $forceChange,
             ];
         }
@@ -164,9 +187,12 @@ class UserRepositoryPDO implements UserRepositoryInterface
         $numetu      = (isset($data['numetu'])      && is_scalar($data['numetu']))      ? (string)$data['numetu']       : null;
         $password    = (isset($data['password'])    && is_scalar($data['password']))    ? (string)$data['password']     : '';
         $departement = (isset($data['departement']) && is_scalar($data['departement'])) ? (string)$data['departement'] : null;
+        $nom         = (isset($data['nom'])         && is_scalar($data['nom']))         ? (string)$data['nom']         : null;
+        $prenom      = (isset($data['prenom'])      && is_scalar($data['prenom']))      ? (string)$data['prenom']      : null;
 
         $user = new User($id, $email, $numetu, $password, $role);
         $user->setDepartement($departement);
+        // setNom/setPrenom ignorés : non définis dans User, on passe par la BDD dans login()
         return $user;
     }
 

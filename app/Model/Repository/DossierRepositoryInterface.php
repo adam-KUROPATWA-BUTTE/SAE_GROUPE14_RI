@@ -61,36 +61,36 @@ interface DossierRepositoryInterface
     // Statistics
     // ---------------------------------------------------------------
 
-    public function getDossierStats(?string $mobilite = null): DossierStats;
+    public function getDossierStats(?string $mobilite = null, ?string $departement = null): DossierStats;
 
     public function getGlobalStats(): DossierStats;
-
-    public function getGenderStats(?string $mobilite = null): GenderStats;
+    
+    public function getGenderStats(?string $mobilite = null, ?string $departement = null): GenderStats;
+    
+    /**
+     * @return array<int, array{name: string, count: int}>
+     */
+    public function getTopCountries(int $limit, ?string $mobilite = null, ?string $departement = null): array;
 
     /**
      * @return array<int, array{name: string, count: int}>
      */
-    public function getTopCountries(int $limit, ?string $mobilite = null): array;
-
-    /**
-     * @return array<int, array{name: string, count: int}>
-     */
-    public function getDepartmentStats(int $limit, ?string $mobilite = null): array;
+    public function getDepartmentStats(int $limit, ?string $mobilite = null, ?string $departement = null): array;
 
     /**
      * @return array{incoming: int, outgoing: int}
      */
-    public function getIncomingOutgoingStats(?string $mobilite = null): array;
+    public function getIncomingOutgoingStats(?string $mobilite = null, ?string $departement = null): array;
 
     /**
      * @return array<int, array{name: string, count: int}>
      */
-    public function getContinentStats(?string $mobilite = null): array;
+    public function getContinentStats(?string $mobilite = null, ?string $departement = null): array;
 
     /**
      * @return array{europe_countries: int, non_europe_countries: int}
      */
-    public function getEuropeVsNonEuropeStats(?string $mobilite = null): array;
+    public function getEuropeVsNonEuropeStats(?string $mobilite = null, ?string $departement = null): array;
 
     /**
      * @return array<int, array{name: string, count: int}>

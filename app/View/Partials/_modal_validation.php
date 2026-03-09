@@ -32,11 +32,6 @@
                 <div id="liste-presents"></div>
             </div>
 
-            <div class="modal-section">
-                <h3>💬 <?= $t(['fr' => 'Commentaire pour l\'étudiant (optionnel)', 'en' => 'Comment for Student (optional)']) ?></h3>
-                <textarea name="commentaire_admin" id="commentaire_admin" class="commentaire-textarea"
-                          placeholder="<?= $t(['fr' => 'Ex: Votre attestation d\'assurance doit être à jour...', 'en' => 'Ex: Your insurance certificate must be valid...']) ?>"></textarea>
-            </div>
 
             <div class="modal-actions">
                 <button type="button" class="btn-modal btn-modal-cancel" id="btn-modal-cancel">

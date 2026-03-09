@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Home Coordinateur
  *
@@ -10,6 +9,8 @@
  * @var float|int $completionPercentage
  * @var bool $isLoggedIn
  * @var string|null $mobiliteFilter
+ * @var string|null $departementFilter
+ * @var array<int, string> $allDepartements
  * @var \Model\Entity\AdminStats|null $stats
  */
 

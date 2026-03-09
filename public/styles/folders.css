@@ -641,6 +641,63 @@ tr:nth-child(even) {
     border-style: dashed;
 }
 
+.banniere-modifie-par {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f0f4ff;
+    border-left: 4px solid #4a6cf7;
+    border-radius: 6px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    color: #333;
+}
+.banniere-modifie-par__icone {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.banniere-modifie-par__texte strong {
+    color: #1a3ecf;
+}
+
+.doc-review-item.is-accepted {
+    opacity: 0.6;
+    background: #f4f7f4;
+    border-left: 4px solid #28a745;
+    border-radius: 6px;
+    transition: opacity 0.2s;
+}
+.doc-review-item.is-accepted:hover { opacity: 0.85; }
+.doc-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+}
+.doc-status-badge.accepted { background: #d4edda; color: #155724; }
+.doc-status-badge.refused  { background: #f8d7da; color: #721c24; }
+.btn-undo-accept {
+    font-size: 0.78rem;
+    padding: 3px 10px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    background: #fff;
+    color: #555;
+    cursor: pointer;
+    margin-top: 4px;
+}
+.btn-undo-accept:hover { background: #f0f0f0; color: #222; }
+.doc-review-item.is-accepted .status-radios-wrap { display: none; }
+.doc-review-item.is-accepted.editing .status-radios-wrap { display: block; }
+.doc-review-item.is-accepted.editing { opacity: 1; background: #fff; border-left-color: #ffc107; }
+.doc-review-item.is-accepted .doc-status-shown { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.doc-review-item.is-accepted.editing .doc-status-shown { display: none; }
+
 .banniere-icone {
     font-size: 1.4rem;
 }

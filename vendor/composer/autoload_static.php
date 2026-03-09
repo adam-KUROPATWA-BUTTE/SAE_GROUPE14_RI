@@ -48,6 +48,7 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
             'PhpParser\\' => 10,
             'PhpOption\\' => 10,
             'PhpOffice\\PhpSpreadsheet\\' => 25,
+            'PHPMailer\\PHPMailer\\' => 20,
             'PDepend\\' => 8,
         ),
         'M' =>
@@ -155,6 +156,10 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         'PhpOffice\\PhpSpreadsheet\\' =>
         array (
             0 => __DIR__ . '/..' . '/phpoffice/phpspreadsheet/src/PhpSpreadsheet',
+        ),
+        'PHPMailer\\PHPMailer\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
         ),
         'PDepend\\' =>
         array (

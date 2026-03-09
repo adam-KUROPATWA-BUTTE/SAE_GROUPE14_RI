@@ -185,6 +185,13 @@ ob_start();
         $currentStatus = $studentData['status'] ?? 'depot';
         ?>
 
+        <?php
+        // ── Bannière "Modifié par" ── tout en haut, toujours visible
+        $modifiePar = $studentData['ModifiePar'] ?? null;
+        $modifieLe  = $studentData['ModifieLe']  ?? null;
+        include __DIR__ . '/../Partials/_banniere_modifie_par.php';
+        ?>
+
         <h1><?= $t(['fr' => 'Dossier étudiant', 'en' => 'Student Folder']) ?></h1>
         <div class="form-back-button">
             <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => $PAGE]) ?>'" class="btn-secondary">
@@ -205,7 +212,7 @@ ob_start();
             <div class="form-section">
                 <?php
                 $editableFields = [];
-                $allEditable    = false;
+                $allEditable    = true; // tous les champs éditables directement
                 include __DIR__ . '/../Partials/_form_fields.php';
                 ?>
             </div>
@@ -222,15 +229,8 @@ ob_start();
             <?php include __DIR__ . '/../Partials/_global_status.php'; ?>
 
             <div class="form-actions">
-                <button type="button" id="btn-modifier" class="btn-danger">
-                    <?= $t(['fr' => 'Modifier', 'en' => 'Edit']) ?>
-                </button>
-                <button type="button" id="btn-enregistrer" class="btn-secondary btn-hidden">
-                    <?= $t(['fr' => 'Enregistrer', 'en' => 'Save']) ?>
-                </button>
-                <button type="button" id="btn-annuler" class="btn-secondary btn-hidden"
-                        onclick="window.location.href='<?= $buildUrl('index.php', ['page' => $PAGE]) ?>'">
-                    <?= $t(['fr' => 'Annuler', 'en' => 'Cancel']) ?>
+                <button type="button" id="btn-enregistrer" class="btn-secondary">
+                    <?= $t(['fr' => '✉️ Enregistrer et notifier', 'en' => '✉️ Save and Notify']) ?>
                 </button>
                 <button type="button" class="btn-secondary"
                         onclick="window.location.href='<?= $buildUrl('index.php', ['page' => $PAGE]) ?>'">

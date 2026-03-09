@@ -2,10 +2,10 @@
 /**
  * Header commun
  *
- * @var string $lang
- * @var string $activeMenu
- * @var string $userRole - 'admin', 'student', 'coordinateur_etude', 'coordinateur_stage', 'chef_departement'
- * @var Closure(array<string, string>): string $t
+ * @var string|null $lang
+ * @var string|null $activeMenu
+ * @var string|null $userRole - 'admin', 'student', 'coordinateur_etude', 'coordinateur_stage', 'chef_departement'
+ * @var callable|null $t
  */
 
 if (empty($userRole) && !empty($_SESSION['role'])) {
