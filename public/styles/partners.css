@@ -247,8 +247,8 @@ a {
 
 @media (max-width: 480px) {
     main {
-        width: 98%;
-        margin: 0.8em auto;
+        width: 95%;
+        margin: 0.5em auto;
         padding: 1em;
     }
 
@@ -279,5 +279,21 @@ a {
         border: none;
         cursor: pointer;
     }
+
+    .btn-add-partner {
+        font-size: 0.8rem;
+        display: block;
+        margin: 0 auto;
+
+    }
+
+    .partners{
+        font-size: 1rem;
+    }
+
+    footer{
+        width: 95%;
+    }
+
 }
 
