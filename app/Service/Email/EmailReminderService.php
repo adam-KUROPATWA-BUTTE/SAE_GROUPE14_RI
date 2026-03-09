@@ -272,4 +272,106 @@ class EmailReminderService
 </body>
 </html>";
     }
+
+    /**
+     * Send a welcome email when a new account is created by SuperAdmin
+     */
+    public static function sendWelcomeEmail(
+        string $toEmail,
+        string $password,
+        string $role,
+        ?string $departement = null,
+        ?string $site = null,
+        ?string $nom = null,
+        ?string $prenom = null
+    ): bool {
+        try {
+            $mail = self::getMailer();
+
+            $fullName = trim(($prenom ?? '') . ' ' . ($nom ?? ''));
+            $displayName = $fullName !== '' ? $fullName : 'Nouvel utilisateur';
+
+            $mail->setFrom(self::$fromEmail, self::$fromName);
+            $mail->addAddress($toEmail, $displayName);
+
+            $mail->isHTML(true);
+            $mail->Subject = "Votre accès à la plateforme AMU Relations Internationales";
+            $htmlMessage   = self::buildWelcomeMessage($toEmail, $password, $role, $departement, $site, $nom, $prenom);
+            $mail->Body    = $htmlMessage;
+            $mail->AltBody = strip_tags(str_replace(['<br>', '</p>', '<li>'], ["\n", "\n\n", "\n - "], $htmlMessage));
+
+            $mail->send();
+            error_log("✅ PHPMailer: Email de bienvenue envoyé à {$toEmail}");
+            return true;
+        } catch (\Throwable $e) {
+            error_log("❌ PHPMailer (Bienvenue): {$e->getMessage()}");
+            return false;
+        }
+    }
+
+    /**
+     * Build the HTML message for the welcome email
+     */
+    private static function buildWelcomeMessage(
+        string $email,
+        string $password,
+        string $role,
+        ?string $departement,
+        ?string $site,
+        ?string $nom,
+        ?string $prenom
+    ): string {
+        $fullName = htmlspecialchars(trim(($prenom ?? '') . ' ' . ($nom ?? '')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $greeting = $fullName !== '' ? "Bonjour {$fullName}," : "Bonjour,";
+        $logoUrl  = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBl1mF7ktLaJxYCRD64rZyUJ1WcUDvcJBcIw&s';
+
+        // Traduction des rôles pour l'affichage
+        $roleLabels = [
+            'admin'              => 'Secrétaire',
+            'coordinateur'       => 'Coordinateur Étude & Stage',
+            'coordinateur_etude' => 'Coordinateur d\'étude',
+            'coordinateur_stage' => 'Coordinateur de stage',
+            'chef_departement'   => 'Chef de département'
+        ];
+        $displayRole = $roleLabels[$role] ?? $role;
+
+        $extraHtml = '';
+        if ($departement) {
+            $extraHtml .= "<li><strong>Département :</strong> " . htmlspecialchars($departement, ENT_QUOTES, 'UTF-8') . "</li>";
+        }
+        if ($site) {
+            $extraHtml .= "<li><strong>Site :</strong> " . htmlspecialchars($site, ENT_QUOTES, 'UTF-8') . "</li>";
+        }
+
+        return "
+<!DOCTYPE html>
+<html lang=\"fr\">
+<head><meta charset=\"utf-8\"><title>Création de compte AMU</title></head>
+<body style=\"font-family:Arial,sans-serif;background:#f6f6f6;margin:0;padding:20px;\">
+  <div style=\"max-width:600px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);\">
+    <div style=\"background:#1d7ac6;padding:20px;text-align:center;\">
+      <img src=\"{$logoUrl}\" alt=\"AMU\" style=\"height:50px;\">
+      <h2 style=\"color:#fff;margin:10px 0 0;\">Bienvenue sur la plateforme RI AMU</h2>
+    </div>
+    <div style=\"padding:30px;\">
+      <p>{$greeting}</p>
+      <p>Un compte vient de vous être créé pour accéder à la plateforme de gestion des Relations Internationales.</p>
+      <div style=\"background-color:#f9f9f9;border-left:4px solid #1d7ac6;padding:15px;margin:20px 0;\">
+        <ul style=\"list-style:none;padding:0;margin:0;line-height:1.8;color:#333;\">
+            <li><strong>Identifiant (Login) :</strong> {$email}</li>
+            <li><strong>Mot de passe :</strong> {$password}</li>
+            <li><strong>Rôle :</strong> {$displayRole}</li>
+            {$extraHtml}
+        </ul>
+      </div>
+      <p style=\"color:#c62828;font-size:14px;font-weight:bold;\">⚠️ Il est fortement recommandé de modifier ce mot de passe temporaire dès votre première connexion.</p>
+      <div style=\"text-align:center;margin:30px 0 16px;\">
+        <a href=\"https://ri-amu.app/\" style=\"background-color:#1d7ac6;color:#fff;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;font-weight:bold;\">Se connecter à mon espace</a>
+      </div>
+      <p style=\"color:#bbb;font-size:12px;margin:8px 0 0;text-align:center;\">Email automatique • Ne pas répondre</p>
+    </div>
+  </div>
+</body>
+</html>";
+    }
 }

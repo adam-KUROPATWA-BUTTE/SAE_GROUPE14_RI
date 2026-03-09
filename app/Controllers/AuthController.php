@@ -72,6 +72,9 @@ class AuthController implements ControllerInterface
 
                 if ($role === 'student' && isset($result['numetu'])) {
                     $_SESSION['numetu'] = $result['numetu'];
+                } else {
+                    // Stocker le login pour les personnels (admin, coordinateurs...)
+                    $_SESSION['login'] = $identifier;
                 }
 
                 if (isset($result['departement'])) {
@@ -82,7 +85,7 @@ class AuthController implements ControllerInterface
                 if (isset($result['nom']))    $_SESSION['admin_nom']    = $result['nom'];
                 if (isset($result['prenom'])) $_SESSION['admin_prenom'] = $result['prenom'];
 
-                // SÉCURITÉ : Interception pour première connexion
+                // SÉCURITÉ : Interception pour première connexion (Étudiants ET Personnels)
                 if (!empty($result['force_change_password'])) {
                     header('Location: index.php?page=force-reset-password');
                     exit;
@@ -117,7 +120,8 @@ class AuthController implements ControllerInterface
 
     private function handleForceResetPassword(): void
     {
-        if (empty($_SESSION['numetu'])) {
+        // Vérifie qu'un identifiant est bien présent en session (étudiant ou personnel)
+        if (empty($_SESSION['numetu']) && empty($_SESSION['login'])) {
             header('Location: index.php?page=login');
             exit;
         }
@@ -135,9 +139,26 @@ class AuthController implements ControllerInterface
                 $error = "Le mot de passe doit contenir au moins 12 caractères, dont une majuscule et un caractère spécial.";
             } else {
                 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-                $this->userRepository->updatePasswordAndUnlock($_SESSION['numetu'], $hashedPassword);
+                
+                // Récupère l'identifiant concerné (le numéro étudiant ou l'email du personnel)
+                $userIdentifier = !empty($_SESSION['numetu']) ? $_SESSION['numetu'] : $_SESSION['login'];
+                
+                // Mise à jour en base de données
+                $this->userRepository->updatePasswordAndUnlock($userIdentifier, $hashedPassword);
 
-                header('Location: index.php?page=home-student');
+                // Redirection vers le bon tableau de bord selon le rôle
+                $role = $_SESSION['role'] ?? 'student';
+                $destination = match($role) {
+                    'super_admin'        => 'index.php?page=super-admin',
+                    'admin'              => 'index.php?page=home-admin',
+                    'coordinateur_etude',
+                    'coordinateur_stage',
+                    'chef_departement',
+                    'coordinateur'       => 'index.php?page=home-coordinateur',
+                    default              => 'index.php?page=home-student',
+                };
+
+                header('Location: ' . $destination);
                 exit;
             }
         }
@@ -150,6 +171,7 @@ class AuthController implements ControllerInterface
 
     private function handleRegister(): void
     {
+        // ... (Pas de changement ici)
         $message = '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -167,6 +189,7 @@ class AuthController implements ControllerInterface
 
     private function handleResetPassword(): void
     {
+        // ... (Pas de changement ici)
         $isTritanopia = !empty($_SESSION['tritanopia']);
 
         $message = '';
