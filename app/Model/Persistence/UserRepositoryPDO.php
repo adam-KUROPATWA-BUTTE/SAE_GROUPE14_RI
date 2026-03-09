@@ -75,18 +75,18 @@ class UserRepositoryPDO implements UserRepositoryInterface
         }
     }
 
-    public function updatePasswordAndUnlock(string $numEtu, string $hashedPassword): bool
+    public function updatePasswordAndUnlock(string $identifier, string $hashedPassword): bool
     {
         try {
-            $stmt = $this->pdo->prepare("
-                UPDATE etudiants
-                SET password = :password, force_change_password = 0
-                WHERE numetu = :numetu
-            ");
-            return $stmt->execute([
-                ':password' => $hashedPassword,
-                ':numetu'   => $numEtu,
-            ]);
+            // Tente la mise à jour dans la table admins (Personnels / Super Admin)
+            $stmt1 = $this->pdo->prepare("UPDATE admins SET password = :password, force_change_password = 0 WHERE email = :id");
+            $stmt1->execute([':password' => $hashedPassword, ':id' => $identifier]);
+            
+            // Tente la mise à jour dans la table etudiants (Étudiants)
+            $stmt2 = $this->pdo->prepare("UPDATE etudiants SET password = :password, force_change_password = 0 WHERE numetu = :id OR email = :id");
+            $stmt2->execute([':password' => $hashedPassword, ':id' => $identifier]);
+
+            return true;
         } catch (PDOException $e) {
             error_log("updatePasswordAndUnlock Error: " . $e->getMessage());
             return false;
@@ -103,6 +103,8 @@ class UserRepositoryPDO implements UserRepositoryInterface
             : $this->findByStudentNumber($identifier);
 
         if ($user && password_verify($password, $user->getPassword())) {
+            
+            // Mise à jour de la date de dernière connexion pour le personnel
             if ($user->getRole() !== 'student') {
                 try {
                     $upd = $this->pdo->prepare("UPDATE admins SET last_login = NOW() WHERE email = :email");
@@ -111,22 +113,35 @@ class UserRepositoryPDO implements UserRepositoryInterface
             }
 
             $forceChange = false;
-            if ($user->getRole() === 'student' && $user->getNumetu()) {
-                try {
-                    $stmtCheck = $this->pdo->prepare("SELECT force_change_password FROM etudiants WHERE numetu = :numetu");
-                    $stmtCheck->execute(['numetu' => $user->getNumetu()]);
-                    $res = $stmtCheck->fetch(PDO::FETCH_ASSOC);
-                    if (is_array($res) && isset($res['force_change_password']) && $res['force_change_password'] == 1) {
-                        $forceChange = true;
-                    }
-                } catch (PDOException $e) { /* silencieux */ }
+            
+            // Vérification ultra-robuste de force_change_password
+            try {
+                if ($user->getRole() === 'student') {
+                    $stmtCheck = $this->pdo->prepare("SELECT force_change_password FROM etudiants WHERE numetu = :id LIMIT 1");
+                    $stmtCheck->execute([':id' => $user->getNumetu()]);
+                } else {
+                    $stmtCheck = $this->pdo->prepare("SELECT force_change_password FROM admins WHERE email = :id LIMIT 1");
+                    $stmtCheck->execute([':id' => $identifier]);
+                }
+                
+                // fetchColumn récupère directement la valeur au lieu d'un tableau
+                $forceVal = $stmtCheck->fetchColumn(); 
+                
+                // On s'assure que même si MySQL renvoie '1' (string), ce soit compté comme vrai
+                if ($forceVal !== false && (int)$forceVal === 1) {
+                    $forceChange = true;
+                }
+            } catch (PDOException $e) { 
+                error_log("Force Change Check Error: " . $e->getMessage()); 
             }
 
             return [
-                'success'              => true,
-                'role'                 => $user->getRole(),
-                'numetu'               => $user->getNumetu(),
-                'departement'          => $user->getDepartement(),
+                'success'               => true,
+                'role'                  => $user->getRole(),
+                'numetu'                => $user->getNumetu(),
+                'departement'           => $user->getDepartement(),
+                'nom'                   => method_exists($user, 'getNom') ? $user->getNom() : null,
+                'prenom'                => method_exists($user, 'getPrenom') ? $user->getPrenom() : null,
                 'force_change_password' => $forceChange,
             ];
         }
