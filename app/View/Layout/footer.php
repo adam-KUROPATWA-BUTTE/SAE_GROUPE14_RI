@@ -3,7 +3,6 @@
  * Footer - Pied de page
  */
 
-// Déterminer le userRole depuis la session si non défini
 if (!isset($userRole)) {
     if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin') {
         $userRole = 'admin';
@@ -14,13 +13,7 @@ if (!isset($userRole)) {
     }
 }
 
-// Créer la fonction de traduction si elle n'existe pas
-if (!isset($t)) {
-    $lang = $_SESSION['lang'] ?? 'fr';
-    $t = function(array $translations) use ($lang) {
-        return $translations[$lang] ?? $translations['fr'] ?? '';
-    };
-}
+
 ?>
 <footer>
     <p>&copy; 2026 - Aix-Marseille Université</p>
