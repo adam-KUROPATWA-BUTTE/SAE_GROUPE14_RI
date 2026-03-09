@@ -21,7 +21,7 @@ class AuthController implements ControllerInterface
 
     public static function support(string $page, string $method): bool
     {
-        return in_array($page, ['login', 'register', 'reset-password', 'force-reset-password']);
+        return in_array($page, ['login', 'register', 'reset-password', 'force-reset-password', 'mentions-legales']);
     }
 
     public function control(): void
@@ -44,6 +44,9 @@ class AuthController implements ControllerInterface
                 break;
             case 'force-reset-password':
                 $this->handleForceResetPassword();
+                break;
+            case 'mentions-legales':
+                $this->handleMentionsLegales();
                 break;
         }
     }
@@ -74,6 +77,10 @@ class AuthController implements ControllerInterface
                 if (isset($result['departement'])) {
                     $_SESSION['departement'] = $result['departement'];
                 }
+
+                // Stocker nom + prénom pour les bannières "modifié par"
+                if (isset($result['nom']))    $_SESSION['admin_nom']    = $result['nom'];
+                if (isset($result['prenom'])) $_SESSION['admin_prenom'] = $result['prenom'];
 
                 // SÉCURITÉ : Interception pour première connexion
                 if (!empty($result['force_change_password'])) {
@@ -211,5 +218,19 @@ class AuthController implements ControllerInterface
                 'token'        => ''
             ]);
         }
+    }
+
+    private function handleMentionsLegales(): void
+    {
+        $lang = $_GET['lang'] ?? $_SESSION['lang'] ?? 'fr';
+        
+        $t = function(array $frEn) use ($lang) {
+            return $frEn[$lang] ?? $frEn['fr'] ?? '';
+        };
+
+        View::render('mentions_legales', [
+            'lang' => $lang,
+            't'    => $t
+        ]);
     }
 }

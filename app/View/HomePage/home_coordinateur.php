@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Home Coordinateur
  *
@@ -10,6 +9,8 @@
  * @var float|int $completionPercentage
  * @var bool $isLoggedIn
  * @var string|null $mobiliteFilter
+ * @var string|null $departementFilter
+ * @var array<int, string> $allDepartements
  * @var \Model\Entity\AdminStats|null $stats
  */
 
@@ -73,36 +74,75 @@ ob_start();
         </div>
     </section>
 
-    <!-- Filtre Mobilité -->
+    <!-- Filtre Mobilité + Département -->
     <section class="mobilite-filter">
         <div class="mobilite-filter__inner">
-
-            <span class="mobilite-filter__label">
-                <?= $t(['fr' => 'Statistiques :', 'en' => 'Statistics:']) ?>
-            </span>
+        <span class="mobilite-filter__label">
+            <?= $t(['fr' => 'Statistiques :', 'en' => 'Statistics:']) ?>
+        </span>
 
             <div class="mobilite-filter__buttons">
-                <a href="<?= $buildUrl('index.php', ['page' => 'home-coordinateur']) ?>"
-                   class="mobilite-btn <?= $mobiliteFilter === null ? 'active' : '' ?>">
+                <!-- "Tous" réinitialise tout -->
+                <a href="<?= $buildUrl('index.php', ['page' => 'home-admin']) ?>"
+                   class="mobilite-btn <?= $mobiliteFilter === null && $departementFilter === null ? 'active' : '' ?>">
                     <?= $t(['fr' => 'Tous', 'en' => 'All']) ?>
                 </a>
-                <a href="<?= $buildUrl('index.php', ['page' => 'home-coordinateur', 'mobilite' => 'etude']) ?>"
+
+                <!-- Études : préserve le département actif -->
+                <a href="<?= $buildUrl('index.php', array_filter([
+                    'page'        => 'home-admin',
+                    'mobilite'    => $mobiliteFilter === 'etude' ? null : 'etude',
+                    'departement' => $departementFilter,
+                ])) ?>"
                    class="mobilite-btn mobilite-btn--etude <?= $mobiliteFilter === 'etude' ? 'active' : '' ?>">
                     🎓 <?= $t(['fr' => 'Études', 'en' => 'Studies']) ?>
                 </a>
-                <a href="<?= $buildUrl('index.php', ['page' => 'home-coordinateur', 'mobilite' => 'stage']) ?>"
+
+                <!-- Stage : préserve le département actif -->
+                <a href="<?= $buildUrl('index.php', array_filter([
+                    'page'        => 'home-admin',
+                    'mobilite'    => $mobiliteFilter === 'stage' ? null : 'stage',
+                    'departement' => $departementFilter,
+                ])) ?>"
                    class="mobilite-btn mobilite-btn--stage <?= $mobiliteFilter === 'stage' ? 'active' : '' ?>">
                     💼 <?= $t(['fr' => 'Stage', 'en' => 'Internship']) ?>
                 </a>
-            </div>
 
+                <!-- Département : préserve la mobilité active -->
+                <div class="dept-dropdown">
+                    <button class="mobilite-btn dept-btn <?= $departementFilter !== null ? 'active' : '' ?>">
+                        🏛️ <?= $departementFilter ?? $t(['fr' => 'Département', 'en' => 'Department']) ?>
+                        <span class="arrow">▼</span>
+                    </button>
+                    <div class="dept-dropdown-content">
+                        <!-- "Tous les départements" préserve la mobilité active -->
+                        <a href="<?= $buildUrl('index.php', array_filter([
+                            'page'     => 'home-admin',
+                            'mobilite' => $mobiliteFilter,
+                        ])) ?>">
+                            <?= $t(['fr' => 'Tous les départements', 'en' => 'All departments']) ?>
+                        </a>
+                        <?php foreach ($allDepartements as $dept): ?>
+                            <a href="<?= $buildUrl('index.php', array_filter([
+                                'page'        => 'home-admin',
+                                'mobilite'    => $mobiliteFilter,
+                                'departement' => $dept,
+                            ])) ?>"
+                               class="<?= $departementFilter === $dept ? 'active' : '' ?>">
+                                <?= htmlspecialchars($dept) ?>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </section>
 
     <!-- Carrousel -->
     <section class="stats-section">
-        <button class="carousel-btn prev" onclick="window.carousel.changeSlide(-1)">‹</button>
-        <button class="carousel-btn next" onclick="window.carousel.changeSlide(1)">›</button>
+        <button class="carousel-btn prev" onclick="window.carousel.changeSlide(-1)">←</button>
+        <button class="carousel-btn next" onclick="window.carousel.changeSlide(1)">→</button>
 
         <div class="stats-carousel">
             <div class="carousel-container">

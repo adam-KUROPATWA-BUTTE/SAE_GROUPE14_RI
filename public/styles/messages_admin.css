@@ -139,10 +139,6 @@ main.messages {
     background: #c8dcf5;
 }
 
-.message-item.selected {
-    background: var(--selected-bg);
-    border-left: 4px solid var(--selected-border);
-}
 
 .msg-item-top {
     display: flex;
@@ -199,6 +195,63 @@ main.messages {
     left: 0.35rem;
     top: 50%;
     transform: translateY(-50%);
+}
+
+/* Classes utilitaires */
+.is-hidden { display: none !important; }
+.inline-form { display: inline; }
+
+/* Fil de discussion Admin */
+.chat-history {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem 0;
+}
+
+.chat-message {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: var(--text-size);
+}
+
+.chat-message--student {
+    align-self: flex-start;
+    background: #ffffff;
+    border: 1px solid var(--border);
+}
+
+.chat-message--admin {
+    align-self: flex-end;
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+}
+
+.chat-message-meta {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+}
+
+.chat-message-meta strong {
+    color: var(--text-main);
+}
+
+.chat-message-date {
+    font-weight: normal;
+    margin-left: 10px;
+}
+
+.chat-message-text {
+    line-height: 1.5;
+    color: var(--text-main);
+}
+
+/* Ajustement de la liste pour ne pas utiliser de style inline width */
+.outlook-list-pane {
+    width: var(--sidebar-width);
+    max-width: 400px;
 }
 
 /* ── RIGHT: reading pane ────────────────────────────────── */

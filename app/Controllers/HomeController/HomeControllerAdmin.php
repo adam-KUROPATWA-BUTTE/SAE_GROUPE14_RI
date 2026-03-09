@@ -21,7 +21,7 @@ class HomeControllerAdmin implements ControllerInterface
             session_start();
         }
 
-        // --- LANGUE ---
+        // LANGUE
         if (isset($_GET['lang'])) {
             $langParam = strval($_GET['lang']);
             if (in_array($langParam, ['fr', 'en'], true)) {
@@ -30,27 +30,41 @@ class HomeControllerAdmin implements ControllerInterface
         }
         $lang = $_SESSION['lang'] ?? 'fr';
 
-        // --- TRITANOPIA ---
+        // TRITANOPIA
         if (isset($_GET['tritanopia'])) {
             $_SESSION['tritanopia'] = (strval($_GET['tritanopia']) === '1');
         }
 
-        // --- FILTRE MOBILITE ---
+        // FILTRES
         $mobiliteFilter = null;
         if (isset($_GET['mobilite']) && in_array($_GET['mobilite'], ['etude', 'stage'], true)) {
             $mobiliteFilter = $_GET['mobilite'];
         }
 
-        // --- STATISTIQUES ---
-        $stats                = null;
+        $departementFilter = null;
+        if (isset($_GET['departement']) && !empty($_GET['departement'])) {
+            $departementFilter = strval($_GET['departement']);
+        }
+
+        // RÉCUPÉRER LA LISTE DES DÉPARTEMENTS
+        $allDepartements = [];
+        try {
+            $repository = new DossierRepositoryPDO();
+            $allDepartements = $repository->getAllDepartements(); // Méthode à créer
+        } catch (PDOException $e) {
+            error_log("Error fetching departments: " . $e->getMessage());
+        }
+
+        // STATISTIQUES
+        $stats = null;
         $completionPercentage = 0.0;
 
         try {
             $repository = new DossierRepositoryPDO();
-            $useCase    = new GetAdminStatsUseCase($repository);
-            $stats      = $useCase->execute($mobiliteFilter);
+            $useCase = new GetAdminStatsUseCase($repository);
+            $stats = $useCase->execute($mobiliteFilter, $departementFilter); // Ajouter le filtre dept
 
-            $dossierStats         = $stats->getDossierStats();
+            $dossierStats = $stats->getDossierStats();
             $completionPercentage = $dossierStats->getTotal() > 0
                 ? round($dossierStats->getCompleted() / $dossierStats->getTotal() * 100, 1)
                 : 0.0;
@@ -58,27 +72,29 @@ class HomeControllerAdmin implements ControllerInterface
             error_log("HomeControllerAdmin Error: " . $e->getMessage());
         }
 
-        // --- HELPERS VUE ---
+        // HELPERS VUE
         $t = function (array $frEn) use ($lang): string {
             return $lang === 'en' ? $frEn['en'] : $frEn['fr'];
         };
 
         $buildUrl = function (string $path, array $params = []) use ($lang): string {
             $params['lang'] = $lang;
-            $separator      = str_contains($path, '?') ? '&' : '?';
+            $separator = str_contains($path, '?') ? '&' : '?';
             return $path . $separator . http_build_query($params);
         };
 
-        // --- RENDU ---
+        // RENDU
         View::render('HomePage/home_admin', [
-            'isLoggedIn'           => true,
-            'userRole'             => $_SESSION['role'] ?? null,
-            'lang'                 => $lang,
+            'isLoggedIn' => true,
+            'userRole' => $_SESSION['role'] ?? null,
+            'lang' => $lang,
             'completionPercentage' => $completionPercentage,
-            'stats'                => $stats,
-            'mobiliteFilter'       => $mobiliteFilter,
-            't'                    => $t,
-            'buildUrl'             => $buildUrl,
+            'stats' => $stats,
+            'mobiliteFilter' => $mobiliteFilter,
+            'departementFilter' => $departementFilter,
+            'allDepartements' => $allDepartements,
+            't' => $t,
+            'buildUrl' => $buildUrl,
         ]);
     }
 }

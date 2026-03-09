@@ -328,11 +328,7 @@ li a:hover {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Icône optionnelle */
-.footer-sitemap-btn::after {
-    content: '🗺️';
-    font-size: var(--button-small-size);
-}
+
 
 /* Séparateur entre les liens */
 .footer-separator {
@@ -346,9 +342,8 @@ li a:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
+    gap: 30px;
     flex-wrap: wrap;
-    margin-top: 1rem;
 }
 
 
