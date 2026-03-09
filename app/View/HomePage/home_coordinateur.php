@@ -292,9 +292,9 @@ ob_start();
     </section>
 
     <div id="app-config"
-         data-lang="<?= htmlspecialchars($lang) ?>"
-         data-role="<?= htmlspecialchars($userRole) ?>"
-         style="display:none;">
+        data-lang="<?= htmlspecialchars($lang) ?>"
+        data-role="admin"
+        style="display:none;">
     </div>
 
 <?php

@@ -169,8 +169,11 @@ $subjects = [
     </div>
 </div>
 
-<div id="app-config" data-lang="<?= htmlspecialchars($lang) ?>" data-role="student" style="display:none;"></div>
-
+<div id="app-config"
+     data-lang="<?= htmlspecialchars($lang) ?>"
+     data-role="admin"
+     style="display:none;">
+</div>
 <?php
 $content    = ob_get_clean();
 $title      = $t(['fr' => 'Contact - Relations Internationales', 'en' => 'Contact - International Relations']);

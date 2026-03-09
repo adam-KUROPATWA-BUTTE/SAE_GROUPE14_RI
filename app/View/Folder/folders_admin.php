@@ -324,6 +324,11 @@ ob_start();
 
 <?php endif; ?>
 
+<div id="app-config"
+     data-lang="<?= htmlspecialchars($lang) ?>"
+     data-role="admin"
+     style="display:none;">
+</div>
 <?php
 $content = ob_get_clean();
 
