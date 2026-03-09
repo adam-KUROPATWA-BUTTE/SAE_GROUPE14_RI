@@ -67,7 +67,7 @@ $clsDisabled  = 'input-admin';
 ob_start();
 ?>
 
-    <h1><?= $t(['fr' => 'Mon dossier étudiant', 'en' => 'My Student Folder']) ?></h1>
+    <h1><?= $t(['fr' => 'Mon dossier étudiant', 'en' => 'My Student Profile']) ?></h1>
 
 <?php if (!empty($message)) : ?>
     <div class="message"><?= htmlspecialchars($message) ?></div>
