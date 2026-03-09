@@ -1,18 +1,16 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
-
 namespace Service\Email;
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+use Mailjet\Client;
+use Mailjet\Resources;
 
 class EmailReminderService
 {
     /**
      * Sender email address
      */
-    private static string $fromEmail = 'no-reply@ri-amu.local';
+    private static string $fromEmail = 'relance-iut-amu@ri-amu.app';
 
     /**
      * Sender display name
@@ -20,50 +18,7 @@ class EmailReminderService
     private static string $fromName = 'IUT Aix - Gestion Dossiers';
 
     /**
-     * Configure and return a PHPMailer instance.
-     *
-     * Comportement :
-     *  - Si SMTP_HOST pointe sur 127.0.0.1 / localhost  →  Mailpit (pas d'auth, pas de TLS)
-     *  - Sinon (Gmail, Mailtrap, prod…)                 →  STARTTLS + authentification
-     */
-    private static function getMailer(): PHPMailer
-    {
-        $mail = new PHPMailer(true);
-
-        $host     = $_ENV['SMTP_HOST']   ?? 'smtp.gmail.com';
-        $port     = (int)($_ENV['SMTP_PORT'] ?? 587);
-        $user     = $_ENV['SMTP_USER']   ?? '';
-        $pass     = $_ENV['SMTP_PASS']   ?? '';
-        $secure   = $_ENV['SMTP_SECURE'] ?? 'tls'; // 'tls' | 'ssl' | '' pour Mailpit
-
-        $mail->isSMTP();
-        $mail->Host    = $host;
-        $mail->Port    = $port;
-        $mail->CharSet = 'UTF-8';
-
-        $isLocal = in_array($host, ['127.0.0.1', 'localhost'], true);
-
-        if ($isLocal) {
-            // ── Mailpit / MailHog : pas d'auth, pas de chiffrement ──
-            $mail->SMTPAuth   = false;
-            $mail->SMTPSecure = '';
-            $mail->SMTPAutoTLS = false;
-        } else {
-            // ── Serveur réel (Gmail, Mailtrap, prod) ────────────────
-            $mail->SMTPAuth   = true;
-            $mail->Username   = $user;
-            $mail->Password   = $pass;
-            $mail->SMTPSecure = $secure === 'ssl'
-                ? PHPMailer::ENCRYPTION_SMTPS
-                : PHPMailer::ENCRYPTION_STARTTLS;
-        }
-
-        return $mail;
-    }
-
-    /**
-     * Send an email reminder for incomplete folders
-     * @param array<int, string> $itemsToComplete
+     * @param array<string> $itemsToComplete List of missing items (strings)
      */
     public static function sendRelance(
         string $toEmail,
@@ -72,66 +27,62 @@ class EmailReminderService
         array $itemsToComplete = []
     ): bool {
         try {
-            $mail = self::getMailer();
+            // Initialize Mailjet client
+            $mj = new Client(
+                $_ENV['MAILJET_API_KEY'] ?? '',
+                $_ENV['MAILJET_SECRET_KEY'] ?? '',
+                true,
+                ['version' => 'v3.1']
+            );
+            // Disable SSL verification for local dev only
+            $mj->addRequestOption('verify', false);
 
-            $mail->setFrom(self::$fromEmail, self::$fromName);
-            $mail->addAddress($toEmail, $studentName);
+            $subject = "Rappel : Dossier incomplet (ID {$dossierId})";
+            $htmlMessage = self::buildMessage($dossierId, $studentName, $itemsToComplete);
 
-            $mail->isHTML(true);
-            $mail->Subject = "Rappel : Dossier incomplet (ID {$dossierId})";
-            $htmlMessage   = self::buildMessage($dossierId, $studentName, $itemsToComplete);
-            $mail->Body    = $htmlMessage;
-            $mail->AltBody = strip_tags($htmlMessage);
+            // Build Mailjet payload
+            $body = [
+                'Messages' => [
+                    [
+                        'From' => [
+                            'Email' => self::$fromEmail,
+                            'Name' => self::$fromName
+                        ],
+                        'To' => [
+                            [
+                                'Email' => $toEmail,
+                                'Name' => $studentName ?: ''
+                            ]
+                        ],
+                        'Subject' => $subject,
+                        'HTMLPart' => $htmlMessage,
+                        'TextPart' => strip_tags($htmlMessage)
+                    ]
+                ]
+            ];
 
-            $mail->send();
-            error_log("✅ PHPMailer: Relance envoyée à {$toEmail}");
-            return true;
-        } catch (\Throwable $e) {
-            error_log("❌ PHPMailer (Relance): {$e->getMessage()}");
+            // Send via Mailjet API
+            $response = $mj->post(Resources::$Email, ['body' => $body]);
+
+            if ($response->success()) {
+                error_log("✅ Email successfully sent to {$toEmail} via Mailjet");
+                return true;
+            } else {
+                error_log("❌ Mailjet error: " . json_encode($response->getData()));
+                return false;
+            }
+        } catch (\Exception $e) {
+            error_log("❌ Mailjet exception for {$toEmail}: " . $e->getMessage());
             return false;
         }
     }
 
     /**
-     * Send a notification when a folder is updated by administration
-     * @param array<int, string> $updates
-     */
-    public static function sendFolderUpdateNotification(
-        string $toEmail,
-        string $studentName,
-        string $dossierId,
-        array $updates
-    ): bool {
-        if (empty($updates)) return true;
-
-        try {
-            $mail = self::getMailer();
-
-            $mail->setFrom(self::$fromEmail, self::$fromName);
-            $mail->addAddress($toEmail, $studentName);
-
-            $mail->isHTML(true);
-            $mail->Subject = "Mise à jour de votre dossier RI (ID {$dossierId})";
-            $htmlMessage   = self::buildUpdateMessage($dossierId, $studentName, $updates);
-            $mail->Body    = $htmlMessage;
-            $mail->AltBody = strip_tags($htmlMessage);
-
-            $mail->send();
-            error_log("✅ PHPMailer: Notification envoyée à {$toEmail}");
-            return true;
-        } catch (\Throwable $e) {
-            error_log("❌ PHPMailer (Notification): {$e->getMessage()}");
-            return false;
-        }
-    }
-
-    /**
-     * Build the HTML message for missing documents reminder
-     * @param array<int, string> $itemsToComplete
+     * @param array<string> $itemsToComplete List of missing items (strings)
      */
     private static function buildMessage(int|string $dossierId, string $studentName, array $itemsToComplete): string
     {
-        $safeName  = htmlspecialchars(trim($studentName ?: ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $safeName = htmlspecialchars(trim($studentName ?: ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $itemsHtml = '';
 
         if (!empty($itemsToComplete)) {
@@ -144,63 +95,101 @@ class EmailReminderService
             $itemsHtml = '<p>Veuillez compléter les documents manquants dans votre dossier.</p>';
         }
 
-        if (!empty($sectionRefusees)) {
-            $updatesHtml .= '
-            <p style="margin:0 0 6px;font-weight:bold;color:#c62828;">❌ Documents non validés :</p>
-            <ul style="margin:0 0 16px 20px;line-height:1.8;color:#333;">'
-                . $sectionRefusees .
-            '</ul>';
-        }
-
-        foreach ($autresLignes as $ligne) {
-            $updatesHtml .= '<p style="margin:4px 0;">' . $ligne . '</p>';
-        }
-
-        // ── Statut global ─────────────────────────────────────────────────────
-        $statutColors = [
-            'Dépôt'          => '#607d8b',
-            'En instruction' => '#f57c00',
-            'Accepté'        => '#2e7d32',
-            'Refusé'         => '#c62828',
-        ];
-        $statutColor = $statutColors[$statutGlobal] ?? '#1d7ac6';
-        $statutBlock = !empty($statutGlobal) ? '
-            <div style="margin-top:20px;padding:12px 16px;border-radius:6px;background:#f5f5f5;border-left:4px solid ' . $statutColor . ';">
-                <span style="font-weight:bold;color:#333;">Statut de votre dossier :</span>
-                <span style="margin-left:8px;font-weight:bold;color:' . $statutColor . ';">' . htmlspecialchars($statutGlobal, ENT_QUOTES, 'UTF-8') . '</span>
-            </div>' : '';
-
-        // ── Date limite ───────────────────────────────────────────────────────
-        $dateLimiteBlock = !empty($dateLimite) ? '
-            <p style="margin-top:12px;color:#555;">📅 Date limite de remise des pièces : <b>' . htmlspecialchars($dateLimite, ENT_QUOTES, 'UTF-8') . '</b></p>' : '';
+        $logoUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBl1mF7ktLaJxYCRD64rZyUJ1WcUDvcJBcIw&s';
+        $encodedId = urlencode((string)$dossierId);
+        $link = "https://ri-amu.app/index.php?page=folders-student&action=view&id={$encodedId}";
 
         return "
 <!DOCTYPE html>
 <html lang=\"fr\">
-<head><meta charset=\"utf-8\"><title>Mise à jour dossier</title></head>
+<head><meta charset=\"utf-8\"><title>Rappel dossier</title></head>
 <body style=\"font-family:Arial,sans-serif;background:#f6f6f6;margin:0;padding:20px;\">
   <div style=\"max-width:600px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);\">
     <div style=\"background:#1d7ac6;padding:20px;text-align:center;\">
       <img src=\"{$logoUrl}\" alt=\"AMU\" style=\"height:50px;\">
-      <h2 style=\"color:#fff;margin:10px 0 0;\">Mise à jour de votre dossier</h2>
+      <h2 style=\"color:#fff;margin:10px 0 0;\">⚠️ Rappel — Dossier incomplet</h2>
     </div>
     <div style=\"padding:30px;\">
       <p>Bonjour {$safeName},</p>
-      <p>Votre dossier a été examiné par l'administration. Voici le récapitulatif :</p>
-      <div style=\"background-color:#f9f9f9;border-radius:6px;padding:18px 20px;margin:16px 0;\">
-        {$updatesHtml}
+      <p>Votre dossier n°<strong>{$dossierId}</strong> est actuellement <strong>incomplet</strong>.</p>
+      {$itemsHtml}
+      <div style=\"text-align:center;margin:18px 0;\">
+        <a href=\"{$link}\" style=\"background-color:#1d7ac6;color:#fff;padding:10px 18px;text-decoration:none;border-radius:4px;display:inline-block;\">Accéder à mon dossier</a>
       </div>
-      {$statutBlock}
-      {$dateLimiteBlock}
-      <div style=\"text-align:center;margin:28px 0 16px;\">
-        <a href=\"https://ri-amu.app/\" style=\"background-color:#1d7ac6;color:#fff;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;font-weight:bold;\">Consulter mon espace</a>
-      </div>
-      <p style=\"font-size:13px;color:#888;\">Pour toute question, contactez le service Relations Internationales.</p>
-      <p style=\"color:#bbb;font-size:12px;margin:8px 0 0;\">Email automatique • Service RI AMU</p>
+      <p style=\"font-size:14px;color:#666;\">Pour toute question, contactez le service RI.</p>
+      <p style=\"color:#666;font-size:13px;margin:12px 0 0;\">Email automatique • Service RI - IUT Aix</p>
     </div>
   </div>
 </body>
 </html>";
+    }
+
+    /**
+     * Send folder update notification email
+     *
+     * @param string $toEmail Student's email
+     * @param string $studentName Student's name
+     * @param string $numEtu Student ID
+     * @param array<int, string> $updates List of updates to notify
+     */
+    public static function sendFolderUpdateNotification(
+        string $toEmail,
+        string $studentName,
+        string $numEtu,
+        array $updates
+    ): bool {
+        if (empty($updates)) {
+            return true;
+        }
+
+        try {
+            // Initialize Mailjet client
+            $mj = new Client(
+                $_ENV['MAILJET_API_KEY'] ?? '',
+                $_ENV['MAILJET_SECRET_KEY'] ?? '',
+                true,
+                ['version' => 'v3.1']
+            );
+            // Disable SSL verification for local dev only
+            $mj->addRequestOption('verify', false);
+
+            $subject = "Mise à jour de votre dossier RI (ID {$numEtu})";
+            $htmlMessage = self::buildUpdateMessage($numEtu, $studentName, $updates);
+
+            $body = [
+                'Messages' => [
+                    [
+                        'From' => [
+                            'Email' => self::$fromEmail,
+                            'Name' => self::$fromName
+                        ],
+                        'To' => [
+                            [
+                                'Email' => $toEmail,
+                                'Name' => $studentName
+                            ]
+                        ],
+                        'Subject' => $subject,
+                        'HTMLPart' => $htmlMessage,
+                        'TextPart' => strip_tags($htmlMessage)
+                    ]
+                ]
+            ];
+
+            $response = $mj->post(Resources::$Email, ['body' => $body]);
+
+            if ($response->success()) {
+                error_log("✅ Folder update notification sent to {$toEmail} via Mailjet");
+                return true;
+            }
+
+            error_log("❌ Mailjet error: " . json_encode($response->getData()));
+            return false;
+
+        } catch (\Exception $e) {
+            error_log("❌ Mailjet exception for {$toEmail}: " . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -228,7 +217,7 @@ class EmailReminderService
             // Disable SSL verification for local dev only
             $mj->addRequestOption('verify', false);
 
-            $subject = "Documents Validated - Folder #{$numEtu}";
+            $subject = "Documents Validés - Dossier #{$numEtu}";
             $htmlMessage = self::buildValidationMessage($studentName, $validatedDocuments, $numEtu);
 
             // Build Mailjet payload
@@ -428,15 +417,15 @@ class EmailReminderService
 <head><meta charset=\"utf-8\"><title>Document déposé</title></head>
 <body style=\"font-family:Arial,sans-serif;background:#f6f6f6;margin:0;padding:20px;\">
   <div style=\"max-width:600px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);\">
-    <div style=\"background:#0056b3;padding:20px;text-align:center;\">
+    <div style=\"background:#1d7ac6;padding:20px;text-align:center;\">
       <img src=\"{$logoUrl}\" alt=\"AMU\" style=\"height:50px;\">
       <h2 style=\"color:#fff;margin:10px 0 0;\">📄 Document déposé</h2>
     </div>
     <div style=\"padding:30px;\">
       <p>Bonjour {$safeName},</p>
       <p>Nous confirmons la réception de votre document :</p>
-      <div style=\"background:#e3f2fd;padding:15px;border-left:4px solid #0056b3;margin:16px 0;\">
-        <strong style=\"color:#0056b3;font-size:16px;\">📎 {$safeDoc}</strong>
+      <div style=\"background:#e3f2fd;padding:15px;border-left:4px solid #1d7ac6;margin:16px 0;\">
+        <strong style=\"color:#1d7ac6;font-size:16px;\">📎 {$safeDoc}</strong>
       </div>
       <p>Votre document sera examiné par notre équipe. Vous recevrez une notification une fois validé.</p>
       <div style=\"text-align:center;margin:18px 0;\">
@@ -503,8 +492,8 @@ class EmailReminderService
         $documentLabels = [
             'photo' => 'Photo',
             'cv' => 'CV',
-            'convention' => 'Internship Agreement',
-            'lettre_motivation' => 'Motivation Letter'
+            'convention' => 'Convention de Stage',
+            'lettre_motivation' => 'Lettre de Motivation'
         ];
 
         $docsHtml = '<ul style="margin:0 0 16px 20px;">';
@@ -514,29 +503,30 @@ class EmailReminderService
         }
         $docsHtml .= '</ul>';
 
-        $logoUrl    = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBl1mF7ktLaJxYCRD64rZyUJ1WcUDvcJBcIw&s';
-        $encodedId  = urlencode((string)$dossierId);
-        $link       = "https://ri-amu.app/index.php?page=folders-student&action=view&id={$encodedId}";
+        $logoUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBl1mF7ktLaJxYCRD64rZyUJ1WcUDvcJBcIw&s';
+        $encodedId = urlencode($numEtu);
+        $link = "https://ri-amu.app/index.php?page=folders-student&action=view&numetu={$encodedId}";
 
         return "
 <!DOCTYPE html>
 <html lang=\"fr\">
-<head><meta charset=\"utf-8\"><title>Rappel dossier</title></head>
+<head><meta charset=\"utf-8\"><title>Documents Validés</title></head>
 <body style=\"font-family:Arial,sans-serif;background:#f6f6f6;margin:0;padding:20px;\">
   <div style=\"max-width:600px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);\">
     <div style=\"background:#28a745;padding:20px;text-align:center;\">
       <img src=\"{$logoUrl}\" alt=\"AMU\" style=\"height:50px;\">
-      <h2 style=\"color:#fff;margin:10px 0 0;\">Rappel — Dossier incomplet</h2>
+      <h2 style=\"color:#fff;margin:10px 0 0;\">✓ Documents Validés</h2>
     </div>
     <div style=\"padding:30px;\">
       <p>Bonjour {$safeName},</p>
-      <p>Votre dossier n°<strong>{$dossierId}</strong> est actuellement <strong>incomplet</strong>.</p>
-      {$itemsHtml}
+      <p>Bonne nouvelle ! Votre dossier <strong>{$numEtu}</strong> a été examiné et les documents suivants ont été <strong style=\"color:#28a745;\">validés</strong> :</p>
+      {$docsHtml}
+      <p style=\"color:#28a745;font-weight:bold;\">Votre dossier est maintenant complet et approuvé !</p>
       <div style=\"text-align:center;margin:18px 0;\">
-        <a href=\"{$link}\" style=\"background-color:#1d7ac6;color:#fff;padding:10px 18px;text-decoration:none;border-radius:4px;display:inline-block;\">Accéder à mon dossier</a>
+        <a href=\"{$link}\" style=\"background-color:#1d7ac6;color:#fff;padding:10px 18px;text-decoration:none;border-radius:4px;display:inline-block;\">Voir mon dossier</a>
       </div>
-      <p style=\"font-size:14px;color:#666;\">Pour toute question, contactez le service RI.</p>
-      <p style=\"color:#666;font-size:13px;margin:12px 0 0;\">Email automatique • Service RI</p>
+      <p style=\"font-size:14px;color:#666;\">Si vous avez des questions, contactez le service RI.</p>
+      <p style=\"color:#666;font-size:13px;margin:12px 0 0;\">Notification automatique • Service RI - IUT Aix</p>
     </div>
   </div>
 </body>
@@ -544,15 +534,17 @@ class EmailReminderService
     }
 
     /**
-     * Build the HTML message for folder update notification
-     * @param array<int, string> $updates
+     * Build HTML message for folder update notification
+     * @param string $numEtu Student ID
+     * @param string $studentName Student's name
+     * @param array<int, string> $updates List of updates
      */
-    private static function buildUpdateMessage(string $dossierId, string $studentName, array $updates): string
+    private static function buildUpdateMessage(string $numEtu, string $studentName, array $updates): string
     {
         $safeName = htmlspecialchars(trim($studentName ?: ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $logoUrl  = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBl1mF7ktLaJxYCRD64rZyUJ1WcUDvcJBcIw&s';
 
-        // ── Parse les sections structurées ────────────────────────────────────
+        // Parse structured sections
         $sectionAcceptees = '';
         $sectionRefusees  = '';
         $statutGlobal     = '';
@@ -573,7 +565,7 @@ class EmailReminderService
             }
         }
 
-        // ── Construit le bloc principal du mail ───────────────────────────────
+        // Build main content block
         $updatesHtml = '';
 
         if (!empty($sectionAcceptees)) {
@@ -596,7 +588,7 @@ class EmailReminderService
             $updatesHtml .= '<p style="margin:4px 0;">' . $ligne . '</p>';
         }
 
-        // ── Statut global ─────────────────────────────────────────────────────
+        // Global status section
         $statutColors = [
             'Dépôt'          => '#607d8b',
             'En instruction' => '#f57c00',
@@ -610,7 +602,7 @@ class EmailReminderService
                 <span style="margin-left:8px;font-weight:bold;color:' . $statutColor . ';">' . htmlspecialchars($statutGlobal, ENT_QUOTES, 'UTF-8') . '</span>
             </div>' : '';
 
-        // ── Date limite ───────────────────────────────────────────────────────
+        // Deadline section
         $dateLimiteBlock = !empty($dateLimite) ? '
             <p style="margin-top:12px;color:#555;">📅 Date limite de remise des pièces : <b>' . htmlspecialchars($dateLimite, ENT_QUOTES, 'UTF-8') . '</b></p>' : '';
 
