@@ -2,7 +2,7 @@
 /**
  * Liste des conversations admin — layout style Outlook
  * @var string $lang
- * @var array $conversations
+ * @var array<int, \Model\Entity\Conversation> $conversations
  * @var string $filter
  * @var Closure $t
  */

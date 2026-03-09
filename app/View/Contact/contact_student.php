@@ -1,6 +1,12 @@
 <?php
 /**
  * Page de contact pour les étudiants
+ * @var callable $t
+ * @var string $lang
+ * @var array<int, \Model\Entity\Conversation> $studentConversations
+ * @var bool $messageSent
+ * @var string $error
+ * @var array{email: string, phone: string, address: array<string, string>, hours: array<string, string>} $contactInfo
  */
 
 ob_start();

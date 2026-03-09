@@ -63,6 +63,7 @@ class EmailReminderService
 
     /**
      * Send an email reminder for incomplete folders
+     * @param array<int, string> $itemsToComplete
      */
     public static function sendRelance(
         string $toEmail,
@@ -93,6 +94,7 @@ class EmailReminderService
 
     /**
      * Send a notification when a folder is updated by administration
+     * @param array<int, string> $updates
      */
     public static function sendFolderUpdateNotification(
         string $toEmail,
@@ -125,6 +127,7 @@ class EmailReminderService
 
     /**
      * Build the HTML message for missing documents reminder
+     * @param array<int, string> $itemsToComplete
      */
     private static function buildMessage(int|string $dossierId, string $studentName, array $itemsToComplete): string
     {
@@ -172,6 +175,7 @@ class EmailReminderService
 
     /**
      * Build the HTML message for folder update notification
+     * @param array<int, string> $updates
      */
     private static function buildUpdateMessage(string $dossierId, string $studentName, array $updates): string
     {
@@ -187,13 +191,13 @@ class EmailReminderService
 
         foreach ($updates as $upd) {
             if (str_starts_with($upd, '__SECTION_ACCEPTEES__')) {
-                $sectionAcceptees = str_replace(['__SECTION_ACCEPTEES__', '__END_SECTION__'], '', $upd);
+                $sectionAcceptees = (string) str_replace(['__SECTION_ACCEPTEES__', '__END_SECTION__'], '', $upd);
             } elseif (str_starts_with($upd, '__SECTION_REFUSEES__')) {
-                $sectionRefusees = str_replace(['__SECTION_REFUSEES__', '__END_SECTION__'], '', $upd);
+                $sectionRefusees = (string) str_replace(['__SECTION_REFUSEES__', '__END_SECTION__'], '', $upd);
             } elseif (str_starts_with($upd, '__STATUT_GLOBAL__')) {
-                $statutGlobal = str_replace(['__STATUT_GLOBAL__', '__END_STATUT__'], '', $upd);
+                $statutGlobal = (string) str_replace(['__STATUT_GLOBAL__', '__END_STATUT__'], '', $upd);
             } elseif (str_starts_with($upd, '__DATE_LIMITE__')) {
-                $dateLimite = str_replace(['__DATE_LIMITE__', '__END_DATE__'], '', $upd);
+                $dateLimite = (string) str_replace(['__DATE_LIMITE__', '__END_DATE__'], '', $upd);
             } else {
                 $autresLignes[] = $upd;
             }

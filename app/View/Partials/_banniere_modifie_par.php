@@ -15,9 +15,9 @@
             <strong><?= htmlspecialchars($modifiePar ?? 'Administrateur') ?></strong>
             <?php if (!empty($modifieLe)) : ?>
                 <?= $t(['fr' => 'le', 'en' => 'on']) ?>
-                <strong><?= htmlspecialchars(date('d/m/Y', strtotime($modifieLe))) ?></strong>
+                <strong><?= htmlspecialchars(date('d/m/Y', (int) strtotime($modifieLe))) ?></strong>
                 <?= $t(['fr' => 'à', 'en' => 'at']) ?>
-                <strong><?= htmlspecialchars(date('H:i', strtotime($modifieLe))) ?></strong>
+                <strong><?= htmlspecialchars(date('H:i', (int) strtotime($modifieLe))) ?></strong>
             <?php endif; ?>
         <?php else : ?>
             <?= $t(['fr' => 'Dossier jamais modifié', 'en' => 'Folder never modified']) ?>
@@ -25,24 +25,3 @@
     </span>
 </div>
 
-<style>
-.banniere-modifie-par {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #f0f4ff;
-    border-left: 4px solid #4a6cf7;
-    border-radius: 6px;
-    padding: 10px 16px;
-    margin-bottom: 16px;
-    font-size: 0.9rem;
-    color: #333;
-}
-.banniere-modifie-par__icone {
-    font-size: 1rem;
-    flex-shrink: 0;
-}
-.banniere-modifie-par__texte strong {
-    color: #1a3ecf;
-}
-</style>

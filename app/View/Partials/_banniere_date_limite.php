@@ -14,7 +14,7 @@
     <?php if ($dateLimite) : ?>
         <span class="banniere-texte">
             <?= $t(['fr' => 'Date limite de dépôt :', 'en' => 'Submission deadline:']) ?>
-            <strong><?= htmlspecialchars(date('d/m/Y', strtotime($dateLimite))) ?></strong>
+            <strong><?= htmlspecialchars(date('d/m/Y', (int) strtotime($dateLimite))) ?></strong>
         </span>
     <?php else : ?>
         <span class="banniere-texte"><?= $t(['fr' => 'Aucune date limite définie', 'en' => 'No deadline set']) ?></span>

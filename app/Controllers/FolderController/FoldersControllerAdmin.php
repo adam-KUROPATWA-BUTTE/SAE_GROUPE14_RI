@@ -124,6 +124,9 @@ class FoldersControllerAdmin
 
     /**
      * Envoie un mail récapitulatif à l'étudiant
+     *
+     * @param string $numEtu
+     * @param array<int, string> $updates
      */
     private function notifyStudent(string $numEtu, array $updates): void
     {
@@ -231,8 +234,12 @@ class FoldersControllerAdmin
 
         // Récupère l'état actuel AVANT toute modification
         $oldDossier = $this->folderUseCase->getStudentDetails($numetu);
-        $oldStatuts = $oldDossier['statuts'] ?? [];
-        $oldPieces  = $oldDossier['pieces']  ?? [];
+        
+        /** @var array<string, string> $oldStatuts */
+        $oldStatuts = isset($oldDossier['statuts']) && is_array($oldDossier['statuts']) ? $oldDossier['statuts'] : [];
+
+        /** @var array<string, array{comment?: string, status?: string}> $oldPieces */
+        $oldPieces  = isset($oldDossier['pieces']) && is_array($oldDossier['pieces']) ? $oldDossier['pieces'] : [];
 
         $studentData = [
             'NumEtu'             => $numetu,
@@ -280,12 +287,13 @@ class FoldersControllerAdmin
             'refused'  => '<span style="color:#c62828;font-weight:bold;">❌ Refusée</span>',
         ];
 
-        // Partir des anciens statuts et écraser avec les nouveaux reçus
+        /** @var array<string, string> $statutsDocuments */
         $statutsDocuments = $oldStatuts;
         foreach (array_keys($docLabels) as $doc) {
-            $val = $_POST['statut_' . $doc] ?? '';
-            if (!empty($val)) {
-                $statutsDocuments[$doc] = $val;
+            $docKey = (string)$doc; // Force string key
+            $val = $_POST['statut_' . $docKey] ?? '';
+            if (is_string($val) && $val !== '') {
+                $statutsDocuments[$docKey] = $val;
             }
         }
 
@@ -318,9 +326,10 @@ class FoldersControllerAdmin
             $piecesRefusees  = [];
 
             foreach ($docLabels as $doc => $docName) {
-                // On prend le statut soumis, sinon l'ancien statut en base
-                $statut     = $statutsDocuments[$doc] ?? ($oldStatuts[$doc] ?? 'pending');
-                $docComment = trim(strval($_POST['comment_' . $doc] ?? $oldPieces[$doc]['comment'] ?? ''));
+                $docKey = (string)$doc; 
+                
+                $statut     = $statutsDocuments[$docKey] ?? ($oldStatuts[$docKey] ?? 'pending');
+                $docComment = trim(strval($_POST['comment_' . $docKey] ?? ($oldPieces[$docKey]['comment'] ?? '')));
 
                 if ($statut === 'accepted') {
                     $piecesAcceptees[] = ['name' => $docName, 'comment' => $docComment];

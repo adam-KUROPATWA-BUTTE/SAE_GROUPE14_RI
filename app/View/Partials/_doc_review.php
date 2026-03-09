@@ -1,8 +1,12 @@
 <?php
 /**
  * Partial : Revue des pièces justificatives
+ *
+ * @var callable $t
+ * @var string $numEtu
+ * @var array<string, array{file?: string, status?: string, comment?: string}> $pieces
+ * @var array<string, string> $statuts
  */
-
 $languesEditable = $languesEditable ?? false;
 
 $docTypes = [

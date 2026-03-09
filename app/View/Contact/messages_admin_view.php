@@ -1,8 +1,10 @@
 <?php
 /**
  * Détail d'une conversation admin
+ * @var callable $t
+ * @var string $lang
+ * @var \Model\Entity\Conversation $conversation
  */
-
 ob_start();
 
 $subjects = [

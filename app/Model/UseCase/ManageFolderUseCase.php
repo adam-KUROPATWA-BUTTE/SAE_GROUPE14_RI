@@ -150,8 +150,13 @@ class ManageFolderUseCase
         $statuts = isset($dossier['statuts']) && is_array($dossier['statuts']) ? $dossier['statuts'] : [];
         $statuts[$docType] = $status;
 
-        $dateLimite = $dossier['DateLimite'] ?? null;
-        $commentaireGlobal = $dossier['CommentaireAdmin'] ?? null;
+        $dateLimite = isset($dossier['DateLimite']) && is_scalar($dossier['DateLimite']) 
+            ? (string) $dossier['DateLimite'] 
+            : null;
+            
+        $commentaireGlobal = isset($dossier['CommentaireAdmin']) && is_scalar($dossier['CommentaireAdmin']) 
+            ? (string) $dossier['CommentaireAdmin'] 
+            : null;
 
         $updatedStatuts = $this->dossierRepo->enregistrerValidation($numEtu, $statuts, $dateLimite, $commentaireGlobal);
 

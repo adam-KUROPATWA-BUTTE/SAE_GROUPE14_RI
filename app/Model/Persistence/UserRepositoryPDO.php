@@ -94,7 +94,17 @@ class UserRepositoryPDO implements UserRepositoryInterface
     }
 
     /**
-     * @return array{success: bool, role?: string, numetu?: string|null, departement?: string|null, force_change_password?: bool}
+     * @param string $identifier
+     * @param string $password
+     * @return array{
+     * success: bool, 
+     * role?: string, 
+     * numetu?: string|null, 
+     * departement?: string|null, 
+     * force_change_password?: bool,
+     * nom?: string|null,
+     * prenom?: string|null
+     * }
      */
     public function login(string $identifier, string $password): array
     {

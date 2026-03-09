@@ -67,13 +67,16 @@ class ConversationPDO
         $stmt->execute([':id' => $id]);
         $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$data) return null;
+        if (!is_array($data)) return null;
 
         $conversation = $this->hydrateConversation($data);
         $this->attachMessagesToConversation($conversation);
         return $conversation;
     }
 
+    /**
+     * @return array<int, Conversation>
+     */
     public function findByStudentNumEtu(string $numEtu): array
     {
         $stmt = $this->pdo->prepare("SELECT * FROM conversations WHERE student_numetu = :numetu ORDER BY created_at DESC");
@@ -81,12 +84,21 @@ class ConversationPDO
         return $this->fetchAndHydrateList($stmt);
     }
 
+    /**
+     * @return array<int, Conversation>
+     */
     public function findAll(): array
     {
         $stmt = $this->pdo->query("SELECT * FROM conversations ORDER BY created_at DESC");
+        if ($stmt === false) {
+            return [];
+        }
         return $this->fetchAndHydrateList($stmt);
     }
 
+    /**
+     * @return array<int, Conversation>
+     */
     public function findUnreadByRole(string $role): array
     {
         $targetSender = $role === 'admin' ? 'student' : 'admin';
@@ -115,27 +127,39 @@ class ConversationPDO
         return $stmt->execute([':id' => $id]);
     }
 
+    /**
+     * @param \PDOStatement $stmt
+     * @return array<int, Conversation>
+     */
     private function fetchAndHydrateList(\PDOStatement $stmt): array
     {
         $conversations = [];
         while ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $conv = $this->hydrateConversation($data);
-            $this->attachMessagesToConversation($conv);
-            $conversations[] = $conv;
+            // Guarantee to PHPStan that $data is an array before passing it
+            if (is_array($data)) {
+                $conv = $this->hydrateConversation($data);
+                $this->attachMessagesToConversation($conv);
+                $conversations[] = $conv;
+            }
         }
         return $conversations;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function hydrateConversation(array $data): Conversation
     {
+        $createdAt = is_string($data['created_at'] ?? null) ? $data['created_at'] : 'now';
+
         return new Conversation(
-            studentNumEtu: (string) $data['student_numetu'],
-            name:          (string) $data['name'],
-            email:         (string) $data['email'],
-            subject:       (string) $data['subject'],
-            status:        (string) $data['status'],
-            id:            (int) $data['id'],
-            createdAt:     new \DateTime($data['created_at'])
+            studentNumEtu: is_scalar($data['student_numetu'] ?? null) ? (string) $data['student_numetu'] : '',
+            name:          is_scalar($data['name'] ?? null)           ? (string) $data['name']           : '',
+            email:         is_scalar($data['email'] ?? null)          ? (string) $data['email']          : '',
+            subject:       is_scalar($data['subject'] ?? null)        ? (string) $data['subject']        : '',
+            status:        is_scalar($data['status'] ?? null)         ? (string) $data['status']         : '',
+            id:            is_numeric($data['id'] ?? null)            ? (int) $data['id']                : 0,
+            createdAt:     new \DateTime($createdAt)
         );
     }
 
@@ -145,13 +169,15 @@ class ConversationPDO
         $stmt->execute([':cid' => $conversation->getId()]);
 
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            if (!is_array($row)) continue;
+
             $msg = new Message(
                 conversationId: (int) $row['conversation_id'],
                 senderType:     (string) $row['sender_type'],
                 content:        (string) $row['content'],
                 isRead:         (bool) $row['is_read'],
                 id:             (int) $row['id'],
-                createdAt:      new \DateTime($row['created_at'])
+                createdAt:      new \DateTime((string) $row['created_at'])
             );
             $conversation->addMessage($msg);
         }

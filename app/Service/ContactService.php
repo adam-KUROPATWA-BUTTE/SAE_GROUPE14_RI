@@ -39,16 +39,25 @@ class ContactService
         return $saved;
     }
 
+    /**
+     * @return array<int, Conversation>
+     */
     public function getStudentConversations(string $numEtu): array
     {
         return $this->repository->findByStudentNumEtu($numEtu);
     }
 
+    /**
+     * @return array<int, Conversation>
+     */
     public function getAllConversations(): array
     {
         return $this->repository->findAll();
     }
 
+    /**
+     * @return array<int, Conversation>
+     */
     public function getUnreadConversations(string $role): array
     {
         return $this->repository->findUnreadByRole($role);

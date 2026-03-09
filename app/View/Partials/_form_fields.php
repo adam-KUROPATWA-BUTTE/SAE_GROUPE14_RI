@@ -6,27 +6,27 @@
  * @var string               $numEtu          NumEtu déjà htmlspecialchars-é
  * @var string               $detectedType    'stage' | 'etudes' | ''
  * @var string               $redirectPage    valeur du champ caché redirect_to
- * @var array<string>        $editableFields  liste des noms de champs éditables
+ * @var array<string>|null        $editableFields  liste des noms de champs éditables
  *                                            ex: ['niveau_etude', 'moyenne_sans_bac']
  *                                            si vide → tous readonly (vue admin avec btn Modifier)
- * @var bool                 $allEditable     true = admin en mode édition (tous les champs actifs)
+ * @var bool|null              $allEditable     true = admin en mode édition (tous les champs actifs)
  * @var Closure              $t
  */
 
-$editableFields = $editableFields ?? [];
-$allEditable    = $allEditable    ?? false;
+$activeFields = $editableFields ?? [];
+$isEditable   = $allEditable    ?? false;
 
 /**
  * Génère les attributs readonly + class pour un champ input.
  * readonly permet au champ d'être soumis dans le POST (contrairement à disabled).
- * Si $allEditable est true, rien n'est readonly.
- * Sinon, le champ est éditable uniquement si son nom est dans $editableFields.
+ * Si $isEditable est true, rien n'est readonly.
+ * Sinon, le champ est éditable uniquement si son nom est dans $activeFields.
  */
-$fieldAttrs = function(string $name) use ($editableFields, $allEditable): string {
-    if ($allEditable) {
+$fieldAttrs = function(string $name) use ($activeFields, $isEditable): string {
+    if ($isEditable) {
         return '';
     }
-    if (in_array($name, $editableFields, true)) {
+    if (in_array($name, $activeFields, true)) {
         return 'class="input-editable"';
     }
     return 'readonly class="input-disabled"';
@@ -37,11 +37,11 @@ $fieldAttrs = function(string $name) use ($editableFields, $allEditable): string
  * On garde disabled visuellement mais on ajoute un <input type="hidden"> miroir.
  * $selectAttrs retourne les attributs du select.
  */
-$selectAttrs = function(string $name) use ($editableFields, $allEditable): string {
-    if ($allEditable) {
+$selectAttrs = function(string $name) use ($activeFields, $isEditable): string {
+    if ($isEditable) {
         return '';
     }
-    if (in_array($name, $editableFields, true)) {
+    if (in_array($name, $activeFields, true)) {
         return 'class="input-editable"';
     }
     return 'disabled class="input-disabled"';
@@ -51,14 +51,14 @@ $selectAttrs = function(string $name) use ($editableFields, $allEditable): strin
  * Retourne true si le select doit avoir un hidden miroir
  * (i.e. il est disabled et donc non soumis dans le POST).
  */
-$needsHidden = function(string $name) use ($editableFields, $allEditable): bool {
-    if ($allEditable) return false;
-    if (in_array($name, $editableFields, true)) return false;
+$needsHidden = function(string $name) use ($activeFields, $isEditable): bool {
+    if ($isEditable) return false;
+    if (in_array($name, $activeFields, true)) return false;
     return true;
 };
 
-$labelClass = function(string $name) use ($editableFields, $allEditable): string {
-    if (!$allEditable && in_array($name, $editableFields, true)) {
+$labelClass = function(string $name) use ($activeFields, $isEditable): string {
+    if (!$isEditable && in_array($name, $activeFields, true)) {
         return ' class="label-editable"';
     }
     return '';
