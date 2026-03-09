@@ -347,6 +347,11 @@ $uploadBloque = $uploadBloque ?? false;
 
     </form>
 
+<div id="app-config"
+     data-lang="<?= htmlspecialchars($lang) ?>"
+     data-role="student"
+     style="display:none;">
+</div>
 <?php
 $content = ob_get_clean();
 

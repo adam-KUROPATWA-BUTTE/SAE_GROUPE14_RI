@@ -96,8 +96,11 @@ $subjects = [
     </div>
 </div>
 
-<div id="app-config" class="is-hidden" data-lang="<?= htmlspecialchars($lang) ?>" data-role="admin"></div>
-
+<div id="app-config"
+     data-lang="<?= htmlspecialchars($lang) ?>"
+     data-role="admin"
+     style="display:none;">
+</div>
 <?php
 $content = ob_get_clean();
 $title = $t(['fr' => 'Ticket de', 'en' => 'Ticket from']) . ' ' . $conversation->getName();

@@ -79,6 +79,12 @@ $currentId = isset($_GET['id']) ? (int)$_GET['id'] : null;
     </div>
 </div>
 
+<div id="app-config"
+     data-lang="<?= htmlspecialchars($lang) ?>"
+     data-role="admin"
+     style="display:none;">
+</div>
+
 <?php
 $content    = ob_get_clean();
 $title      = $t(['fr' => 'Messages', 'en' => 'Messages']);

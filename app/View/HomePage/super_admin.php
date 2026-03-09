@@ -285,6 +285,11 @@ $deleteLabel = $t(['fr' => 'Supprimer le compte', 'en' => 'Delete account']);
         window.SA_DELETE_LABEL = <?= json_encode($deleteLabel) ?>;
     </script>
 
+<div id="app-config"
+     data-lang="<?= htmlspecialchars($lang) ?>"
+     data-role="admin"
+     style="display:none;">
+</div>
 <?php
 $content = ob_get_clean();
 $title      = 'Super Admin — AMU';
