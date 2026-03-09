@@ -61,6 +61,21 @@ class DepartmentHeadController implements ControllerInterface
 
         $isLoggedIn = isset($_SESSION['user_id']);
 
+        // ── GESTION POST : avis chef de département ─────────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['set_avis_chef'])) {
+            $numetu = trim(strval($_POST['numetu'] ?? ''));
+            $avis   = trim(strval($_POST['avis']   ?? ''));
+
+            if ($numetu !== '' && in_array($avis, ['accepte', 'refuse'], true)) {
+                $this->folderUseCase->setAvisChef($numetu, $avis);
+            }
+
+            // Redirection pour éviter re-soumission du formulaire (PRG pattern)
+            header('Location: index.php?page=chef-departement&action=view&numetu=' . urlencode($numetu) . '&lang=' . urlencode($lang));
+            exit;
+        }
+        // ────────────────────────────────────────────────────────────
+
         $studentData = null;
         if ($action === 'view' && !empty($_GET['numetu'])) {
             $studentData = $this->folderUseCase->getStudentDetails($_GET['numetu']);
@@ -72,8 +87,6 @@ class DepartmentHeadController implements ControllerInterface
             'complet'     => $_GET['complet'] ?? 'all',
             'search'      => $_GET['search']  ?? '',
             'mobilite'    => 'all',
-            // Si chef_departement : forcer le filtre sur son département
-            // Si admin : utiliser le filtre GET ou 'all'
             'departement' => $userDepartement ?? ($_GET['departement'] ?? 'all'),
         ];
 

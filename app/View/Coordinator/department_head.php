@@ -36,7 +36,9 @@ ob_start();
         $detectedType  = !empty($pieces['convention']['file']) ? 'stage' : (!empty($pieces['lettre_motivation']['file']) ? 'etudes' : '');
         $numEtu        = htmlspecialchars(strval($studentData['NumEtu'] ?? ''));
         $dateLimite    = $studentData['DateLimite'] ?? null;
-        $currentStatus = $studentData['status'] ?? 'depot';
+
+        // Lire l'avis depuis la colonne dédiée (pas status global)
+        $currentStatus = strval($studentData['avis_chef_departement'] ?? '');
         ?>
 
         <h1><?= $t(['fr' => 'Dossier étudiant', 'en' => 'Student Profile']) ?></h1>
@@ -50,7 +52,7 @@ ob_start();
             <div class="message"><?= htmlspecialchars($message) ?></div>
         <?php endif; ?>
 
-        <!-- Spécifique chef de département : boutons Accepter / Refuser -->
+        <!-- Bannière décision : formulaire POST, pas AJAX -->
         <?php include __DIR__ . '/../Partials/_banniere_decision.php'; ?>
 
         <?php
@@ -94,38 +96,6 @@ ob_start();
             $analyseData = $repoTemp->analyserDocuments($numEtu);
             ?>
             window.analyseDocumentsData = <?= json_encode($analyseData) ?>;
-
-            // setDecision : spécifique chef de département
-            document.addEventListener('DOMContentLoaded', function () {
-                if (window.folderManager) {
-                    window.folderManager.setDecision = function (numetu, decision, btn) {
-                        fetch('index.php?page=update_global_status&lang=<?= htmlspecialchars($lang) ?>', {
-                            method : 'POST',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body   : 'numetu=' + encodeURIComponent(numetu) + '&status=' + encodeURIComponent(decision),
-                        })
-                            .then(r => r.json())
-                            .then(data => {
-                                const ind = document.getElementById('decision_indicator');
-                                if (data.success) {
-                                    document.querySelectorAll('.btn-decision').forEach(b => b.classList.remove('btn-decision-active'));
-                                    btn.classList.add('btn-decision-active');
-                                    ind.textContent = '✓ <?= $t(['fr' => 'Enregistré', 'en' => 'Saved']) ?>';
-                                    ind.className   = 'status-indicator status-ok';
-                                } else {
-                                    ind.textContent = '✗ <?= $t(['fr' => 'Erreur', 'en' => 'Error']) ?>';
-                                    ind.className   = 'status-indicator status-error';
-                                }
-                                setTimeout(() => { ind.textContent = ''; ind.className = 'status-indicator'; }, 3000);
-                            })
-                            .catch(() => {
-                                const ind = document.getElementById('decision_indicator');
-                                ind.textContent = '✗ <?= $t(['fr' => 'Erreur réseau', 'en' => 'Network error']) ?>';
-                                ind.className   = 'status-indicator status-error';
-                            });
-                    };
-                }
-            });
         </script>
 
     <?php endif; ?>

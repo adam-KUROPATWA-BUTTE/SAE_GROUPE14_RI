@@ -1323,6 +1323,50 @@ tr:nth-child(even) {
     padding: 10px 30px;
     font-size: 1.1em;
 }
+/* Avis chef de département (lecture seule dans vue admin) */
+.avis-chef {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 0.95em;
+    margin: 12px 0 20px;
+    border: 2px solid transparent;
+}
+
+.avis-chef-icon {
+    font-size: 1.2em;
+    flex-shrink: 0;
+}
+
+.avis-chef-label {
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.avis-chef-value {
+    font-weight: 400;
+}
+
+.avis-chef--accepte {
+    background-color: #e6f4ea;
+    border-color: #00701a;
+    color: #00701a;
+}
+
+.avis-chef--refuse {
+    background-color: #fdecea;
+    border-color: #8f0a19;
+    color: #8f0a19;
+}
+
+.avis-chef--pending {
+    background-color: #fff8e1;
+    border-color: #f1ae00;
+    color: #7a5800;
+}
+
 
 
 

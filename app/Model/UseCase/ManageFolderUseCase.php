@@ -74,6 +74,21 @@ class ManageFolderUseCase
         return $this->dossierRepo->cycleStatus($numEtu);
     }
 
+    /**
+     * Enregistre l'avis du chef de département ('accepte', 'refuse', ou null).
+     * Si refus : met aussi le status global du dossier à 'refuse' automatiquement.
+     * Si accepte : ne touche pas au status global (c'est l'admin qui valide).
+     */
+    public function setAvisChef(string $numEtu, ?string $avis): bool
+    {
+        $result = $this->dossierRepo->setAvisChef($numEtu, $avis);
+
+        if ($result && $avis === 'refuse') {
+            $this->dossierRepo->setStatus($numEtu, 'refuse');
+        }
+
+        return $result;
+    }
 
     /**
      * @param array<string, mixed> $filters
@@ -98,7 +113,6 @@ class ManageFolderUseCase
         $dossier = $this->getStudentDetails($numEtu);
         if (!$dossier) return false;
 
-        // 1. Mettre à jour PiecesJustificatives
         $pieces = isset($dossier['pieces']) && is_array($dossier['pieces']) ? $dossier['pieces'] : [];
         if (!isset($pieces[$docType])) {
             $pieces[$docType] = ['file' => '', 'status' => $status, 'comment' => $comment];
@@ -107,12 +121,10 @@ class ManageFolderUseCase
             $pieces[$docType]['comment'] = $comment;
         }
 
-        // Mettre à jour le fichier si fourni
         if ($fileContent !== null && $fileContent !== false) {
             $pieces[$docType]['file'] = base64_encode($fileContent);
         }
 
-        // On envoie TOUS les paramètres à NULL, la commande COALESCE SQL gardera les anciennes valeurs !
         $formattedData = [
             ':Nom'                => null,
             ':Prenom'             => null,
@@ -146,16 +158,15 @@ class ManageFolderUseCase
 
         $updatedPieces = $this->dossierRepo->update($numEtu, $formattedData);
 
-        // 2. Mettre à jour le statut dans "StatutDocuments" (Nouvelle architecture)
         $statuts = isset($dossier['statuts']) && is_array($dossier['statuts']) ? $dossier['statuts'] : [];
         $statuts[$docType] = $status;
 
-        $dateLimite = isset($dossier['DateLimite']) && is_scalar($dossier['DateLimite']) 
-            ? (string) $dossier['DateLimite'] 
+        $dateLimite = isset($dossier['DateLimite']) && is_scalar($dossier['DateLimite'])
+            ? (string) $dossier['DateLimite']
             : null;
-            
-        $commentaireGlobal = isset($dossier['CommentaireAdmin']) && is_scalar($dossier['CommentaireAdmin']) 
-            ? (string) $dossier['CommentaireAdmin'] 
+
+        $commentaireGlobal = isset($dossier['CommentaireAdmin']) && is_scalar($dossier['CommentaireAdmin'])
+            ? (string) $dossier['CommentaireAdmin']
             : null;
 
         $updatedStatuts = $this->dossierRepo->enregistrerValidation($numEtu, $statuts, $dateLimite, $commentaireGlobal);

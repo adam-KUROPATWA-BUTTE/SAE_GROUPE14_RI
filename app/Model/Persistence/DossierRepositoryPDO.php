@@ -74,9 +74,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         return $this->getDossierStats();
     }
 
-    /**
-     * Ta branche : supporte $departement en plus
-     */
     public function getDossierStats(?string $mobilite = null, ?string $departement = null): DossierStats
     {
         try {
@@ -100,9 +97,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         }
     }
 
-    /**
-     * Ta branche : supporte $departement en plus
-     */
     public function getGenderStats(?string $mobilite = null, ?string $departement = null): GenderStats
     {
         try {
@@ -134,7 +128,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
 
     /**
      * @return array<int, array{name: string, count: int}>
-     * Ta branche : supporte $departement en plus
      */
     public function getTopCountries(int $limit, ?string $mobilite = null, ?string $departement = null): array
     {
@@ -170,7 +163,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
 
     /**
      * @return array<int, array{name: string, count: int}>
-     * Ta branche : supporte $departement en plus
      */
     public function getDepartmentStats(int $limit, ?string $mobilite = null, ?string $departement = null): array
     {
@@ -204,7 +196,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
 
     /**
      * @return array{incoming: int, outgoing: int}
-     * Ta branche : supporte $departement en plus
      */
     public function getIncomingOutgoingStats(?string $mobilite = null, ?string $departement = null): array
     {
@@ -235,7 +226,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
 
     /**
      * @return array<int, array{name: string, count: int}>
-     * Ta branche : supporte $departement en plus
      */
     public function getContinentStats(?string $mobilite = null, ?string $departement = null): array
     {
@@ -270,7 +260,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
 
     /**
      * @return array{europe_countries: int, non_europe_countries: int}
-     * Ta branche : supporte $departement en plus
      */
     public function getEuropeVsNonEuropeStats(?string $mobilite = null, ?string $departement = null): array
     {
@@ -306,7 +295,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
 
     /**
      * @return array<int, array{name: string, count: int}>
-     * Ta branche : supporte $departement en plus
      */
     public function getZoneStats(?string $mobilite = null, ?string $departement = null): array
     {
@@ -379,7 +367,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     }
 
     /**
-     * NewDev : inclut StatutDocuments, DateLimite, CommentaireAdmin
+     * Inclut StatutDocuments, DateLimite, CommentaireAdmin, avis_chef_departement
      * @return array<string, mixed>|null
      */
     public function findByNumEtu(string $numEtu): ?array
@@ -390,7 +378,8 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                        EmailPersonnel, EmailAMU, Telephone, CodeDepartement, Composante, Type, Zone, Pays,
                        Campus, Discipline, NiveauEtude, Formation, MoyenneBac, MoyenneSansBac, AvisDRI,
                        DateDebut, MobiliteAnterieure, IsComplete, PiecesJustificatives, status,
-                       StatutDocuments, DateLimite, CommentaireAdmin, ModifiePar, ModifieLe
+                       StatutDocuments, DateLimite, CommentaireAdmin, ModifiePar, ModifieLe,
+                       avis_chef_departement
                 FROM dossiers WHERE NumEtu = :numetu LIMIT 1
             ");
             $stmt->execute([':numetu' => $numEtu]);
@@ -500,6 +489,35 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         }
     }
 
+    // ===========================================================
+    // AVIS CHEF DE DÉPARTEMENT  ← NOUVEAU
+    // ===========================================================
+
+    /**
+     * Enregistre la décision du chef de département dans la colonne dédiée.
+     * Valeurs acceptées : 'accepte', 'refuse', ou null pour réinitialiser.
+     */
+    public function setAvisChef(string $numEtu, ?string $avis): bool
+    {
+        $allowed = ['accepte', 'refuse', null];
+        if (!in_array($avis, $allowed, true)) return false;
+        try {
+            $stmt = $this->db->prepare("
+                UPDATE dossiers
+                SET avis_chef_departement = :avis
+                WHERE NumEtu = :numetu
+            ");
+            return $stmt->execute([':avis' => $avis, ':numetu' => $numEtu]);
+        } catch (\PDOException $e) {
+            error_log("setAvisChef Error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // ===========================================================
+    // STATUS
+    // ===========================================================
+
     public function toggleCompleteStatus(string $numEtu): bool
     {
         try {
@@ -515,9 +533,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         }
     }
 
-    /**
-     * NewDev : alias de toggleCompleteStatus
-     */
     public function toggleStatus(string $numEtu): bool
     {
         return $this->toggleCompleteStatus($numEtu);
@@ -776,24 +791,19 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             ORDER BY CodeDepartement ASC";
 
         $stmt = $this->db->query($sql);
-        
-        if ($stmt === false) {
-            return [];
-        }
+        if ($stmt === false) return [];
 
         $departments = [];
-
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             if (is_array($row) && isset($row['CodeDepartement']) && is_scalar($row['CodeDepartement'])) {
                 $departments[] = (string) $row['CodeDepartement'];
             }
         }
-
         return $departments;
     }
 
     // ===========================================================
-    // VALIDATION DOCUMENTS (NewDev)
+    // VALIDATION DOCUMENTS
     // ===========================================================
 
     /**
@@ -843,7 +853,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                 }
             }
 
-            $statutsJson = $result['StatutDocuments'] ?? '{}';
+            $statutsJson    = $result['StatutDocuments'] ?? '{}';
             $decodedStatuts = is_string($statutsJson) && $statutsJson !== ''
                 ? (json_decode($statutsJson, true) ?? [])
                 : [];
@@ -885,8 +895,6 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
                 $dateLimite = null;
             }
 
-            $statutsJson = json_encode($statutsDocuments);
-
             $stmt = $this->db->prepare("
                 UPDATE dossiers
                 SET
@@ -899,7 +907,7 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             return $stmt->execute([
                 ':dateLimite'  => $dateLimite,
                 ':commentaire' => $commentaire,
-                ':statuts'     => $statutsJson,
+                ':statuts'     => json_encode($statutsDocuments),
                 ':numetu'      => $numetu,
             ]);
 
