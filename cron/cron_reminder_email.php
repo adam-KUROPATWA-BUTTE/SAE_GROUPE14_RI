@@ -7,7 +7,7 @@ use Service\Cron\CronReminderService;
 use Model\Persistence\FolderRepositoryPDO;
 use Model\Persistence\RelanceRepositoryPDO;
 
-define('DAYS_BEFORE_RELAY', 7);
+define('DAYS_BEFORE_RELAY', 3);
 
 $dryRun = in_array('--dry-run', $argv ?? [], true);
 

@@ -41,6 +41,41 @@ class FoldersControllerAdmin
             if ($numetu) {
                 $numetu  = urldecode($numetu);
                 $success = $this->folderUseCase->toggleCompleteStatus($numetu);
+
+                // If successfully marked as complete (was incomplete before), send validation email
+                if ($success && $wasIncomplete && $studentData) {
+                    $email = $studentData['EmailPersonnel'] ?? '';
+                    $nom = $studentData['Nom'] ?? '';
+                    $prenom = $studentData['Prenom'] ?? '';
+                    $studentName = trim($prenom . ' ' . $nom);
+
+                    // Get validated documents
+                    $pieces = is_array($studentData['pieces'] ?? null) ? $studentData['pieces'] : [];
+                    $validatedDocs = array_keys(array_filter($pieces, fn($v) => !empty($v)));
+
+                    error_log("🔍 Debug email: email=$email, studentName=$studentName, docs=" . json_encode($validatedDocs));
+
+                    // Send email even if no documents uploaded (folder marked complete by admin)
+                    if (!empty($email)) {
+                        // If no documents, list all expected documents as validated
+                        if (empty($validatedDocs)) {
+                            $validatedDocs = ['photo', 'cv', 'convention', 'lettre_motivation'];
+                            error_log("ℹ️ No documents found, using default list for email");
+                        }
+                        
+                        \Service\Email\EmailReminderService::sendValidationConfirmation(
+                            $email,
+                            $studentName,
+                            $validatedDocs,
+                            $numetu
+                        );
+                    } else {
+                        error_log("⚠️ Email not sent: missing student email");
+                    }
+                } else {
+                    error_log("⚠️ Email not sent: success=$success, wasIncomplete=" . ($wasIncomplete ? 'yes' : 'no'));
+                }
+
                 $_SESSION['message'] = $success
                     ? (($lang === 'fr') ? "Statut du dossier mis à jour." : "Folder status updated.")
                     : (($lang === 'fr') ? "Erreur lors de la mise à jour." : "Error updating status.");

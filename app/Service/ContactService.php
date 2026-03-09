@@ -4,6 +4,7 @@ namespace Service;
 
 use Model\Entity\Conversation;
 use Model\Persistence\ConversationPDO;
+use Service\Email\EmailReminderService;
 
 class ContactService
 {
@@ -32,8 +33,59 @@ class ContactService
 
         $saved = $this->repository->addMessage($conversationId, $senderType, $content);
 
-        if ($saved && $senderType === 'admin') {
-            $this->sendResponseMail($conversation, $content);
+        // Send email notification to the recipient
+        if ($saved) {
+            error_log("📧 DEBUG: Message saved, sending notification. Sender: {$senderType}");
+            
+            if ($senderType === 'admin') {
+                // Admin sent message → notify student
+                $recipientEmail = $conversation->getEmail();
+                $recipientName = $conversation->getName();
+                $senderName = 'Service Relations Internationales';
+                $platformLink = 'https://ri-amu.app/index.php?page=contact-student';
+                
+                error_log("📧 DEBUG: Notifying student {$recipientEmail}");
+                
+                $emailSent = EmailReminderService::sendMessageNotification(
+                    $recipientEmail,
+                    $recipientName,
+                    $senderName,
+                    $content,
+                    $platformLink
+                );
+                
+                if ($emailSent) {
+                    error_log("✅ Email notification sent to student: {$recipientEmail}");
+                } else {
+                    error_log("❌ Failed to send email notification to student: {$recipientEmail}");
+                }
+                
+            } elseif ($senderType === 'student') {
+                // Student sent message → notify admin
+                $adminEmail = 'relations.internationales@univ-amu.fr';
+                $recipientName = 'Administrateur';
+                $senderName = $conversation->getName();
+                $platformLink = 'https://ri-amu.app/index.php?page=messages-admin';
+                
+                error_log("📧 DEBUG: Notifying admin {$adminEmail}");
+                
+                $emailSent = EmailReminderService::sendMessageNotification(
+                    $adminEmail,
+                    $recipientName,
+                    $senderName,
+                    $content,
+                    $platformLink
+                );
+                
+                if ($emailSent) {
+                    error_log("✅ Email notification sent to admin: {$adminEmail}");
+                } else {
+                    error_log("❌ Failed to send email notification to admin: {$adminEmail}");
+                }
+            }
+            
+            // Small delay to avoid rate limiting
+            usleep(500000); // 0.5 second
         }
 
         return $saved;
@@ -78,29 +130,7 @@ class ContactService
         return $this->repository->delete($id);
     }
 
-    private function sendResponseMail(Conversation $conversation, string $responseContent): void
-    {
-        $studentEmail = $conversation->getEmail();
-        $studentName  = $conversation->getName();
-        $firstMessage = $conversation->getFirstMessage()?->getContent() ?? '';
 
-        $subject = "=?UTF-8?B?" . base64_encode("Réponse à votre message - Service Relations Internationales AMU") . "?=";
-        $body  = "Bonjour $studentName,\r\n\r\n"
-            . "Le Service des Relations Internationales a répondu à votre demande.\r\n\r\n"
-            . "Votre message :\r\n$firstMessage\r\n\r\n"
-            . "Notre réponse :\r\n$responseContent\r\n\r\n"
-            . "Cordialement,\r\nService des Relations Internationales — AMU\r\n";
-
-        $headers  = "From: relations.internationales@univ-amu.fr\r\n";
-        $headers .= "Reply-To: relations.internationales@univ-amu.fr\r\n";
-        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
-
-        try {
-            mail($studentEmail, $subject, $body, $headers);
-        } catch (\Exception $e) {
-            error_log("Mail non envoyé : " . $e->getMessage());
-        }
-    }
 
     private function validateEmail(string $email): void
     {
