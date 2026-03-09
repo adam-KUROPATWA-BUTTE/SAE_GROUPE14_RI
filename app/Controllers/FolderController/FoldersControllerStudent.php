@@ -157,7 +157,8 @@ class FoldersControllerStudent implements ControllerInterface
             $documents = ['photo', 'cv', 'convention', 'lettre_motivation'];
             
             foreach ($documents as $docType) {
-                if ($this->getUploadedFileContent($docType) !== null) {
+                // Check if document was uploaded (handleFileUploads puts content in $data)
+                if (isset($data[$docType]) && !empty($data[$docType])) {
                     \Service\Email\EmailReminderService::sendDocumentDeposited(
                         $data['EmailPersonnel'],
                         $studentName,
@@ -220,29 +221,50 @@ class FoldersControllerStudent implements ControllerInterface
 
         $success = $this->folderUseCase->updateDossier($data);
 
-        // Send email confirmation for newly uploaded documents only
+        // Send email confirmation for every uploaded document
         if ($success && !empty($data['EmailPersonnel'])) {
+            error_log("📧 DEBUG: Checking documents for email notification...");
+            error_log("📧 DEBUG: Email = " . $data['EmailPersonnel']);
+            
             $studentName = '';
             if (is_array($existingFolder)) {
                 $prenom = $existingFolder['Prenom'] ?? '';
                 $nom = $existingFolder['Nom'] ?? '';
                 $studentName = trim($prenom . ' ' . $nom);
             }
+            error_log("📧 DEBUG: Student name = {$studentName}");
 
-            $documents = ['photo', 'cv', 'convention', 'lettre_motivation'];
+            $documents = ['photo', 'cv', 'convention', 'lettre_motivation', 'langues_file'];
+            $emailsSent = 0;
             
             foreach ($documents as $docType) {
-                $newContent = $this->getUploadedFileContent($docType);
-                // Only notify if: new file uploaded AND it wasn't there before OR it's being replaced
-                if ($newContent !== null && empty($oldPieces[$docType])) {
-                    \Service\Email\EmailReminderService::sendDocumentDeposited(
+                // Send email for ANY uploaded document (new or replacement)
+                if (isset($data[$docType]) && !empty($data[$docType])) {
+                    error_log("📧 DEBUG: Sending email for {$docType} to {$data['EmailPersonnel']}");
+                    
+                    $result = \Service\Email\EmailReminderService::sendDocumentDeposited(
                         $data['EmailPersonnel'],
                         $studentName,
                         $docType,
                         $numetu
                     );
+                    
+                    if ($result) {
+                        error_log("✅ Email sent successfully for {$docType}");
+                        $emailsSent++;
+                        // Small delay to avoid rate limiting
+                        usleep(500000); // 0.5 second
+                    } else {
+                        error_log("❌ Email failed for {$docType}");
+                    }
+                } else {
+                    error_log("⚠️ DEBUG: No file uploaded for {$docType}");
                 }
             }
+            
+            error_log("📧 DEBUG: Total emails sent = {$emailsSent}");
+        } else {
+            error_log("⚠️ DEBUG: Email conditions not met - success={$success}, email=" . ($data['EmailPersonnel'] ?? 'empty'));
         }
 
         $_SESSION['message'] = $success
@@ -274,5 +296,18 @@ class FoldersControllerStudent implements ControllerInterface
             $errors[] = $lang === 'fr' ? "Type et Zone requis." : "Type and Zone required.";
         }
         return $errors;
+    }
+
+    /**
+     * Safely reads the binary content of an uploaded file.
+     */
+    private function getUploadedFileContent(string $fieldName): ?string
+    {
+        if (!isset($_FILES[$fieldName]) || !is_array($_FILES[$fieldName])) return null;
+        if ($_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) return null;
+        $tmpName = $_FILES[$fieldName]['tmp_name'];
+        if (!is_string($tmpName) || !file_exists($tmpName)) return null;
+        $content = file_get_contents($tmpName);
+        return $content !== false ? $content : null;
     }
 }
