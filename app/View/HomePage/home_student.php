@@ -13,7 +13,6 @@ $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'
 ob_start();
 ?>
 
-    <!-- Header personnalisé pour Home Student -->
     <header>
         <div class="top-bar">
             <img class="logo_amu" src="img/logo.png" alt="AMU Logo">
@@ -22,8 +21,8 @@ ob_start();
                 <div class="lang-dropdown">
                     <button class="dropbtn"><?= htmlspecialchars($lang) ?></button>
                     <div class="dropdown-content">
-                        <a href="#" onclick="changeLang('fr'); return false;">Français</a>
-                        <a href="#" onclick="changeLang('en'); return false;">English</a>
+                        <a href="#" onclick="window.mainApp.changeLang('fr'); return false;">Français</a>
+                        <a href="#" onclick="window.mainApp.changeLang('en'); return false;">English</a>
                     </div>
                 </div>
 
@@ -46,7 +45,7 @@ ob_start();
         <nav class="menu">
             <button class="active" onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'home-student']) ?>'"><?= $t(['fr' => 'Accueil','en' => 'Home']) ?></button>
             <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'dashboard-student']) ?>'"><?= $t(['fr' => 'Mon Tableau de bord','en' => 'My Dashboard']) ?></button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'partners-student']) ?>'"><?= $t(['fr' => 'Partenaires','en' => 'Partners']) ?></button>
+            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'partners-student']) ?>'"><?= $t(['fr' => 'Destinations','en' => 'Destinations']) ?></button>
             <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'folders-student']) ?>'"><?= $t(['fr' => 'Mon Dossier','en' => 'My Folder']) ?></button>
             <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'contact-student']) ?>'"><?= $t(['fr' => 'Contact','en' => 'Contact']) ?></button>
 

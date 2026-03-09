@@ -16,28 +16,42 @@ class GetAdminStatsUseCase
         $this->repository = $repository;
     }
 
-    public function execute(): AdminStats
+    /**
+     * @param string|null $mobilite null = tous | 'etude' | 'stage'
+     * @param string|null $departement Code du département ou null pour tous
+     */
+    public function execute(?string $mobilite = null, ?string $departement = null): AdminStats
     {
-        $dossierStats = $this->repository->getDossierStats();
-        $genderStats = $this->repository->getGenderStats();
+        $mobiliteFilter = in_array($mobilite, ['etude', 'stage'], true) ? $mobilite : null;
+        $departementFilter = !empty($departement) ? $departement : null;
 
-        $topCountriesData = $this->repository->getTopCountries(5);
+        // Passer les deux filtres à toutes les méthodes du repository
+        $dossierStats = $this->repository->getDossierStats($mobiliteFilter, $departementFilter);
+        $genderStats  = $this->repository->getGenderStats($mobiliteFilter, $departementFilter);
+        $mobility     = $this->repository->getIncomingOutgoingStats($mobiliteFilter, $departementFilter);
+        $continents   = $this->repository->getContinentStats($mobiliteFilter, $departementFilter);
+        $europeStats  = $this->repository->getEuropeVsNonEuropeStats($mobiliteFilter, $departementFilter);
+
         $topCountries = array_map(
-            fn($data) => new CountryStats($data['name'], $data['count']),
-            $topCountriesData
+            fn($row) => new CountryStats($row['name'], $row['count']),
+            $this->repository->getTopCountries(5, $mobiliteFilter, $departementFilter)
         );
 
-        $departmentsData = $this->repository->getDepartmentStats(5);
         $departments = array_map(
-            fn($data) => new DepartmentStats($data['name'], $data['count']),
-            $departmentsData
+            fn($row) => new DepartmentStats($row['name'], $row['count']),
+            $this->repository->getDepartmentStats(5, $mobiliteFilter, $departementFilter)
         );
 
         return new AdminStats(
-            $dossierStats,
-            $topCountries,
-            $genderStats,
-            $departments
+            dossierStats:            $dossierStats,
+            topCountries:            $topCountries,
+            genderStats:             $genderStats,
+            departments:             $departments,
+            incomingStudents:        $mobility['incoming'],
+            outgoingStudents:        $mobility['outgoing'],
+            zoneStats:               $continents,
+            europeCountriesCount:    $europeStats['europe_countries'],
+            nonEuropeCountriesCount: $europeStats['non_europe_countries'],
         );
     }
 }

@@ -3,8 +3,9 @@
 namespace Controllers\ContactController;
 
 use Controllers\ControllerInterface;
-use Model\Persistence\ContactMessageRepository;
+use Model\Persistence\ConversationPDO;
 use Service\ContactService;
+use Core\View;
 
 class ContactControllerAdmin implements ControllerInterface
 {
@@ -12,7 +13,7 @@ class ContactControllerAdmin implements ControllerInterface
 
     public function __construct()
     {
-        $repository = new ContactMessageRepository();
+        $repository = new ConversationPDO();
         $this->contactService = new ContactService($repository);
     }
 
@@ -23,11 +24,9 @@ class ContactControllerAdmin implements ControllerInterface
 
     public function control(): void
     {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+        if (session_status() === PHP_SESSION_NONE) session_start();
 
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
             header('Location: index.php?page=login');
             exit;
         }
@@ -36,71 +35,76 @@ class ContactControllerAdmin implements ControllerInterface
             $_SESSION['lang'] = $_GET['lang'];
         }
         $lang = $_SESSION['lang'] ?? 'fr';
-        $action = $_GET['action'] ?? 'list';
-        $messageId = isset($_GET['id']) ? (int)$_GET['id'] : null;
-
-        // Gestion des actions
+        $action = $_POST['action'] ?? $_GET['action'] ?? 'list';        
+        $conversationId = (int)($_POST['id'] ?? $_GET['id'] ?? 0);  
+        // --- GESTION DES ACTIONS POST (Formulaires) ---
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if ($action === 'respond' && $messageId) {
+            
+            if ($action === 'respond' && $conversationId) {
                 $response = trim($_POST['response'] ?? '');
                 if (!empty($response)) {
-                    $this->contactService->respondToMessage($messageId, $response);
-                    $_SESSION['message'] = $lang === 'fr'
-                        ? 'Réponse envoyée avec succès !'
-                        : 'Response sent successfully!';
-                    header('Location: index.php?page=messages-admin&action=view&id=' . $messageId);
+                    $this->contactService->addMessage($conversationId, 'admin', $response);
+                    $_SESSION['message'] = $lang === 'fr' ? 'Réponse envoyée !' : 'Response sent!';
+                    header('Location: index.php?page=messages-admin&action=view&id=' . $conversationId);
                     exit;
                 }
-            } elseif ($action === 'mark-read' && $messageId) {
-                $this->contactService->markAsRead($messageId);
+            } 
+            
+            elseif ($action === 'mark-read' && $conversationId) {
+                $this->contactService->markConversationAsRead($conversationId, 'admin');
                 header('Location: index.php?page=messages-admin');
                 exit;
-            } elseif ($action === 'delete' && $messageId) {
-                $this->contactService->deleteMessage($messageId);
-                $_SESSION['message'] = $lang === 'fr'
-                    ? 'Message supprimé.'
-                    : 'Message deleted.';
-                header('Location: index.php?page=messages-admin');
-                exit;
+            } 
+            
+            // C'est ici que se trouvait l'erreur : cette action doit être DANS le bloc POST
+            elseif ($action === 'delete') {
+                $idToDelete = $_POST['id'] ?? $_GET['id'] ?? null;
+                if ($idToDelete) {
+                    $this->contactService->deleteConversation((int)$idToDelete);
+                    $_SESSION['message'] = $lang === 'fr' ? 'Conversation supprimée.' : 'Conversation deleted.';
+                    header('Location: index.php?page=messages-admin&lang=' . $lang);
+                    exit;
+                }
             }
         }
 
-        $t = function(array $translations) use ($lang) {
-            return $translations[$lang] ?? $translations['fr'] ?? '';
-        };
-
+        $t = fn(array $translations) => $translations[$lang] ?? $translations['fr'] ?? '';
         $buildUrl = function(string $url, array $params = []) use ($lang) {
             $params['lang'] = $lang;
-            $queryString = http_build_query($params);
-            return $url . ($queryString ? '?' . $queryString : '');
+            return $url . '?' . http_build_query($params);
         };
 
-        // Afficher un message spécifique
-        if ($action === 'view' && $messageId) {
-            $message = $this->contactService->getMessageById($messageId);
-
-
-            if (!$message) {
+        if ($action === 'view' && $conversationId) {
+            $conversation = $this->contactService->getConversationById($conversationId);
+            if (!$conversation) {
                 header('Location: index.php?page=messages-admin');
                 exit;
             }
 
-            if (!$message->isRead()) {
-                $this->contactService->markAsRead($messageId);
-            }
+            $this->contactService->markConversationAsRead($conversationId, 'admin');
 
-            require_once ROOT_PATH . '/app/View/Contact/messages_admin_view.php';
+            View::render('Contact/messages_admin_view', [
+                'conversation'   => $conversation,
+                'lang'           => $lang,
+                't'              => $t,
+                'buildUrl'       => $buildUrl,
+                'action'         => $action,
+                'conversationId' => $conversationId
+            ]);
         } else {
-            // Liste de tous les messages
             $filter = $_GET['filter'] ?? 'all';
+            $conversations = $filter === 'unread' 
+                ? $this->contactService->getUnreadConversations('admin') 
+                : $this->contactService->getAllConversations();
 
-            if ($filter === 'unread') {
-                $messages = $this->contactService->getUnreadMessages();
-            } else {
-                $messages = $this->contactService->getAllMessages();
-            }
-
-            require_once ROOT_PATH . '/app/View/Contact/messages_admin_list.php';
+            View::render('Contact/messages_admin_list', [
+                'conversations' => $conversations,
+                'filter'        => $filter,
+                'lang'          => $lang,
+                't'             => $t,
+                'buildUrl'      => $buildUrl,
+                'action'        => $action
+            ]);
         }
     }
 }

@@ -2,15 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Controllers\site\FolderController;
+namespace Controllers\FolderController;
 
 use Controllers\ControllerInterface;
 use Model\UseCase\ManageFolderUseCase;
- 
-/**
- * Class FoldersControllerStudent
- * Handles the HTTP requests and routing for student-facing folder operations.
- */
+use Core\View;
+
 class FoldersControllerStudent implements ControllerInterface
 {
     private ManageFolderUseCase $folderUseCase;
@@ -20,17 +17,11 @@ class FoldersControllerStudent implements ControllerInterface
         $this->folderUseCase = new ManageFolderUseCase();
     }
 
-    /**
-     * Determines if this controller supports the requested page.
-     */
     public static function support(string $page, string $method): bool
     {
         return in_array($page, ['folders-student', 'update_my_folder', 'create_folder'], true);
     }
 
-    /**
-     * Main control entry point for the student folder module.
-     */
     public function control(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -43,8 +34,8 @@ class FoldersControllerStudent implements ControllerInterface
         }
 
         $numetu = (string)$_SESSION['numetu'];
-        $lang = isset($_GET['lang']) && is_string($_GET['lang']) ? $_GET['lang'] : 'fr';
-        $page = isset($_GET['page']) && is_string($_GET['page']) ? $_GET['page'] : '';
+        $lang   = isset($_GET['lang']) && is_string($_GET['lang']) ? $_GET['lang'] : 'fr';
+        $page   = isset($_GET['page']) && is_string($_GET['page']) ? $_GET['page'] : '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($page === 'update_my_folder') {
@@ -60,9 +51,6 @@ class FoldersControllerStudent implements ControllerInterface
         $this->displayFolderPage($numetu, $lang);
     }
 
-    /**
-     * Renders the student folder management view.
-     */
     private function displayFolderPage(string $numetu, string $lang): void
     {
         $studentData = $this->folderUseCase->getStudentDetails($numetu);
@@ -70,19 +58,48 @@ class FoldersControllerStudent implements ControllerInterface
         unset($_SESSION['message']);
 
         $data = is_array($studentData) ? $studentData : [];
-        
-        // Appel à la vue via la classe Core\View
-        \Core\View::render('Folder/folders_student', [
+
+        View::render('Folder/folders_student', [
             'dossier'   => $data,
             'studentId' => $numetu,
             'message'   => $message,
-            'lang'      => $lang
+            'lang'      => $lang,
         ]);
     }
 
     /**
-     * Processes the creation of a new student folder.
+     * FIX line 87: add PHPDoc types to satisfy PHPStan level 9.
+     * @param array<string, mixed> $data
+     * @return array<int, string>
      */
+    private function handleFileUploads(array &$data, string $lang): array
+    {
+        $errors     = [];
+        $fileFields = ['photo', 'cv', 'convention', 'lettre_motivation', 'langues_file'];
+
+        foreach ($fileFields as $field) {
+            if (isset($_FILES[$field])) {
+                $error = $_FILES[$field]['error'];
+
+                if ($error === UPLOAD_ERR_OK) {
+                    $content = file_get_contents($_FILES[$field]['tmp_name']);
+                    if ($content !== false) {
+                        $data[$field] = $content;
+                    } else {
+                        $errors[] = $lang === 'fr' ? "Impossible de lire le fichier '$field'." : "Cannot read file '$field'.";
+                    }
+                } elseif ($error !== UPLOAD_ERR_NO_FILE) {
+                    $msg = $lang === 'fr' ? "Erreur upload pour '$field' (Code: $error)" : "Upload error for '$field' (Code: $error)";
+                    if ($error === UPLOAD_ERR_INI_SIZE || $error === UPLOAD_ERR_FORM_SIZE) {
+                        $msg .= $lang === 'fr' ? " : Le fichier est trop lourd (limite dépassée)." : " : File is too large.";
+                    }
+                    $errors[] = $msg;
+                }
+            }
+        }
+        return $errors;
+    }
+
     private function handleCreateFolder(string $numetu, string $lang): void
     {
         if ($this->folderUseCase->getStudentDetails($numetu)) {
@@ -92,37 +109,47 @@ class FoldersControllerStudent implements ControllerInterface
         }
 
         $data = [
-            'NumEtu' => $numetu,
-            'Nom' => isset($_POST['nom']) ? (string)$_POST['nom'] : '',
-            'Prenom' => isset($_POST['prenom']) ? (string)$_POST['prenom'] : '',
-            'DateNaissance' => isset($_POST['naissance']) ? (string)$_POST['naissance'] : null,
-            'Sexe' => isset($_POST['sexe']) ? (string)$_POST['sexe'] : null,
-            'Adresse' => isset($_POST['adresse']) ? (string)$_POST['adresse'] : null,
-            'CodePostal' => isset($_POST['cp']) ? (string)$_POST['cp'] : null,
-            'Ville' => isset($_POST['ville']) ? (string)$_POST['ville'] : null,
-            'EmailPersonnel' => isset($_POST['email_perso']) ? (string)$_POST['email_perso'] : '',
-            'EmailAMU' => isset($_POST['email_amu']) ? (string)$_POST['email_amu'] : null,
-            'Telephone' => isset($_POST['telephone']) ? (string)$_POST['telephone'] : '',
-            'CodeDepartement' => isset($_POST['departement']) ? (string)$_POST['departement'] : null,
-            'Type' => isset($_POST['type']) ? (string)$_POST['type'] : null,
-            'Zone' => isset($_POST['zone']) ? (string)$_POST['zone'] : null
+            'NumEtu'          => $numetu,
+            'Nom'             => $_POST['nom']             ?? '',
+            'Prenom'          => $_POST['prenom']          ?? '',
+            'DateNaissance'   => $_POST['naissance']       ?? null,
+            'Sexe'            => $_POST['sexe']            ?? null,
+            'Adresse'         => $_POST['adresse']         ?? null,
+            'CodePostal'      => $_POST['cp']              ?? null,
+            'Ville'           => $_POST['ville']           ?? null,
+            'EmailPersonnel'  => $_POST['email_perso']     ?? '',
+            'EmailAMU'        => $_POST['email_amu']       ?? null,
+            'Telephone'       => $_POST['telephone']       ?? '',
+            'CodeDepartement' => $_POST['departement']     ?? null,
+            'Composante'      => $_POST['composante']      ?? null,
+            'Discipline'      => $_POST['discipline']      ?? null,
+            'Formation'       => $_POST['formation']       ?? null,
+            'Pays'            => $_POST['pays']            ?? null,
+            'Type'            => $_POST['type']            ?? null,
+            'Zone'            => $_POST['zone']            ?? null,
+            'Campus'          => null,
+            'NiveauEtude'     => null,
+            'MoyenneBac'      => null,
+            'MoyenneSansBac'  => null,
+            'DateDebut'       => null,
+            'MobiliteAnterieure' => null,
         ];
 
         $errors = $this->validateFolderData($data, $lang);
-
         if (!empty($errors)) {
-            $_SESSION['message'] = implode(' ', $errors);
+            $_SESSION['message'] = implode('<br>', $errors);
             header('Location: index.php?page=folders-student&lang=' . $lang);
             exit;
         }
 
-        $success = $this->folderUseCase->creerDossier(
-            $data,
-            $this->getUploadedFileContent('photo'),
-            $this->getUploadedFileContent('cv'),
-            $this->getUploadedFileContent('convention'),
-            $this->getUploadedFileContent('lettre_motivation')
-        );
+        $uploadErrors = $this->handleFileUploads($data, $lang);
+        if (!empty($uploadErrors)) {
+            $_SESSION['message'] = implode('<br>', $uploadErrors);
+            header('Location: index.php?page=folders-student&lang=' . $lang);
+            exit;
+        }
+
+        $success = $this->folderUseCase->creerDossier($data);
 
         // Send email confirmation for each uploaded document
         if ($success && !empty($data['EmailPersonnel'])) {
@@ -149,9 +176,6 @@ class FoldersControllerStudent implements ControllerInterface
         exit;
     }
 
-    /**
-     * Processes the update of an existing student folder.
-     */
     private function handleUpdateFolder(string $numetu, string $lang): void
     {
         // Get existing folder to compare documents
@@ -161,12 +185,24 @@ class FoldersControllerStudent implements ControllerInterface
             : [];
 
         $data = [
-            'NumEtu' => $numetu,
-            'Adresse' => isset($_POST['adresse']) ? (string)$_POST['adresse'] : null,
-            'CodePostal' => isset($_POST['cp']) ? (string)$_POST['cp'] : null,
-            'Ville' => isset($_POST['ville']) ? (string)$_POST['ville'] : null,
-            'Telephone' => isset($_POST['telephone']) ? (string)$_POST['telephone'] : null,
-            'EmailPersonnel' => isset($_POST['email_perso']) ? (string)$_POST['email_perso'] : null,
+            'NumEtu'          => $numetu,
+            'Nom'             => $_POST['nom']         ?? null,
+            'Prenom'          => $_POST['prenom']      ?? null,
+            'DateNaissance'   => $_POST['naissance']   ?? null,
+            'Sexe'            => $_POST['sexe']        ?? null,
+            'Adresse'         => $_POST['adresse']     ?? null,
+            'CodePostal'      => $_POST['cp']          ?? null,
+            'Ville'           => $_POST['ville']       ?? null,
+            'EmailPersonnel'  => $_POST['email_perso'] ?? null,
+            'EmailAMU'        => $_POST['email_amu']   ?? null,
+            'Telephone'       => $_POST['telephone']   ?? null,
+            'CodeDepartement' => $_POST['departement'] ?? null,
+            'Composante'      => $_POST['composante']  ?? null,
+            'Discipline'      => $_POST['discipline']  ?? null,
+            'Formation'       => $_POST['formation']   ?? null,
+            'Pays'            => $_POST['pays']        ?? null,
+            'Type'            => $_POST['type']        ?? null,
+            'Zone'            => $_POST['zone']        ?? null,
         ];
 
         if (empty($data['EmailPersonnel'])) {
@@ -175,13 +211,14 @@ class FoldersControllerStudent implements ControllerInterface
             exit;
         }
 
-        $success = $this->folderUseCase->updateDossier(
-            $data,
-            $this->getUploadedFileContent('photo'),
-            $this->getUploadedFileContent('cv'),
-            $this->getUploadedFileContent('convention'),
-            $this->getUploadedFileContent('lettre_motivation')
-        );
+        $uploadErrors = $this->handleFileUploads($data, $lang);
+        if (!empty($uploadErrors)) {
+            $_SESSION['message'] = implode('<br>', $uploadErrors);
+            header('Location: index.php?page=folders-student&lang=' . $lang);
+            exit;
+        }
+
+        $success = $this->folderUseCase->updateDossier($data);
 
         // Send email confirmation for newly uploaded documents only
         if ($success && !empty($data['EmailPersonnel'])) {
@@ -217,7 +254,9 @@ class FoldersControllerStudent implements ControllerInterface
     }
 
     /**
-     * Validates required student data.
+     * FIX line 235: add PHPDoc types.
+     * @param array<string, mixed> $data
+     * @return array<int, string>
      */
     private function validateFolderData(array $data, string $lang): array
     {
@@ -235,18 +274,5 @@ class FoldersControllerStudent implements ControllerInterface
             $errors[] = $lang === 'fr' ? "Type et Zone requis." : "Type and Zone required.";
         }
         return $errors;
-    }
-
-    /**
-     * Safely reads the binary content of an uploaded file.
-     */
-    private function getUploadedFileContent(string $fieldName): ?string
-    {
-        if (!isset($_FILES[$fieldName]) || !is_array($_FILES[$fieldName])) return null;
-        if ($_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) return null;
-        $tmpName = $_FILES[$fieldName]['tmp_name'];
-        if (!is_string($tmpName) || !file_exists($tmpName)) return null;
-        $content = file_get_contents($tmpName);
-        return $content !== false ? $content : null;
     }
 }

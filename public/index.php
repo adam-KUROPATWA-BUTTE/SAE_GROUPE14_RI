@@ -57,17 +57,19 @@ Autoloader::register();
 // --- 4. Import Controllers ---
 
 use Controllers\site\AuthController;
-use Controllers\site\DashboardController;
-use Controllers\site\NotFoundController;
-use Controllers\site\SaveStudentController;
+use Controllers\DashboardController;
+use Controllers\NotFoundController;
+use Controllers\SaveStudentController;
 
 // Folder Controllers
 use Controllers\FolderController\FoldersControllerAdmin;
-use Controllers\site\FolderController\FoldersControllerStudent;
+use Controllers\FolderController\FoldersControllerStudent;
 
 // Home Controllers
-use Controllers\site\HomeController\HomeControllerAdmin;
-use Controllers\site\HomeController\HomeControllerStudent;
+use Controllers\HomeController\HomeControllerAdmin;
+use Controllers\HomeController\HomeControllerStudent;
+use Controllers\HomeController\SuperAdminController;
+use Controllers\HomeController\HomeControllerCoordinateur;
 
 // Partners Controllers
 use Controllers\PartnersController\PartnersControllerStudent;
@@ -79,8 +81,13 @@ use Controllers\WebPlanController\WebPlanControllerStudent;
 use Controllers\WebPlanController\WebPlanController;
 
 //contact controllers
-use Controllers\ContactController\ContactControllerStudent;
 use Controllers\ContactController\ContactControllerAdmin;
+use Controllers\ContactController\ContactControllerStudent;
+
+// coordinator controllers
+use Controllers\CoordinatorController\InternershipCoordinatorController;
+use Controllers\CoordinatorController\StudyCoordinatorController;
+use Controllers\CoordinatorController\DepartmentHeadController;
 // --- 5. Initialize Controllers ---
 
 /**
@@ -105,6 +112,11 @@ $controllers = [
     SaveStudentController::class,
     ContactControllerStudent::class,
     ContactControllerAdmin::class,
+    SuperAdminController::class,
+    HomeControllerCoordinateur::class,
+    InternershipCoordinatorController::class,
+    StudyCoordinatorController::class,
+    DepartmentHeadController::class,
 ];
 
 // --- 6. Routing Logic ---
@@ -157,7 +169,7 @@ foreach ($controllers as $controllerClass) {
     if ($controllerClass::support($page, $_SERVER['REQUEST_METHOD'])) {
         $controller = new $controllerClass();
         $controller->control();
-        exit(); 
+        exit();
     }
 }
 

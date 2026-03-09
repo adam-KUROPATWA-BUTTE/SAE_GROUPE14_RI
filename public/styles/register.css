@@ -21,7 +21,7 @@
 .register-title {
     text-align: center;
     margin-bottom: 20px;
-    font-size: 1.6em;
+    font-size: var(--h2-size);
 }
 
 /* Alerte attention */
@@ -40,7 +40,7 @@
     margin-bottom: 15px;
     border: 1px solid #ccc;
     border-radius: 6px;
-    font-size: 1em;
+    font-size: var(--text-size);
     transition: border-color 0.3s;
 }
 
@@ -55,7 +55,7 @@
     padding: 12px;
     background-color: #3498db;
     color: #fff;
-    font-size: 1.1em;
+    font-size: var(--button-small-size);
     border: none;
     border-radius: 6px;
     cursor: pointer;
@@ -71,7 +71,7 @@
     padding: 10px;
     margin-bottom: 15px;
     border-radius: 5px;
-    font-size: 0.95em;
+    font-size: var(--text-size);
 }
 
 .message.info {

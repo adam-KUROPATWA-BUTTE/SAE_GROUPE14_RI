@@ -49,6 +49,15 @@ ob_start();
                     <input type="text" id="institution" name="institution" required placeholder="<?= $t(['fr' => 'Ex: Aix-Marseille Université', 'en' => 'Ex: Aix-Marseille University']) ?>">
                 </div>
 
+                <div class="form-group">
+                    <label for="type"><?= $t(['fr' => 'Type', 'en' => 'Type']) ?></label>
+                    <select id="type" name="type" required>
+                        <option value=""><?= $t(['fr' => '-- Choisir --', 'en' => '-- Select --']) ?></option>
+                        <option value="amu">AMU</option>
+                        <option value="iut">IUT</option>
+                    </select>
+                </div>
+
                 <div class="form-actions">
                     <button type="submit" class="btn-save"><?= $t(['fr' => 'Enregistrer', 'en' => 'Save']) ?></button>
                     <button type="button" class="btn-cancel"><?= $t(['fr' => 'Annuler', 'en' => 'Cancel']) ?></button>
@@ -58,12 +67,16 @@ ob_start();
     </div>
 
     <p><?= $t([
-            'fr' => 'Veuillez trouver la liste des partenaires d\'AMU en cliquant sur ce lien :',
-            'en' => 'Please find the list of AMU\'s partners by clicking on this link:'
+            'fr' => 'Veuillez trouver la liste des partenaires d\'AMU et IUT en cliquant sur ces liens :',
+            'en' => 'Please find the list of AMU and IUT\'s partners by clicking on these links:'
         ]) ?></p>
     <p class="lien">
         <a href="https://www.univ-amu.fr/fr/public/universites-et-reseaux-partenaires" target="_blank">
             Universites-et-reseaux-partenaires
+        </a>
+        <br>
+        <a href="https://iut.univ-amu.fr/fr/international/partir-etranger#tab-4499" target="_blank">
+            Partir à l'étranger avec l'IUT
         </a>
     </p>
 

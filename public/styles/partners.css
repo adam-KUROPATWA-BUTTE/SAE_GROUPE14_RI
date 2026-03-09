@@ -11,6 +11,7 @@ main {
     margin: 20px 0;
     display: flex;
     justify-content: flex-end;
+    font-size: var(--button-size);
 }
 
 /* Bouton Ajouter */
@@ -26,13 +27,11 @@ main {
     border-radius: 8px;
     padding: 10px 18px;
 
-    font-size: 16px;
     font-weight: bold;
     cursor: pointer;
 
     transition: background-color 0.2s ease, transform 0.1s ease;
 
-    font-family: inherit; /* même police que le titre */
 }
 
 /* Effet clic */
@@ -50,13 +49,12 @@ main {
     height: 26px;
 
     background-color: #ffffff;
-    color: #004e25;
+    color: var(--primary-color);
 
     border-radius: 50%;
-    font-size: 18px;
+    font-size: var(--button-small-size);
     font-weight: bold;
 
-    font-family: inherit; /* même police que le titre */
 }
 
 
@@ -109,7 +107,6 @@ tr:nth-child(even) {
 }
 
 h2 {
-    font-size: 2em;
     margin-bottom: 25px;
     color: #222;
 
@@ -159,6 +156,8 @@ a {
     border-color: var(--primary-color);
     box-shadow: 0 0 5px rgba(0, 86, 179, 0.5);
 }
+
+
 
 .form-group {
     display: flex;
@@ -281,3 +280,4 @@ a {
         cursor: pointer;
     }
 }
+
