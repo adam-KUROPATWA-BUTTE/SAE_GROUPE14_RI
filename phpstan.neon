@@ -1,8 +1,8 @@
 parameters:
     level: 9
     paths:
-        - . 
-    
+        - .
+
     scanFiles:
         - Autoloader.php
-        - Database.php
+        - ./app/Core/Database.php

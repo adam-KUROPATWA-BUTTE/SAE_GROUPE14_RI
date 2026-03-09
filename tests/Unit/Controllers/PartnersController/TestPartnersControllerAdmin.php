@@ -11,56 +11,55 @@ use View\Partners\PartnersPageAdmin as ViewStub;
 
 class TestPartnersControllerAdmin extends TestCase
 {
-	protected function setUp(): void
-	{
-		$_GET = [];
-		$_POST = [];
-		$_FILES = [];
-		$_SERVER['REQUEST_METHOD'] = 'GET';
-		$GLOBALS['__captured_headers'] = [];
+    protected function setUp(): void
+    {
+        $_GET = [];
+        $_POST = [];
+        $_FILES = [];
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $GLOBALS['__captured_headers'] = [];
 
-		ViewStub::$lastArgs = [];
+        ViewStub::$lastArgs = [];
 
-		if (session_status() === PHP_SESSION_ACTIVE) {
-			session_unset();
-			session_destroy();
-		}
-	}
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_unset();
+            session_destroy();
+        }
+    }
 
-	public function testSupportRecognizesPartnersAdmin(): void
-	{
-		$this->assertTrue(PartnersControllerAdmin::support('partners-admin', 'GET'));
-		$this->assertFalse(PartnersControllerAdmin::support('other', 'GET'));
-	}
+    public function testSupportRecognizesPartnersAdmin(): void
+    {
+        $this->assertTrue(PartnersControllerAdmin::support('partners-admin', 'GET'));
+        $this->assertFalse(PartnersControllerAdmin::support('other', 'GET'));
+    }
 
-	public function testControlRendersDefaultLangFr(): void
-	{
-		$controller = new PartnersControllerAdmin();
+    public function testControlRendersDefaultLangFr(): void
+    {
+        $controller = new PartnersControllerAdmin();
 
-		ob_start();
-		$controller->control();
-		ob_end_clean();
+        ob_start();
+        $controller->control();
+        ob_end_clean();
 
-		$this->assertNotEmpty(ViewStub::$lastArgs, 'View not constructed');
-		[$titre, $lang] = ViewStub::$lastArgs;
+        $this->assertNotEmpty(ViewStub::$lastArgs, 'View not constructed');
+        [$titre, $lang] = ViewStub::$lastArgs;
 
-		$this->assertSame('Universités Partenaires', $titre);
-		$this->assertSame('fr', $lang);
-	}
+        $this->assertSame('Universités Partenaires', $titre);
+        $this->assertSame('fr', $lang);
+    }
 
-	public function testControlRendersEnglishTitleWhenLangEn(): void
-	{
-		$_GET['lang'] = 'en';
+    public function testControlRendersEnglishTitleWhenLangEn(): void
+    {
+        $_GET['lang'] = 'en';
 
-		$controller = new PartnersControllerAdmin();
+        $controller = new PartnersControllerAdmin();
 
-		ob_start();
-		$controller->control();
-		ob_end_clean();
+        ob_start();
+        $controller->control();
+        ob_end_clean();
 
-		[$titre, $lang] = ViewStub::$lastArgs;
-		$this->assertSame('Partner Universities', $titre);
-		$this->assertSame('en', $lang);
-	}
+        [$titre, $lang] = ViewStub::$lastArgs;
+        $this->assertSame('Partner Universities', $titre);
+        $this->assertSame('en', $lang);
+    }
 }
-

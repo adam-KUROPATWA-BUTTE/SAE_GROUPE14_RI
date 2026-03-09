@@ -13,7 +13,7 @@ use Model\WebPlan as ModelStub;
 
 /**
  * Tests pour WebPlanControllerAdmin
- * 
+ *
  * Ce qu'on teste :
  * 1. support() : vérifie que le contrôleur reconnaît uniquement la page 'web_plan-admin'
  * 2. control() avec langue par défaut (fr) : vérifie que les liens du modèle sont récupérés et passés à la vue

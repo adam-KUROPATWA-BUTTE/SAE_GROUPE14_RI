@@ -1,4 +1,12 @@
+# --- Sécurité et Dépendances ---
 .env
-.idea
-.github.idea/
+
+# --- IDE (IntelliJ, PhpStorm, VS Code) ---
+.idea/
+.vscode/
+*.swp
+
+# --- Système (Mac) ---
 .DS_Store
+.DS_Store?
+

@@ -45,7 +45,7 @@ require_once ROOT_PATH . '/vendor/autoload.php';
 
 // Load Custom Autoloader and Database singleton
 require_once ROOT_PATH . '/Autoloader.php';
-require_once ROOT_PATH . '/Database.php';
+require_once ROOT_PATH . '/app/Core/Database.php';
 
 // Load environment variables from .env file
 $dotenv = Dotenv\Dotenv::createImmutable(ROOT_PATH);
@@ -57,17 +57,19 @@ Autoloader::register();
 // --- 4. Import Controllers ---
 
 use Controllers\site\AuthController;
-use Controllers\site\DashboardController;
-use Controllers\site\NotFoundController;
-use Controllers\site\SaveStudentController;
+use Controllers\DashboardController;
+use Controllers\NotFoundController;
+use Controllers\SaveStudentController;
 
 // Folder Controllers
 use Controllers\FolderController\FoldersControllerAdmin;
-use Controllers\site\FolderController\FoldersControllerStudent;
+use Controllers\FolderController\FoldersControllerStudent;
 
 // Home Controllers
-use Controllers\site\HomeController\HomeControllerAdmin;
-use Controllers\site\HomeController\HomeControllerStudent;
+use Controllers\HomeController\HomeControllerAdmin;
+use Controllers\HomeController\HomeControllerStudent;
+use Controllers\HomeController\SuperAdminController;
+use Controllers\HomeController\HomeControllerCoordinateur;
 
 // Partners Controllers
 use Controllers\PartnersController\PartnersControllerStudent;
@@ -76,7 +78,16 @@ use Controllers\PartnersController\PartnersControllerAdmin;
 // WebPlan (Sitemap) Controllers
 use Controllers\WebPlanController\WebPlanControllerAdmin;
 use Controllers\WebPlanController\WebPlanControllerStudent;
+use Controllers\WebPlanController\WebPlanController;
 
+//contact controllers
+use Controllers\ContactController\ContactControllerAdmin;
+use Controllers\ContactController\ContactControllerStudent;
+
+// coordinator controllers
+use Controllers\CoordinatorController\InternershipCoordinatorController;
+use Controllers\CoordinatorController\StudyCoordinatorController;
+use Controllers\CoordinatorController\DepartmentHeadController;
 // --- 5. Initialize Controllers ---
 
 /**
@@ -85,27 +96,27 @@ use Controllers\WebPlanController\WebPlanControllerStudent;
  * that confirms it supports the requested page.
  */
 $controllers = [
-    new AuthController(),
-
-    // Home Controllers (Admin first for security)
-    new HomeControllerAdmin(),
-    new HomeControllerStudent(),
-
-    // Folder Controllers
-    new FoldersControllerAdmin(),
-    new FoldersControllerStudent(),
-
-    // Partners Controllers
-    new PartnersControllerAdmin(),
-    new PartnersControllerStudent(),
-
-    // WebPlan Controllers
-    new WebPlanControllerAdmin(),
-    new WebPlanControllerStudent(),
-
-    // Generic Controllers
-    new DashboardController(),
-    new SaveStudentController(),
+    AuthController::class,
+    HomeControllerAdmin::class,
+    HomeControllerStudent::class,
+    FoldersControllerAdmin::class,
+    FoldersControllerStudent::class,
+    PartnersControllerAdmin::class,
+    PartnersControllerStudent::class,
+    WebPlanController::class,
+    WebPlanControllerAdmin::class,
+    WebPlanControllerStudent::class,
+    FoldersControllerAdmin::class,
+    FoldersControllerStudent::class,
+    DashboardController::class,
+    SaveStudentController::class,
+    ContactControllerStudent::class,
+    ContactControllerAdmin::class,
+    SuperAdminController::class,
+    HomeControllerCoordinateur::class,
+    InternershipCoordinatorController::class,
+    StudyCoordinatorController::class,
+    DepartmentHeadController::class,
 ];
 
 // --- 6. Routing Logic ---
@@ -154,10 +165,11 @@ if ($page === 'logout') {
 // --- 8. Dispatch Request ---
 
 // Loop through controllers to find one that supports the request
-foreach ($controllers as $controller) {
-    if ($controller::support($page, $_SERVER['REQUEST_METHOD'])) {
+foreach ($controllers as $controllerClass) {
+    if ($controllerClass::support($page, $_SERVER['REQUEST_METHOD'])) {
+        $controller = new $controllerClass();
         $controller->control();
-        exit(); // Stop execution once the controller has handled the request
+        exit();
     }
 }
 
