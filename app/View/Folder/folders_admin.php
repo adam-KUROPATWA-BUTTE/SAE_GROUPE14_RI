@@ -186,7 +186,6 @@ ob_start();
         ?>
 
         <?php
-        // ── Bannière "Modifié par" ── tout en haut, toujours visible
         $modifiePar = $studentData['ModifiePar'] ?? null;
         $modifieLe  = $studentData['ModifieLe']  ?? null;
         include __DIR__ . '/../Partials/_banniere_modifie_par.php';
@@ -208,11 +207,37 @@ ob_start();
         include __DIR__ . '/../Partials/_banniere_date_limite.php';
         ?>
 
+        <!-- ── AVIS CHEF DE DÉPARTEMENT (lecture seule) ── -->
+        <?php
+        // Colonne dédiée, indépendante du status global du dossier
+        $avisChef  = strval($studentData['avis_chef_departement'] ?? '');
+        $avisLabel = match($avisChef) {
+            'accepte' => ['fr' => 'Dossier accepté par le chef de département',  'en' => 'Folder accepted by department head'],
+            'refuse'  => ['fr' => 'Dossier refusé par le chef de département',   'en' => 'Folder refused by department head'],
+            default   => ['fr' => 'Aucune décision du chef de département',       'en' => 'No decision from department head'],
+        };
+        $avisIcon = match($avisChef) {
+            'accepte' => '✅',
+            'refuse'  => '❌',
+            default   => '⏳',
+        };
+        $avisClass = match($avisChef) {
+            'accepte' => 'avis-chef avis-chef--accepte',
+            'refuse'  => 'avis-chef avis-chef--refuse',
+            default   => 'avis-chef avis-chef--pending',
+        };
+        ?>
+        <div class="<?= $avisClass ?>">
+            <span class="avis-chef-icon"><?= $avisIcon ?></span>
+            <span class="avis-chef-label"><?= $t(['fr' => 'Avis chef de département :', 'en' => 'Department head decision:']) ?></span>
+            <span class="avis-chef-value"><?= $t($avisLabel) ?></span>
+        </div>
+
         <form method="post" action="index.php?page=update_student&lang=<?= htmlspecialchars($lang) ?>" enctype="multipart/form-data" class="creation-form">
             <div class="form-section">
                 <?php
                 $editableFields = [];
-                $allEditable    = true; // tous les champs éditables directement
+                $allEditable    = true;
                 include __DIR__ . '/../Partials/_form_fields.php';
                 ?>
             </div>
@@ -221,7 +246,7 @@ ob_start();
             <div class="form-section documents-section full-width">
                 <?php
                 $languesEditable  = false;
-                $allFilesEditable = true; // admin : afficher l'input file pour tous les docs
+                $allFilesEditable = true;
                 include __DIR__ . '/../Partials/_doc_review.php';
                 ?>
             </div>
