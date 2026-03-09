@@ -69,6 +69,82 @@ ob_start();
     <div class="message"><?= htmlspecialchars($message) ?></div>
 <?php endif; ?>
 
+<?php
+$dateLimite = !$isCreateMode ? ($dossier['DateLimite'] ?? null) : null;
+
+if (!empty($dateLimite)) :
+    $dateObj     = \DateTime::createFromFormat('Y-m-d', $dateLimite);
+    $aujourdhui  = new \DateTime('today');
+    $diff        = $dateObj ? (int) $aujourdhui->diff($dateObj)->days : null;
+    $estDepasse  = $dateObj && $dateObj < $aujourdhui;
+    $estProche   = $dateObj && !$estDepasse && $diff !== null && $diff <= 7;
+
+    if ($estDepasse) {
+        $bannerBg    = '#fff0f0';
+        $bannerBorde = '#dc3545';
+        $bannerColor = '#dc3545';
+        $icone       = '🔒';
+        $labelDate   = $t(['fr' => 'Date limite dépassée', 'en' => 'Deadline passed']);
+        $sousTitre   = $t(['fr' => 'Le dépôt de pièces n\'est plus possible.', 'en' => 'Document submission is no longer possible.']);
+    } elseif ($estProche) {
+        $bannerBg    = '#fff8e1';
+        $bannerBorde = '#ff9800';
+        $bannerColor = '#e65100';
+        $icone       = '⚠️';
+        $labelDate   = $t(['fr' => 'Date limite proche', 'en' => 'Deadline approaching']);
+        $sousTitre   = $t(['fr' => "Plus que $diff jour(s) pour déposer vos pièces.", 'en' => "Only $diff day(s) left to submit your documents."]);
+    } else {
+        $bannerBg    = '#f0f7ff';
+        $bannerBorde = '#1976d2';
+        $bannerColor = '#1565c0';
+        $icone       = '📅';
+        $labelDate   = $t(['fr' => 'Date limite de dépôt', 'en' => 'Submission deadline']);
+        $sousTitre   = $t(['fr' => 'Pensez à déposer vos pièces avant cette date.', 'en' => 'Remember to submit your documents before this date.']);
+    }
+
+    $dateFormatee = $dateObj
+            ? ($lang === 'en'
+                    ? $dateObj->format('F j, Y')
+                    : $dateObj->format('d/m/Y'))
+            : $dateLimite;
+    ?>
+
+
+
+
+    <div class="banniere-date-limite" style="
+            background: <?= $bannerBg ?>;
+            border-left: 5px solid <?= $bannerBorde ?>;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+            ">
+        <span style="font-size: 2em; line-height: 1;"><?= $icone ?></span>
+        <div>
+            <p style="margin: 0 0 4px 0; font-weight: 700; color: <?= $bannerColor ?>; font-size: 1em;">
+                <?= $labelDate ?>
+            </p>
+            <p style="margin: 0 0 2px 0; font-size: 1.15em; font-weight: 600; color: <?= $bannerColor ?>;">
+                <?= htmlspecialchars($dateFormatee) ?>
+            </p>
+            <p style="margin: 0; font-size: 0.88em; color: #555;">
+                <?= $sousTitre ?>
+            </p>
+        </div>
+    </div>
+    <?php
+        $uploadBloque = !$isCreateMode && !empty($dateLimite) && $estDepasse;
+    endif;
+
+    $uploadBloque = $uploadBloque ?? false;
+    ?>
+
+
+
     <form method="post"
           action="<?= $buildUrl('index.php', ['page' => $formAction]) ?>"
           enctype="multipart/form-data"
@@ -81,15 +157,15 @@ ob_start();
 
             <label><?= $t(['fr' => 'Nom *','en' => 'Last Name *']) ?></label>
             <input type="text" name="nom" value="<?= $valNom ?>"
-                <?= $isCreateMode ? 'required' : 'readonly style="background:#f7f7f7;"' ?>>
+                    <?= $isCreateMode ? 'required' : 'readonly style="background:#f7f7f7;"' ?>>
 
             <label><?= $t(['fr' => 'Prénom *','en' => 'First Name *']) ?></label>
             <input type="text" name="prenom" value="<?= $valPrenom ?>"
-                <?= $isCreateMode ? 'required' : 'readonly style="background:#f7f7f7;"' ?>>
+                    <?= $isCreateMode ? 'required' : 'readonly style="background:#f7f7f7;"' ?>>
 
             <label><?= $t(['fr' => 'Date de naissance','en' => 'Date of Birth']) ?></label>
             <input type="date" name="naissance" value="<?= $valDate ?>"
-                <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
+                    <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
 
             <label><?= $t(['fr' => 'Sexe','en' => 'Gender']) ?></label>
             <select name="sexe" id="sexe" <?= $isCreateMode ? '' : 'disabled style="background:#f7f7f7;"' ?>>
@@ -112,18 +188,18 @@ ob_start();
 
             <label><?= $t(['fr' => 'Email AMU','en' => 'AMU Email']) ?></label>
             <input type="email" name="email_amu" value="<?= $valEmailA ?>"
-                <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
+                    <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
 
             <label><?= $t(['fr' => 'Téléphone *','en' => 'Phone *']) ?></label>
             <input type="text" name="telephone" value="<?= $valTel ?>" required>
 
             <label><?= $t(['fr' => 'Composante','en' => 'Component']) ?></label>
             <input type="text" name="composante" value="<?= $valComposante ?>"
-                   <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
+                    <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
 
             <label><?= $t(['fr' => 'Code Département','en' => 'Department Code']) ?></label>
             <input type="text" name="departement" value="<?= $valDept ?>"
-                <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
+                    <?= $isCreateMode ? '' : 'readonly style="background:#f7f7f7;"' ?>>
 
             <label><?= $t(['fr' => 'Discipline','en' => 'Discipline']) ?></label>
             <input type="text" name="discipline" value="<?= $valDiscipline ?>">
@@ -199,7 +275,7 @@ ob_start();
 
             <label for="mobilite_type"><?= $t(['fr' => 'Type de mobilité','en' => 'Mobility Type']) ?></label>
             <select name="mobilite_type" id="mobilite_type"
-                <?= $isCreateMode ? '' : 'disabled style="background:#f7f7f7;"' ?>>
+                    <?= $isCreateMode ? '' : 'disabled style="background:#f7f7f7;"' ?>>
                 <option value=""><?= $t(['fr' => '-- Choisir --','en' => '-- Choose --']) ?></option>
                 <option value="stage" <?= $detectedType === 'stage' ? 'selected' : '' ?>><?= $t(['fr' => 'Stage','en' => 'Internship']) ?></option>
                 <option value="etudes" <?= $detectedType === 'etudes' ? 'selected' : '' ?>><?= $t(['fr' => 'Études','en' => 'Studies']) ?></option>
@@ -211,22 +287,22 @@ ob_start();
 
             <?php
             $docTypes = [
-                'photo' => ['label' => $t(['fr' => 'Photo', 'en' => 'Photo']), 'id' => 'doc_photo', 'name' => 'photo', 'accept' => 'image/*'],
-                'cv' => ['label' => $t(['fr' => 'CV', 'en' => 'CV']), 'id' => 'doc_cv', 'name' => 'cv', 'accept' => '.pdf,.doc,.docx'],
-                'convention' => ['label' => $t(['fr' => 'Convention de stage', 'en' => 'Internship Agreement']), 'id' => 'justificatif_convention', 'name' => 'convention', 'accept' => '.pdf,.doc,.docx'],
-                'lettre_motivation' => ['label' => $t(['fr' => 'Lettre de motivation', 'en' => 'Motivation Letter']), 'id' => 'lettre_motivation', 'name' => 'lettre_motivation', 'accept' => '.pdf,.doc,.docx'],
-                'langues' => ['label' => $t(['fr' => 'Attestation de langues', 'en' => 'Language Certificate']), 'id' => 'doc_langues', 'name' => 'langues_file', 'accept' => '.pdf,.doc,.docx,.jpg,.png']
+                    'photo' => ['label' => $t(['fr' => 'Photo', 'en' => 'Photo']), 'id' => 'doc_photo', 'name' => 'photo', 'accept' => 'image/*'],
+                    'cv' => ['label' => $t(['fr' => 'CV', 'en' => 'CV']), 'id' => 'doc_cv', 'name' => 'cv', 'accept' => '.pdf,.doc,.docx'],
+                    'convention' => ['label' => $t(['fr' => 'Convention de stage', 'en' => 'Internship Agreement']), 'id' => 'justificatif_convention', 'name' => 'convention', 'accept' => '.pdf,.doc,.docx'],
+                    'lettre_motivation' => ['label' => $t(['fr' => 'Lettre de motivation', 'en' => 'Motivation Letter']), 'id' => 'lettre_motivation', 'name' => 'lettre_motivation', 'accept' => '.pdf,.doc,.docx'],
+                    'langues' => ['label' => $t(['fr' => 'Attestation de langues', 'en' => 'Language Certificate']), 'id' => 'doc_langues', 'name' => 'langues_file', 'accept' => '.pdf,.doc,.docx,.jpg,.png']
             ];
-            
+
             $statusText = [
-                'pending' => $t(['fr' => 'En attente', 'en' => 'Pending']),
-                'accepted' => $t(['fr' => 'Accepté', 'en' => 'Accepted']),
-                'refused' => $t(['fr' => 'Refusé', 'en' => 'Refused'])
+                    'pending' => $t(['fr' => 'En attente', 'en' => 'Pending']),
+                    'accepted' => $t(['fr' => 'Accepté', 'en' => 'Accepted']),
+                    'refused' => $t(['fr' => 'Refusé', 'en' => 'Refused'])
             ];
             $statusColor = [
-                'pending' => '#ffc107',
-                'accepted' => '#28a745',
-                'refused' => '#dc3545'
+                    'pending' => '#ffc107',
+                    'accepted' => '#28a745',
+                    'refused' => '#dc3545'
             ];
 
             foreach ($docTypes as $key => $info) :
@@ -234,48 +310,54 @@ ob_start();
                 $hasFile = !empty($doc['file']);
                 $status = $doc['status'] ?? 'pending';
                 $comment = $doc['comment'] ?? '';
-                
+
                 $extraStyle = ($key === 'convention' || $key === 'lettre_motivation') ? 'display: none;' : '';
-            ?>
-            
-            <div id="<?= $info['id'] ?>" style="<?= $extraStyle ?> grid-column: 1 / -1; margin-bottom: 20px; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fdfdfd; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <label style="margin: 0; font-size: 1.1em; color: var(--primary-color); font-weight: bold;"><?= $info['label'] ?></label>
-                    <?php if ($hasFile): ?>
-                        <span style="background: <?= $statusColor[$status] ?>; color: <?= $status === 'pending' ? '#333' : 'white' ?>; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; font-weight: bold;">
+                ?>
+
+                <div id="<?= $info['id'] ?>" style="<?= $extraStyle ?> grid-column: 1 / -1; margin-bottom: 20px; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background: #fdfdfd; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <label style="margin: 0; font-size: 1.1em; color: var(--primary-color); font-weight: bold;"><?= $info['label'] ?></label>
+                        <?php if ($hasFile): ?>
+                            <span style="background: <?= $statusColor[$status] ?>; color: <?= $status === 'pending' ? '#333' : 'white' ?>; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; font-weight: bold;">
                             <?= $statusText[$status] ?>
                         </span>
-                    <?php else: ?>
-                        <span style="color: #999; font-style: italic; font-size: 0.9em;"><?= $t(['fr' => 'Non fourni', 'en' => 'Not provided']) ?></span>
+                        <?php else: ?>
+                            <span style="color: #999; font-style: italic; font-size: 0.9em;"><?= $t(['fr' => 'Non fourni', 'en' => 'Not provided']) ?></span>
+                        <?php endif; ?>
+                    </div>
+
+                    <?php if ($hasFile) : ?>
+                        <div style="margin-bottom: 15px;">
+                            <a href="data:application/octet-stream;base64,<?= strval($doc['file']) ?>"
+                               download="<?= $key ?>_<?= htmlspecialchars($studentId) ?>"
+                               class="btn-secondary" style="font-size: 0.9em; padding: 6px 12px; text-decoration: none; display: inline-block;">
+                                📥 <?= $t(['fr' => 'Télécharger mon fichier actuel', 'en' => 'Download my current file']) ?>
+                            </a>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($comment)): ?>
+                        <div style="background: #fff3cd; color: #856404; padding: 12px; border-left: 4px solid #ffeeba; margin-bottom: 15px; border-radius: 4px; font-size: 0.95em;">
+                            <strong><?= $t(['fr' => 'Commentaire de l\'administration :', 'en' => 'Administration comment:']) ?></strong><br>
+                            <span style="display: inline-block; margin-top: 5px;"><?= nl2br(htmlspecialchars($comment)) ?></span>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($uploadBloque) : ?>
+                        <p style="margin-top:10px; color:#dc3545; font-size:0.85em; font-weight:600; border-top:1px dashed #ddd; padding-top:12px;">
+                            🔒 <?= $t(['fr' => 'La date limite est dépassée, vous ne pouvez plus déposer de fichiers.', 'en' => 'The deadline has passed, you can no longer submit files.']) ?>
+                        </p>
+                    <?php else : ?>
+                        <div style="margin-top: 10px; border-top: 1px dashed #ddd; padding-top: 15px;">
+                            <label style="font-size: 0.9em; color:#555; font-weight: bold; display: block; margin-bottom: 5px;">
+                                <?= $hasFile ? $t(['fr' => 'Remplacer ce fichier :', 'en' => 'Replace this file:']) : $t(['fr' => 'Ajouter un fichier :', 'en' => 'Add a file:']) ?>
+                            </label>
+                            <input type="file" name="<?= $info['name'] ?>" accept="<?= $info['accept'] ?>" style="width: 100%;">
+                        </div>
                     <?php endif; ?>
                 </div>
 
-                <?php if ($hasFile) : ?>
-                    <div style="margin-bottom: 15px;">
-                        <a href="data:application/octet-stream;base64,<?= strval($doc['file']) ?>"
-                           download="<?= $key ?>_<?= htmlspecialchars($studentId) ?>"
-                           class="btn-secondary" style="font-size: 0.9em; padding: 6px 12px; text-decoration: none; display: inline-block;">
-                           📥 <?= $t(['fr' => 'Télécharger mon fichier actuel', 'en' => 'Download my current file']) ?>
-                        </a>
-                    </div>
-                <?php endif; ?>
-
-                <?php if (!empty($comment)): ?>
-                    <div style="background: #fff3cd; color: #856404; padding: 12px; border-left: 4px solid #ffeeba; margin-bottom: 15px; border-radius: 4px; font-size: 0.95em;">
-                        <strong><?= $t(['fr' => 'Commentaire de l\'administration :', 'en' => 'Administration comment:']) ?></strong><br>
-                        <span style="display: inline-block; margin-top: 5px;"><?= nl2br(htmlspecialchars($comment)) ?></span>
-                    </div>
-                <?php endif; ?>
-
-                <div style="margin-top: 10px; border-top: 1px dashed #ddd; padding-top: 15px;">
-                    <label style="font-size: 0.9em; color:#555; font-weight: bold; display: block; margin-bottom: 5px;">
-                        <?= $hasFile ? $t(['fr' => 'Remplacer ce fichier :', 'en' => 'Replace this file:']) : $t(['fr' => 'Ajouter un fichier :', 'en' => 'Add a file:']) ?>
-                    </label>
-                    <input type="file" name="<?= $info['name'] ?>" accept="<?= $info['accept'] ?>" style="width: 100%;">
-                </div>
-            </div>
-            
             <?php endforeach; ?>
         </div>
 
@@ -285,11 +367,11 @@ ob_start();
                     <?= $t(['fr' => 'Déposer ma demande','en' => 'Submit my application']) ?>
                 </button>
             <?php else : ?>
-                <button type="submit" class="btn-primary" style="padding: 10px 30px; font-size: 1.1em;">
+                <button type="submit" class="btn-secondary" style="padding: 10px 30px; font-size: 1.1em;">
                     <?= $t(['fr' => 'Enregistrer mes modifications','en' => 'Save changes']) ?>
                 </button>
             <?php endif; ?>
-            
+
             <button type="button" class="btn-secondary" style="padding: 10px 20px;" onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'home-student']) ?>'">
                 <?= $t(['fr' => 'Annuler','en' => 'Cancel']) ?>
             </button>
@@ -301,8 +383,8 @@ $content = ob_get_clean();
 
 // Variables passées au layout global "base.php"
 $title = $t([
-    'fr' => 'Mon dossier - Étudiant',
-    'en' => 'My Folder - Student'
+        'fr' => 'Mon dossier - Étudiant',
+        'en' => 'My Folder - Student'
 ]);
 
 $styles = ['styles/folders.css', 'styles/chatbot.css'];

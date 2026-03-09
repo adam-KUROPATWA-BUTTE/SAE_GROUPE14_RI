@@ -188,6 +188,21 @@ class FoldersControllerStudent implements ControllerInterface
             exit;
         }
 
+        $dossierExistant = $this->folderUseCase->getStudentDetails($numetu);
+        $dateLimite = $dossierExistant['DateLimite'] ?? null;
+        if (!empty($dateLimite)) {
+            $dateObj    = \DateTime::createFromFormat('Y-m-d', $dateLimite);
+            $aujourdhui = new \DateTime('today');
+            if ($dateObj && $dateObj < $aujourdhui) {
+                $success = $this->folderUseCase->updateDossier($data);
+                $_SESSION['message'] = $success
+                    ? ($lang === 'fr' ? 'Dossier mis à jour (fichiers refusés : date limite dépassée).' : 'Folder updated (files rejected: deadline passed).')
+                    : ($lang === 'fr' ? 'Erreur lors de la mise à jour.' : 'Error updating folder.');
+                header('Location: index.php?page=folders-student&lang=' . $lang);
+                exit;
+            }
+        }
+
         $uploadErrors = $this->handleFileUploads($data, $lang);
         if (!empty($uploadErrors)) {
             $_SESSION['message'] = implode('<br>', $uploadErrors);
