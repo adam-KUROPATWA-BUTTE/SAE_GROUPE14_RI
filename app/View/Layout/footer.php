@@ -26,18 +26,21 @@ if (!isset($t)) {
     <p>&copy; 2026 - Aix-Marseille Université</p>
 
     <div class="footer-links">
+        <a href="index.php?page=mentions-legales&lang=<?= htmlspecialchars($lang ?? 'fr') ?>" class="footer-sitemap-btn no-icon">
+            <?= $t(['fr' => 'Mentions Légales & RGPD', 'en' => 'Legal Notice & GDPR']) ?>
+        </a>
+
         <?php if ($userRole === 'admin' || $userRole === 'student'): ?>
-            <a href="index.php?page=web_plan&lang=<?= htmlspecialchars($lang ?? 'fr') ?>"
-               class="footer-sitemap-btn">
-                <?= htmlspecialchars($t(['fr' => 'Plan du site', 'en' => 'Site Map'])) ?>
+            <a href="index.php?page=web_plan&lang=<?= htmlspecialchars($lang ?? 'fr') ?>" class="footer-sitemap-btn">
+                <?= htmlspecialchars($t(['fr' => 'Plan du site 🗺️', 'en' => 'Site Map 🗺️'])) ?>
             </a>
-            <span class="footer-separator">|</span>
         <?php endif; ?>
 
         <a href="https://www.instagram.com/relationsinternationales_amu/"
            target="_blank"
            rel="noopener noreferrer"
-           aria-label="Instagram">
+           aria-label="Instagram"
+           class="footer-insta-link">
             <img class="insta" src="img/instagram.png" alt="Instagram">
         </a>
     </div>
