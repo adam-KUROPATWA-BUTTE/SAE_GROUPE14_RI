@@ -15,5 +15,18 @@
         "lint": "phpcs --standard=PSR12 src",
         "analyse": "phpstan analyse src",
         "test": "phpunit"
+    },
+    "autoload": {
+        "psr-4": {
+            "Controllers\\": "app/Controllers/",
+            "Service\\": "app/Service/",
+            "Model\\": "app/Model/",
+            "Core\\": "app/Core/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "Tests/"
+        }
     }
 }

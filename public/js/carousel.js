@@ -97,9 +97,21 @@ class Carousel {
     restartAutoSlide() {
         this.startAutoSlide();
     }
+
+
 }
 
-// Instantiate and expose globally to prevent "undefined is not an object" errors
+window.addEventListener('beforeunload', () => {
+    sessionStorage.setItem('scrollY', window.scrollY);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const savedScroll = sessionStorage.getItem('scrollY');
+    if (savedScroll !== null) {
+        window.scrollTo(0, parseInt(savedScroll));
+        sessionStorage.removeItem('scrollY');
+    }
+});
 document.addEventListener('DOMContentLoaded', () => {
     // We always create the instance so window.carousel exists, even if empty.
     window.carousel = new Carousel();
