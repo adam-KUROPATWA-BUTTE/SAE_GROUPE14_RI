@@ -78,11 +78,11 @@ class ContactControllerStudent implements ControllerInterface
         $studentConversations = $this->contactService->getStudentConversations($numEtu);
 
         $contactInfo = [
-            'email' => 'relations.internationales@univ-amu.fr',
-            'phone' => '+33 4 13 55 00 00',
+            'email' => 'jocelyne.vial@univ-amu.fr',
+            'phone' => ' +33 4 13 94 65 02',
             'address' => [
-                'fr' => 'Aix-Marseille Université<br>13007 Marseille, France',
-                'en' => 'Aix-Marseille University<br>13007 Marseille, France',
+                'fr' => '413 Avenue Gaston Berger<br>13625 Aix-en-Provence',
+                'en' => '413 Avenue Gaston Berger<br>13625 Aix-en-Provence',
             ],
             'hours' => [
                 'fr' => 'Lundi - Vendredi : 9h00 - 17h00',

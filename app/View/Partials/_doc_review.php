@@ -96,7 +96,7 @@ $docTypes = [
                             data-doctype="<?= $key ?>"
                             onclick="window.folderManager.confirmDocument('<?= $numEtu ?>', '<?= $key ?>')"
                         <?= !$hasDoc ? 'disabled' : '' ?>>
-                        <?= $t(['fr' => 'Confirmer la pièce', 'en' => 'Confirm Document']) ?>
+                        <?= $t(['fr' => 'Enregistrer', 'en' => 'Save']) ?>
                     </button>
                     <span class="doc-save-indicator" id="indicator_<?= $key ?>"></span>
                 </div>
