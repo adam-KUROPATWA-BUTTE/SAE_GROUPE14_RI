@@ -6,6 +6,7 @@
  * @var array{student: string, dept: string, year: string, type: string, camp: string, dest: string, cadre: string} $filters
  * @var array<int, array<string, mixed>> $outgoing
  * @var array<int, array<string, mixed>> $incoming
+ * @var array<int, string> $departments
  */
 
 ob_start();
@@ -21,9 +22,11 @@ ob_start();
 
         <select name="dept" onchange="this.form.submit()">
             <option value=""><?= $t(['fr' => 'Départements', 'en' => 'Departments']) ?></option>
-            <option value="Informatique" <?= $filters['dept'] === 'Informatique' ? 'selected' : '' ?>>Info</option>
-            <option value="GEA" <?= $filters['dept'] === 'GEA' ? 'selected' : '' ?>>GEA</option>
-            <option value="Biologie" <?= $filters['dept'] === 'Biologie' ? 'selected' : '' ?>>Bio</option>
+            <?php foreach ($departments as $deptCode) : ?>
+                <option value="<?= htmlspecialchars($deptCode) ?>" <?= $filters['dept'] === $deptCode ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($deptCode) ?>
+                </option>
+            <?php endforeach; ?>
         </select>
 
         <select name="year" onchange="this.form.submit()">
@@ -78,21 +81,21 @@ ob_start();
                     <table>
                         <thead>
                         <tr>
-                            <th>Étudiant</th>
-                            <th>Dept</th>
-                            <th>Dest</th>
-                            <th>Campagne</th>
-                            <th>Année</th>
-                            <th>État</th>
+                            <th><?= $t(['fr' => 'Étudiant',    'en' => 'Student']) ?></th>
+                            <th><?= $t(['fr' => 'Département', 'en' => 'Department']) ?></th>
+                            <th><?= $t(['fr' => 'Destination', 'en' => 'Destination']) ?></th>
+                            <th><?= $t(['fr' => 'Campagne',    'en' => 'Campaign']) ?></th>
+                            <th><?= $t(['fr' => 'Année',       'en' => 'Year']) ?></th>
+                            <th><?= $t(['fr' => 'État',        'en' => 'Status']) ?></th>
                         </tr>
                         </thead>
                         <tbody>
                         <?php foreach ($outgoing as $d) :
-                            $pct = intval($d['calc_percentage']);
+                            $pct        = intval($d['calc_percentage']);
                             $badgeClass = ($pct >= 100) ? 'bg-success' : (($pct > 50) ? 'bg-warning' : 'bg-danger');
-                            $label = ($pct >= 100) ? 'Validé' : $pct . '%';
-                            $numEtu = strval($d['NumEtu'] ?? '');
-                            $detailUrl = "index.php?page=folders-admin&action=view&numetu=" . urlencode($numEtu) . "&lang=" . urlencode($lang);
+                            $label      = ($pct >= 100) ? $t(['fr' => 'Validé', 'en' => 'Validated']) : $pct . '%';
+                            $numEtu     = strval($d['NumEtu'] ?? '');
+                            $detailUrl  = "index.php?page=folders-admin&action=view&numetu=" . urlencode($numEtu) . "&lang=" . urlencode($lang);
                             ?>
                             <tr onclick="window.location.href='<?= $detailUrl ?>'" class="clickable-row">
                                 <td>
@@ -100,7 +103,7 @@ ob_start();
                                     <br><small><?= htmlspecialchars($numEtu) ?></small>
                                 </td>
                                 <td><?= htmlspecialchars(strval($d['CodeDepartement'] ?? '')) ?></td>
-                                <td><?= htmlspecialchars(strval($d['Destination'] ?? '')) ?></td>
+                                <td><?= htmlspecialchars(strval($d['Destination'] ?? $d['Pays'] ?? '')) ?></td>
                                 <td><?= htmlspecialchars(strval($d['calc_camp'])) ?></td>
                                 <td><?= htmlspecialchars(strval($d['calc_annee'])) ?></td>
                                 <td>
@@ -131,20 +134,21 @@ ob_start();
                     <table>
                         <thead>
                         <tr>
-                            <th>Étudiant</th>
-                            <th>Dept</th>
-                            <th>Type</th>
-                            <th>Année</th>
-                            <th>État</th>
+                            <th><?= $t(['fr' => 'Étudiant',    'en' => 'Student']) ?></th>
+                            <th><?= $t(['fr' => 'Département', 'en' => 'Department']) ?></th>
+                            <th><?= $t(['fr' => 'Destination', 'en' => 'Destination']) ?></th>
+                            <th><?= $t(['fr' => 'Campagne',    'en' => 'Campaign']) ?></th>
+                            <th><?= $t(['fr' => 'Année',       'en' => 'Year']) ?></th>
+                            <th><?= $t(['fr' => 'État',        'en' => 'Status']) ?></th>
                         </tr>
                         </thead>
                         <tbody>
                         <?php foreach ($incoming as $d) :
-                            $pct = intval($d['calc_percentage']);
+                            $pct        = intval($d['calc_percentage']);
                             $badgeClass = ($pct >= 100) ? 'bg-success' : (($pct > 50) ? 'bg-warning' : 'bg-danger');
-                            $label = ($pct >= 100) ? 'Validé' : $pct . '%';
-                            $numEtu = strval($d['NumEtu'] ?? '');
-                            $detailUrl = "index.php?page=folders-admin&action=view&numetu=" . urlencode($numEtu) . "&lang=" . urlencode($lang);
+                            $label      = ($pct >= 100) ? $t(['fr' => 'Validé', 'en' => 'Validated']) : $pct . '%';
+                            $numEtu     = strval($d['NumEtu'] ?? '');
+                            $detailUrl  = "index.php?page=folders-admin&action=view&numetu=" . urlencode($numEtu) . "&lang=" . urlencode($lang);
                             ?>
                             <tr onclick="window.location.href='<?= $detailUrl ?>'" class="clickable-row">
                                 <td>
@@ -152,7 +156,8 @@ ob_start();
                                     <br><small><?= htmlspecialchars($numEtu) ?></small>
                                 </td>
                                 <td><?= htmlspecialchars(strval($d['CodeDepartement'] ?? '')) ?></td>
-                                <td><?= htmlspecialchars(strval($d['Type'] ?? '')) ?></td>
+                                <td><?= htmlspecialchars(strval($d['Destination'] ?? $d['Pays'] ?? '')) ?></td>
+                                <td><?= htmlspecialchars(strval($d['calc_camp'])) ?></td>
                                 <td><?= htmlspecialchars(strval($d['calc_annee'])) ?></td>
                                 <td>
                                     <span class="status-badge <?= $badgeClass ?>"><?= $label ?></span>
