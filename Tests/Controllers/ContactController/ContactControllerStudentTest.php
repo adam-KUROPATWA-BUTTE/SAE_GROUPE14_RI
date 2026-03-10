@@ -28,7 +28,10 @@ class ContactControllerStudentTest extends TestCase
     }
 
     /**
-     * Crée une instance réelle de ContactControllerStudent avec un ContactService mocké.
+     * Crée une instance de ContactControllerStudent avec :
+     *  - un ContactService mocké (pas de BDD)
+     *  - startSession() neutralisée pour ne pas écraser $_SESSION
+     *  - redirect() surchargée pour ne pas appeler exit
      *
      * @return array{0: ContactControllerStudent, 1: MockObject&ContactService}
      */
@@ -36,12 +39,29 @@ class ContactControllerStudentTest extends TestCase
     {
         $serviceMock = $this->createMock(ContactService::class);
 
-        $ref        = new \ReflectionClass(ContactControllerStudent::class);
-        $controller = $ref->newInstanceWithoutConstructor();
+        $controller = new class($serviceMock) extends ContactControllerStudent {
+            public function __construct(ContactService $service)
+            {
+                // On n'appelle PAS parent::__construct() pour éviter new ConversationPDO()
+                $ref  = new \ReflectionClass(ContactControllerStudent::class);
+                $prop = $ref->getProperty('contactService');
+                $prop->setAccessible(true);
+                $prop->setValue($this, $service);
+            }
 
-        $prop = $ref->getProperty('contactService');
-        $prop->setAccessible(true);
-        $prop->setValue($controller, $serviceMock);
+            // Neutralise session_start() pour ne pas écraser $_SESSION peuplé par le test
+            protected function startSession(): void {}
+
+            protected function redirect(string $url): never
+            {
+                throw new \RuntimeException('redirect:' . $url);
+            }
+
+            protected function renderView(string $view, array $data = []): void
+            {
+                // no-op en test
+            }
+        };
 
         return [$controller, $serviceMock];
     }
@@ -98,7 +118,6 @@ class ContactControllerStudentTest extends TestCase
 
     public function test_reply_action_calls_addMessage_with_correct_params(): void
     {
-
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_SESSION['numetu']        = '12345';
         $_GET['action']            = 'reply';
@@ -271,13 +290,10 @@ class ContactControllerStudentTest extends TestCase
 
         $serviceMock->method('getStudentConversations')->willReturn([]);
 
-        // Ne doit pas propager l'exception
         $exceptionPropagated = false;
         try {
             $controller->control();
         } catch (\Exception $e) {
-            // On accepte uniquement les erreurs liées à View::render (header/exit)
-            // mais pas l'exception DB
             if ($e->getMessage() === 'DB error') {
                 $exceptionPropagated = true;
             }
@@ -322,7 +338,6 @@ class ContactControllerStudentTest extends TestCase
             ->with('99999')
             ->willReturn([$fakeConversation]);
 
-        // On vérifie que getStudentConversations est bien appelé avec le bon numEtu
         $serviceMock->expects($this->once())->method('getStudentConversations')->with('99999');
 
         try {

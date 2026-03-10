@@ -18,10 +18,10 @@
     },
     "autoload": {
         "psr-4": {
-            "Controllers\\": "app/Controllers/",
-            "Service\\": "app/Service/",
-            "Model\\": "app/Model/",
-            "Core\\": "app/Core/"
+            "Controllers\\": "src/Controllers/",
+            "Service\\": "src/Service/",
+            "Model\\": "src/Model/",
+            "Core\\": "src/Core/"
         }
     },
     "autoload-dev": {

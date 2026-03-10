@@ -20,11 +20,27 @@ class DepartmentHeadController implements ControllerInterface
         return $page === 'chef-departement';
     }
 
-    public function control(): void
+    protected function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+    }
+
+    protected function redirect(string $url): never
+    {
+        header('Location: ' . $url);
+        exit;
+    }
+
+    protected function renderView(string $view, array $data = []): void
+    {
+        View::render($view, $data);
+    }
+
+    public function control(): void
+    {
+        $this->startSession();
 
         $allowedRoles = ['coordinateur', 'chef_departement', 'admin'];
 
@@ -32,8 +48,7 @@ class DepartmentHeadController implements ControllerInterface
             empty($_SESSION['role']) ||
             !in_array($_SESSION['role'], $allowedRoles, true)
         ) {
-            header('Location: index.php?page=login');
-            exit;
+            $this->redirect('index.php?page=login');
         }
 
         if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en'], true)) {
@@ -70,9 +85,7 @@ class DepartmentHeadController implements ControllerInterface
                 $this->folderUseCase->setAvisChef($numetu, $avis);
             }
 
-            // Redirection pour éviter re-soumission du formulaire (PRG pattern)
-            header('Location: index.php?page=chef-departement&action=view&numetu=' . urlencode($numetu) . '&lang=' . urlencode($lang));
-            exit;
+            $this->redirect('index.php?page=chef-departement&action=view&numetu=' . urlencode($numetu) . '&lang=' . urlencode($lang));
         }
         // ────────────────────────────────────────────────────────────
 
@@ -98,7 +111,7 @@ class DepartmentHeadController implements ControllerInterface
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-        View::render('Coordinator/department_head', [
+        $this->renderView('Coordinator/department_head', [
             'action'          => $action,
             'filters'         => $filters,
             'page'            => $currentPage,

@@ -28,8 +28,10 @@ class ContactControllerAdminTest extends TestCase
     }
 
     /**
-     * Crée une instance réelle de ContactControllerAdmin avec un ContactService mocké.
-     * On contourne le constructeur via Reflection pour éviter l'accès BDD.
+     * Crée une instance de ContactControllerAdmin avec :
+     *  - un ContactService mocké (pas de BDD)
+     *  - startSession() neutralisée pour ne pas écraser $_SESSION
+     *  - redirect() surchargée pour ne pas appeler exit
      *
      * @return array{0: ContactControllerAdmin, 1: MockObject&ContactService}
      */
@@ -37,14 +39,35 @@ class ContactControllerAdminTest extends TestCase
     {
         $serviceMock = $this->createMock(ContactService::class);
 
-        // Instanciation sans appeler le constructeur (évite new ConversationPDO())
-        $ref        = new \ReflectionClass(ContactControllerAdmin::class);
-        $controller = $ref->newInstanceWithoutConstructor();
+        // Sous-classe anonyme qui neutralise startSession() et redirect()
+        $controller = new class($serviceMock) extends ContactControllerAdmin {
+            private ContactService $injected;
 
-        // Injection du service mocké dans la propriété privée
-        $prop = $ref->getProperty('contactService');
-        $prop->setAccessible(true);
-        $prop->setValue($controller, $serviceMock);
+            public function __construct(ContactService $service)
+            {
+                // On n'appelle PAS parent::__construct() pour éviter new ConversationPDO()
+                $this->injected = $service;
+
+                // Injection via Reflection dans la propriété privée du parent
+                $ref  = new \ReflectionClass(ContactControllerAdmin::class);
+                $prop = $ref->getProperty('contactService');
+                $prop->setAccessible(true);
+                $prop->setValue($this, $service);
+            }
+
+            // Neutralise session_start() pour ne pas écraser $_SESSION peuplé par le test
+            protected function startSession(): void {}
+
+            protected function redirect(string $url): never
+            {
+                throw new \RuntimeException('redirect:' . $url);
+            }
+
+            protected function renderView(string $view, array $data = []): void
+            {
+                // no-op en test
+            }
+        };
 
         return [$controller, $serviceMock];
     }
@@ -116,7 +139,8 @@ class ContactControllerAdminTest extends TestCase
 
         try {
             $controller->control();
-        } catch (\Throwable $e) {}
+        } catch (\RuntimeException $e) {
+        }
     }
 
     public function test_respond_action_does_not_call_addMessage_when_response_is_empty(): void
@@ -173,7 +197,7 @@ class ContactControllerAdminTest extends TestCase
 
         try {
             $controller->control();
-        } catch (\Throwable $e) {}
+        } catch (\RuntimeException $e) {}
     }
 
     public function test_mark_read_does_nothing_when_id_is_zero(): void
@@ -212,7 +236,7 @@ class ContactControllerAdminTest extends TestCase
 
         try {
             $controller->control();
-        } catch (\Throwable $e) {}
+        } catch (\RuntimeException $e) {}
     }
 
     public function test_delete_action_does_nothing_when_id_is_missing(): void
@@ -220,7 +244,6 @@ class ContactControllerAdminTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_SESSION['role']          = 'admin';
         $_POST['action']           = 'delete';
-        // Pas d'id
 
         [$controller, $serviceMock] = $this->makeController();
 
@@ -244,7 +267,7 @@ class ContactControllerAdminTest extends TestCase
 
         try {
             $controller->control();
-        } catch (\Throwable $e) {}
+        } catch (\RuntimeException $e) {}
 
         $this->assertSame('Conversation supprimée.', $_SESSION['message'] ?? '');
     }
@@ -262,7 +285,7 @@ class ContactControllerAdminTest extends TestCase
 
         try {
             $controller->control();
-        } catch (\Throwable $e) {}
+        } catch (\RuntimeException $e) {}
 
         $this->assertSame('Conversation deleted.', $_SESSION['message'] ?? '');
     }
@@ -316,7 +339,7 @@ class ContactControllerAdminTest extends TestCase
 
         try {
             $controller->control();
-        } catch (\Throwable $e) {}
+        } catch (\RuntimeException $e) {}
     }
 
     // -------------------------------------------------------------------------

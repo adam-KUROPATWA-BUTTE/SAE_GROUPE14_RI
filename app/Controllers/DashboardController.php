@@ -9,9 +9,9 @@ class DashboardController implements ControllerInterface
 {
     private ManageFolderUseCase $folderUseCase;
 
-    public function __construct()
+    public function __construct(?ManageFolderUseCase $folderUseCase = null)
     {
-        $this->folderUseCase = new ManageFolderUseCase();
+        $this->folderUseCase = $folderUseCase ?? new ManageFolderUseCase();
     }
 
     public static function support(string $page, string $method): bool

@@ -26,11 +26,46 @@ class FoldersControllerAdmin
         ]);
     }
 
-    public function control(): void
+    protected function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+    }
+
+    protected function redirect(string $url): never
+    {
+        header('Location: ' . $url);
+        exit;
+    }
+
+    protected function renderView(string $view, array $data = []): void
+    {
+        View::render($view, $data);
+    }
+
+    /**
+     * Envoie une réponse JSON et termine. Neutralisable en test.
+     */
+    protected function jsonResponse(array $data): never
+    {
+        if (ob_get_length()) ob_clean();
+        header('Content-Type: application/json');
+        echo json_encode($data);
+        exit;
+    }
+
+    /**
+     * Wrapper error_log neutralisable en test.
+     */
+    protected function log(string $message): void
+    {
+        error_log($message);
+    }
+
+    public function control(): void
+    {
+        $this->startSession();
 
         $page   = $_GET['page']   ?? 'folders';
         $action = $_GET['action'] ?? 'list';
@@ -42,45 +77,34 @@ class FoldersControllerAdmin
                 $numetu  = urldecode($numetu);
                 $success = $this->folderUseCase->toggleCompleteStatus($numetu);
 
-                // If successfully marked as complete (was incomplete before), send validation email
                 if ($success && $wasIncomplete && $studentData) {
-                    $email = $studentData['EmailPersonnel'] ?? '';
-                    $nom = $studentData['Nom'] ?? '';
-                    $prenom = $studentData['Prenom'] ?? '';
+                    $email       = $studentData['EmailPersonnel'] ?? '';
+                    $nom         = $studentData['Nom']    ?? '';
+                    $prenom      = $studentData['Prenom'] ?? '';
                     $studentName = trim($prenom . ' ' . $nom);
 
-                    // Get validated documents
-                    $pieces = is_array($studentData['pieces'] ?? null) ? $studentData['pieces'] : [];
+                    $pieces        = is_array($studentData['pieces'] ?? null) ? $studentData['pieces'] : [];
                     $validatedDocs = array_keys(array_filter($pieces, fn($v) => !empty($v)));
 
-                    error_log("🔍 Debug email: email=$email, studentName=$studentName, docs=" . json_encode($validatedDocs));
+                    $this->log("🔍 Debug email: email=$email, studentName=$studentName, docs=" . json_encode($validatedDocs));
 
-                    // Send email even if no documents uploaded (folder marked complete by admin)
                     if (!empty($email)) {
-                        // If no documents, list all expected documents as validated
                         if (empty($validatedDocs)) {
                             $validatedDocs = ['photo', 'cv', 'convention', 'lettre_motivation'];
-                            error_log("ℹ️ No documents found, using default list for email");
+                            $this->log("ℹ️ No documents found, using default list for email");
                         }
-                        
-                        \Service\Email\EmailReminderService::sendValidationConfirmation(
-                            $email,
-                            $studentName,
-                            $validatedDocs,
-                            $numetu
-                        );
+                        \Service\Email\EmailReminderService::sendValidationConfirmation($email, $studentName, $validatedDocs, $numetu);
                     } else {
-                        error_log("⚠️ Email not sent: missing student email");
+                        $this->log("⚠️ Email not sent: missing student email");
                     }
                 } else {
-                    error_log("⚠️ Email not sent: success=$success, wasIncomplete=" . ($wasIncomplete ? 'yes' : 'no'));
+                    $this->log("⚠️ Email not sent: success=$success, wasIncomplete=" . ($wasIncomplete ? 'yes' : 'no'));
                 }
 
                 $_SESSION['message'] = $success
                     ? (($lang === 'fr') ? "Statut du dossier mis à jour." : "Folder status updated.")
                     : (($lang === 'fr') ? "Erreur lors de la mise à jour." : "Error updating status.");
-                header('Location: index.php?page=folders-admin&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
-                exit;
+                $this->redirect('index.php?page=folders-admin&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
             }
         }
 
@@ -130,7 +154,7 @@ class FoldersControllerAdmin
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-        View::render('Folder/folders_admin', [
+        $this->renderView('Folder/folders_admin', [
             'action'        => $action,
             'filters'       => $filters,
             'page'          => 1,
@@ -143,43 +167,29 @@ class FoldersControllerAdmin
         ]);
     }
 
-    /**
-     * Retourne le nom de l'admin connecté depuis la session.
-     * ⚠️  Adapte les clés $_SESSION['user']['prenom'] / ['nom']
-     *     selon ta logique d'authentification.
-     */
     private function getAdminName(): string
     {
-        // Clés stockées par AuthController depuis la table admins (nom, prenom)
         $prenom = strval($_SESSION['admin_prenom'] ?? '');
         $nom    = strval($_SESSION['admin_nom']    ?? '');
         $name   = trim($prenom . ' ' . $nom);
         return $name !== '' ? $name : 'Administrateur';
     }
 
-    /**
-     * Envoie un mail récapitulatif à l'étudiant
-     *
-     * @param string $numEtu
-     * @param array<int, string> $updates
-     */
+    /** @param array<int, string> $updates */
     private function notifyStudent(string $numEtu, array $updates): void
     {
-        if (empty($updates)) {
-            return;
-        }
+        if (empty($updates)) return;
 
         $studentData = $this->folderUseCase->getStudentDetails($numEtu);
         if (!$studentData) return;
 
-        $emailAmu   = strval($studentData['EmailAMU'] ?? '');
-        $emailPerso = strval($studentData['EmailPersonnel'] ?? '');
-        $email      = $emailPerso !== '' ? $emailPerso : $emailAmu;
-
+        $emailAmu    = strval($studentData['EmailAMU']       ?? '');
+        $emailPerso  = strval($studentData['EmailPersonnel'] ?? '');
+        $email       = $emailPerso !== '' ? $emailPerso : $emailAmu;
         if ($email === '') return;
 
-        $prenom = strval($studentData['Prenom'] ?? '');
-        $nom    = strval($studentData['Nom'] ?? '');
+        $prenom      = strval($studentData['Prenom'] ?? '');
+        $nom         = strval($studentData['Nom']    ?? '');
         $studentName = trim($prenom . ' ' . $nom);
 
         EmailReminderService::sendFolderUpdateNotification($email, $studentName, $numEtu, $updates);
@@ -187,15 +197,11 @@ class FoldersControllerAdmin
 
     private function updateGlobalStatus(): void
     {
-        if (ob_get_length()) ob_clean();
-        header('Content-Type: application/json');
-
         $numEtu = $_POST['numetu'] ?? '';
         $status = $_POST['status'] ?? 'depot';
 
         if (empty($numEtu)) {
-            echo json_encode(['success' => false, 'message' => 'Paramètre manquant']);
-            exit;
+            $this->jsonResponse(['success' => false, 'message' => 'Paramètre manquant']);
         }
 
         try {
@@ -209,37 +215,31 @@ class FoldersControllerAdmin
                     'depot'       => 'Dépôt',
                     'instruction' => 'En instruction',
                     'accepte'     => 'Accepté',
-                    'refuse'      => 'Refusé'
+                    'refuse'      => 'Refusé',
                 ];
                 $updates = ["Le statut global de votre dossier est passé à : <b>" . ($statusLabels[$status] ?? $status) . "</b>"];
                 $this->notifyStudent($numEtu, $updates);
             }
 
-            echo json_encode(['success' => $success]);
+            $this->jsonResponse(['success' => $success]);
         } catch (\Throwable $e) {
-            error_log("AJAX updateGlobalStatus Error: " . $e->getMessage());
-            echo json_encode(['success' => false, 'message' => 'Erreur Serveur interne']);
+            $this->log("AJAX updateGlobalStatus Error: " . $e->getMessage());
+            $this->jsonResponse(['success' => false, 'message' => 'Erreur Serveur interne']);
         }
-        exit;
     }
 
     private function updateDocumentStatus(): void
     {
-        if (ob_get_length()) ob_clean();
-        header('Content-Type: application/json');
-
         $numEtu  = $_POST['numetu']   ?? '';
         $docType = $_POST['doc_type'] ?? '';
         $status  = $_POST['status']   ?? 'pending';
         $comment = trim(strval($_POST['comment'] ?? ''));
 
         if (empty($numEtu) || empty($docType)) {
-            echo json_encode(['success' => false, 'message' => 'Paramètres manquants']);
-            exit;
+            $this->jsonResponse(['success' => false, 'message' => 'Paramètres manquants']);
         }
 
         try {
-            // Lire le fichier uploadé si présent
             $fileContent = null;
             if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
                 $fileContent = file_get_contents($_FILES['file']['tmp_name']);
@@ -247,13 +247,11 @@ class FoldersControllerAdmin
             }
 
             $success = $this->folderUseCase->updateDocumentStatus($numEtu, $docType, $status, $comment, $fileContent);
-
-            echo json_encode(['success' => $success]);
+            $this->jsonResponse(['success' => $success]);
         } catch (\Throwable $e) {
-            error_log("AJAX updateDocumentStatus Error: " . $e->getMessage());
-            echo json_encode(['success' => false, 'message' => 'Erreur Serveur interne']);
+            $this->log("AJAX updateDocumentStatus Error: " . $e->getMessage());
+            $this->jsonResponse(['success' => false, 'message' => 'Erreur Serveur interne']);
         }
-        exit;
     }
 
     private function validerDocuments(string $lang): void
@@ -263,18 +261,15 @@ class FoldersControllerAdmin
 
         if (empty($numetu)) {
             $_SESSION['message'] = ($lang === 'fr') ? 'Erreur : Numéro étudiant manquant' : 'Error: Student ID missing';
-            header('Location: index.php?page=' . $redirectTo . '&lang=' . $lang);
-            exit;
+            $this->redirect('index.php?page=' . $redirectTo . '&lang=' . $lang);
         }
 
-        // Récupère l'état actuel AVANT toute modification
         $oldDossier = $this->folderUseCase->getStudentDetails($numetu);
-        
+
         /** @var array<string, string> $oldStatuts */
         $oldStatuts = isset($oldDossier['statuts']) && is_array($oldDossier['statuts']) ? $oldDossier['statuts'] : [];
-
         /** @var array<string, array{comment?: string, status?: string}> $oldPieces */
-        $oldPieces  = isset($oldDossier['pieces']) && is_array($oldDossier['pieces']) ? $oldDossier['pieces'] : [];
+        $oldPieces  = isset($oldDossier['pieces'])  && is_array($oldDossier['pieces'])  ? $oldDossier['pieces']  : [];
 
         $studentData = [
             'NumEtu'             => $numetu,
@@ -308,7 +303,6 @@ class FoldersControllerAdmin
         $studentData['ModifieLe']  = date('Y-m-d H:i:s');
         $this->folderUseCase->updateDossier($studentData);
 
-        // Collecte les statuts et commentaires soumis par le formulaire
         $docLabels = [
             'photo'             => 'Photo',
             'cv'                => 'CV',
@@ -316,94 +310,61 @@ class FoldersControllerAdmin
             'lettre_motivation' => 'Lettre de motivation',
             'langues'           => 'Attestation de langues',
         ];
-        $statusLabels = [
-            'pending'  => 'En attente',
-            'accepted' => '<span style="color:#2e7d32;font-weight:bold;">✅ Acceptée</span>',
-            'refused'  => '<span style="color:#c62828;font-weight:bold;">❌ Refusée</span>',
-        ];
 
         /** @var array<string, string> $statutsDocuments */
         $statutsDocuments = $oldStatuts;
         foreach (array_keys($docLabels) as $doc) {
-            $docKey = (string)$doc; // Force string key
-            $val = $_POST['statut_' . $docKey] ?? '';
+            $docKey = (string)$doc;
+            $val    = $_POST['statut_' . $docKey] ?? '';
             if (is_string($val) && $val !== '') {
                 $statutsDocuments[$docKey] = $val;
             }
         }
 
-        $dateLimite  = !empty($_POST['date_limite'])       ? $_POST['date_limite']            : null;
-        $commentaire = null; // plus de commentaire global, les commentaires sont par pièce
+        $dateLimite  = !empty($_POST['date_limite']) ? $_POST['date_limite'] : null;
+        $commentaire = null;
 
-        // ── DEBUG TEMPORAIRE — à supprimer après vérification ──────────────────
-        error_log("=== validerDocuments POST ===");
-        error_log("numetu: " . $numetu);
-        error_log("statutsDocuments: " . json_encode($statutsDocuments));
-        error_log("POST statut_keys: " . json_encode(array_filter(array_keys($_POST), fn($k) => str_starts_with($k, 'statut_') || str_starts_with($k, 'comment_'))));
-        error_log("email_perso: " . ($_POST['email_perso'] ?? '(vide)'));
-        // ── FIN DEBUG ───────────────────────────────────────────────────────────
+        $this->log("=== validerDocuments POST ===");
+        $this->log("numetu: " . $numetu);
+        $this->log("statutsDocuments: " . json_encode($statutsDocuments));
+        $this->log("email_perso: " . ($_POST['email_perso'] ?? '(vide)'));
 
         $success = $this->folderUseCase->enregistrerValidation($numetu, $statutsDocuments, $dateLimite, $commentaire);
 
         if ($success) {
-            // ── Récupère le statut global actuel pour le mettre dans le mail ────
             $currentDossier = $this->folderUseCase->getStudentDetails($numetu);
             $globalStatus   = $currentDossier['status'] ?? 'depot';
-            $globalLabels   = [
-                'depot'       => 'Dépôt',
-                'instruction' => 'En instruction',
-                'accepte'     => 'Accepté',
-                'refuse'      => 'Refusé',
-            ];
+            $globalLabels   = ['depot' => 'Dépôt', 'instruction' => 'En instruction', 'accepte' => 'Accepté', 'refuse' => 'Refusé'];
 
-            // ── Construit les deux listes : acceptées / refusées ─────────────────
             $piecesAcceptees = [];
             $piecesRefusees  = [];
 
             foreach ($docLabels as $doc => $docName) {
-                $docKey = (string)$doc; 
-                
+                $docKey     = (string)$doc;
                 $statut     = $statutsDocuments[$docKey] ?? ($oldStatuts[$docKey] ?? 'pending');
                 $docComment = trim(strval($_POST['comment_' . $docKey] ?? ($oldPieces[$docKey]['comment'] ?? '')));
 
-                if ($statut === 'accepted') {
-                    $piecesAcceptees[] = ['name' => $docName, 'comment' => $docComment];
-                } elseif ($statut === 'refused') {
-                    $piecesRefusees[]  = ['name' => $docName, 'comment' => $docComment];
-                }
+                if ($statut === 'accepted')     { $piecesAcceptees[] = ['name' => $docName, 'comment' => $docComment]; }
+                elseif ($statut === 'refused')  { $piecesRefusees[]  = ['name' => $docName, 'comment' => $docComment]; }
             }
 
-            // ── Construit le tableau $updates pour buildUpdateMessage ─────────────
             $updates = [];
-
-            if (!empty($piecesAcceptees)) {
-                $lines = '';
-                foreach ($piecesAcceptees as $p) {
-                    $lines .= '<li style="margin-bottom:4px;">' . $p['name'];
-                    if (!empty($p['comment'])) {
-                        $lines .= ' — <i style="color:#555;">' . htmlspecialchars($p['comment'], ENT_QUOTES, 'UTF-8') . '</i>';
+            foreach ([['__SECTION_ACCEPTEES__', '__END_SECTION__', $piecesAcceptees], ['__SECTION_REFUSEES__', '__END_SECTION__', $piecesRefusees]] as [$open, $close, $list]) {
+                if (!empty($list)) {
+                    $lines = '';
+                    foreach ($list as $p) {
+                        $lines .= '<li style="margin-bottom:4px;">' . $p['name'];
+                        if (!empty($p['comment'])) {
+                            $lines .= ' — <i style="color:#555;">' . htmlspecialchars($p['comment'], ENT_QUOTES, 'UTF-8') . '</i>';
+                        }
+                        $lines .= '</li>';
                     }
-                    $lines .= '</li>';
+                    $updates[] = $open . $lines . $close;
                 }
-                $updates[] = '__SECTION_ACCEPTEES__' . $lines . '__END_SECTION__';
             }
 
-            if (!empty($piecesRefusees)) {
-                $lines = '';
-                foreach ($piecesRefusees as $p) {
-                    $lines .= '<li style="margin-bottom:4px;">' . $p['name'];
-                    if (!empty($p['comment'])) {
-                        $lines .= ' — <i style="color:#555;">' . htmlspecialchars($p['comment'], ENT_QUOTES, 'UTF-8') . '</i>';
-                    }
-                    $lines .= '</li>';
-                }
-                $updates[] = '__SECTION_REFUSEES__' . $lines . '__END_SECTION__';
-            }
-
-            // ── Statut global ─────────────────────────────────────────────────────
             $updates[] = '__STATUT_GLOBAL__' . ($globalLabels[$globalStatus] ?? $globalStatus) . '__END_STATUT__';
 
-            // ── Date limite ───────────────────────────────────────────────────────
             if (!empty($dateLimite)) {
                 $formattedDate = date('d/m/Y', strtotime($dateLimite));
                 $oldDateLimite = $oldDossier['DateLimite'] ?? null;
@@ -417,10 +378,9 @@ class FoldersControllerAdmin
 
         $_SESSION['message'] = $success
             ? (($lang === 'fr') ? 'Validation enregistrée avec succès. L\'étudiant a été notifié si nécessaire.' : 'Validation saved successfully. Student notified.')
-            : (($lang === 'fr') ? 'Erreur lors de l\'enregistrement'   : 'Error saving validation');
+            : (($lang === 'fr') ? 'Erreur lors de l\'enregistrement' : 'Error saving validation');
 
-        header('Location: index.php?page=' . $redirectTo . '&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
-        exit;
+        $this->redirect('index.php?page=' . $redirectTo . '&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
     }
 
     /**
@@ -435,7 +395,6 @@ class FoldersControllerAdmin
         foreach ($fileFields as $field) {
             if (isset($_FILES[$field])) {
                 $error = $_FILES[$field]['error'];
-
                 if ($error === UPLOAD_ERR_OK) {
                     $content = file_get_contents($_FILES[$field]['tmp_name']);
                     if ($content !== false) {
@@ -460,17 +419,15 @@ class FoldersControllerAdmin
         if (isset($_FILES['excel_file']) && $_FILES['excel_file']['error'] === UPLOAD_ERR_OK) {
             $filePath = $_FILES['excel_file']['tmp_name'];
             $fileName = $_FILES['excel_file']['name'];
+            $ext      = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+            $allowed  = ['csv', 'xlsx', 'xls'];
 
-            $ext               = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-            $allowedExtensions = ['csv', 'xlsx', 'xls'];
-
-            if (!in_array($ext, $allowedExtensions)) {
+            if (!in_array($ext, $allowed)) {
                 $_SESSION['message'] = ($lang === 'fr')
                     ? 'Erreur : Format non supporté. Utilisez .csv ou .xlsx'
                     : 'Error: Unsupported format. Use .csv or .xlsx';
             } else {
                 $success = $this->folderUseCase->importFoldersFromCSV($filePath, $fileName);
-
                 $_SESSION['message'] = $success
                     ? (($lang === 'fr') ? 'Importation réussie' : 'Import successful')
                     : (($lang === 'fr') ? 'Erreur lors de l\'importation (fichier vide ou format invalide)' : 'Error during import');
@@ -479,8 +436,7 @@ class FoldersControllerAdmin
             $_SESSION['message'] = ($lang === 'fr') ? 'Erreur lors du téléchargement du fichier.' : 'File upload error.';
         }
 
-        header('Location: index.php?page=folders-admin&lang=' . $lang);
-        exit;
+        $this->redirect('index.php?page=folders-admin&lang=' . $lang);
     }
 
     private function saveStudent(string $lang): void
@@ -519,21 +475,18 @@ class FoldersControllerAdmin
 
         if (!empty($errors)) {
             $_SESSION['message'] = implode(', ', $errors);
-            header('Location: index.php?page=folders-admin&action=create&lang=' . $lang);
-            exit;
+            $this->redirect('index.php?page=folders-admin&action=create&lang=' . $lang);
         }
 
         if ($this->folderUseCase->getByNumetu($data['NumEtu'])) {
             $_SESSION['message'] = ($lang === 'fr') ? 'Ce numéro étudiant existe déjà' : 'ID already exists';
-            header('Location: index.php?page=folders-admin&action=create&lang=' . $lang);
-            exit;
+            $this->redirect('index.php?page=folders-admin&action=create&lang=' . $lang);
         }
 
         $uploadErrors = $this->handleFileUploads($data, $lang);
         if (!empty($uploadErrors)) {
             $_SESSION['message'] = implode('<br>', $uploadErrors);
-            header('Location: index.php?page=folders-admin&action=create&lang=' . $lang);
-            exit;
+            $this->redirect('index.php?page=folders-admin&action=create&lang=' . $lang);
         }
 
         $success = $this->folderUseCase->creerDossier($data);
@@ -542,15 +495,13 @@ class FoldersControllerAdmin
             ? (($lang === 'fr') ? 'Dossier créé avec succès' : 'Folder created successfully')
             : (($lang === 'fr') ? 'Erreur lors de la création' : 'Error creating folder');
 
-        header('Location: index.php?page=folders-admin&lang=' . $lang);
-        exit;
+        $this->redirect('index.php?page=folders-admin&lang=' . $lang);
     }
 
     private function updateStudent(string $lang): void
     {
         $redirectTo = $_POST['redirect_to'] ?? 'folders-admin';
-
-        $numetu = $_POST['numetu'] ?? '';
+        $numetu     = $_POST['numetu'] ?? '';
 
         $data = [
             'NumEtu'             => $numetu,
@@ -583,11 +534,9 @@ class FoldersControllerAdmin
         $uploadErrors = $this->handleFileUploads($data, $lang);
         if (!empty($uploadErrors)) {
             $_SESSION['message'] = implode('<br>', $uploadErrors);
-            header('Location: index.php?page=' . $redirectTo . '&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
-            exit;
+            $this->redirect('index.php?page=' . $redirectTo . '&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
         }
 
-        // ── Snapshot avant modification pour détecter les changements ────────────
         $oldDossier = !empty($numetu) ? $this->folderUseCase->getStudentDetails($numetu) : null;
 
         $data['ModifiePar'] = $this->getAdminName();
@@ -595,33 +544,18 @@ class FoldersControllerAdmin
 
         $success = $this->folderUseCase->updateDossier($data);
 
-        // ── Notification mail si des champs ont changé ───────────────────────────
         if ($success && $oldDossier) {
             $fieldLabels = [
-                'Nom'                => 'Nom',
-                'Prenom'             => 'Prénom',
-                'EmailPersonnel'     => 'Email personnel',
-                'EmailAMU'           => 'Email AMU',
-                'Telephone'          => 'Téléphone',
-                'Adresse'            => 'Adresse',
-                'CodePostal'         => 'Code postal',
-                'Ville'              => 'Ville',
-                'Pays'               => 'Pays',
-                'Type'               => 'Type (entrant/sortant)',
-                'Zone'               => 'Zone',
-                'Composante'         => 'Composante',
-                'CodeDepartement'    => 'Département',
-                'Campus'             => 'Campus',
-                'Discipline'         => 'Discipline',
-                'NiveauEtude'        => 'Niveau d\'étude',
-                'Formation'          => 'Formation',
-                'MoyenneBac'         => 'Moyenne Bac',
-                'MoyenneSansBac'     => 'Moyenne sans Bac',
-                'AvisDRI'            => 'Avis DRI',
-                'DateDebut'          => 'Date de début',
-                'MobiliteAnterieure' => 'Mobilité antérieure',
-                'DateNaissance'      => 'Date de naissance',
-                'Sexe'               => 'Sexe',
+                'Nom' => 'Nom', 'Prenom' => 'Prénom', 'EmailPersonnel' => 'Email personnel',
+                'EmailAMU' => 'Email AMU', 'Telephone' => 'Téléphone', 'Adresse' => 'Adresse',
+                'CodePostal' => 'Code postal', 'Ville' => 'Ville', 'Pays' => 'Pays',
+                'Type' => 'Type (entrant/sortant)', 'Zone' => 'Zone', 'Composante' => 'Composante',
+                'CodeDepartement' => 'Département', 'Campus' => 'Campus', 'Discipline' => 'Discipline',
+                'NiveauEtude' => 'Niveau d\'étude', 'Formation' => 'Formation',
+                'MoyenneBac' => 'Moyenne Bac', 'MoyenneSansBac' => 'Moyenne sans Bac',
+                'AvisDRI' => 'Avis DRI', 'DateDebut' => 'Date de début',
+                'MobiliteAnterieure' => 'Mobilité antérieure', 'DateNaissance' => 'Date de naissance',
+                'Sexe' => 'Sexe',
             ];
 
             $updates = [];
@@ -629,19 +563,15 @@ class FoldersControllerAdmin
                 $oldVal = trim(strval($oldDossier[$field] ?? ''));
                 $newVal = trim(strval($data[$field] ?? ''));
                 if ($oldVal !== $newVal && $newVal !== '') {
-                    $safeOld = htmlspecialchars($oldVal ?: '—', ENT_QUOTES, 'UTF-8');
-                    $safeNew = htmlspecialchars($newVal,         ENT_QUOTES, 'UTF-8');
+                    $safeOld   = htmlspecialchars($oldVal ?: '—', ENT_QUOTES, 'UTF-8');
+                    $safeNew   = htmlspecialchars($newVal,         ENT_QUOTES, 'UTF-8');
                     $updates[] = "<b>{$label}</b> : {$safeOld} → <b>{$safeNew}</b>";
                 }
             }
 
-            // Fichiers uploadés
             $fileLabels = [
-                'photo'             => 'Photo',
-                'cv'                => 'CV',
-                'convention'        => 'Convention de stage',
-                'lettre_motivation' => 'Lettre de motivation',
-                'langues_file'      => 'Attestation de langues',
+                'photo' => 'Photo', 'cv' => 'CV', 'convention' => 'Convention de stage',
+                'lettre_motivation' => 'Lettre de motivation', 'langues_file' => 'Attestation de langues',
             ];
             foreach ($fileLabels as $field => $label) {
                 if (!empty($data[$field])) {
@@ -656,7 +586,6 @@ class FoldersControllerAdmin
             ? (($lang === 'fr') ? 'Dossier mis à jour' : 'Folder updated')
             : (($lang === 'fr') ? 'Erreur lors de la mise à jour' : 'Error updating folder');
 
-        header('Location: index.php?page=' . $redirectTo . '&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
-        exit;
+        $this->redirect('index.php?page=' . $redirectTo . '&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
     }
 }
