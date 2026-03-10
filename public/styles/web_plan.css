@@ -51,9 +51,12 @@ ul {
     gap: 1em;
 }
 
+
+
 li a {
     display: block;
     padding: 1em;
+    text-align: center;
     background: #f0f4ff;
     color: var(--accent-color);
     text-decoration: none;
