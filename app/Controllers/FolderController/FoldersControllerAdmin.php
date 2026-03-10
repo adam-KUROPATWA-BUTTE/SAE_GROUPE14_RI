@@ -32,6 +32,13 @@ class FoldersControllerAdmin
             session_start();
         }
 
+        // Vérification rôle
+        $allowedRoles = ['admin'];
+        if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], $allowedRoles, true)) {
+            header('Location: index.php?page=login');
+            exit;
+        }
+
         $page   = $_GET['page']   ?? 'folders';
         $action = $_GET['action'] ?? 'list';
         $lang   = $_GET['lang']   ?? 'fr';
