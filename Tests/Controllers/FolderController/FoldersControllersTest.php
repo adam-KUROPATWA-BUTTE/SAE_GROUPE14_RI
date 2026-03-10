@@ -28,6 +28,7 @@ class FoldersControllersTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
     }
 
+    /** @return array{data: array<int, mixed>, total: int, totalPages: int} */
     private function emptySearchResult(): array
     {
         return ['data' => [], 'total' => 0, 'totalPages' => 1];
@@ -56,15 +57,15 @@ class FoldersControllersTest extends TestCase
                 throw new \RuntimeException('redirect:' . $url);
             }
 
+            /** @param array<string, mixed> $data */
             protected function renderView(string $view, array $data = []): void {}
 
-            // Neutralise echo json_encode() + exit
+            /** @param array<string, mixed> $data */
             protected function jsonResponse(array $data): never
             {
                 throw new \RuntimeException('json:' . json_encode($data));
             }
 
-            // Neutralise error_log()
             protected function log(string $message): void {}
         };
 
@@ -94,6 +95,7 @@ class FoldersControllersTest extends TestCase
                 throw new \RuntimeException('redirect:' . $url);
             }
 
+            /** @param array<string, mixed> $data */
             protected function renderView(string $view, array $data = []): void {}
         };
 
@@ -165,10 +167,7 @@ class FoldersControllersTest extends TestCase
         $_GET['page'] = 'folders-admin';
         [$controller, $useCaseMock] = $this->makeAdminController();
 
-        $useCaseMock
-            ->expects($this->once())
-            ->method('searchWithoutPagination')
-            ->willReturn($this->emptySearchResult());
+        $useCaseMock->expects($this->once())->method('searchWithoutPagination')->willReturn($this->emptySearchResult());
 
         try { $controller->control(); } catch (\Throwable $e) {}
     }
@@ -209,12 +208,7 @@ class FoldersControllersTest extends TestCase
 
         [$controller, $useCaseMock] = $this->makeAdminController();
 
-        $useCaseMock
-            ->expects($this->once())
-            ->method('getStudentDetails')
-            ->with('ETU001')
-            ->willReturn(['NumEtu' => 'ETU001']);
-
+        $useCaseMock->expects($this->once())->method('getStudentDetails')->with('ETU001')->willReturn(['NumEtu' => 'ETU001']);
         $useCaseMock->method('searchWithoutPagination')->willReturn($this->emptySearchResult());
 
         try { $controller->control(); } catch (\Throwable $e) {}
@@ -244,11 +238,7 @@ class FoldersControllersTest extends TestCase
 
         [$controller, $useCaseMock] = $this->makeAdminController();
 
-        $useCaseMock
-            ->expects($this->once())
-            ->method('toggleCompleteStatus')
-            ->with('ETU042')
-            ->willReturn(true);
+        $useCaseMock->expects($this->once())->method('toggleCompleteStatus')->with('ETU042')->willReturn(true);
 
         try { $controller->control(); } catch (\RuntimeException $e) {}
     }
@@ -340,12 +330,7 @@ class FoldersControllersTest extends TestCase
 
         [$controller, $useCaseMock] = $this->makeAdminController();
 
-        $useCaseMock
-            ->expects($this->once())
-            ->method('setFolderStatus')
-            ->with('ETU010', 'instruction')
-            ->willReturn(true);
-
+        $useCaseMock->expects($this->once())->method('setFolderStatus')->with('ETU010', 'instruction')->willReturn(true);
         $useCaseMock->method('getStudentDetails')->willReturn(['status' => 'depot']);
 
         try { $controller->control(); } catch (\RuntimeException $e) {}
@@ -631,11 +616,7 @@ class FoldersControllersTest extends TestCase
 
         [$controller, $useCaseMock] = $this->makeStudentController();
 
-        $useCaseMock
-            ->expects($this->once())
-            ->method('getStudentDetails')
-            ->with('12345')
-            ->willReturn([]);
+        $useCaseMock->expects($this->once())->method('getStudentDetails')->with('12345')->willReturn([]);
 
         try { $controller->control(); } catch (\Throwable $e) {}
     }
@@ -719,7 +700,6 @@ class FoldersControllersTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_SESSION['numetu']        = '12345';
         $_GET['page']              = 'create_folder';
-        // Pas de nom, email, telephone, type, zone
 
         [$controller, $useCaseMock] = $this->makeStudentController();
         $useCaseMock->method('getStudentDetails')->willReturn(null);

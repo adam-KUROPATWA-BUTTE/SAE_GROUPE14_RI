@@ -1,8 +1,9 @@
 <?php
 
-namespace Controllers\WebPlanController;
+namespace Tests\Controllers\WebPlanController;
 
 use PHPUnit\Framework\TestCase;
+use Controllers\WebPlanController\WebPlanControllerAdmin;
 
 class WebPlanControllerAdminTest extends TestCase
 {

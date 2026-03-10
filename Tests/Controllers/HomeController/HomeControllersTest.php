@@ -57,6 +57,7 @@ class HomeControllersTest extends TestCase
                 throw new \RuntimeException('redirect:' . $url);
             }
 
+            /** @param array<string, mixed> $data */
             protected function renderView(string $view, array $data = []): void {}
 
             protected function makeService(): SuperAdminService
@@ -90,6 +91,7 @@ class HomeControllersTest extends TestCase
                 throw new \RuntimeException('redirect:' . $url);
             }
 
+            /** @param array<string, mixed> $data */
             protected function renderView(string $view, array $data = []): void {}
 
             protected function log(string $message): void {}
@@ -99,6 +101,7 @@ class HomeControllersTest extends TestCase
                 return $this->injectedUseCase;
             }
 
+            /** @return array<int, mixed> */
             protected function fetchDepartements(): array
             {
                 return [];
@@ -130,6 +133,7 @@ class HomeControllersTest extends TestCase
                 throw new \RuntimeException('redirect:' . $url);
             }
 
+            /** @param array<string, mixed> $data */
             protected function renderView(string $view, array $data = []): void {}
 
             protected function log(string $message): void {}
@@ -156,6 +160,7 @@ class HomeControllersTest extends TestCase
                 throw new \RuntimeException('redirect:' . $url);
             }
 
+            /** @param array<string, mixed> $data */
             protected function renderView(string $view, array $data = []): void {}
         };
     }
@@ -267,10 +272,7 @@ class HomeControllersTest extends TestCase
         $serviceMock->method('getAvailableSites')->willReturn([]);
         $serviceMock->method('getAllAccounts')->willReturn([]);
 
-        $serviceMock
-            ->expects($this->once())
-            ->method('addDepartment')
-            ->with('INFORMATIQUE');
+        $serviceMock->expects($this->once())->method('addDepartment')->with('INFORMATIQUE');
 
         try { $controller->control(); } catch (\Throwable $e) {}
     }
@@ -306,13 +308,9 @@ class HomeControllersTest extends TestCase
         $serviceMock->method('getAllAccounts')->willReturn([]);
         $serviceMock->method('addDepartment');
 
-        $capturedData = [];
-        $ref  = new \ReflectionClass($controller);
-        // On ne peut pas capturer $success directement sans override renderView,
-        // mais on vérifie que addDepartment est bien appelé
         try { $controller->control(); } catch (\Throwable $e) {}
 
-        $this->assertTrue(true); // addDepartment appelé sans exception = succès
+        $this->assertTrue(true);
     }
 
     public function test_superadmin_add_department_sets_error_when_empty(): void
@@ -347,10 +345,7 @@ class HomeControllersTest extends TestCase
         $serviceMock->method('getAvailableSites')->willReturn([]);
         $serviceMock->method('getAllAccounts')->willReturn([]);
 
-        $serviceMock
-            ->expects($this->once())
-            ->method('addSite')
-            ->with('Marseille');
+        $serviceMock->expects($this->once())->method('addSite')->with('Marseille');
 
         try { $controller->control(); } catch (\Throwable $e) {}
     }
@@ -403,11 +398,7 @@ class HomeControllersTest extends TestCase
         $serviceMock->method('getAvailableSites')->willReturn([]);
         $serviceMock->method('getAllAccounts')->willReturn([]);
 
-        $serviceMock
-            ->expects($this->once())
-            ->method('deleteAccount')
-            ->with('user@example.com')
-            ->willReturn(true);
+        $serviceMock->expects($this->once())->method('deleteAccount')->with('user@example.com')->willReturn(true);
 
         try { $controller->control(); } catch (\Throwable $e) {}
     }
@@ -450,9 +441,7 @@ class HomeControllersTest extends TestCase
         $serviceMock->method('getAvailableSites')->willReturn([]);
         $serviceMock->method('getAllAccounts')->willReturn([]);
 
-        $serviceMock
-            ->expects($this->once())
-            ->method('createAccount')
+        $serviceMock->expects($this->once())->method('createAccount')
             ->with('coord@univ.fr', 'Secure@Password1!', 'coordinateur', 'Informatique', null, 'Dupont', 'Alice');
 
         try { $controller->control(); } catch (\Throwable $e) {}
@@ -570,9 +559,7 @@ class HomeControllersTest extends TestCase
         $serviceMock->method('getAvailableSites')->willReturn([]);
         $serviceMock->method('getAllAccounts')->willReturn([]);
 
-        $serviceMock
-            ->expects($this->once())
-            ->method('createAccount')
+        $serviceMock->expects($this->once())->method('createAccount')
             ->with('admin@univ.fr', 'Secure@Password1!', 'admin', null, 'Aix', null, null);
 
         try { $controller->control(); } catch (\Throwable $e) {}
@@ -633,7 +620,7 @@ class HomeControllersTest extends TestCase
 
         try { $controller->control(); } catch (\Throwable $e) {}
 
-        $this->assertTrue(true); // Pas d'exception = filtre accepté
+        $this->assertTrue(true);
     }
 
     public function test_home_admin_mobilite_filter_rejected_for_invalid_value(): void
@@ -641,7 +628,6 @@ class HomeControllersTest extends TestCase
         $_GET['mobilite'] = 'invalid';
         [$controller]     = $this->makeAdminHome();
 
-        // On vérifie que le contrôleur ne plante pas
         try { $controller->control(); } catch (\Throwable $e) {}
 
         $this->assertTrue(true);
@@ -849,7 +835,6 @@ class HomeControllersTest extends TestCase
         $_SESSION['numetu'] = '12345';
         $controller         = $this->makeStudentHome();
 
-        // On vérifie indirectement que le contrôleur ne redirige pas
         $redirected = false;
         try {
             $controller->control();
@@ -866,7 +851,6 @@ class HomeControllersTest extends TestCase
     {
         $controller = $this->makeStudentHome();
 
-        // Sans numetu : pas de redirect, la page s'affiche quand même (accès public)
         $redirected = false;
         try {
             $controller->control();
@@ -886,6 +870,7 @@ class HomeControllersTest extends TestCase
     public function test_buildUrl_appends_lang_parameter(): void
     {
         $lang     = 'en';
+        /** @param array<string, string> $params */
         $buildUrl = function (string $path, array $params = []) use ($lang): string {
             $params['lang'] = $lang;
             $separator = (strpos($path, '?') === false) ? '?' : '&';
@@ -900,6 +885,7 @@ class HomeControllersTest extends TestCase
     public function test_buildUrl_uses_ampersand_when_path_already_has_query(): void
     {
         $lang     = 'fr';
+        /** @param array<string, string> $params */
         $buildUrl = function (string $path, array $params = []) use ($lang): string {
             $params['lang'] = $lang;
             $separator = (strpos($path, '?') === false) ? '?' : '&';

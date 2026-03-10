@@ -9,17 +9,8 @@ use Controllers\CoordinatorController\InternershipCoordinatorController;
 use Controllers\CoordinatorController\StudyCoordinatorController;
 use Model\UseCase\ManageFolderUseCase;
 
-/**
- * Tests unitaires pour DepartmentHeadController, InternershipCoordinatorController, StudyCoordinatorController
- *
- * Lancement : ./vendor/bin/phpunit Tests/Controllers/CoordinatorController/CoordinatorControllersTest.php
- */
 class CoordinatorControllersTest extends TestCase
 {
-    // =========================================================================
-    // Helpers
-    // =========================================================================
-
     protected function setUp(): void
     {
         $_GET     = [];
@@ -29,8 +20,6 @@ class CoordinatorControllersTest extends TestCase
     }
 
     /**
-     * Fabrique un DepartmentHeadController avec ManageFolderUseCase mocké.
-     *
      * @return array{0: DepartmentHeadController, 1: MockObject&ManageFolderUseCase}
      */
     private function makeDeptController(): array
@@ -53,6 +42,7 @@ class CoordinatorControllersTest extends TestCase
                 throw new \RuntimeException('redirect:' . $url);
             }
 
+            /** @param array<string, mixed> $data */
             protected function renderView(string $view, array $data = []): void {}
         };
 
@@ -60,8 +50,6 @@ class CoordinatorControllersTest extends TestCase
     }
 
     /**
-     * Fabrique un InternershipCoordinatorController avec ManageFolderUseCase mocké.
-     *
      * @return array{0: InternershipCoordinatorController, 1: MockObject&ManageFolderUseCase}
      */
     private function makeInternController(): array
@@ -84,6 +72,7 @@ class CoordinatorControllersTest extends TestCase
                 throw new \RuntimeException('redirect:' . $url);
             }
 
+            /** @param array<string, mixed> $data */
             protected function renderView(string $view, array $data = []): void {}
         };
 
@@ -91,8 +80,6 @@ class CoordinatorControllersTest extends TestCase
     }
 
     /**
-     * Fabrique un StudyCoordinatorController avec ManageFolderUseCase mocké.
-     *
      * @return array{0: StudyCoordinatorController, 1: MockObject&ManageFolderUseCase}
      */
     private function makeStudyController(): array
@@ -115,13 +102,14 @@ class CoordinatorControllersTest extends TestCase
                 throw new \RuntimeException('redirect:' . $url);
             }
 
+            /** @param array<string, mixed> $data */
             protected function renderView(string $view, array $data = []): void {}
         };
 
         return [$controller, $useCaseMock];
     }
 
-    /** Résultat de pagination vide par défaut. */
+    /** @return array{data: array<int, mixed>, total: int, totalPages: int} */
     private function emptyPaginationResult(): array
     {
         return ['data' => [], 'total' => 0, 'totalPages' => 0];
@@ -168,9 +156,7 @@ class CoordinatorControllersTest extends TestCase
         $controller->control();
     }
 
-    /**
-     * @dataProvider deptAllowedRolesProvider
-     */
+    /** @dataProvider deptAllowedRolesProvider */
     public function test_dept_allows_authorized_roles(string $role): void
     {
         $_SESSION['role'] = $role;
@@ -178,7 +164,6 @@ class CoordinatorControllersTest extends TestCase
 
         $useCaseMock->method('rechercherAvecPagination')->willReturn($this->emptyPaginationResult());
 
-        // Aucune exception redirect ne doit être levée
         $exceptionThrown = false;
         try {
             $controller->control();
@@ -191,6 +176,7 @@ class CoordinatorControllersTest extends TestCase
         $this->assertFalse($exceptionThrown, "Le rôle '$role' doit être autorisé.");
     }
 
+    /** @return array<int, array{0: string}> */
     public static function deptAllowedRolesProvider(): array
     {
         return [
@@ -247,10 +233,7 @@ class CoordinatorControllersTest extends TestCase
 
         [$controller, $useCaseMock] = $this->makeDeptController();
 
-        $useCaseMock
-            ->expects($this->once())
-            ->method('setAvisChef')
-            ->with('ETU001', 'accepte');
+        $useCaseMock->expects($this->once())->method('setAvisChef')->with('ETU001', 'accepte');
 
         try { $controller->control(); } catch (\RuntimeException $e) {}
     }
@@ -287,7 +270,6 @@ class CoordinatorControllersTest extends TestCase
         $_POST['avis']             = 'accepte';
 
         [$controller, $useCaseMock] = $this->makeDeptController();
-
         $useCaseMock->expects($this->never())->method('setAvisChef');
 
         try { $controller->control(); } catch (\RuntimeException $e) {}
@@ -302,7 +284,6 @@ class CoordinatorControllersTest extends TestCase
         $_POST['avis']             = 'maybe';
 
         [$controller, $useCaseMock] = $this->makeDeptController();
-
         $useCaseMock->expects($this->never())->method('setAvisChef');
 
         try { $controller->control(); } catch (\RuntimeException $e) {}
@@ -314,18 +295,13 @@ class CoordinatorControllersTest extends TestCase
 
     public function test_dept_view_action_calls_getStudentDetails(): void
     {
-        $_SESSION['role']  = 'admin';
-        $_GET['action']    = 'view';
-        $_GET['numetu']    = 'ETU042';
+        $_SESSION['role'] = 'admin';
+        $_GET['action']   = 'view';
+        $_GET['numetu']   = 'ETU042';
 
         [$controller, $useCaseMock] = $this->makeDeptController();
 
-        $useCaseMock
-            ->expects($this->once())
-            ->method('getStudentDetails')
-            ->with('ETU042')
-            ->willReturn([]);
-
+        $useCaseMock->expects($this->once())->method('getStudentDetails')->with('ETU042')->willReturn([]);
         $useCaseMock->method('rechercherAvecPagination')->willReturn($this->emptyPaginationResult());
 
         try { $controller->control(); } catch (\Throwable $e) {}
@@ -354,10 +330,7 @@ class CoordinatorControllersTest extends TestCase
 
         [$controller, $useCaseMock] = $this->makeDeptController();
 
-        $useCaseMock
-            ->expects($this->once())
-            ->method('rechercherAvecPagination')
-            ->willReturn($this->emptyPaginationResult());
+        $useCaseMock->expects($this->once())->method('rechercherAvecPagination')->willReturn($this->emptyPaginationResult());
 
         try { $controller->control(); } catch (\Throwable $e) {}
     }
@@ -442,9 +415,7 @@ class CoordinatorControllersTest extends TestCase
         $controller->control();
     }
 
-    /**
-     * @dataProvider internAllowedRolesProvider
-     */
+    /** @dataProvider internAllowedRolesProvider */
     public function test_intern_allows_authorized_roles(string $role): void
     {
         $_SESSION['role'] = $role;
@@ -463,6 +434,7 @@ class CoordinatorControllersTest extends TestCase
         $this->assertFalse($redirected, "Le rôle '$role' doit être autorisé.");
     }
 
+    /** @return array<int, array{0: string}> */
     public static function internAllowedRolesProvider(): array
     {
         return [
@@ -507,12 +479,7 @@ class CoordinatorControllersTest extends TestCase
 
         [$controller, $useCaseMock] = $this->makeInternController();
 
-        $useCaseMock
-            ->expects($this->once())
-            ->method('getStudentDetails')
-            ->with('ETU007')
-            ->willReturn([]);
-
+        $useCaseMock->expects($this->once())->method('getStudentDetails')->with('ETU007')->willReturn([]);
         $useCaseMock->method('rechercherAvecPagination')->willReturn($this->emptyPaginationResult());
 
         try { $controller->control(); } catch (\Throwable $e) {}
@@ -599,9 +566,7 @@ class CoordinatorControllersTest extends TestCase
         $controller->control();
     }
 
-    /**
-     * @dataProvider studyAllowedRolesProvider
-     */
+    /** @dataProvider studyAllowedRolesProvider */
     public function test_study_allows_authorized_roles(string $role): void
     {
         $_SESSION['role'] = $role;
@@ -620,6 +585,7 @@ class CoordinatorControllersTest extends TestCase
         $this->assertFalse($redirected, "Le rôle '$role' doit être autorisé.");
     }
 
+    /** @return array<int, array{0: string}> */
     public static function studyAllowedRolesProvider(): array
     {
         return [
@@ -664,12 +630,7 @@ class CoordinatorControllersTest extends TestCase
 
         [$controller, $useCaseMock] = $this->makeStudyController();
 
-        $useCaseMock
-            ->expects($this->once())
-            ->method('getStudentDetails')
-            ->with('ETU099')
-            ->willReturn([]);
-
+        $useCaseMock->expects($this->once())->method('getStudentDetails')->with('ETU099')->willReturn([]);
         $useCaseMock->method('rechercherAvecPagination')->willReturn($this->emptyPaginationResult());
 
         try { $controller->control(); } catch (\Throwable $e) {}
@@ -760,12 +721,13 @@ class CoordinatorControllersTest extends TestCase
     }
 
     // =========================================================================
-    // buildUrl helper (commun aux 3 contrôleurs)
+    // buildUrl helper
     // =========================================================================
 
     public function test_buildUrl_always_appends_lang_parameter(): void
     {
         $lang     = 'en';
+        /** @param array<string, string> $params */
         $buildUrl = function (string $url, array $params = []) use ($lang): string {
             $params['lang'] = $lang;
             return $url . '?' . http_build_query($params);
@@ -779,6 +741,7 @@ class CoordinatorControllersTest extends TestCase
     public function test_buildUrl_works_with_french_lang(): void
     {
         $lang     = 'fr';
+        /** @param array<string, string> $params */
         $buildUrl = function (string $url, array $params = []) use ($lang): string {
             $params['lang'] = $lang;
             return $url . '?' . http_build_query($params);

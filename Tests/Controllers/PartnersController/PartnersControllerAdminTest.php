@@ -1,12 +1,12 @@
 <?php
 
-namespace Controllers\PartnersController;
+namespace Tests\Controllers\PartnersController;
 
 use PHPUnit\Framework\TestCase;
+use Controllers\PartnersController\PartnersControllerAdmin;
 
 class PartnersControllerAdminTest extends TestCase
 {
-
     protected function setUp(): void
     {
         $_GET = [];
@@ -15,21 +15,21 @@ class PartnersControllerAdminTest extends TestCase
         $_SESSION = [];
     }
 
-    public function testSupportReturnsTrueForPartnersAdmin()
+    public function testSupportReturnsTrueForPartnersAdmin(): void
     {
         $this->assertTrue(
             PartnersControllerAdmin::support('partners-admin', 'GET')
         );
     }
 
-    public function testSupportReturnsFalseForOtherPage()
+    public function testSupportReturnsFalseForOtherPage(): void
     {
         $this->assertFalse(
             PartnersControllerAdmin::support('home', 'GET')
         );
     }
 
-    public function testDefaultLanguageIsFrench()
+    public function testDefaultLanguageIsFrench(): void
     {
         $controller = new PartnersControllerAdmin();
 
@@ -40,7 +40,7 @@ class PartnersControllerAdminTest extends TestCase
         $this->assertEquals('fr', $_SESSION['lang'] ?? 'fr');
     }
 
-    public function testLanguageChangeToEnglish()
+    public function testLanguageChangeToEnglish(): void
     {
         $_GET['lang'] = 'en';
 
@@ -53,16 +53,16 @@ class PartnersControllerAdminTest extends TestCase
         $this->assertEquals('en', $_SESSION['lang']);
     }
 
-    public function testErrorMessageWhenFieldsMissing()
+    public function testErrorMessageWhenFieldsMissing(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
         $_POST = [
-            'continent' => '',
-            'country' => '',
-            'city' => '',
+            'continent'   => '',
+            'country'     => '',
+            'city'        => '',
             'institution' => '',
-            'type' => ''
+            'type'        => '',
         ];
 
         $controller = new PartnersControllerAdmin();
@@ -73,5 +73,4 @@ class PartnersControllerAdminTest extends TestCase
 
         $this->assertTrue(true);
     }
-
 }

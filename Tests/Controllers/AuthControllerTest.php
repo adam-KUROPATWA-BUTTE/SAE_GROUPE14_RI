@@ -1,8 +1,10 @@
 <?php
 
-namespace Controllers;
+namespace Tests\Controllers;
 
 use PHPUnit\Framework\TestCase;
+use Controllers\AuthController;
+
 class AuthControllerTest extends TestCase
 {
     protected function setUp(): void
@@ -40,5 +42,4 @@ class AuthControllerTest extends TestCase
             AuthController::support('home', 'GET')
         );
     }
-
 }

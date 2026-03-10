@@ -1,33 +1,33 @@
 <?php
 
-namespace Controllers\PartnersController;
+namespace Tests\Controllers\PartnersController;
 
 use PHPUnit\Framework\TestCase;
+use Controllers\PartnersController\PartnersControllerStudent;
 
 class PartnersControllerStudentTest extends TestCase
 {
-
     protected function setUp(): void
     {
-        $_GET = [];
+        $_GET     = [];
         $_SESSION = [];
     }
 
-    public function testSupportReturnsTrueForPartnersStudent()
+    public function testSupportReturnsTrueForPartnersStudent(): void
     {
         $this->assertTrue(
             PartnersControllerStudent::support('partners-student', 'GET')
         );
     }
 
-    public function testSupportReturnsFalseForOtherPage()
+    public function testSupportReturnsFalseForOtherPage(): void
     {
         $this->assertFalse(
             PartnersControllerStudent::support('home', 'GET')
         );
     }
 
-    public function testDefaultPartnerIsAmu()
+    public function testDefaultPartnerIsAmu(): void
     {
         $controller = new PartnersControllerStudent();
 
@@ -38,7 +38,7 @@ class PartnersControllerStudentTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testPartnerIut()
+    public function testPartnerIut(): void
     {
         $_GET['partner'] = 'iut';
 
@@ -51,7 +51,7 @@ class PartnersControllerStudentTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testLanguageEnglish()
+    public function testLanguageEnglish(): void
     {
         $_GET['lang'] = 'en';
 
@@ -63,5 +63,4 @@ class PartnersControllerStudentTest extends TestCase
 
         $this->assertEquals('en', $_SESSION['lang']);
     }
-
 }
