@@ -83,7 +83,7 @@ ob_start();
     <img id="Université_partenaires"
          src="img/<?= isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] ? 'University_green.png' : 'University.png' ?>"
          alt="Partner Universities">
-
+    </img>  
     <div id="app-config"
          data-lang="<?= htmlspecialchars($lang) ?>"
          data-role="admin"

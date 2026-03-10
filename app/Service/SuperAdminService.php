@@ -35,7 +35,7 @@ class SuperAdminService
         $this->userRepo->addCustomSite($name);
     }
 
-    /** @return array<int, array{login: string, role: string, departement: string|null, site: string|null, created_at: string}> */
+    /** @return array<int, array{login: string, role: string, departement: string|null, site: string|null, nom: string|null, prenom: string|null, created_at: string}> */
     public function getAllAccounts(): array
     {
         return $this->userRepo->findAll();
@@ -46,14 +46,16 @@ class SuperAdminService
         string $password,
         string $role,
         ?string $departement = null,
-        ?string $site = null
+        ?string $site = null,
+        ?string $nom = null,
+        ?string $prenom = null
     ): void {
         if ($this->userRepo->findByLogin($email)) {
             throw new \RuntimeException("Ce compte existe déjà.");
         }
         $hashed = password_hash($password, PASSWORD_BCRYPT);
-        $this->userRepo->create($email, $hashed, $role, $departement, $site);
-        $this->sendWelcomeEmail($email, $password, $role, $departement, $site);
+        $this->userRepo->create($email, $hashed, $role, $departement, $site, $nom, $prenom);
+        $this->sendWelcomeEmail($email, $password, $role, $departement, $site, $nom, $prenom);
     }
 
     public function deleteAccount(string $email): bool
@@ -66,14 +68,19 @@ class SuperAdminService
         string $password,
         string $role,
         ?string $departement,
-        ?string $site
+        ?string $site,
+        ?string $nom = null,
+        ?string $prenom = null
     ): void {
+        $fullName = trim(($prenom ?? '') . ' ' . ($nom ?? ''));
+        $greeting = $fullName !== '' ? "Bonjour $fullName," : "Bonjour,";
+
         $extra = '';
         if ($departement) $extra .= " (Département : $departement)";
         if ($site)        $extra .= " (Site : $site)";
 
         $subject = "Votre accès à la plateforme AMU Relations Internationales";
-        $body    = "Bonjour,\n\nVotre compte a été créé.\n"
+        $body    = "$greeting\n\nVotre compte a été créé.\n"
             . "Login : $email\nMot de passe : $password\nRôle : $role$extra\n\n"
             . "Connectez-vous sur : https://votre-site.fr\n\nCordialement,\nL'équipe AMU";
 

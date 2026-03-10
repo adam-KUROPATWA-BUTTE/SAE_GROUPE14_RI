@@ -34,20 +34,20 @@ class ManageFolderUseCase
 
         $piecesJson = $result['PiecesJustificatives'] ?? '';
         $pieces = (is_string($piecesJson) && $piecesJson !== '') ? (json_decode($piecesJson, true) ?? []) : [];
-
-        // FIX line 32/34: $pieces was mixed (json_decode returns mixed).
-        // Cast to array and guard before foreach/offset access.
-        if (!is_array($pieces)) {
-            $pieces = [];
-        }
+        if (!is_array($pieces)) $pieces = [];
 
         foreach ($pieces as $key => $val) {
             if (is_string($val)) {
                 $pieces[$key] = ['file' => $val, 'status' => 'pending', 'comment' => ''];
             }
         }
-
         $result['pieces'] = $pieces;
+
+        $statutsJson = $result['StatutDocuments'] ?? '';
+        $statuts = (is_string($statutsJson) && $statutsJson !== '') ? (json_decode($statutsJson, true) ?? []) : [];
+        if (!is_array($statuts)) $statuts = [];
+        $result['statuts'] = $statuts;
+
         return $result;
     }
 
@@ -61,8 +61,33 @@ class ManageFolderUseCase
 
     public function toggleCompleteStatus(string $numetu): bool
     {
-        // FIX line 49: DossierRepositoryInterface declares toggleCompleteStatus(), not toggleStatus().
         return $this->dossierRepo->toggleCompleteStatus($numetu);
+    }
+
+    public function setFolderStatus(string $numEtu, string $status): bool
+    {
+        return $this->dossierRepo->setStatus($numEtu, $status);
+    }
+
+    public function cycleFolderStatus(string $numEtu): bool
+    {
+        return $this->dossierRepo->cycleStatus($numEtu);
+    }
+
+    /**
+     * Enregistre l'avis du chef de département ('accepte', 'refuse', ou null).
+     * Si refus : met aussi le status global du dossier à 'refuse' automatiquement.
+     * Si accepte : ne touche pas au status global (c'est l'admin qui valide).
+     */
+    public function setAvisChef(string $numEtu, ?string $avis): bool
+    {
+        $result = $this->dossierRepo->setAvisChef($numEtu, $avis);
+
+        if ($result && $avis === 'refuse') {
+            $this->dossierRepo->setStatus($numEtu, 'refuse');
+        }
+
+        return $result;
     }
 
     /**
@@ -83,7 +108,7 @@ class ManageFolderUseCase
         return $this->dossierRepo->searchWithPagination($filters, 1, 0);
     }
 
-    public function updateDocumentStatus(string $numEtu, string $docType, string $status, string $comment): bool
+    public function updateDocumentStatus(string $numEtu, string $docType, string $status, string $comment, ?string $fileContent = null): bool
     {
         $dossier = $this->getStudentDetails($numEtu);
         if (!$dossier) return false;
@@ -96,12 +121,57 @@ class ManageFolderUseCase
             $pieces[$docType]['comment'] = $comment;
         }
 
-        return $this->dossierRepo->update($numEtu, [':PiecesJustificatives' => json_encode($pieces)]);
-    }
+        if ($fileContent !== null && $fileContent !== false) {
+            $pieces[$docType]['file'] = base64_encode($fileContent);
+        }
 
-    public function setFolderStatus(string $numEtu, string $status): bool
-    {
-        return $this->dossierRepo->setStatus($numEtu, $status);
+        $formattedData = [
+            ':Nom'                => null,
+            ':Prenom'             => null,
+            ':DateNaissance'      => null,
+            ':Sexe'               => null,
+            ':Adresse'            => null,
+            ':CodePostal'         => null,
+            ':Ville'              => null,
+            ':EmailPersonnel'     => null,
+            ':EmailAMU'           => null,
+            ':Telephone'          => null,
+            ':CodeDepartement'    => null,
+            ':Composante'         => null,
+            ':Type'               => null,
+            ':Zone'               => null,
+            ':Pays'               => null,
+            ':Campus'             => null,
+            ':Discipline'         => null,
+            ':NiveauEtude'        => null,
+            ':Formation'          => null,
+            ':MoyenneBac'         => null,
+            ':MoyenneSansBac'     => null,
+            ':AvisDRI'            => null,
+            ':DateDebut'          => null,
+            ':MobiliteAnterieure' => null,
+            ':PiecesJustificatives' => json_encode($pieces),
+            ':status'             => null,
+            ':ModifiePar'         => null,
+            ':ModifieLe'          => null,
+        ];
+
+        $updatedPieces = $this->dossierRepo->update($numEtu, $formattedData);
+
+        $statuts = isset($dossier['statuts']) && is_array($dossier['statuts']) ? $dossier['statuts'] : [];
+        $statuts[$docType] = $status;
+
+        $dateLimite = isset($dossier['DateLimite']) && is_scalar($dossier['DateLimite'])
+            ? (string) $dossier['DateLimite']
+            : null;
+
+        $commentaireGlobal = isset($dossier['CommentaireAdmin']) && is_scalar($dossier['CommentaireAdmin'])
+            ? (string) $dossier['CommentaireAdmin']
+            : null;
+
+        $updatedStatuts = $this->dossierRepo->enregistrerValidation($numEtu, $statuts, $dateLimite, $commentaireGlobal);
+
+        return $updatedPieces && $updatedStatuts;
     }
 
     /**
@@ -109,22 +179,22 @@ class ManageFolderUseCase
      */
     public function creerDossier(array $data): bool
     {
-        $pieces = [];
+        $pieces    = [];
         $addPiece = function (?string $fileData): ?array {
             return $fileData !== null
                 ? ['file' => base64_encode($fileData), 'status' => 'pending', 'comment' => '']
                 : null;
         };
 
-        if (!empty($data['photo']))            $pieces['photo']            = $addPiece(is_string($data['photo']) ? $data['photo'] : null);
-        if (!empty($data['cv']))               $pieces['cv']               = $addPiece(is_string($data['cv']) ? $data['cv'] : null);
-        if (!empty($data['convention']))       $pieces['convention']       = $addPiece(is_string($data['convention']) ? $data['convention'] : null);
+        if (!empty($data['photo']))             $pieces['photo']             = $addPiece(is_string($data['photo']) ? $data['photo'] : null);
+        if (!empty($data['cv']))                $pieces['cv']                = $addPiece(is_string($data['cv']) ? $data['cv'] : null);
+        if (!empty($data['convention']))        $pieces['convention']        = $addPiece(is_string($data['convention']) ? $data['convention'] : null);
         if (!empty($data['lettre_motivation'])) $pieces['lettre_motivation'] = $addPiece(is_string($data['lettre_motivation']) ? $data['lettre_motivation'] : null);
-        if (!empty($data['langues_file']))     $pieces['langues']          = $addPiece(is_string($data['langues_file']) ? $data['langues_file'] : null);
+        if (!empty($data['langues_file']))      $pieces['langues']           = $addPiece(is_string($data['langues_file']) ? $data['langues_file'] : null);
 
         $piecesJson = empty($pieces) ? '{}' : json_encode($pieces);
 
-        $rawDate = $data['naissance'] ?? ($data['DateNaissance'] ?? null);
+        $rawDate       = $data['naissance'] ?? ($data['DateNaissance'] ?? null);
         $dateNaissance = null;
         if (!empty($rawDate) && is_string($rawDate)) {
             $date = \DateTime::createFromFormat('Y-m-d', $rawDate);
@@ -132,33 +202,33 @@ class ManageFolderUseCase
         }
 
         $formattedData = [
-            'NumEtu'             => $data['numetu']             ?? ($data['NumEtu']             ?? null),
-            'Nom'                => $data['nom']                ?? ($data['Nom']                ?? null),
-            'Prenom'             => $data['prenom']             ?? ($data['Prenom']             ?? null),
+            'NumEtu'             => $data['numetu']              ?? ($data['NumEtu']             ?? null),
+            'Nom'                => $data['nom']                 ?? ($data['Nom']                ?? null),
+            'Prenom'             => $data['prenom']              ?? ($data['Prenom']             ?? null),
             'DateNaissance'      => $dateNaissance,
-            'Sexe'               => $data['sexe']               ?? ($data['Sexe']               ?? null),
-            'Adresse'            => $data['adresse']            ?? ($data['Adresse']            ?? null),
-            'CodePostal'         => $data['cp']                 ?? ($data['CodePostal']         ?? null),
-            'Ville'              => $data['ville']              ?? ($data['Ville']              ?? null),
-            'EmailPersonnel'     => $data['email_perso']        ?? ($data['EmailPersonnel']     ?? null),
-            'EmailAMU'           => $data['email_amu']          ?? ($data['EmailAMU']           ?? null),
-            'Telephone'          => $data['telephone']          ?? ($data['Telephone']          ?? null),
-            'CodeDepartement'    => $data['departement']        ?? ($data['CodeDepartement']    ?? null),
-            'Composante'         => $data['composante']         ?? ($data['Composante']         ?? null),
-            'Type'               => $data['type']               ?? ($data['Type']               ?? null),
-            'Zone'               => $data['zone']               ?? ($data['Zone']               ?? null),
-            'Pays'               => $data['pays']               ?? ($data['Pays']               ?? null),
-            'Campus'             => $data['campus']             ?? ($data['Campus']             ?? null),
-            'Discipline'         => $data['discipline']         ?? ($data['Discipline']         ?? null),
-            'NiveauEtude'        => $data['niveau_etude']       ?? ($data['NiveauEtude']        ?? null),
-            'Formation'          => $data['formation']          ?? ($data['Formation']          ?? null),
-            'MoyenneBac'         => $data['moyenne_bac']        ?? ($data['MoyenneBac']         ?? null),
-            'MoyenneSansBac'     => $data['moyenne_sans_bac']   ?? ($data['MoyenneSansBac']     ?? null),
-            'AvisDRI'            => $data['avis_dri']           ?? ($data['AvisDRI']            ?? null),
-            'DateDebut'          => $data['date_debut']         ?? ($data['DateDebut']          ?? null),
+            'Sexe'               => $data['sexe']                ?? ($data['Sexe']               ?? null),
+            'Adresse'            => $data['adresse']             ?? ($data['Adresse']            ?? null),
+            'CodePostal'         => $data['cp']                  ?? ($data['CodePostal']         ?? null),
+            'Ville'              => $data['ville']               ?? ($data['Ville']              ?? null),
+            'EmailPersonnel'     => $data['email_perso']         ?? ($data['EmailPersonnel']     ?? null),
+            'EmailAMU'           => $data['email_amu']           ?? ($data['EmailAMU']           ?? null),
+            'Telephone'          => $data['telephone']           ?? ($data['Telephone']          ?? null),
+            'CodeDepartement'    => $data['departement']         ?? ($data['CodeDepartement']    ?? null),
+            'Composante'         => $data['composante']          ?? ($data['Composante']         ?? null),
+            'Type'               => $data['type']                ?? ($data['Type']               ?? null),
+            'Zone'               => $data['zone']                ?? ($data['Zone']               ?? null),
+            'Pays'               => $data['pays']                ?? ($data['Pays']               ?? null),
+            'Campus'             => $data['campus']              ?? ($data['Campus']             ?? null),
+            'Discipline'         => $data['discipline']          ?? ($data['Discipline']         ?? null),
+            'NiveauEtude'        => $data['niveau_etude']        ?? ($data['NiveauEtude']        ?? null),
+            'Formation'          => $data['formation']           ?? ($data['Formation']          ?? null),
+            'MoyenneBac'         => $data['moyenne_bac']         ?? ($data['MoyenneBac']         ?? null),
+            'MoyenneSansBac'     => $data['moyenne_sans_bac']    ?? ($data['MoyenneSansBac']     ?? null),
+            'AvisDRI'            => $data['avis_dri']            ?? ($data['AvisDRI']            ?? null),
+            'DateDebut'          => $data['date_debut']          ?? ($data['DateDebut']          ?? null),
             'MobiliteAnterieure' => $data['mobilite_anterieure'] ?? ($data['MobiliteAnterieure'] ?? null),
             'PiecesJustificatives' => $piecesJson,
-            'status'             => $data['status']             ?? 'depot',
+            'status'             => $data['status'] ?? 'depot',
         ];
 
         foreach ($formattedData as $key => $value) {
@@ -187,15 +257,15 @@ class ManageFolderUseCase
             }
         };
 
-        $updatePiece($oldPieces, 'photo',            isset($data['photo'])            && is_string($data['photo'])            ? $data['photo']            : null);
-        $updatePiece($oldPieces, 'cv',               isset($data['cv'])               && is_string($data['cv'])               ? $data['cv']               : null);
-        $updatePiece($oldPieces, 'convention',       isset($data['convention'])       && is_string($data['convention'])       ? $data['convention']       : null);
+        $updatePiece($oldPieces, 'photo',             isset($data['photo'])             && is_string($data['photo'])             ? $data['photo']             : null);
+        $updatePiece($oldPieces, 'cv',                isset($data['cv'])                && is_string($data['cv'])                ? $data['cv']                : null);
+        $updatePiece($oldPieces, 'convention',        isset($data['convention'])        && is_string($data['convention'])        ? $data['convention']        : null);
         $updatePiece($oldPieces, 'lettre_motivation', isset($data['lettre_motivation']) && is_string($data['lettre_motivation']) ? $data['lettre_motivation'] : null);
-        $updatePiece($oldPieces, 'langues',          isset($data['langues_file'])     && is_string($data['langues_file'])     ? $data['langues_file']     : null);
+        $updatePiece($oldPieces, 'langues',           isset($data['langues_file'])      && is_string($data['langues_file'])      ? $data['langues_file']      : null);
 
         $piecesJson = empty($oldPieces) ? '{}' : json_encode($oldPieces);
 
-        $rawDate = $data['naissance'] ?? ($data['DateNaissance'] ?? null);
+        $rawDate       = $data['naissance'] ?? ($data['DateNaissance'] ?? null);
         $dateNaissance = null;
         if (!empty($rawDate) && is_string($rawDate)) {
             $date = \DateTime::createFromFormat('Y-m-d', $rawDate);
@@ -203,32 +273,34 @@ class ManageFolderUseCase
         }
 
         $formattedData = [
-            ':Nom'                => $data['nom']                ?? ($data['Nom']                ?? null),
-            ':Prenom'             => $data['prenom']             ?? ($data['Prenom']             ?? null),
+            ':Nom'                => $data['nom']                 ?? ($data['Nom']                ?? null),
+            ':Prenom'             => $data['prenom']              ?? ($data['Prenom']             ?? null),
             ':DateNaissance'      => $dateNaissance,
-            ':Sexe'               => $data['sexe']               ?? ($data['Sexe']               ?? null),
-            ':Adresse'            => $data['adresse']            ?? ($data['Adresse']            ?? null),
-            ':CodePostal'         => $data['cp']                 ?? ($data['CodePostal']         ?? null),
-            ':Ville'              => $data['ville']              ?? ($data['Ville']              ?? null),
-            ':EmailPersonnel'     => $data['email_perso']        ?? ($data['EmailPersonnel']     ?? null),
-            ':EmailAMU'           => $data['email_amu']          ?? ($data['EmailAMU']           ?? null),
-            ':Telephone'          => $data['telephone']          ?? ($data['Telephone']          ?? null),
-            ':CodeDepartement'    => $data['departement']        ?? ($data['CodeDepartement']    ?? null),
-            ':Composante'         => $data['composante']         ?? ($data['Composante']         ?? null),
-            ':Type'               => $data['type']               ?? ($data['Type']               ?? null),
-            ':Zone'               => $data['zone']               ?? ($data['Zone']               ?? null),
-            ':Pays'               => $data['pays']               ?? ($data['Pays']               ?? null),
-            ':Campus'             => $data['campus']             ?? ($data['Campus']             ?? null),
-            ':Discipline'         => $data['discipline']         ?? ($data['Discipline']         ?? null),
-            ':NiveauEtude'        => $data['niveau_etude']       ?? ($data['NiveauEtude']        ?? null),
-            ':Formation'          => $data['formation']          ?? ($data['Formation']          ?? null),
-            ':MoyenneBac'         => $data['moyenne_bac']        ?? ($data['MoyenneBac']         ?? null),
-            ':MoyenneSansBac'     => $data['moyenne_sans_bac']   ?? ($data['MoyenneSansBac']     ?? null),
-            ':AvisDRI'            => $data['avis_dri']           ?? ($data['AvisDRI']            ?? null),
-            ':DateDebut'          => $data['date_debut']         ?? ($data['DateDebut']          ?? null),
+            ':Sexe'               => $data['sexe']                ?? ($data['Sexe']               ?? null),
+            ':Adresse'            => $data['adresse']             ?? ($data['Adresse']            ?? null),
+            ':CodePostal'         => $data['cp']                  ?? ($data['CodePostal']         ?? null),
+            ':Ville'              => $data['ville']               ?? ($data['Ville']              ?? null),
+            ':EmailPersonnel'     => $data['email_perso']         ?? ($data['EmailPersonnel']     ?? null),
+            ':EmailAMU'           => $data['email_amu']           ?? ($data['EmailAMU']           ?? null),
+            ':Telephone'          => $data['telephone']           ?? ($data['Telephone']          ?? null),
+            ':CodeDepartement'    => $data['departement']         ?? ($data['CodeDepartement']    ?? null),
+            ':Composante'         => $data['composante']          ?? ($data['Composante']         ?? null),
+            ':Type'               => $data['type']                ?? ($data['Type']               ?? null),
+            ':Zone'               => $data['zone']                ?? ($data['Zone']               ?? null),
+            ':Pays'               => $data['pays']                ?? ($data['Pays']               ?? null),
+            ':Campus'             => $data['campus']              ?? ($data['Campus']             ?? null),
+            ':Discipline'         => $data['discipline']          ?? ($data['Discipline']         ?? null),
+            ':NiveauEtude'        => $data['niveau_etude']        ?? ($data['NiveauEtude']        ?? null),
+            ':Formation'          => $data['formation']           ?? ($data['Formation']          ?? null),
+            ':MoyenneBac'         => $data['moyenne_bac']         ?? ($data['MoyenneBac']         ?? null),
+            ':MoyenneSansBac'     => $data['moyenne_sans_bac']    ?? ($data['MoyenneSansBac']     ?? null),
+            ':AvisDRI'            => $data['avis_dri']            ?? ($data['AvisDRI']            ?? null),
+            ':DateDebut'          => $data['date_debut']          ?? ($data['DateDebut']          ?? null),
             ':MobiliteAnterieure' => $data['mobilite_anterieure'] ?? ($data['MobiliteAnterieure'] ?? null),
             ':PiecesJustificatives' => $piecesJson,
             ':status'             => is_string($existing['status'] ?? null) ? $existing['status'] : 'depot',
+            ':ModifiePar'         => !empty($data['ModifiePar']) ? $data['ModifiePar'] : null,
+            ':ModifieLe'          => !empty($data['ModifieLe'])  ? $data['ModifieLe']  : null,
         ];
 
         return $this->dossierRepo->update($numEtu, $formattedData);
@@ -248,7 +320,6 @@ class ManageFolderUseCase
                     $firstLine = fgets($handle);
                     $delimiter = substr_count((string)$firstLine, ';') > substr_count((string)$firstLine, ',') ? ';' : ',';
                     rewind($handle);
-
                     while (($rowData = fgetcsv($handle, 0, $delimiter)) !== false) {
                         $rows[] = $rowData;
                     }
@@ -279,7 +350,6 @@ class ManageFolderUseCase
                 return trim($string);
             };
 
-            // FIX line 247/248: array_shift returns mixed; cast each header to string before normalizing.
             $rawHeaders = array_shift($rows);
             if (!is_array($rawHeaders)) return false;
             $headers = array_map(fn($h) => $normalize(is_string($h) ? $h : (string)$h), $rawHeaders);
@@ -343,8 +413,6 @@ class ManageFolderUseCase
                 }
             }
 
-            // FIX line 313: $data is used inside closure but declared in foreach below.
-            // Use explicit parameter instead of capturing by reference.
             $getVal = function (string $field, array $rowData) use ($indices): string {
                 $idx = $indices[$field];
                 return ($idx !== -1 && isset($rowData[$idx])) ? trim(strval($rowData[$idx])) : '';
@@ -389,7 +457,6 @@ class ManageFolderUseCase
                 if (!empty($rawDate)) {
                     if (is_numeric($rawDate)) {
                         try {
-                            // FIX line 355: excelToDateTimeObject expects float|int, not string.
                             $dateObj       = Date::excelToDateTimeObject((float) $rawDate);
                             $dateNaissance = $dateObj->format('Y-m-d');
                         } catch (\Exception $e) {}
@@ -404,7 +471,7 @@ class ManageFolderUseCase
                     }
                 }
 
-                $moyenneBac     = str_replace(',', '.', $getVal('MoyenneBac', $rowData));
+                $moyenneBac     = str_replace(',', '.', $getVal('MoyenneBac',     $rowData));
                 $moyenneSansBac = str_replace(',', '.', $getVal('MoyenneSansBac', $rowData));
 
                 $composanteRaw = $getVal('Composante', $rowData);
@@ -419,26 +486,26 @@ class ManageFolderUseCase
                     'Nom'                => $nom,
                     'Prenom'             => $prenom,
                     'DateNaissance'      => $dateNaissance,
-                    'Sexe'               => $getVal('Sexe', $rowData),
-                    'Adresse'            => $getVal('Adresse', $rowData),
-                    'CodePostal'         => $getVal('CodePostal', $rowData),
-                    'Ville'              => $getVal('Ville', $rowData),
-                    'EmailPersonnel'     => $getVal('EmailPersonnel', $rowData),
-                    'EmailAMU'           => $getVal('EmailAMU', $rowData),
-                    'Telephone'          => $getVal('Telephone', $rowData),
-                    'CodeDepartement'    => $getVal('CodeDepartement', $rowData),
+                    'Sexe'               => $getVal('Sexe',               $rowData),
+                    'Adresse'            => $getVal('Adresse',            $rowData),
+                    'CodePostal'         => $getVal('CodePostal',         $rowData),
+                    'Ville'              => $getVal('Ville',              $rowData),
+                    'EmailPersonnel'     => $getVal('EmailPersonnel',     $rowData),
+                    'EmailAMU'           => $getVal('EmailAMU',           $rowData),
+                    'Telephone'          => $getVal('Telephone',          $rowData),
+                    'CodeDepartement'    => $getVal('CodeDepartement',    $rowData),
                     'Composante'         => $composanteRaw,
-                    'Type'               => $getVal('Type', $rowData) ?: 'sortant',
-                    'Zone'               => $getVal('Zone', $rowData) ?: 'europe',
-                    'Pays'               => $getVal('Pays', $rowData),
-                    'Campus'             => $getVal('Campus', $rowData),
-                    'Discipline'         => $getVal('Discipline', $rowData),
-                    'NiveauEtude'        => $getVal('NiveauEtude', $rowData),
-                    'Formation'          => $getVal('Formation', $rowData),
+                    'Type'               => $getVal('Type',               $rowData) ?: 'sortant',
+                    'Zone'               => $getVal('Zone',               $rowData) ?: 'europe',
+                    'Pays'               => $getVal('Pays',               $rowData),
+                    'Campus'             => $getVal('Campus',             $rowData),
+                    'Discipline'         => $getVal('Discipline',         $rowData),
+                    'NiveauEtude'        => $getVal('NiveauEtude',        $rowData),
+                    'Formation'          => $getVal('Formation',          $rowData),
                     'MoyenneBac'         => $moyenneBac,
                     'MoyenneSansBac'     => $moyenneSansBac,
-                    'AvisDRI'            => $getVal('AvisDRI', $rowData),
-                    'DateDebut'          => $getVal('DateDebut', $rowData),
+                    'AvisDRI'            => $getVal('AvisDRI',            $rowData),
+                    'DateDebut'          => $getVal('DateDebut',          $rowData),
                     'MobiliteAnterieure' => $getVal('MobiliteAnterieure', $rowData),
                 ];
             }
@@ -454,8 +521,23 @@ class ManageFolderUseCase
         }
     }
 
-    public function cycleFolderStatus(string $numEtu): bool
+    /**
+     * @return array{manquants: array<int, string>, presents: array<int, string>, statuts: array<string, string>}
+     */
+    public function analyserDocuments(string $numetu): array
     {
-        return $this->dossierRepo->cycleStatus($numEtu);
+        return $this->dossierRepo->analyserDocuments($numetu);
+    }
+
+    /**
+     * @param array<string, string> $statutsDocuments
+     */
+    public function enregistrerValidation(
+        string $numetu,
+        array $statutsDocuments,
+        ?string $dateLimite = null,
+        ?string $commentaire = null
+    ): bool {
+        return $this->dossierRepo->enregistrerValidation($numetu, $statutsDocuments, $dateLimite, $commentaire);
     }
 }

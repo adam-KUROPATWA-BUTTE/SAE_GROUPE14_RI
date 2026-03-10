@@ -39,20 +39,34 @@ class HomeControllerCoordinateur implements ControllerInterface
             $_SESSION['tritanopia'] = (strval($_GET['tritanopia']) === '1');
         }
 
-        // --- FILTRE MOBILITE ---
+        // --- FILTRES ---
         $mobiliteFilter = null;
         if (isset($_GET['mobilite']) && in_array($_GET['mobilite'], ['etude', 'stage'], true)) {
             $mobiliteFilter = $_GET['mobilite'];
         }
 
-        // --- STATISTIQUES (même use case que l'admin) ---
+        $departementFilter = null;
+        if (isset($_GET['departement']) && !empty($_GET['departement'])) {
+            $departementFilter = strval($_GET['departement']);
+        }
+
+        // --- LISTE DES DÉPARTEMENTS ---
+        $allDepartements = [];
+        try {
+            $repository      = new DossierRepositoryPDO();
+            $allDepartements = $repository->getAllDepartements();
+        } catch (PDOException $e) {
+            error_log('HomeControllerCoordinateur - getAllDepartements Error: ' . $e->getMessage());
+        }
+
+        // --- STATISTIQUES ---
         $stats                = null;
         $completionPercentage = 0.0;
 
         try {
             $repository = new DossierRepositoryPDO();
             $useCase    = new GetAdminStatsUseCase($repository);
-            $stats      = $useCase->execute($mobiliteFilter);
+            $stats      = $useCase->execute($mobiliteFilter, $departementFilter);
 
             $dossierStats         = $stats->getDossierStats();
             $completionPercentage = $dossierStats->getTotal() > 0
@@ -81,6 +95,8 @@ class HomeControllerCoordinateur implements ControllerInterface
             'completionPercentage' => $completionPercentage,
             'stats'                => $stats,
             'mobiliteFilter'       => $mobiliteFilter,
+            'departementFilter'    => $departementFilter,
+            'allDepartements'      => $allDepartements,
             't'                    => $t,
             'buildUrl'             => $buildUrl,
         ]);

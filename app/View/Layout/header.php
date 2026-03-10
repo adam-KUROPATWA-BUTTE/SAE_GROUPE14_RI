@@ -2,18 +2,16 @@
 /**
  * Header commun
  *
- * @var string $lang
- * @var string $activeMenu
- * @var string $userRole - 'admin', 'student', 'coordinateur_etude', 'coordinateur_stage', 'chef_departement'
- * @var Closure(array<string, string>): string $t
+ * @var string|null $lang
+ * @var string|null $activeMenu
+ * @var string|null $userRole - 'admin', 'student', 'coordinateur_etude', 'coordinateur_stage', 'chef_departement'
+ * @var callable|null $t
  */
 
-// Fallback : lire le rôle depuis la session si non transmis par la vue
 if (empty($userRole) && !empty($_SESSION['role'])) {
     $userRole = $_SESSION['role'];
 }
 
-// Fallback : définir $t si non transmis par le contrôleur
 if (!isset($t) || !is_callable($t)) {
     $lang = $lang ?? $_SESSION['lang'] ?? 'fr';
     $t = function(array $frEn) use ($lang): string {
@@ -21,7 +19,6 @@ if (!isset($t) || !is_callable($t)) {
     };
 }
 
-// Fallback : définir $lang si non transmis
 if (!isset($lang)) {
     $lang = $_SESSION['lang'] ?? 'fr';
 }
@@ -159,8 +156,7 @@ $userRole === 'admin'        ? 'home-admin'        :
             }
 
             foreach ($menus as $key => $labels):
-                $isActive = $activeMenu === $key;
-                $page     = $key . $suffix;
+                $isActive = $activeMenu === $key || $activeMenu === $key . $suffix;                $page     = $key . $suffix;
                 $url      = 'index.php?page=' . urlencode($page) . '&lang=' . urlencode($lang);
 
                 if ($key === 'partners' && $userRole === 'student'):

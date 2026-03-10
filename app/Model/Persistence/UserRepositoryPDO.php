@@ -75,18 +75,18 @@ class UserRepositoryPDO implements UserRepositoryInterface
         }
     }
 
-    public function updatePasswordAndUnlock(string $numEtu, string $hashedPassword): bool
+    public function updatePasswordAndUnlock(string $identifier, string $hashedPassword): bool
     {
         try {
-            $stmt = $this->pdo->prepare("
-                UPDATE etudiants
-                SET password = :password, force_change_password = 0
-                WHERE numetu = :numetu
-            ");
-            return $stmt->execute([
-                ':password' => $hashedPassword,
-                ':numetu'   => $numEtu,
-            ]);
+            // Tente la mise à jour dans la table admins (Personnels / Super Admin)
+            $stmt1 = $this->pdo->prepare("UPDATE admins SET password = :password, force_change_password = 0 WHERE email = :id");
+            $stmt1->execute([':password' => $hashedPassword, ':id' => $identifier]);
+            
+            // Tente la mise à jour dans la table etudiants (Étudiants)
+            $stmt2 = $this->pdo->prepare("UPDATE etudiants SET password = :password, force_change_password = 0 WHERE numetu = :id OR email = :id");
+            $stmt2->execute([':password' => $hashedPassword, ':id' => $identifier]);
+
+            return true;
         } catch (PDOException $e) {
             error_log("updatePasswordAndUnlock Error: " . $e->getMessage());
             return false;
@@ -103,6 +103,8 @@ class UserRepositoryPDO implements UserRepositoryInterface
             : $this->findByStudentNumber($identifier);
 
         if ($user && password_verify($password, $user->getPassword())) {
+            
+            // Mise à jour de la date de dernière connexion pour le personnel
             if ($user->getRole() !== 'student') {
                 try {
                     $upd = $this->pdo->prepare("UPDATE admins SET last_login = NOW() WHERE email = :email");
@@ -111,22 +113,35 @@ class UserRepositoryPDO implements UserRepositoryInterface
             }
 
             $forceChange = false;
-            if ($user->getRole() === 'student' && $user->getNumetu()) {
-                try {
-                    $stmtCheck = $this->pdo->prepare("SELECT force_change_password FROM etudiants WHERE numetu = :numetu");
-                    $stmtCheck->execute(['numetu' => $user->getNumetu()]);
-                    $res = $stmtCheck->fetch(PDO::FETCH_ASSOC);
-                    if (is_array($res) && isset($res['force_change_password']) && $res['force_change_password'] == 1) {
-                        $forceChange = true;
-                    }
-                } catch (PDOException $e) { /* silencieux */ }
+            
+            // Vérification ultra-robuste de force_change_password
+            try {
+                if ($user->getRole() === 'student') {
+                    $stmtCheck = $this->pdo->prepare("SELECT force_change_password FROM etudiants WHERE numetu = :id LIMIT 1");
+                    $stmtCheck->execute([':id' => $user->getNumetu()]);
+                } else {
+                    $stmtCheck = $this->pdo->prepare("SELECT force_change_password FROM admins WHERE email = :id LIMIT 1");
+                    $stmtCheck->execute([':id' => $identifier]);
+                }
+                
+                // fetchColumn récupère directement la valeur au lieu d'un tableau
+                $forceVal = $stmtCheck->fetchColumn(); 
+                
+                // On s'assure que même si MySQL renvoie '1' (string), ce soit compté comme vrai
+                if ($forceVal !== false && (int)$forceVal === 1) {
+                    $forceChange = true;
+                }
+            } catch (PDOException $e) { 
+                error_log("Force Change Check Error: " . $e->getMessage()); 
             }
 
             return [
-                'success'              => true,
-                'role'                 => $user->getRole(),
-                'numetu'               => $user->getNumetu(),
-                'departement'          => $user->getDepartement(),
+                'success'               => true,
+                'role'                  => $user->getRole(),
+                'numetu'                => $user->getNumetu(),
+                'departement'           => $user->getDepartement(),
+                'nom'                   => method_exists($user, 'getNom') ? $user->getNom() : null,
+                'prenom'                => method_exists($user, 'getPrenom') ? $user->getPrenom() : null,
                 'force_change_password' => $forceChange,
             ];
         }
@@ -191,12 +206,19 @@ class UserRepositoryPDO implements UserRepositoryInterface
         return $this->findByLogin($email) !== null;
     }
 
-    public function create(string $email, string $hashedPassword, string $role, ?string $departement = null, ?string $site = null): bool
-    {
+    public function create(
+        string $email,
+        string $hashedPassword,
+        string $role,
+        ?string $departement = null,
+        ?string $site = null,
+        ?string $nom = null,
+        ?string $prenom = null
+    ): bool {
         try {
             $stmt = $this->pdo->prepare("
-                INSERT INTO admins (email, password, role, departement, site, created_at)
-                VALUES (:email, :password, :role, :departement, :site, NOW())
+                INSERT INTO admins (email, password, role, departement, site, nom, prenom, created_at)
+                VALUES (:email, :password, :role, :departement, :site, :nom, :prenom, NOW())
             ");
             return $stmt->execute([
                 ':email'       => $email,
@@ -204,6 +226,8 @@ class UserRepositoryPDO implements UserRepositoryInterface
                 ':role'        => $role,
                 ':departement' => $departement,
                 ':site'        => $site,
+                ':nom'         => $nom,
+                ':prenom'      => $prenom,
             ]);
         } catch (PDOException $e) {
             error_log("create Error: " . $e->getMessage());
@@ -223,13 +247,13 @@ class UserRepositoryPDO implements UserRepositoryInterface
     }
 
     /**
-     * @return array<int, array{login: string, role: string, departement: string|null, site: string|null, created_at: string}>
+     * @return array<int, array{login: string, role: string, departement: string|null, site: string|null, nom: string|null, prenom: string|null, created_at: string}>
      */
     public function findAll(): array
     {
         try {
             $stmt = $this->pdo->query("
-                SELECT email AS login, role, departement, site, created_at
+                SELECT email AS login, role, departement, site, nom, prenom, created_at
                 FROM admins WHERE role != 'super_admin' ORDER BY created_at DESC
             ");
             if ($stmt === false) return [];
@@ -239,6 +263,8 @@ class UserRepositoryPDO implements UserRepositoryInterface
                 'role'        => is_string($r['role']        ?? null) ? $r['role']        : '',
                 'departement' => is_string($r['departement'] ?? null) ? $r['departement'] : null,
                 'site'        => is_string($r['site']        ?? null) ? $r['site']        : null,
+                'nom'         => is_string($r['nom']         ?? null) ? $r['nom']         : null,
+                'prenom'      => is_string($r['prenom']      ?? null) ? $r['prenom']      : null,
                 'created_at'  => is_string($r['created_at'] ?? null) ? $r['created_at']  : '',
             ], $results);
         } catch (PDOException $e) {
@@ -249,13 +275,13 @@ class UserRepositoryPDO implements UserRepositoryInterface
 
     /**
      * @deprecated Use findAll() instead.
-     * @return array<int, array{login: string, role: string, departement: string|null, site: string|null, created_at: string}>
+     * @return array<int, array{login: string, role: string, departement: string|null, site: string|null, nom: string|null, prenom: string|null, created_at: string}>
      */
     public function getAllNonSuperAdmin(): array { return $this->findAll(); }
 
     /**
      * @deprecated Use findAll() instead.
-     * @return array<int, array{login: string, role: string, departement: string|null, site: string|null, created_at: string}>
+     * @return array<int, array{login: string, role: string, departement: string|null, site: string|null, nom: string|null, prenom: string|null, created_at: string}>
      */
     public function getAllAdmins(): array { return $this->findAll(); }
 

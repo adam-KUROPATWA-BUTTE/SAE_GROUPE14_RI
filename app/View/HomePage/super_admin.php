@@ -5,7 +5,7 @@
  * @var string $lang
  * @var Closure(array<string, string>): string $t
  * @var Closure(string, array<string, mixed>=): string $buildUrl
- * @var array<int, array{login: string, role: string, departement: string|null, site: string|null, created_at: string}> $accounts
+ * @var array<int, array{login: string, role: string, departement: string|null, site: string|null, nom: string|null, prenom: string|null, created_at: string}> $accounts
  * @var array<int, string> $departments
  * @var array<int, string> $sites
  * @var string|null $success
@@ -51,12 +51,27 @@ ob_start();
                                placeholder="prenom.nom@univ-amu.fr" autocomplete="off">
                     </div>
 
+                    <div class="sa-field-row" style="display:flex; gap:12px;">
+                        <div class="sa-field" style="flex:1;">
+                            <label class="sa-label" for="nom"><?= $t(['fr' => 'Nom', 'en' => 'Last name']) ?></label>
+                            <input class="sa-input" type="text" id="nom" name="nom"
+                                   placeholder="<?= $t(['fr' => 'Ex: Dupont', 'en' => 'E.g. Dupont']) ?>"
+                                   autocomplete="off">
+                        </div>
+                        <div class="sa-field" style="flex:1;">
+                            <label class="sa-label" for="prenom"><?= $t(['fr' => 'Prénom', 'en' => 'First name']) ?></label>
+                            <input class="sa-input" type="text" id="prenom" name="prenom"
+                                   placeholder="<?= $t(['fr' => 'Ex: Marie', 'en' => 'E.g. Marie']) ?>"
+                                   autocomplete="off">
+                        </div>
+                    </div>
+
                     <div class="sa-field">
                         <label class="sa-label" for="password"><?= $t(['fr' => 'Mot de passe', 'en' => 'Password']) ?></label>
                         <div class="sa-input-group">
                             <input class="sa-input" type="text" id="password" name="password" required
-                                   minlength="12" 
-                                   pattern="(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{12,}" 
+                                   minlength="12"
+                                   pattern="(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{12,}"
                                    title="<?= $t(['fr' => 'Le mot de passe doit contenir au moins 12 caractères, une majuscule et un caractère spécial.', 'en' => 'The password must contain at least 12 characters, one uppercase letter, and one special character.']) ?>"
                                    placeholder="<?= $t(['fr' => 'Mot de passe temporaire', 'en' => 'Temporary password']) ?>"
                                    autocomplete="new-password">
@@ -195,9 +210,24 @@ ob_start();
                         <?php foreach ($accounts as $account): ?>
                             <div class="sa-account-item">
                                 <div class="sa-account-info">
-                                    <div class="sa-account-avatar"><?= strtoupper(substr($account['login'], 0, 1)) ?></div>
+                                    <div class="sa-account-avatar">
+                                        <?php
+                                        // Affiche l'initiale du prénom si dispo, sinon du login
+                                        $initial = !empty($account['prenom'])
+                                            ? strtoupper(substr($account['prenom'], 0, 1))
+                                            : strtoupper(substr($account['login'], 0, 1));
+                                        echo $initial;
+                                        ?>
+                                    </div>
                                     <div class="sa-account-details">
-                                        <div class="sa-account-login"><?= htmlspecialchars($account['login']) ?></div>
+                                        <div class="sa-account-login">
+                                            <?php if (!empty($account['nom']) || !empty($account['prenom'])): ?>
+                                                <strong><?= htmlspecialchars(trim(($account['prenom'] ?? '') . ' ' . ($account['nom'] ?? ''))) ?></strong>
+                                                <span class="sa-account-email"><?= htmlspecialchars($account['login']) ?></span>
+                                            <?php else: ?>
+                                                <?= htmlspecialchars($account['login']) ?>
+                                            <?php endif; ?>
+                                        </div>
                                         <div class="sa-account-meta">
                                         <span class="sa-role-badge sa-role-badge--<?= htmlspecialchars($account['role']) ?>">
                                             <?= match($account['role']) {
@@ -255,6 +285,11 @@ $deleteLabel = $t(['fr' => 'Supprimer le compte', 'en' => 'Delete account']);
         window.SA_DELETE_LABEL = <?= json_encode($deleteLabel) ?>;
     </script>
 
+<div id="app-config"
+     data-lang="<?= htmlspecialchars($lang) ?>"
+     data-role="admin"
+     style="display:none;">
+</div>
 <?php
 $content = ob_get_clean();
 $title      = 'Super Admin — AMU';

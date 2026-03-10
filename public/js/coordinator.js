@@ -1,36 +1,56 @@
-/**
- * JS pour la page coordinateur d'étude
- * Gère les filtres dynamiques et la recherche
- */
-document.addEventListener('DOMContentLoaded', function () {
-
-    const BASE_URL = 'index.php?page=coordinateur-etude';
-    const lang     = document.getElementById('app-config')?.dataset?.lang || 'fr';
-
-    // ── Filtre zone conditionnel (visible seulement si Sortant coché) ──
-    const sortantCb = document.querySelector('input[name="entrant_sortant"][value="sortant"]');
-    const zoneGroup = document.getElementById('zone-filter-group');
-
-    if (sortantCb && zoneGroup) {
-        sortantCb.addEventListener('change', function () {
-            zoneGroup.style.display = this.checked ? '' : 'none';
-            if (!this.checked) {
-                zoneGroup.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
-            }
-            applyFilters();
-        });
+class CoordinatorManager {
+    constructor() {
+        this.lang = document.getElementById('app-config')?.dataset?.lang || 'fr';
+        this.init();
     }
 
-    // ── Application des filtres → redirect URL ──
-    function applyFilters() {
-        const params = new URLSearchParams({ page: 'coordinateur-etude', lang });
+    init() {
+        this.sortantCb = document.querySelector('input[name="entrant_sortant"][value="sortant"]');
+        this.zoneGroup = document.getElementById('zone-filter-group');
+        this.bindEvents();
+    }
+
+    bindEvents() {
+        // ── Filtre zone conditionnel ──
+        if (this.sortantCb && this.zoneGroup) {
+            this.sortantCb.addEventListener('change', () => {
+                this.zoneGroup.style.display = this.sortantCb.checked ? '' : 'none';
+                if (!this.sortantCb.checked) {
+                    this.zoneGroup.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
+                }
+                this.applyFilters();
+            });
+        }
+
+        // ── Checkboxes et Selects ──
+        document.querySelectorAll('.filters input[type=checkbox]').forEach(cb => {
+            cb.addEventListener('change', () => this.applyFilters());
+        });
+
+        const complet = document.getElementById('filter-complet');
+        if (complet) complet.addEventListener('change', () => this.applyFilters());
+
+        // ── Recherche ──
+        const btnSearch = document.getElementById('btn-search-loupe');
+        if (btnSearch) btnSearch.addEventListener('click', () => this.applyFilters());
+
+        const searchInput = document.getElementById('search');
+        if (searchInput) {
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') this.applyFilters();
+            });
+        }
+    }
+
+    applyFilters() {
+        const params = new URLSearchParams({ page: 'coordinateur-etude', lang: this.lang });
 
         // Type (entrant/sortant)
         const typeCb = document.querySelector('input[name="entrant_sortant"]:checked');
         if (typeCb) params.set('type', typeCb.value);
 
         // Zone (seulement si sortant)
-        if (sortantCb?.checked) {
+        if (this.sortantCb?.checked) {
             const zoneCb = document.querySelector('input[name="zone"]:checked');
             if (zoneCb) params.set('zone', zoneCb.value);
         }
@@ -45,25 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         window.location.href = 'index.php?' + params.toString();
     }
+}
 
-    // Écoute tous les checkboxes de filtre
-    document.querySelectorAll('.filters input[type=checkbox]').forEach(cb => {
-        cb.addEventListener('change', applyFilters);
-    });
-
-    // Écoute le select statut
-    const complet = document.getElementById('filter-complet');
-    if (complet) complet.addEventListener('change', applyFilters);
-
-    // Bouton loupe
-    const btnSearch = document.getElementById('btn-search-loupe');
-    if (btnSearch) btnSearch.addEventListener('click', applyFilters);
-
-    // Touche Entrée dans le champ recherche
-    const searchInput = document.getElementById('search');
-    if (searchInput) {
-        searchInput.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') applyFilters();
-        });
-    }
-});
+// Déclenche l'initialisation quand le DOM est prêt
+document.addEventListener('DOMContentLoaded', () => new CoordinatorManager());

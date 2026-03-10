@@ -18,26 +18,28 @@ class GetAdminStatsUseCase
 
     /**
      * @param string|null $mobilite null = tous | 'etude' | 'stage'
+     * @param string|null $departement Code du département ou null pour tous
      */
-    public function execute(?string $mobilite = null): AdminStats
+    public function execute(?string $mobilite = null, ?string $departement = null): AdminStats
     {
-        $filter = in_array($mobilite, ['etude', 'stage'], true) ? $mobilite : null;
+        $mobiliteFilter = in_array($mobilite, ['etude', 'stage'], true) ? $mobilite : null;
+        $departementFilter = !empty($departement) ? $departement : null;
 
-        $dossierStats = $this->repository->getDossierStats($filter);
-        $genderStats  = $this->repository->getGenderStats($filter);
-        $mobility     = $this->repository->getIncomingOutgoingStats($filter);
-        $continents   = $this->repository->getContinentStats($filter);
-        $europeStats  = $this->repository->getEuropeVsNonEuropeStats($filter);
-
+        // Passer les deux filtres à toutes les méthodes du repository
+        $dossierStats = $this->repository->getDossierStats($mobiliteFilter, $departementFilter);
+        $genderStats  = $this->repository->getGenderStats($mobiliteFilter, $departementFilter);
+        $mobility     = $this->repository->getIncomingOutgoingStats($mobiliteFilter, $departementFilter);
+        $continents   = $this->repository->getContinentStats($mobiliteFilter, $departementFilter);
+        $europeStats  = $this->repository->getEuropeVsNonEuropeStats($mobiliteFilter, $departementFilter);
 
         $topCountries = array_map(
             fn($row) => new CountryStats($row['name'], $row['count']),
-            $this->repository->getTopCountries(5, $filter)
+            $this->repository->getTopCountries(5, $mobiliteFilter, $departementFilter)
         );
 
         $departments = array_map(
             fn($row) => new DepartmentStats($row['name'], $row['count']),
-            $this->repository->getDepartmentStats(5, $filter)
+            $this->repository->getDepartmentStats(5, $mobiliteFilter, $departementFilter)
         );
 
         return new AdminStats(

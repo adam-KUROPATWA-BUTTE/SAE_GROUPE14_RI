@@ -151,6 +151,24 @@ class FoldersControllerStudent implements ControllerInterface
 
         $success = $this->folderUseCase->creerDossier($data);
 
+        // Send email confirmation for each uploaded document
+        if ($success && !empty($data['EmailPersonnel'])) {
+            $studentName = trim(($data['Prenom'] ?? '') . ' ' . ($data['Nom'] ?? ''));
+            $documents = ['photo', 'cv', 'convention', 'lettre_motivation'];
+            
+            foreach ($documents as $docType) {
+                // Check if document was uploaded (handleFileUploads puts content in $data)
+                if (isset($data[$docType]) && !empty($data[$docType])) {
+                    \Service\Email\EmailReminderService::sendDocumentDeposited(
+                        $data['EmailPersonnel'],
+                        $studentName,
+                        $docType,
+                        $numetu
+                    );
+                }
+            }
+        }
+
         $_SESSION['message'] = $success
             ? ($lang === 'fr' ? 'Votre demande a été déposée avec succès.' : 'Application submitted successfully.')
             : ($lang === 'fr' ? 'Erreur lors du dépôt de la demande.' : 'Error submitting application.');
@@ -161,6 +179,12 @@ class FoldersControllerStudent implements ControllerInterface
 
     private function handleUpdateFolder(string $numetu, string $lang): void
     {
+        // Get existing folder to compare documents
+        $existingFolder = $this->folderUseCase->getStudentDetails($numetu);
+        $oldPieces = is_array($existingFolder) && isset($existingFolder['pieces']) && is_array($existingFolder['pieces']) 
+            ? $existingFolder['pieces'] 
+            : [];
+
         $data = [
             'NumEtu'          => $numetu,
             'Nom'             => $_POST['nom']         ?? null,
@@ -188,6 +212,21 @@ class FoldersControllerStudent implements ControllerInterface
             exit;
         }
 
+        $dossierExistant = $this->folderUseCase->getStudentDetails($numetu);
+        $dateLimite = $dossierExistant['DateLimite'] ?? null;
+        if (!empty($dateLimite)) {
+            $dateObj    = \DateTime::createFromFormat('Y-m-d', $dateLimite);
+            $aujourdhui = new \DateTime('today');
+            if ($dateObj && $dateObj < $aujourdhui) {
+                $success = $this->folderUseCase->updateDossier($data);
+                $_SESSION['message'] = $success
+                    ? ($lang === 'fr' ? 'Dossier mis à jour (fichiers refusés : date limite dépassée).' : 'Folder updated (files rejected: deadline passed).')
+                    : ($lang === 'fr' ? 'Erreur lors de la mise à jour.' : 'Error updating folder.');
+                header('Location: index.php?page=folders-student&lang=' . $lang);
+                exit;
+            }
+        }
+
         $uploadErrors = $this->handleFileUploads($data, $lang);
         if (!empty($uploadErrors)) {
             $_SESSION['message'] = implode('<br>', $uploadErrors);
@@ -196,6 +235,52 @@ class FoldersControllerStudent implements ControllerInterface
         }
 
         $success = $this->folderUseCase->updateDossier($data);
+
+        // Send email confirmation for every uploaded document
+        if ($success && !empty($data['EmailPersonnel'])) {
+            error_log("📧 DEBUG: Checking documents for email notification...");
+            error_log("📧 DEBUG: Email = " . $data['EmailPersonnel']);
+            
+            $studentName = '';
+            if (is_array($existingFolder)) {
+                $prenom = $existingFolder['Prenom'] ?? '';
+                $nom = $existingFolder['Nom'] ?? '';
+                $studentName = trim($prenom . ' ' . $nom);
+            }
+            error_log("📧 DEBUG: Student name = {$studentName}");
+
+            $documents = ['photo', 'cv', 'convention', 'lettre_motivation', 'langues_file'];
+            $emailsSent = 0;
+            
+            foreach ($documents as $docType) {
+                // Send email for ANY uploaded document (new or replacement)
+                if (isset($data[$docType]) && !empty($data[$docType])) {
+                    error_log("📧 DEBUG: Sending email for {$docType} to {$data['EmailPersonnel']}");
+                    
+                    $result = \Service\Email\EmailReminderService::sendDocumentDeposited(
+                        $data['EmailPersonnel'],
+                        $studentName,
+                        $docType,
+                        $numetu
+                    );
+                    
+                    if ($result) {
+                        error_log("✅ Email sent successfully for {$docType}");
+                        $emailsSent++;
+                        // Small delay to avoid rate limiting
+                        usleep(500000); // 0.5 second
+                    } else {
+                        error_log("❌ Email failed for {$docType}");
+                    }
+                } else {
+                    error_log("⚠️ DEBUG: No file uploaded for {$docType}");
+                }
+            }
+            
+            error_log("📧 DEBUG: Total emails sent = {$emailsSent}");
+        } else {
+            error_log("⚠️ DEBUG: Email conditions not met - success={$success}, email=" . ($data['EmailPersonnel'] ?? 'empty'));
+        }
 
         $_SESSION['message'] = $success
             ? ($lang === 'fr' ? 'Dossier mis à jour avec succès.' : 'Folder updated successfully.')
@@ -226,5 +311,18 @@ class FoldersControllerStudent implements ControllerInterface
             $errors[] = $lang === 'fr' ? "Type et Zone requis." : "Type and Zone required.";
         }
         return $errors;
+    }
+
+    /**
+     * Safely reads the binary content of an uploaded file.
+     */
+    private function getUploadedFileContent(string $fieldName): ?string
+    {
+        if (!isset($_FILES[$fieldName]) || !is_array($_FILES[$fieldName])) return null;
+        if ($_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) return null;
+        $tmpName = $_FILES[$fieldName]['tmp_name'];
+        if (!is_string($tmpName) || !file_exists($tmpName)) return null;
+        $content = file_get_contents($tmpName);
+        return $content !== false ? $content : null;
     }
 }
