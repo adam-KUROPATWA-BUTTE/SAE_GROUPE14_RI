@@ -29,12 +29,5 @@ if (!isset($userRole)) {
             </a>
         <?php endif; ?>
 
-        <a href="https://www.instagram.com/relationsinternationales_amu/"
-           target="_blank"
-           rel="noopener noreferrer"
-           aria-label="Instagram"
-           class="footer-insta-link">
-            <img class="insta" src="img/instagram.png" alt="Instagram">
-        </a>
     </div>
 </footer>
