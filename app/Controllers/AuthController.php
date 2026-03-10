@@ -21,7 +21,14 @@ class AuthController implements ControllerInterface
 
     public static function support(string $page, string $method): bool
     {
-        return in_array($page, ['login', 'register', 'reset-password', 'force-reset-password', 'mentions-legales']);
+        return in_array($page, [
+            'login',
+            'register',
+            'reset-password',
+            'force-reset-password',
+            'mentions-legales',
+            'forgot_password',   // ← NOUVEAU
+        ]);
     }
 
     public function control(): void
@@ -48,6 +55,9 @@ class AuthController implements ControllerInterface
             case 'mentions-legales':
                 $this->handleMentionsLegales();
                 break;
+            case 'forgot_password':          // ← NOUVEAU
+                $this->handleForgotPassword();
+                break;
         }
     }
 
@@ -70,7 +80,6 @@ class AuthController implements ControllerInterface
                 $role = $result['role'];
                 $_SESSION['role'] = $role;
 
-                // 🔴 SOLUTION DE LA BOUCLE : On stocke l'identifiant de façon générique et unique
                 $_SESSION['user_identifier'] = $identifier;
 
                 if ($role === 'student' && isset($result['numetu'])) {
@@ -81,11 +90,9 @@ class AuthController implements ControllerInterface
                     $_SESSION['departement'] = $result['departement'];
                 }
 
-                // Stocker nom + prénom pour les bannières
                 if (isset($result['nom']))    $_SESSION['admin_nom']    = $result['nom'];
                 if (isset($result['prenom'])) $_SESSION['admin_prenom'] = $result['prenom'];
 
-                // SÉCURITÉ : Interception pour première connexion (Étudiants ET Personnels)
                 if (!empty($result['force_change_password'])) {
                     header('Location: index.php?page=force-reset-password');
                     exit;
@@ -118,9 +125,41 @@ class AuthController implements ControllerInterface
         ]);
     }
 
+    // ── NOUVEAU ────────────────────────────────────────────────────────────────
+    /**
+     * Page "Mot de passe oublié".
+     * Envoie un email de réinitialisation via UserRepositoryPDO::resetPassword().
+     */
+    private function handleForgotPassword(): void
+    {
+        $message     = '';
+        $messageType = 'info';
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $email = trim(strval($_POST['email'] ?? ''));
+
+            if ($email === '') {
+                $message     = 'Veuillez saisir votre adresse email.';
+                $messageType = 'error';
+            } else {
+                // On appelle la même méthode que handleResetPassword utilisait
+                $sent = $this->userRepository->resetPassword($email);
+
+                // Toujours afficher un message de succès (sécurité : pas de fuite d'email)
+                $message     = 'Si cette adresse est connue, un lien de réinitialisation a été envoyé.';
+                $messageType = 'success';
+            }
+        }
+
+        View::render('forgot_password', [
+            'message'     => $message,
+            'messageType' => $messageType,
+        ]);
+    }
+    // ──────────────────────────────────────────────────────────────────────────
+
     private function handleForceResetPassword(): void
     {
-        // 🔴 SOLUTION DE LA BOUCLE : On vérifie notre nouvelle variable générique
         if (empty($_SESSION['numetu']) && empty($_SESSION['user_identifier'])) {
             header('Location: index.php?page=login');
             exit;
@@ -139,14 +178,9 @@ class AuthController implements ControllerInterface
                 $error = "Le mot de passe doit contenir au moins 12 caractères, dont une majuscule et un caractère spécial.";
             } else {
                 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-                
-                // Récupère le bon identifiant
                 $userIdentifier = !empty($_SESSION['numetu']) ? $_SESSION['numetu'] : $_SESSION['user_identifier'];
-                
-                // Débloque le compte
                 $this->userRepository->updatePasswordAndUnlock($userIdentifier, $hashedPassword);
 
-                // Redirige vers le bon tableau de bord
                 $role = $_SESSION['role'] ?? 'student';
                 $destination = match($role) {
                     'super_admin'        => 'index.php?page=super-admin',
@@ -213,7 +247,6 @@ class AuthController implements ControllerInterface
                 }
 
             } else {
-
                 $email  = $_POST['email'] ?? '';
                 $result = $this->userRepository->resetPassword(is_string($email) ? $email : '');
 
@@ -244,7 +277,7 @@ class AuthController implements ControllerInterface
     private function handleMentionsLegales(): void
     {
         $lang = $_GET['lang'] ?? $_SESSION['lang'] ?? 'fr';
-        
+
         $t = function(array $frEn) use ($lang) {
             return $frEn[$lang] ?? $frEn['fr'] ?? '';
         };

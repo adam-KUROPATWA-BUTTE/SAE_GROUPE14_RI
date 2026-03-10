@@ -6,7 +6,7 @@
  * @var bool $isReset
  * @var bool $isLogin
  */
-// On récupère juste l'état du mode daltonien depuis la session
+
 $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
 ?>
 <!DOCTYPE html>
