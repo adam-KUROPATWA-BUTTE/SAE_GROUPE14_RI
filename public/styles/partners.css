@@ -1,11 +1,5 @@
-main {
-    width: 700px;
-    margin: 2em auto;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    padding: 2em;
-}
+
+
 /* Conteneur du bouton */
 .partners-actions {
     margin: 20px 0;

@@ -16,15 +16,7 @@ body.tritanopie {
     --hero-bg-color: #005C45;
 }
 
-main {
-    width: 80%;
-    max-width: 1200px;
-    margin: 40px auto;
-    padding: 50px 40px;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-}
+
 .progress-container {
     position: relative;
     display: flex;
