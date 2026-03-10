@@ -355,7 +355,8 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
         try {
             $stmt = $this->db->query("
                 SELECT NumEtu, Nom, Prenom, EmailPersonnel as email, Telephone, Type, Zone,
-                       DateNaissance, Sexe, Adresse, CodePostal, Ville, EmailAMU, CodeDepartement, Composante, Pays,
+                       DateNaissance, Sexe, Adresse, CodePostal, Ville, EmailAMU, CodeDepartement, Composante,
+                       Pays, Destination,
                        Campus, Discipline, NiveauEtude, Formation, MoyenneBac, MoyenneSansBac, AvisDRI,
                        DateDebut, MobiliteAnterieure, IsComplete, PiecesJustificatives, status
                 FROM dossiers ORDER BY Nom, Prenom

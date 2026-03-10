@@ -26,7 +26,8 @@ class ContactControllerAdmin implements ControllerInterface
     {
         if (session_status() === PHP_SESSION_NONE) session_start();
 
-        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+        $allowedRoles = ['admin'];
+        if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], $allowedRoles, true)) {
             header('Location: index.php?page=login');
             exit;
         }
