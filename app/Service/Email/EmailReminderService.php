@@ -23,6 +23,28 @@ class EmailReminderService
     private static string $logoUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBl1mF7ktLaJxYCRD64rZyUJ1WcUDvcJBcIw&s';
 
     /**
+     * Create and return a configured Mailjet client
+     * @throws \RuntimeException if credentials are missing
+     */
+    private static function createMailjetClient(): Client
+    {
+        $apiKey    = $_ENV['MAILJET_API_KEY']    ?? getenv('MAILJET_API_KEY')    ?: '';
+        $apiSecret = $_ENV['MAILJET_SECRET_KEY'] ?? getenv('MAILJET_SECRET_KEY') ?: '';
+
+        if (empty($apiKey) || empty($apiSecret)) {
+            error_log("❌ Mailjet credentials are not configured. Check your .env file for MAILJET_API_KEY and MAILJET_SECRET_KEY.");
+            throw new \RuntimeException('Mailjet API credentials are not configured.');
+        }
+
+        $mj = new Client($apiKey, $apiSecret, true, ['version' => 'v3.1']);
+        $mj->addRequestOption('verify', false);
+        $mj->addRequestOption('timeout', 10);
+        $mj->addRequestOption('connect_timeout', 10);
+
+        return $mj;
+    }
+
+    /**
      * Render an email template and return HTML string
      * @param string $template Template name (without .php)
      * @param array<string, mixed> $data Variables to pass to template
@@ -55,27 +77,17 @@ class EmailReminderService
         array $itemsToComplete = []
     ): bool {
         try {
-            // Initialize Mailjet client
-            $mj = new Client(
-                $_ENV['MAILJET_API_KEY'] ?? '',
-                $_ENV['MAILJET_SECRET_KEY'] ?? '',
-                true,
-                ['version' => 'v3.1']
-            );
-            // Disable SSL verification and increase timeout for local dev
-            $mj->addRequestOption('verify', false);
-            $mj->addRequestOption('timeout', 10);
-            $mj->addRequestOption('connect_timeout', 10);
+            $mj = self::createMailjetClient();
 
             $subject = "Rappel : Dossier incomplet (ID {$dossierId})";
-            
+
             // Render email template
             $htmlMessage = self::renderEmailTemplate('relance', [
-                'logoUrl' => self::$logoUrl,
-                'studentName' => trim($studentName ?: ''),
-                'dossierId' => $dossierId,
-                'itemsToComplete' => $itemsToComplete,
-                'folderLink' => "https://ri-amu.app/index.php?page=folders-student&action=view&id=" . urlencode((string)$dossierId)
+                'logoUrl'          => self::$logoUrl,
+                'studentName'      => trim($studentName ?: ''),
+                'dossierId'        => $dossierId,
+                'itemsToComplete'  => $itemsToComplete,
+                'folderLink'       => "https://ri-amu.app/index.php?page=folders-student&action=view&id=" . urlencode((string)$dossierId)
             ]);
 
             // Build Mailjet payload
@@ -84,15 +96,15 @@ class EmailReminderService
                     [
                         'From' => [
                             'Email' => self::$fromEmail,
-                            'Name' => self::$fromName
+                            'Name'  => self::$fromName
                         ],
                         'To' => [
                             [
                                 'Email' => $toEmail,
-                                'Name' => $studentName ?: ''
+                                'Name'  => $studentName ?: ''
                             ]
                         ],
-                        'Subject' => $subject,
+                        'Subject'  => $subject,
                         'HTMLPart' => $htmlMessage,
                         'TextPart' => strip_tags($htmlMessage)
                     ]
@@ -115,8 +127,6 @@ class EmailReminderService
         }
     }
 
-
-
     /**
      * Send folder update notification email
      *
@@ -136,20 +146,10 @@ class EmailReminderService
         }
 
         try {
-            // Initialize Mailjet client
-            $mj = new Client(
-                $_ENV['MAILJET_API_KEY'] ?? '',
-                $_ENV['MAILJET_SECRET_KEY'] ?? '',
-                true,
-                ['version' => 'v3.1']
-            );
-            // Disable SSL verification and increase timeout for local dev
-            $mj->addRequestOption('verify', false);
-            $mj->addRequestOption('timeout', 10);
-            $mj->addRequestOption('connect_timeout', 10);
+            $mj = self::createMailjetClient();
 
             $subject = "Mise à jour de votre dossier RI (ID {$numEtu})";
-            
+
             // Parse structured sections from updates
             $sectionAcceptees = '';
             $sectionRefusees  = '';
@@ -170,15 +170,15 @@ class EmailReminderService
                     $autresLignes[] = $upd;
                 }
             }
-            
+
             $htmlMessage = self::renderEmailTemplate('folder_update', [
-                'logoUrl' => self::$logoUrl,
-                'studentName' => trim($studentName),
+                'logoUrl'          => self::$logoUrl,
+                'studentName'      => trim($studentName),
                 'sectionAcceptees' => $sectionAcceptees,
-                'sectionRefusees' => $sectionRefusees,
-                'statutGlobal' => $statutGlobal,
-                'dateLimite' => $dateLimite,
-                'autresLignes' => $autresLignes
+                'sectionRefusees'  => $sectionRefusees,
+                'statutGlobal'     => $statutGlobal,
+                'dateLimite'       => $dateLimite,
+                'autresLignes'     => $autresLignes
             ]);
 
             $body = [
@@ -186,15 +186,15 @@ class EmailReminderService
                     [
                         'From' => [
                             'Email' => self::$fromEmail,
-                            'Name' => self::$fromName
+                            'Name'  => self::$fromName
                         ],
                         'To' => [
                             [
                                 'Email' => $toEmail,
-                                'Name' => $studentName
+                                'Name'  => $studentName
                             ]
                         ],
-                        'Subject' => $subject,
+                        'Subject'  => $subject,
                         'HTMLPart' => $htmlMessage,
                         'TextPart' => strip_tags($htmlMessage)
                     ]
@@ -232,36 +232,26 @@ class EmailReminderService
         string $numEtu
     ): bool {
         try {
-            // Initialize Mailjet client
-            $mj = new Client(
-                $_ENV['MAILJET_API_KEY'] ?? '',
-                $_ENV['MAILJET_SECRET_KEY'] ?? '',
-                true,
-                ['version' => 'v3.1']
-            );
-            // Disable SSL verification and increase timeout for local dev
-            $mj->addRequestOption('verify', false);
-            $mj->addRequestOption('timeout', 10);
-            $mj->addRequestOption('connect_timeout', 10);
+            $mj = self::createMailjetClient();
 
             $subject = "Documents Validés - Dossier #{$numEtu}";
-            
+
             // Map technical names to user-friendly names
             $documentLabels = [
-                'photo' => 'Photo',
-                'cv' => 'CV',
-                'convention' => 'Convention de Stage',
+                'photo'             => 'Photo',
+                'cv'                => 'CV',
+                'convention'        => 'Convention de Stage',
                 'lettre_motivation' => 'Lettre de Motivation',
-                'langues_file' => 'Attestation de Langues'
+                'langues_file'      => 'Attestation de Langues'
             ];
             $mappedDocs = array_map(fn($doc) => $documentLabels[$doc] ?? ucfirst($doc), $validatedDocuments);
-            
+
             $htmlMessage = self::renderEmailTemplate('validation_complete', [
-                'logoUrl' => self::$logoUrl,
-                'studentName' => trim($studentName),
+                'logoUrl'            => self::$logoUrl,
+                'studentName'        => trim($studentName),
                 'validatedDocuments' => $mappedDocs,
-                'numEtu' => $numEtu,
-                'folderLink' => "https://ri-amu.app/index.php?page=folders-student&action=view&numetu=" . urlencode($numEtu)
+                'numEtu'             => $numEtu,
+                'folderLink'         => "https://ri-amu.app/index.php?page=folders-student&action=view&numetu=" . urlencode($numEtu)
             ]);
 
             // Build Mailjet payload
@@ -270,15 +260,15 @@ class EmailReminderService
                     [
                         'From' => [
                             'Email' => self::$fromEmail,
-                            'Name' => self::$fromName
+                            'Name'  => self::$fromName
                         ],
                         'To' => [
                             [
                                 'Email' => $toEmail,
-                                'Name' => $studentName
+                                'Name'  => $studentName
                             ]
                         ],
-                        'Subject' => $subject,
+                        'Subject'  => $subject,
                         'HTMLPart' => $htmlMessage,
                         'TextPart' => strip_tags($htmlMessage)
                     ]
@@ -316,33 +306,23 @@ class EmailReminderService
         string $numEtu
     ): bool {
         try {
-            // Initialize Mailjet client
-            $mj = new Client(
-                $_ENV['MAILJET_API_KEY'] ?? '',
-                $_ENV['MAILJET_SECRET_KEY'] ?? '',
-                true,
-                ['version' => 'v3.1']
-            );
-            // Disable SSL verification and increase timeout for local dev
-            $mj->addRequestOption('verify', false);
-            $mj->addRequestOption('timeout', 10);
-            $mj->addRequestOption('connect_timeout', 10);
+            $mj = self::createMailjetClient();
 
             $documentLabels = [
-                'photo' => 'Photo',
-                'cv' => 'CV',
-                'convention' => 'Convention de Stage',
+                'photo'             => 'Photo',
+                'cv'                => 'CV',
+                'convention'        => 'Convention de Stage',
                 'lettre_motivation' => 'Lettre de Motivation',
-                'langues_file' => 'Attestation de Langues'
+                'langues_file'      => 'Attestation de Langues'
             ];
             $docLabel = $documentLabels[$documentType] ?? ucfirst($documentType);
 
-            $subject = "Document déposé - {$docLabel}";
+            $subject     = "Document déposé - {$docLabel}";
             $htmlMessage = self::renderEmailTemplate('document_deposited', [
-                'logoUrl' => self::$logoUrl,
-                'studentName' => trim($studentName),
+                'logoUrl'       => self::$logoUrl,
+                'studentName'   => trim($studentName),
                 'documentLabel' => $docLabel,
-                'folderLink' => "https://ri-amu.app/index.php?page=folders-student&action=view&numetu=" . urlencode($numEtu)
+                'folderLink'    => "https://ri-amu.app/index.php?page=folders-student&action=view&numetu=" . urlencode($numEtu)
             ]);
 
             $body = [
@@ -350,15 +330,15 @@ class EmailReminderService
                     [
                         'From' => [
                             'Email' => self::$fromEmail,
-                            'Name' => self::$fromName
+                            'Name'  => self::$fromName
                         ],
                         'To' => [
                             [
                                 'Email' => $toEmail,
-                                'Name' => $studentName
+                                'Name'  => $studentName
                             ]
                         ],
-                        'Subject' => $subject,
+                        'Subject'  => $subject,
                         'HTMLPart' => $htmlMessage,
                         'TextPart' => strip_tags($htmlMessage)
                     ]
@@ -396,33 +376,23 @@ class EmailReminderService
         string $numEtu
     ): bool {
         try {
-            // Initialize Mailjet client
-            $mj = new Client(
-                $_ENV['MAILJET_API_KEY'] ?? '',
-                $_ENV['MAILJET_SECRET_KEY'] ?? '',
-                true,
-                ['version' => 'v3.1']
-            );
-            // Disable SSL verification and increase timeout for local dev
-            $mj->addRequestOption('verify', false);
-            $mj->addRequestOption('timeout', 10);
-            $mj->addRequestOption('connect_timeout', 10);
+            $mj = self::createMailjetClient();
 
             $documentLabels = [
-                'photo' => 'Photo',
-                'cv' => 'CV',
-                'convention' => 'Convention de Stage',
+                'photo'             => 'Photo',
+                'cv'                => 'CV',
+                'convention'        => 'Convention de Stage',
                 'lettre_motivation' => 'Lettre de Motivation',
-                'langues_file' => 'Attestation de Langues'
+                'langues_file'      => 'Attestation de Langues'
             ];
             $docLabel = $documentLabels[$documentType] ?? ucfirst($documentType);
 
-            $subject = "Document validé ✓ - {$docLabel}";
+            $subject     = "Document validé ✓ - {$docLabel}";
             $htmlMessage = self::renderEmailTemplate('document_validated', [
-                'logoUrl' => self::$logoUrl,
-                'studentName' => trim($studentName),
+                'logoUrl'       => self::$logoUrl,
+                'studentName'   => trim($studentName),
                 'documentLabel' => $docLabel,
-                'folderLink' => "https://ri-amu.app/index.php?page=folders-student&action=view&numetu=" . urlencode($numEtu)
+                'folderLink'    => "https://ri-amu.app/index.php?page=folders-student&action=view&numetu=" . urlencode($numEtu)
             ]);
 
             $body = [
@@ -430,15 +400,15 @@ class EmailReminderService
                     [
                         'From' => [
                             'Email' => self::$fromEmail,
-                            'Name' => self::$fromName
+                            'Name'  => self::$fromName
                         ],
                         'To' => [
                             [
                                 'Email' => $toEmail,
-                                'Name' => $studentName
+                                'Name'  => $studentName
                             ]
                         ],
-                        'Subject' => $subject,
+                        'Subject'  => $subject,
                         'HTMLPart' => $htmlMessage,
                         'TextPart' => strip_tags($htmlMessage)
                     ]
@@ -472,29 +442,20 @@ class EmailReminderService
         string $platformLink
     ): bool {
         try {
-            $mj = new Client(
-                $_ENV['MAILJET_API_KEY'] ?? '',
-                $_ENV['MAILJET_SECRET_KEY'] ?? '',
-                true,
-                ['version' => 'v3.1']
-            );
-            // Disable SSL verification and increase timeout for local dev
-            $mj->addRequestOption('verify', false);
-            $mj->addRequestOption('timeout', 10);
-            $mj->addRequestOption('connect_timeout', 10);
+            $mj = self::createMailjetClient();
 
             $subject = "Nouveau message de {$senderName}";
-            
+
             // Truncate message preview to 150 characters
-            $truncatedPreview = strlen($messagePreview) > 150 
-                ? substr($messagePreview, 0, 150) 
+            $truncatedPreview = strlen($messagePreview) > 150
+                ? substr($messagePreview, 0, 150)
                 : $messagePreview;
-            
+
             $htmlMessage = self::renderEmailTemplate('message_notification', [
-                'recipientName' => trim($recipientName),
-                'senderName' => trim($senderName),
+                'recipientName'  => trim($recipientName),
+                'senderName'     => trim($senderName),
                 'messagePreview' => $truncatedPreview,
-                'platformLink' => $platformLink
+                'platformLink'   => $platformLink
             ]);
 
             $body = [
@@ -502,15 +463,15 @@ class EmailReminderService
                     [
                         'From' => [
                             'Email' => self::$fromEmail,
-                            'Name' => self::$fromName
+                            'Name'  => self::$fromName
                         ],
                         'To' => [
                             [
                                 'Email' => $toEmail,
-                                'Name' => $recipientName
+                                'Name'  => $recipientName
                             ]
                         ],
-                        'Subject' => $subject,
+                        'Subject'  => $subject,
                         'HTMLPart' => $htmlMessage,
                         'TextPart' => strip_tags($htmlMessage)
                     ]
