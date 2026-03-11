@@ -22,13 +22,6 @@ class PartnersControllerAdmin implements ControllerInterface
             session_start();
         }
 
-        // Vérification rôle
-        $allowedRoles = ['admin'];
-        if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], $allowedRoles, true)) {
-            header('Location: index.php?page=login');
-            exit;
-        }
-
         if (isset($_GET['lang'])) {
             $langParam = strval($_GET['lang']);
             if (in_array($langParam, ['fr', 'en'], true)) {

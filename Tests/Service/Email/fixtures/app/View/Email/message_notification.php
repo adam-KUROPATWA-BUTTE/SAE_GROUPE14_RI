@@ -1,1 +1,0 @@
-<p>Template: message_notification</p>
