@@ -102,7 +102,7 @@ ob_start();
 
 <?php else : ?>
 
-    <h1><?= $t(['fr' => 'Étudiants en mobilité d\'étude et de stage', 'en' => 'Study and Internship Mobility Students']) ?></h1>
+    <h1><?= $t(['fr' => 'Étudiants en mobilité d\'étude et de stage', 'en' => 'Students on study and internship mobility programs']) ?></h1>
 
     <?php if (!empty($message)) : ?>
         <div class="message"><?= htmlspecialchars($message) ?></div>

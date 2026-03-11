@@ -26,13 +26,13 @@ $buildUrl = function(string $path, array $params = []) use ($lang): string {
 $PAGE = 'folders-admin';
 
 $hasActiveFilters = (strval($filters['type']       ?? 'all')) !== 'all'
-    || (strval($filters['zone']       ?? 'all')) !== 'all'
-    || (strval($filters['complet']    ?? 'all')) !== 'all'
-    || (strval($filters['composante'] ?? 'all')) !== 'all'
-    || (strval($filters['accord']     ?? 'all')) !== 'all'
-    || !empty($filters['date_debut'])
-    || !empty($filters['date_fin'])
-    || !empty($filters['search']);
+        || (strval($filters['zone']       ?? 'all')) !== 'all'
+        || (strval($filters['complet']    ?? 'all')) !== 'all'
+        || (strval($filters['composante'] ?? 'all')) !== 'all'
+        || (strval($filters['accord']     ?? 'all')) !== 'all'
+        || !empty($filters['date_debut'])
+        || !empty($filters['date_fin'])
+        || !empty($filters['search']);
 
 ob_start();
 ?>
@@ -324,11 +324,11 @@ ob_start();
 
 <?php endif; ?>
 
-<div id="app-config"
-     data-lang="<?= htmlspecialchars($lang) ?>"
-     data-role="admin"
-     style="display:none;">
-</div>
+    <div id="app-config"
+         data-lang="<?= htmlspecialchars($lang) ?>"
+         data-role="admin"
+         style="display:none;">
+    </div>
 <?php
 $content = ob_get_clean();
 

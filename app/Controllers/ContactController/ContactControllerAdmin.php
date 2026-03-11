@@ -53,7 +53,8 @@ class ContactControllerAdmin implements ControllerInterface
     {
         $this->startSession();
 
-        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+        $allowedRoles = ['admin'];
+        if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], $allowedRoles, true)) {
             $this->redirect('index.php?page=login');
         }
 

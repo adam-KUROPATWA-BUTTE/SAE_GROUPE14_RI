@@ -1370,7 +1370,7 @@ tr:nth-child(even) {
 }
 
 @media (max-width: 900px) and (min-width: 801px) {
-    main { padding: 1.5em; margin: 1.5em auto; }
+    main { padding: 1.5em; margin: 1.5em auto;width: 80%; }
     .student-toolbar input[type="text"] { width: 220px; }
     .form-section { grid-template-columns: 220px 1fr 130px 1fr; gap: 8px 15px; }
     table { font-size: 0.95rem; table-layout: auto; }
@@ -1383,7 +1383,7 @@ tr:nth-child(even) {
 }
 
 @media (max-width: 600px) {
-    main { padding: 1em; margin: 1em; }
+    main { padding: 1em; margin: 1em; width: 80%; }
     h1, h2 { font-size: 1.5rem; }
     .student-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
     .student-toolbar input[type="text"] { width: 100%; }

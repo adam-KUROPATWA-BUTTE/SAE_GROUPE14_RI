@@ -3,6 +3,7 @@
 namespace Controllers;
 
 use Model\UseCase\ManageFolderUseCase;
+use Model\Persistence\DossierRepositoryPDO;
 use Core\View;
 
 class DashboardController implements ControllerInterface
@@ -67,6 +68,8 @@ class DashboardController implements ControllerInterface
             $folders = [];
         }
 
+        $departments = (new DossierRepositoryPDO())->getAllDepartements();
+
         $outgoing = [];
         $incoming = [];
 
@@ -80,9 +83,8 @@ class DashboardController implements ControllerInterface
             $campagne   = strval($d['Campagne'] ?? 'Automne 2024');
             $isComplete = intval($d['IsComplete'] ?? 0);
 
-            $composante  = strval($d['Composante'] ?? '');
-            $accord      = strval($d['Accord'] ?? '');
-            $destination = strval($d['Destination'] ?? '');
+            $composante  = strval($d['Composante']  ?? '');
+            $destination = strval($d['Destination'] ?? $d['Pays'] ?? '');
 
             if ($filters['student'] !== '') {
                 $fullName = strtolower("$nom $prenom $numEtu");
@@ -98,7 +100,7 @@ class DashboardController implements ControllerInterface
 
             if ($filters['cadre'] !== '') {
                 $cadreRecherche = $filters['cadre'];
-                if (stripos($composante, $cadreRecherche) === false && stripos($accord, $cadreRecherche) === false) continue;
+                if (stripos($composante, $cadreRecherche) === false) continue;
             }
 
             $piecesJson    = strval($d['PiecesJustificatives'] ?? '');
@@ -134,12 +136,13 @@ class DashboardController implements ControllerInterface
         };
 
         View::render('Dashboard/dashboard_admin', [
-            'incoming' => $incoming,
-            'outgoing' => $outgoing,
-            'filters'  => $filters,
-            'lang'     => $lang,
-            't'        => $t,
-            'buildUrl' => $buildUrl
+            'incoming'    => $incoming,
+            'outgoing'    => $outgoing,
+            'filters'     => $filters,
+            'lang'        => $lang,
+            't'           => $t,
+            'buildUrl'    => $buildUrl,
+            'departments' => $departments,
         ]);
     }
 

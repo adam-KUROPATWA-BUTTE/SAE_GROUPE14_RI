@@ -6,12 +6,12 @@
     --accent-color: #2B91BB;
     --hero-bg-color: #00558B;
 
-    --h1-size: 3rem;
-    --h2-size: 2.5rem;
-    --text-size: 1.5rem;
-    --text-small-size: 1.4rem;
-    --button-size: 1.5rem;
-    --button-small-size: 1.3rem;
+    --h1-size: 2.5rem;
+    --h2-size: 1.8rem;
+    --text-size: 1rem;
+    --text-small-size: 0.9rem;
+    --button-size: 1rem;
+    --button-small-size: 0.8rem;
 }
 
 body.tritanopie {
@@ -197,13 +197,13 @@ body.tritanopie button:hover {
 main {
     flex: 1;
     width: 1000px;
-    height: auto;
     margin: 2em auto;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    padding: 5%;
+    padding: 2em;
 }
+
 
 
 h1 {
@@ -254,7 +254,6 @@ footer p {
     margin: 0;
     color: #f0f4ff;
     font-size: var(--text-small-size);
-    margin-bottom: 2rem;
 }
 
 .insta {
@@ -330,6 +329,12 @@ li a:hover {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* Icône optionnelle */
+.footer-sitemap-btn::after {
+    content: '🗺️';
+    font-size: var(--button-small-size);
+}
+
 
 
 /* Séparateur entre les liens */
@@ -344,8 +349,9 @@ li a:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 30px;
+    gap: 1rem;
     flex-wrap: wrap;
+    margin-top: 1rem;
 }
 
 
@@ -384,6 +390,7 @@ header .menu-toggle {
     main {
         margin: 1em;
         padding: 1.5em;
+        width: 90%;
     }
 
     table {
@@ -488,6 +495,7 @@ header .menu-toggle {
     main {
         margin: 0.5em;
         padding: 1em;
+        width: 90%;
     }
 
     h1{
