@@ -47,7 +47,6 @@ class HomeControllersTest extends TestCase
 
             public function __construct(SuperAdminService $svc)
             {
-                // Ne PAS appeler parent::__construct() → évite toute connexion PDO
                 $this->injectedService = $svc;
             }
 
@@ -82,7 +81,6 @@ class HomeControllersTest extends TestCase
 
             public function __construct(GetAdminStatsUseCase $useCase)
             {
-                // Ne PAS appeler parent::__construct() → évite toute connexion PDO
                 $this->injectedUseCase = $useCase;
             }
 
@@ -110,7 +108,6 @@ class HomeControllersTest extends TestCase
             }
         };
 
-        // Rôle admin requis par le contrôle d'accès ajouté lors de la résolution du conflit
         $_SESSION['role'] = 'admin';
 
         return [$controller, $useCaseMock];
@@ -128,7 +125,6 @@ class HomeControllersTest extends TestCase
 
             public function __construct(GetAdminStatsUseCase $useCase)
             {
-                // Ne PAS appeler parent::__construct() → évite toute connexion PDO
                 $this->injectedUseCase = $useCase;
             }
 
@@ -161,7 +157,6 @@ class HomeControllersTest extends TestCase
         return new class extends HomeControllerStudent {
             public function __construct()
             {
-                // Ne PAS appeler parent::__construct() → évite toute connexion PDO
             }
 
             protected function startSession(): void {}
@@ -719,8 +714,6 @@ class HomeControllersTest extends TestCase
         $controller->control();
     }
 
-
-
     // =========================================================================
     // HomeControllerStudent — support()
     // =========================================================================
@@ -747,8 +740,9 @@ class HomeControllersTest extends TestCase
 
     public function test_home_student_lang_set_from_get(): void
     {
-        $_GET['lang']  = 'en';
-        $controller    = $this->makeStudentHome();
+        $_GET['lang']       = 'en';
+        $_SESSION['numetu'] = '12345'; // requis sinon redirect avant traitement lang
+        $controller         = $this->makeStudentHome();
 
         try { $controller->control(); } catch (\Throwable $e) {}
 
@@ -757,8 +751,9 @@ class HomeControllersTest extends TestCase
 
     public function test_home_student_lang_ignores_invalid_value(): void
     {
-        $_GET['lang'] = 'ru';
-        $controller   = $this->makeStudentHome();
+        $_GET['lang']       = 'ru';
+        $_SESSION['numetu'] = '12345';
+        $controller         = $this->makeStudentHome();
 
         try { $controller->control(); } catch (\Throwable $e) {}
 
@@ -767,7 +762,8 @@ class HomeControllersTest extends TestCase
 
     public function test_home_student_lang_defaults_to_fr_when_not_set(): void
     {
-        $controller = $this->makeStudentHome();
+        $_SESSION['numetu'] = '12345';
+        $controller         = $this->makeStudentHome();
 
         try { $controller->control(); } catch (\Throwable $e) {}
 
@@ -781,6 +777,7 @@ class HomeControllersTest extends TestCase
     public function test_home_student_tritanopia_set_to_true(): void
     {
         $_GET['tritanopia'] = '1';
+        $_SESSION['numetu'] = '12345'; // requis sinon redirect avant traitement tritanopia
         $controller         = $this->makeStudentHome();
 
         try { $controller->control(); } catch (\Throwable $e) {}
@@ -791,6 +788,7 @@ class HomeControllersTest extends TestCase
     public function test_home_student_tritanopia_set_to_false(): void
     {
         $_GET['tritanopia'] = '0';
+        $_SESSION['numetu'] = '12345'; // requis sinon redirect avant traitement tritanopia
         $controller         = $this->makeStudentHome();
 
         try { $controller->control(); } catch (\Throwable $e) {}
@@ -821,6 +819,7 @@ class HomeControllersTest extends TestCase
 
     public function test_home_student_not_logged_in_when_numetu_absent(): void
     {
+        // Sans numetu → le contrôleur redirige vers login
         $controller = $this->makeStudentHome();
 
         $redirected = false;
@@ -832,7 +831,7 @@ class HomeControllersTest extends TestCase
             }
         }
 
-        $this->assertFalse($redirected);
+        $this->assertTrue($redirected); // correction : sans numetu = redirect
     }
 
     // =========================================================================
