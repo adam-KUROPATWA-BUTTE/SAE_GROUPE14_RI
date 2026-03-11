@@ -4,6 +4,7 @@ namespace Service\Email;
 
 use Mailjet\Client;
 use Mailjet\Resources;
+use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
 
 class EmailReminderService
 {
@@ -64,7 +65,18 @@ class EmailReminderService
 
         ob_start();
         require $file;
-        return ob_get_clean() ?: '';
+        $html = ob_get_clean() ?: '';
+
+        // Injection du CSS inline (requis par les clients mail)
+        $cssFile = $root . '/public/styles/emails.css';
+        if (file_exists($cssFile)) {
+            $css    = file_get_contents($cssFile) ?: '';
+            $html   = (new CssToInlineStyles())->convert($html, $css);
+        } else {
+            error_log("⚠️ emails.css not found: {$cssFile}");
+        }
+
+        return $html;
     }
 
     /**
