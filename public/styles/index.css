@@ -196,13 +196,14 @@ body.tritanopie button:hover {
 
 main {
     flex: 1;
-    max-width: 1000px;
+    width: 1000px;
     margin: 2em auto;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     padding: 2em;
 }
+
 
 
 h1 {
@@ -389,6 +390,7 @@ header .menu-toggle {
     main {
         margin: 1em;
         padding: 1.5em;
+        width: 90%;
     }
 
     table {
@@ -493,6 +495,7 @@ header .menu-toggle {
     main {
         margin: 0.5em;
         padding: 1em;
+        width: 90%;
     }
 
     h1{
