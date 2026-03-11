@@ -5,13 +5,13 @@ namespace Model\UseCase;
 use Model\Entity\AdminStats;
 use Model\Entity\CountryStats;
 use Model\Entity\DepartmentStats;
-use Model\Repository\DossierRepositoryInterface;
+use Model\Repository\FolderRepositoryInterface;
 
 class GetAdminStatsUseCase
 {
-    private DossierRepositoryInterface $repository;
+    private FolderRepositoryInterface $repository;
 
-    public function __construct(DossierRepositoryInterface $repository)
+    public function __construct(FolderRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }

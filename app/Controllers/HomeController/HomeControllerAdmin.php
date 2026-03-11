@@ -42,7 +42,7 @@ class HomeControllerAdmin implements ControllerInterface
      */
     protected function makeUseCase(): GetAdminStatsUseCase
     {
-        return new GetAdminStatsUseCase(new \Model\Persistence\DossierRepositoryPDO());
+        return new GetAdminStatsUseCase(new \Model\Persistence\FolderRepositoryPDO());
     }
 
     /**
@@ -50,7 +50,7 @@ class HomeControllerAdmin implements ControllerInterface
      */
     protected function fetchDepartements(): array
     {
-        return (new \Model\Persistence\DossierRepositoryPDO())->getAllDepartements();
+        return (new \Model\Persistence\FolderRepositoryPDO())->getAllDepartements();
     }
 
     public function control(): void

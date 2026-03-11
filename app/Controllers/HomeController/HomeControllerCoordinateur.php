@@ -39,13 +39,13 @@ class HomeControllerCoordinateur implements ControllerInterface
 
     protected function makeUseCase(): GetAdminStatsUseCase
     {
-        $repo = new \Model\Persistence\DossierRepositoryPDO();
+        $repo = new \Model\Persistence\FolderRepositoryPDO();
         return new GetAdminStatsUseCase($repo);
     }
 
     protected function fetchDepartements(): array
     {
-        return (new \Model\Persistence\DossierRepositoryPDO())->getAllDepartements();
+        return (new \Model\Persistence\FolderRepositoryPDO())->getAllDepartements();
     }
 
     public function control(): void

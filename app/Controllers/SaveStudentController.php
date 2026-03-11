@@ -76,7 +76,7 @@ class SaveStudentController
         $success = $useCase->creerDossier($data);
 
         $_SESSION['message'] = $success
-            ? ($lang === 'fr' ? 'Dossier créé avec succès'           : 'Folder created successfully')
+            ? ($lang === 'fr' ? 'Folder créé avec succès'           : 'Folder created successfully')
             : ($lang === 'fr' ? 'Erreur lors de la création du dossier' : 'Error creating folder');
 
         header('Location: index.php?page=folders&lang=' . $lang);

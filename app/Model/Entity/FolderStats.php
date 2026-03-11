@@ -2,7 +2,7 @@
 
 namespace Model\Entity;
 
-class DossierStats
+class FolderStats
 {
     private int $total;
     private int $completed;

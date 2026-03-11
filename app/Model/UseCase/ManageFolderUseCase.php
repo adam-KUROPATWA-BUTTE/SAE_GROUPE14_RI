@@ -4,16 +4,16 @@ namespace Model\UseCase;
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
-use Model\Repository\DossierRepositoryInterface;
-use Model\Persistence\DossierRepositoryPDO;
+use Model\Repository\FolderRepositoryInterface;
+use Model\Persistence\FolderRepositoryPDO;
 
 class ManageFolderUseCase
 {
-    private DossierRepositoryInterface $dossierRepo;
+    private FolderRepositoryInterface $dossierRepo;
 
-    public function __construct(?DossierRepositoryInterface $repo = null)
+    public function __construct(?FolderRepositoryInterface $repo = null)
     {
-        $this->dossierRepo = $repo ?? new DossierRepositoryPDO();
+        $this->dossierRepo = $repo ?? new FolderRepositoryPDO();
     }
 
     /**

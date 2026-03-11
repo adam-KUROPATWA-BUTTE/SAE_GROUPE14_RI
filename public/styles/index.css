@@ -329,14 +329,6 @@ li a:hover {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Icône optionnelle */
-.footer-sitemap-btn::after {
-    content: '🗺️';
-    font-size: var(--button-small-size);
-}
-
-
-
 /* Séparateur entre les liens */
 .footer-separator {
     color: var(--primary-color);

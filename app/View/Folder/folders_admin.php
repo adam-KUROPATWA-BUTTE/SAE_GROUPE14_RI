@@ -191,7 +191,7 @@ ob_start();
         include __DIR__ . '/../Partials/_banniere_modifie_par.php';
         ?>
 
-        <h1><?= $t(['fr' => 'Dossier étudiant', 'en' => 'Student Profile']) ?></h1>
+        <h1><?= $t(['fr' => 'Folder étudiant', 'en' => 'Student Profile']) ?></h1>
         <div class="form-back-button">
             <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => $PAGE]) ?>'" class="btn-secondary">
                 <?= $t(['fr' => 'Retour à la liste', 'en' => 'Back to List']) ?>
@@ -212,8 +212,8 @@ ob_start();
         // Colonne dédiée, indépendante du status global du dossier
         $avisChef  = strval($studentData['avis_chef_departement'] ?? '');
         $avisLabel = match($avisChef) {
-            'accepte' => ['fr' => 'Dossier accepté par le chef de département',  'en' => 'Folder accepted by department head'],
-            'refuse'  => ['fr' => 'Dossier refusé par le chef de département',   'en' => 'Folder refused by department head'],
+            'accepte' => ['fr' => 'Folder accepté par le chef de département',  'en' => 'Folder accepted by department head'],
+            'refuse'  => ['fr' => 'Folder refusé par le chef de département',   'en' => 'Folder refused by department head'],
             default   => ['fr' => 'Aucune décision du chef de département',       'en' => 'No decision from department head'],
         };
         $avisIcon = match($avisChef) {
@@ -268,7 +268,7 @@ ob_start();
 
         <script>
             <?php
-            $repoTemp    = new \Model\Persistence\DossierRepositoryPDO();
+            $repoTemp    = new \Model\Persistence\FolderRepositoryPDO();
             $analyseData = $repoTemp->analyserDocuments($numEtu);
             ?>
             window.analyseDocumentsData = <?= json_encode($analyseData) ?>;

@@ -456,7 +456,7 @@ class FoldersControllersTest extends TestCase
 
         try { $controller->control(); } catch (\RuntimeException $e) {}
 
-        $this->assertSame('Dossier créé avec succès', $_SESSION['message'] ?? '');
+        $this->assertSame('Folder créé avec succès', $_SESSION['message'] ?? '');
     }
 
     public function test_admin_save_student_sets_success_message_in_english(): void
@@ -509,7 +509,7 @@ class FoldersControllersTest extends TestCase
 
         try { $controller->control(); } catch (\RuntimeException $e) {}
 
-        $this->assertSame('Dossier mis à jour', $_SESSION['message'] ?? '');
+        $this->assertSame('Folder mis à jour', $_SESSION['message'] ?? '');
     }
 
     public function test_admin_update_student_sets_error_message_when_failed(): void
@@ -842,7 +842,7 @@ class FoldersControllersTest extends TestCase
 
         try { $controller->control(); } catch (\RuntimeException $e) {}
 
-        $this->assertSame('Dossier mis à jour avec succès.', $_SESSION['message'] ?? '');
+        $this->assertSame('Folder mis à jour avec succès.', $_SESSION['message'] ?? '');
     }
 
     public function test_student_update_folder_sets_success_message_in_english(): void

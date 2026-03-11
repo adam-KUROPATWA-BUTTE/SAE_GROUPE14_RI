@@ -3,23 +3,23 @@
 namespace Tests\Model\UseCase;
 
 use Model\Entity\AdminStats;
-use Model\Entity\DossierStats;
+use Model\Entity\FolderStats;
 use Model\Entity\GenderStats;
-use Model\Repository\DossierRepositoryInterface;
+use Model\Repository\FolderRepositoryInterface;
 use Model\UseCase\GetAdminStatsUseCase;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 
 class GetAdminStatsUseCaseTest extends TestCase
 {
-    /** @var DossierRepositoryInterface&MockObject */
-    private DossierRepositoryInterface $repoMock;
+    /** @var FolderRepositoryInterface&MockObject */
+    private FolderRepositoryInterface $repoMock;
 
     private GetAdminStatsUseCase $useCase;
 
     protected function setUp(): void
     {
-        $this->repoMock = $this->createMock(DossierRepositoryInterface::class);
+        $this->repoMock = $this->createMock(FolderRepositoryInterface::class);
         $this->useCase  = new GetAdminStatsUseCase($this->repoMock);
     }
 
@@ -27,7 +27,7 @@ class GetAdminStatsUseCaseTest extends TestCase
     {
         $this->repoMock->method('getDossierStats')
             ->with($mobilite, $departement)
-            ->willReturn(new DossierStats(10, 5));
+            ->willReturn(new FolderStats(10, 5));
 
         $this->repoMock->method('getGenderStats')
             ->with($mobilite, $departement)
@@ -138,7 +138,7 @@ class GetAdminStatsUseCaseTest extends TestCase
     public function testExecuteCallsAllRepositoryMethods(): void
     {
         $this->repoMock->expects($this->once())->method('getDossierStats')
-            ->willReturn(new DossierStats(0, 0));
+            ->willReturn(new FolderStats(0, 0));
         $this->repoMock->expects($this->once())->method('getGenderStats')
             ->willReturn(new GenderStats(0, 0));
         $this->repoMock->expects($this->once())->method('getIncomingOutgoingStats')
@@ -157,7 +157,7 @@ class GetAdminStatsUseCaseTest extends TestCase
 
     public function testExecuteRequestsTop5Countries(): void
     {
-        $this->repoMock->method('getDossierStats')->willReturn(new DossierStats(0, 0));
+        $this->repoMock->method('getDossierStats')->willReturn(new FolderStats(0, 0));
         $this->repoMock->method('getGenderStats')->willReturn(new GenderStats(0, 0));
         $this->repoMock->method('getIncomingOutgoingStats')->willReturn(['incoming' => 0, 'outgoing' => 0]);
         $this->repoMock->method('getContinentStats')->willReturn([]);
@@ -174,7 +174,7 @@ class GetAdminStatsUseCaseTest extends TestCase
 
     public function testExecuteRequestsTop5Departments(): void
     {
-        $this->repoMock->method('getDossierStats')->willReturn(new DossierStats(0, 0));
+        $this->repoMock->method('getDossierStats')->willReturn(new FolderStats(0, 0));
         $this->repoMock->method('getGenderStats')->willReturn(new GenderStats(0, 0));
         $this->repoMock->method('getIncomingOutgoingStats')->willReturn(['incoming' => 0, 'outgoing' => 0]);
         $this->repoMock->method('getContinentStats')->willReturn([]);
@@ -195,7 +195,7 @@ class GetAdminStatsUseCaseTest extends TestCase
 
     public function testExecuteMapsTopCountriesToCountryStatsObjects(): void
     {
-        $this->repoMock->method('getDossierStats')->willReturn(new DossierStats(0, 0));
+        $this->repoMock->method('getDossierStats')->willReturn(new FolderStats(0, 0));
         $this->repoMock->method('getGenderStats')->willReturn(new GenderStats(0, 0));
         $this->repoMock->method('getIncomingOutgoingStats')->willReturn(['incoming' => 0, 'outgoing' => 0]);
         $this->repoMock->method('getContinentStats')->willReturn([]);
@@ -216,7 +216,7 @@ class GetAdminStatsUseCaseTest extends TestCase
 
     public function testExecuteMapsDepartmentsToDepartmentStatsObjects(): void
     {
-        $this->repoMock->method('getDossierStats')->willReturn(new DossierStats(0, 0));
+        $this->repoMock->method('getDossierStats')->willReturn(new FolderStats(0, 0));
         $this->repoMock->method('getGenderStats')->willReturn(new GenderStats(0, 0));
         $this->repoMock->method('getIncomingOutgoingStats')->willReturn(['incoming' => 0, 'outgoing' => 0]);
         $this->repoMock->method('getContinentStats')->willReturn([]);
