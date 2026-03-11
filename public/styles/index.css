@@ -334,6 +334,8 @@ li a:hover {
     font-size: var(--button-small-size);
 }
 
+
+
 /* Séparateur entre les liens */
 .footer-separator {
     color: var(--primary-color);
