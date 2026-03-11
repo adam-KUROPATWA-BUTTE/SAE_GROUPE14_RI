@@ -56,6 +56,7 @@ ob_start();
         ?>
 
         <form method="post" action="index.php?page=update_student&lang=<?= htmlspecialchars($lang) ?>" enctype="multipart/form-data" class="creation-form">
+            <input type="hidden" name="redirect_to" value="<?= htmlspecialchars($PAGE) ?>">
             <div class="form-section">
                 <?php
                 $editableFields = $EDITABLE;

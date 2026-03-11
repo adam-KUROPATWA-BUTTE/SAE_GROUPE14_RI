@@ -7,15 +7,17 @@
  * @var string $lang
  * @var Closure $t
  */
+
+$numEtuRaw = strval($studentData['NumEtu'] ?? '');
 ?>
 <div class="banniere-decision">
     <span class="banniere-decision-label"><?= $t(['fr' => 'Décision sur le dossier :', 'en' => 'Decision on profile:']) ?></span>
     <div class="banniere-decision-buttons">
 
         <!-- Bouton Accepter -->
-        <form method="POST" action="index.php?page=chef-departement&action=view&numetu=<?= $numEtu ?>&lang=<?= htmlspecialchars($lang) ?>" style="display:inline;">
+        <form method="POST" action="index.php?page=chef-departement&action=view&numetu=<?= urlencode($numEtuRaw) ?>&lang=<?= htmlspecialchars($lang) ?>" style="display:inline;">
             <input type="hidden" name="set_avis_chef" value="1">
-            <input type="hidden" name="numetu" value="<?= $numEtu ?>">
+            <input type="hidden" name="numetu" value="<?= htmlspecialchars($numEtuRaw) ?>">
             <input type="hidden" name="avis" value="accepte">
             <button type="submit"
                     class="btn-decision btn-accepter <?= $currentStatus === 'accepte' ? 'btn-decision-active' : '' ?>">
@@ -24,9 +26,9 @@
         </form>
 
         <!-- Bouton Refuser -->
-        <form method="POST" action="index.php?page=chef-departement&action=view&numetu=<?= $numEtu ?>&lang=<?= htmlspecialchars($lang) ?>" style="display:inline;">
+        <form method="POST" action="index.php?page=chef-departement&action=view&numetu=<?= urlencode($numEtuRaw) ?>&lang=<?= htmlspecialchars($lang) ?>" style="display:inline;">
             <input type="hidden" name="set_avis_chef" value="1">
-            <input type="hidden" name="numetu" value="<?= $numEtu ?>">
+            <input type="hidden" name="numetu" value="<?= htmlspecialchars($numEtuRaw) ?>">
             <input type="hidden" name="avis" value="refuse">
             <button type="submit"
                     class="btn-decision btn-refuser <?= $currentStatus === 'refuse' ? 'btn-decision-active' : '' ?>">
