@@ -199,7 +199,7 @@ ob_start();
         include __DIR__ . '/../Partials/_banniere_modifie_par.php';
         ?>
 
-        <h1><?= $t(['fr' => 'Folder étudiant', 'en' => 'Student Profile']) ?></h1>
+        <h1><?= $t(['fr' => 'Dossier étudiant', 'en' => 'Student Profile']) ?></h1>
         <div class="form-back-button">
             <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => $PAGE]) ?>'" class="btn-secondary">
                 <?= $t(['fr' => 'Retour à la liste', 'en' => 'Back to List']) ?>
