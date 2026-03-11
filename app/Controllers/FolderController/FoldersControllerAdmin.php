@@ -1,6 +1,5 @@
 <?php
 
-// phpcs:disable Generic.Files.LineLength
 
 namespace Controllers\FolderController;
 
@@ -72,8 +71,7 @@ class FoldersControllerAdmin
         $lang   = $_GET['lang']   ?? 'fr';
 
         $sharedPages  = ['update_student', 'update_document_status', 'update_global_status', 'valider_documents'];
-        $allowedRoles = ['admin', 'coordinateur_stage', 'coordinateur_etude', 'chef_departement'];
-
+        $allowedRoles = ['admin', 'coordinateur_stage', 'coordinateur_etude', 'coordinateur', 'chef_departement'];
         if (in_array($page, $sharedPages, true)) {
             if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], $allowedRoles, true)) {
                 $this->redirect('index.php?page=login');
@@ -177,6 +175,7 @@ class FoldersControllerAdmin
             'paginatedData' => $result['data'],
             'totalCount'    => $result['total'],
             'totalPages'    => 1,
+            'userRole'      => $_SESSION['role'] ?? 'admin',
         ]);
     }
 
@@ -185,7 +184,13 @@ class FoldersControllerAdmin
         $prenom = strval($_SESSION['admin_prenom'] ?? '');
         $nom    = strval($_SESSION['admin_nom']    ?? '');
         $name   = trim($prenom . ' ' . $nom);
-        return $name !== '' ? $name : 'Administrateur';
+
+        if ($name !== '') return $name;
+
+        $email = strval($_SESSION['user_identifier'] ?? '');
+        if ($email !== '') return strval(explode('@', $email)[0]);
+
+        return 'Administrateur';
     }
 
     /** @param array<int, string> $updates */

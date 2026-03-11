@@ -16,6 +16,8 @@
 $PAGE     = 'chef-departement';
 $EDITABLE = ['niveau_etude', 'moyenne_sans_bac'];
 
+$userRole = $_SESSION['role'] ?? 'chef_departement';
+
 $hasActiveFilters = (strval($filters['type']       ?? 'all')) !== 'all'
     || (strval($filters['zone']       ?? 'all')) !== 'all'
     || (strval($filters['complet']    ?? 'all')) !== 'all'
@@ -37,8 +39,10 @@ ob_start();
         $numEtu        = htmlspecialchars(strval($studentData['NumEtu'] ?? ''));
         $dateLimite    = $studentData['DateLimite'] ?? null;
 
-        // Lire l'avis depuis la colonne dédiée (pas status global)
+        // Pour _banniere_decision : avis du chef (casse exacte de la colonne BDD)
         $currentStatus = strval($studentData['avis_chef_departement'] ?? '');
+        // Pour _global_status : statut global du dossier
+        $globalStatus  = strval($studentData['status'] ?? 'depot');
         ?>
 
         <h1><?= $t(['fr' => 'Dossier étudiant', 'en' => 'Student Profile']) ?></h1>
@@ -52,7 +56,7 @@ ob_start();
             <div class="message"><?= htmlspecialchars($message) ?></div>
         <?php endif; ?>
 
-        <!-- Bannière décision : formulaire POST, pas AJAX -->
+        <!-- Bannière décision : reçoit $currentStatus = avis_chef_departement -->
         <?php include __DIR__ . '/../Partials/_banniere_decision.php'; ?>
 
         <?php
@@ -61,6 +65,7 @@ ob_start();
         ?>
 
         <form method="post" action="index.php?page=update_student&lang=<?= htmlspecialchars($lang) ?>" enctype="multipart/form-data" class="creation-form">
+            <input type="hidden" name="redirect_to" value="<?= htmlspecialchars($PAGE) ?>">
             <div class="form-section">
                 <?php
                 $editableFields = $EDITABLE;
@@ -77,6 +82,12 @@ ob_start();
                 ?>
             </div>
 
+            <?php
+            // On passe le statut global à _global_status
+            $currentStatus = $globalStatus;
+            include __DIR__ . '/../Partials/_global_status.php';
+            ?>
+
             <div class="form-actions">
                 <button type="submit" class="btn-secondary">
                     <?= $t(['fr' => 'Enregistrer les modifications', 'en' => 'Save Changes']) ?>
@@ -89,8 +100,6 @@ ob_start();
         </form>
 
         <?php include __DIR__ . '/../Partials/_modal_validation.php'; ?>
-
-
 
     <?php endif; ?>
 
@@ -133,7 +142,6 @@ $title           = $t(['fr' => 'Chef de département - Relations Internationales
 $styles          = ['styles/index.css', 'styles/folders.css', 'styles/chatbot.css'];
 $scripts         = ['js/folders.js'];
 $activeMenu      = $PAGE;
-$userRole        = $_SESSION['role'] ?? 'chef_departement';
 $metaDescription = $t(['fr' => 'Espace chef de département — gestion des mobilités étudiantes.', 'en' => 'Department head space — student mobility management.']);
 
 include __DIR__ . '/../Layout/base.php';

@@ -12,8 +12,7 @@
     <span class="banniere-modifie-par__texte">
         <?php if (!empty($modifiePar) || !empty($modifieLe)) : ?>
             <?= $t(['fr' => 'Dernière modification par', 'en' => 'Last modified by']) ?>
-            <strong><?= htmlspecialchars($modifiePar ?? 'Administrateur') ?></strong>
-            <?php if (!empty($modifieLe)) : ?>
+            <strong><?= htmlspecialchars($modifiePar ?? '') ?></strong>            <?php if (!empty($modifieLe)) : ?>
                 <?= $t(['fr' => 'le', 'en' => 'on']) ?>
                 <strong><?= htmlspecialchars(date('d/m/Y', (int) strtotime($modifieLe))) ?></strong>
                 <?= $t(['fr' => 'à', 'en' => 'at']) ?>
