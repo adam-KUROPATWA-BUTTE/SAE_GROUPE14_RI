@@ -496,7 +496,7 @@ class FoldersControllerAdmin
         $success = $this->folderUseCase->creerDossier($data);
 
         $_SESSION['message'] = $success
-            ? (($lang === 'fr') ? 'Dossier créé avec succès' : 'Folder created successfully')
+            ? (($lang === 'fr') ? 'Folder créé avec succès' : 'Folder created successfully')
             : (($lang === 'fr') ? 'Erreur lors de la création' : 'Error creating folder');
 
         $this->redirect('index.php?page=folders-admin&lang=' . $lang);
@@ -587,7 +587,7 @@ class FoldersControllerAdmin
         }
 
         $_SESSION['message'] = $success
-            ? (($lang === 'fr') ? 'Dossier mis à jour' : 'Folder updated')
+            ? (($lang === 'fr') ? 'Folder mis à jour' : 'Folder updated')
             : (($lang === 'fr') ? 'Erreur lors de la mise à jour' : 'Error updating folder');
 
         $this->redirect('index.php?page=' . $redirectTo . '&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);

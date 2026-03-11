@@ -91,7 +91,7 @@ class EmailReminderService
         try {
             $mj = self::createMailjetClient();
 
-            $subject = "Rappel : Dossier incomplet (ID {$dossierId})";
+            $subject = "Rappel : Folder incomplet (ID {$dossierId})";
 
             // Render email template
             $htmlMessage = self::renderEmailTemplate('relance', [
@@ -246,7 +246,7 @@ class EmailReminderService
         try {
             $mj = self::createMailjetClient();
 
-            $subject = "Documents Validés - Dossier #{$numEtu}";
+            $subject = "Documents Validés - Folder #{$numEtu}";
 
             // Map technical names to user-friendly names
             $documentLabels = [

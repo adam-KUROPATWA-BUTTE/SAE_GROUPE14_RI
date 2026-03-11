@@ -8,7 +8,7 @@ class AdminStatsTest extends TestCase
 {
     public function testGetters()
     {
-        $dossierStats = $this->createMock(DossierStats::class);
+        $dossierStats = $this->createMock(FolderStats::class);
         $genderStats = $this->createMock(GenderStats::class);
 
         $country = $this->createMock(CountryStats::class);
@@ -45,7 +45,7 @@ class AdminStatsTest extends TestCase
 
     public function testToArray()
     {
-        $dossierStats = $this->createMock(DossierStats::class);
+        $dossierStats = $this->createMock(FolderStats::class);
         $dossierStats->method('getCompleted')->willReturn(7);
         $dossierStats->method('getTotal')->willReturn(10);
 

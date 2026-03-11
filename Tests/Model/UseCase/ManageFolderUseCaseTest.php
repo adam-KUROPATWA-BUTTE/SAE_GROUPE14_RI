@@ -2,21 +2,21 @@
 
 namespace Tests\Model\UseCase;
 
-use Model\Repository\DossierRepositoryInterface;
+use Model\Repository\FolderRepositoryInterface;
 use Model\UseCase\ManageFolderUseCase;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 
 class ManageFolderUseCaseTest extends TestCase
 {
-    /** @var DossierRepositoryInterface&MockObject */
-    private DossierRepositoryInterface $repoMock;
+    /** @var FolderRepositoryInterface&MockObject */
+    private FolderRepositoryInterface $repoMock;
 
     private ManageFolderUseCase $useCase;
 
     protected function setUp(): void
     {
-        $this->repoMock = $this->createMock(DossierRepositoryInterface::class);
+        $this->repoMock = $this->createMock(FolderRepositoryInterface::class);
         $this->useCase  = new ManageFolderUseCase($this->repoMock);
     }
 

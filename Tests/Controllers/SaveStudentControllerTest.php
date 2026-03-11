@@ -192,7 +192,7 @@ class SaveStudentControllerTest extends TestCase
 
     public function testSessionMessageOnSuccessFr(): void
     {
-        $this->assertEquals('Dossier créé avec succès', $this->buildResultMessage(true, 'fr'));
+        $this->assertEquals('Folder créé avec succès', $this->buildResultMessage(true, 'fr'));
     }
 
     public function testSessionMessageOnFailureFr(): void
@@ -223,7 +223,7 @@ class SaveStudentControllerTest extends TestCase
     private function buildResultMessage(bool $success, string $lang): string
     {
         if ($success) {
-            return $lang === 'fr' ? 'Dossier créé avec succès' : 'Folder created successfully';
+            return $lang === 'fr' ? 'Folder créé avec succès' : 'Folder created successfully';
         }
         return $lang === 'fr' ? 'Erreur lors de la création du dossier' : 'Error creating folder';
     }

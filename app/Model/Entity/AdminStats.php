@@ -4,7 +4,7 @@ namespace Model\Entity;
 
 class AdminStats
 {
-    private DossierStats $dossierStats;
+    private FolderStats $dossierStats;
     /** @var array<int, CountryStats> */
     private array $topCountries;
     private GenderStats $genderStats;
@@ -23,15 +23,15 @@ class AdminStats
      * @param array<int, array{name: string, count: int}> $zoneStats
      */
     public function __construct(
-        DossierStats $dossierStats,
-        array $topCountries,
+        FolderStats $dossierStats,
+        array       $topCountries,
         GenderStats $genderStats,
-        array $departments,
-        int $incomingStudents = 0,
-        int $outgoingStudents = 0,
-        array $zoneStats = [],
-        int $europeCountriesCount = 0,
-        int $nonEuropeCountriesCount = 0,
+        array       $departments,
+        int         $incomingStudents = 0,
+        int         $outgoingStudents = 0,
+        array       $zoneStats = [],
+        int         $europeCountriesCount = 0,
+        int         $nonEuropeCountriesCount = 0,
     ) {
         $this->dossierStats            = $dossierStats;
         $this->topCountries            = $topCountries;
@@ -44,7 +44,7 @@ class AdminStats
         $this->nonEuropeCountriesCount = $nonEuropeCountriesCount;
     }
 
-    public function getDossierStats(): DossierStats
+    public function getDossierStats(): FolderStats
     {
         return $this->dossierStats;
     }

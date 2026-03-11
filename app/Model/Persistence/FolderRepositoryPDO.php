@@ -1,13 +1,13 @@
 <?php
 namespace Model\Persistence;
 
-use Model\Repository\DossierRepositoryInterface;
+use Model\Repository\FolderRepositoryInterface;
 use PDO;
 use Database;
-use Model\Entity\DossierStats;
+use Model\Entity\FolderStats;
 use Model\Entity\GenderStats;
 
-class DossierRepositoryPDO implements DossierRepositoryInterface
+class FolderRepositoryPDO implements FolderRepositoryInterface
 {
     private PDO $db;
 
@@ -69,12 +69,12 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
     // STATS
     // ===========================================================
 
-    public function getGlobalStats(): DossierStats
+    public function getGlobalStats(): FolderStats
     {
         return $this->getDossierStats();
     }
 
-    public function getDossierStats(?string $mobilite = null, ?string $departement = null): DossierStats
+    public function getDossierStats(?string $mobilite = null, ?string $departement = null): FolderStats
     {
         try {
             ['clause' => $where,  'bindings' => $bindings]  = $this->mobiliteWhere($mobilite);
@@ -91,9 +91,9 @@ class DossierRepositoryPDO implements DossierRepositoryInterface
             $result    = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : false;
             $total     = (is_array($result) && isset($result['total'])     && is_numeric($result['total']))     ? (int) $result['total']     : 0;
             $completed = (is_array($result) && isset($result['completed']) && is_numeric($result['completed'])) ? (int) $result['completed'] : 0;
-            return new DossierStats($total, $completed);
+            return new FolderStats($total, $completed);
         } catch (\PDOException $e) {
-            return new DossierStats(0, 0);
+            return new FolderStats(0, 0);
         }
     }
 

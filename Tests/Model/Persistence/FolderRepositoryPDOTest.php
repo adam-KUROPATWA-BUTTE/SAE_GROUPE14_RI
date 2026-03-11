@@ -2,35 +2,35 @@
 
 namespace Tests\Model\Persistence;
 
-use Model\Entity\DossierStats;
+use Model\Entity\FolderStats;
 use Model\Entity\GenderStats;
-use Model\Persistence\DossierRepositoryPDO;
+use Model\Persistence\FolderRepositoryPDO;
 use PDO;
 use PDOStatement;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
- * Tests unitaires pour DossierRepositoryPDO.
+ * Tests unitaires pour FolderRepositoryPDO.
  *
  * Stratégie : newInstanceWithoutConstructor() + injection ReflectionProperty
  * sur $db pour ne jamais toucher le singleton Database.
  */
-class DossierRepositoryPDOTest extends TestCase
+class FolderRepositoryPDOTest extends TestCase
 {
     /** @var PDO&MockObject */
     private PDO $pdoMock;
 
-    private DossierRepositoryPDO $repo;
+    private FolderRepositoryPDO $repo;
 
     protected function setUp(): void
     {
-        $this->repo = (new \ReflectionClass(DossierRepositoryPDO::class))
+        $this->repo = (new \ReflectionClass(FolderRepositoryPDO::class))
             ->newInstanceWithoutConstructor();
 
         $this->pdoMock = $this->createMock(PDO::class);
 
-        $prop = new \ReflectionProperty(DossierRepositoryPDO::class, 'db');
+        $prop = new \ReflectionProperty(FolderRepositoryPDO::class, 'db');
         $prop->setAccessible(true);
         $prop->setValue($this->repo, $this->pdoMock);
     }
