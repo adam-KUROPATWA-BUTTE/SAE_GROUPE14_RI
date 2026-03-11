@@ -92,13 +92,6 @@ ob_start();
         include __DIR__ . '/../Partials/_modal_validation.php';
         ?>
 
-        <script>
-            <?php
-            $repoTemp    = new \Model\Persistence\FolderRepositoryPDO();
-            $analyseData = $repoTemp->analyserDocuments($numEtu);
-            ?>
-            window.analyseDocumentsData = <?= json_encode($analyseData) ?>;
-        </script>
 
     <?php endif; ?>
 
