@@ -1,1 +1,0 @@
-<p>Template: validation_complete</p>

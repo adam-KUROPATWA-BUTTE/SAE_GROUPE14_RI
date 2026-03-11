@@ -1,1 +1,0 @@
-<p>Template: relance</p>

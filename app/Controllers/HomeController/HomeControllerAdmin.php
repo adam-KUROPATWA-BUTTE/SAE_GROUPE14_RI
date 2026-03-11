@@ -57,11 +57,6 @@ class HomeControllerAdmin implements ControllerInterface
     {
         $this->startSession();
 
-        $allowedRoles = ['admin'];
-        if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], $allowedRoles, true)) {
-            $this->redirect('index.php?page=login');
-        }
-
         if (isset($_GET['lang'])) {
             $langParam = strval($_GET['lang']);
             if (in_array($langParam, ['fr', 'en'], true)) {

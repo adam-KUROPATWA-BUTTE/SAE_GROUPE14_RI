@@ -23,10 +23,8 @@ class WebPlanController implements ControllerInterface
 
         $lang = $_GET['lang'] ?? $_SESSION['lang'] ?? 'fr';
 
-        $adminRoles = ['admin', 'super_admin', 'coordinateur', 'coordinateur_etude', 'coordinateur_stage', 'chef_departement'];
-
         // Redirection selon le rôle
-        if (isset($_SESSION['role']) && in_array($_SESSION['role'], $adminRoles, true)) {
+        if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
             header('Location: index.php?page=web_plan-admin&lang=' . urlencode($lang));
             exit;
         } elseif (isset($_SESSION['numetu'])) {

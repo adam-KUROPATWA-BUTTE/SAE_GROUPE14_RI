@@ -1,6 +1,6 @@
 <?php
 
-namespace Model\Entity;
+namespace Tests\Model\Entity;
 
 use PHPUnit\Framework\TestCase;
 use Model\Entity\Message;
