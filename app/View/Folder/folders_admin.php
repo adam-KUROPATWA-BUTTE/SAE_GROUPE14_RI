@@ -179,7 +179,15 @@ ob_start();
         <?php
         $pieces        = (isset($studentData['pieces'])  && is_array($studentData['pieces']))  ? $studentData['pieces']  : [];
         $statuts       = (isset($studentData['statuts']) && is_array($studentData['statuts'])) ? $studentData['statuts'] : [];
-        $detectedType  = !empty($pieces['convention']['file']) ? 'stage' : (!empty($pieces['lettre_motivation']['file']) ? 'etudes' : '');
+        $mobiliteCol  = strtolower(trim(strval($studentData['Mobilite'] ?? '')));
+        if ($mobiliteCol === 'stage') {
+            $detectedType = 'stage';
+        } elseif ($mobiliteCol === 'etude' || $mobiliteCol === 'etudes') {
+            $detectedType = 'etude';
+        } else {
+            $detectedType = !empty($pieces['convention']['file'])         ? 'stage'
+                    : (!empty($pieces['lettre_motivation']['file']) ? 'etudes' : '');
+        }
         $numEtu        = htmlspecialchars(strval($studentData['NumEtu'] ?? ''));
         $dateLimite    = $studentData['DateLimite'] ?? null;
         $currentStatus = $studentData['status'] ?? 'depot';

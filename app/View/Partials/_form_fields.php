@@ -168,8 +168,8 @@ $labelClass = function(string $name) use ($activeFields, $isEditable): string {
     <select name="mobilite_type" <?= $selectAttrs('mobilite_type') ?>>
         <option value=""><?= $t(['fr' => '-- Choisir --', 'en' => '-- Choose --']) ?></option>
         <option value="stage"  <?= $detectedType === 'stage'  ? 'selected' : '' ?>><?= $t(['fr' => 'Stage',  'en' => 'Internship']) ?></option>
-        <option value="etudes" <?= $detectedType === 'etudes' ? 'selected' : '' ?>><?= $t(['fr' => 'Études', 'en' => 'Studies'])    ?></option>
+        <option value="etude" <?= $detectedType === 'etude' ? 'selected' : '' ?>><?= $t(['fr' => 'Études', 'en' => 'Studies'])    ?></option>
     </select>
 <?php if ($needsHidden('mobilite_type')) : ?>
-    <input type="hidden" name="mobilite_type" value="<?= htmlspecialchars($detectedType) ?>">
+    <input type="hidden" name="mobilite_type" id="hidden_mobilite_type" value="<?= htmlspecialchars($detectedType) ?>">
 <?php endif; ?>

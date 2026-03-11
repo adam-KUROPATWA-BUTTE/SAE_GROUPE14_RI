@@ -16,7 +16,12 @@ class FormManager {
         const mobiliteSelect = document.getElementById('mobilite_type');
         if (!mobiliteSelect) return;
         this.changerTypeMobilite(mobiliteSelect.value);
-        mobiliteSelect.addEventListener('change', (e) => this.changerTypeMobilite(e.target.value));
+        mobiliteSelect.addEventListener('change', (e) => {
+            this.changerTypeMobilite(e.target.value);
+            // Synchroniser le hidden miroir quand le select change
+            const hidden = document.getElementById('hidden_mobilite_type');
+            if (hidden) hidden.value = e.target.value;
+        });
     }
 
     _initBtnModifier() {
@@ -469,10 +474,27 @@ class ValidationModalManager {
             if (!field.name) return;
             if (formModal.querySelector(`[name="${field.name}"]`)) return;
 
-            const hidden   = document.createElement('input');
-            hidden.type    = 'hidden';
-            hidden.name    = field.name;
-            hidden.value   = field.tagName === 'SELECT' ? (field.options[field.selectedIndex]?.value ?? '') : field.value;
+            let value = '';
+            if (field.tagName === 'SELECT') {
+                if (field.disabled) {
+                    const mirror = formPrincipal.querySelector(`input[type="hidden"][name="${field.name}"]`);
+                    value = mirror ? mirror.value : '';
+                } else {
+                    value = field.options[field.selectedIndex]?.value ?? '';
+                }
+            } else {
+                value = field.value;
+            }
+
+            // DEBUG — à supprimer après
+            if (field.name === 'mobilite_type') {
+                console.log('mobilite_type synced value:', value);
+            }
+
+            const hidden = document.createElement('input');
+            hidden.type  = 'hidden';
+            hidden.name  = field.name;
+            hidden.value = value;
             hidden.classList.add('synced-field');
             formModal.appendChild(hidden);
         });
