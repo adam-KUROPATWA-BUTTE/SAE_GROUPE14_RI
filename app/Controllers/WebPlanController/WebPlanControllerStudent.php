@@ -18,7 +18,6 @@ class WebPlanControllerStudent implements ControllerInterface
             session_start();
         }
 
-        // Vérifier l'authentification étudiant
         if (!isset($_SESSION['numetu'])) {
             header('Location: index.php?page=login');
             exit;
@@ -26,12 +25,10 @@ class WebPlanControllerStudent implements ControllerInterface
 
         $lang = $_SESSION['lang'] ?? 'fr';
 
-        // Fonction de traduction
         $t = function(array $translations) use ($lang) {
             return $translations[$lang] ?? $translations['fr'];
         };
 
-        // Construction d'URL
         $buildUrl = function(string $path, array $params = []) use ($lang) {
             $params['lang'] = $lang;
             $url = 'index.php?page=' . $path;

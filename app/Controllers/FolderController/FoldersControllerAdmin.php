@@ -70,6 +70,10 @@ class FoldersControllerAdmin
         $page   = $_GET['page']   ?? 'folders';
         $action = $_GET['action'] ?? 'list';
         $lang   = $_GET['lang']   ?? 'fr';
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            header('Location: index.php?page=login');
+            exit;
+        }
 
         if ($page === 'toggle_complete') {
             $numetu = $_GET['numetu'] ?? null;
