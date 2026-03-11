@@ -16,14 +16,30 @@ class PartnersControllerAdmin implements ControllerInterface
         return $page === 'partners-admin';
     }
 
-    public function control(): void
+    protected function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+    }
+
+    protected function redirect(string $url): never
+    {
+        header('Location: ' . $url);
+        exit;
+    }
+
+    protected function renderView(string $view, array $data = []): void
+    {
+        View::render($view, $data);
+    }
+
+    public function control(): void
+    {
+        $this->startSession();
+
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            header('Location: index.php?page=login');
-            exit;
+            $this->redirect('index.php?page=login');
         }
 
         if (isset($_GET['lang'])) {
@@ -39,26 +55,23 @@ class PartnersControllerAdmin implements ControllerInterface
         }
 
         $errorMessage = '';
-        $success = isset($_GET['success']);
+        $success      = isset($_GET['success']);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $continent   = trim($_POST['continent'] ?? '');
-            $country     = trim($_POST['country'] ?? '');
-            $city        = trim($_POST['city'] ?? '');
+            $continent   = trim($_POST['continent']   ?? '');
+            $country     = trim($_POST['country']     ?? '');
+            $city        = trim($_POST['city']        ?? '');
             $institution = trim($_POST['institution'] ?? '');
-            $type        = trim($_POST['type'] ?? '');
-            $validTypes = ['amu', 'iut'];
+            $type        = trim($_POST['type']        ?? '');
+            $validTypes  = ['amu', 'iut'];
 
             if ($continent && $country && $city && $institution && in_array($type, $validTypes, true)) {
                 try {
                     $repository = new PartnerRepositoryPDO();
                     $useCase    = new AddPartnerUseCase($repository);
-
-                    $partner = new Partner($continent, $country, $city, $institution, $type);
+                    $partner    = new Partner($continent, $country, $city, $institution, $type);
                     $useCase->execute($partner);
-
-                    header('Location: index.php?page=partners-admin&success=1&lang=' . $lang);
-                    exit;
+                    $this->redirect('index.php?page=partners-admin&success=1&lang=' . $lang);
                 } catch (PDOException $e) {
                     error_log("Partner insertion error: " . $e->getMessage());
                     $errorMessage = $e->getMessage();
@@ -82,13 +95,13 @@ class PartnersControllerAdmin implements ControllerInterface
             return $path . $separator . http_build_query($params);
         };
 
-        View::render('Partners/partners_admin', [
+        $this->renderView('Partners/partners_admin', [
             'titre'        => $titre,
             'lang'         => $lang,
             'errorMessage' => $errorMessage,
             'success'      => $success,
             't'            => $t,
-            'buildUrl'     => $buildUrl
+            'buildUrl'     => $buildUrl,
         ]);
     }
 }

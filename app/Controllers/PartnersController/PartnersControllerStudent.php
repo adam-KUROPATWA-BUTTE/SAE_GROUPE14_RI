@@ -12,15 +12,31 @@ class PartnersControllerStudent implements ControllerInterface
         return $page === 'partners-student';
     }
 
-    public function control(): void
+    protected function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+    }
+
+    protected function redirect(string $url): never
+    {
+        header('Location: ' . $url);
+        exit;
+    }
+
+    protected function renderView(string $view, array $data = []): void
+    {
+        View::render($view, $data);
+    }
+
+    public function control(): void
+    {
+        $this->startSession();
+
         if (empty($_SESSION['numetu'])) {
             $this->redirect('index.php?page=login&error=not_logged_in');
         }
-
 
         if (isset($_GET['lang'])) {
             $langParam = strval($_GET['lang']);
@@ -36,9 +52,6 @@ class PartnersControllerStudent implements ControllerInterface
 
         $partner = isset($_GET['partner']) && $_GET['partner'] === 'iut' ? 'iut' : 'amu';
 
-        // FIX: match(true) requires an exhaustive list of conditions or a default branch.
-        // PHPStan cannot prove all combinations are covered, so "remaining value: true" is raised.
-        // Adding a default arm fixes it.
         $titre = match(true) {
             $partner === 'amu' && $lang === 'fr' => 'Universités Destinations AMU',
             $partner === 'amu' && $lang === 'en' => 'AMU Destinations Universities',
@@ -57,12 +70,12 @@ class PartnersControllerStudent implements ControllerInterface
             return $path . $separator . http_build_query($params);
         };
 
-        View::render('Partners/partners_student', [
+        $this->renderView('Partners/partners_student', [
             'titre'    => $titre,
             'lang'     => $lang,
             'partner'  => $partner,
             't'        => $t,
-            'buildUrl' => $buildUrl
+            'buildUrl' => $buildUrl,
         ]);
     }
 }

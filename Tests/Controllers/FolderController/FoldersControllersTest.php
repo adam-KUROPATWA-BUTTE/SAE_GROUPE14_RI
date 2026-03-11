@@ -24,7 +24,7 @@ class FoldersControllersTest extends TestCase
         $_GET     = [];
         $_POST    = [];
         $_FILES   = [];
-        $_SESSION = [];
+        $_SESSION = ['role' => 'admin'];  // ← rôle admin par défaut
         $_SERVER['REQUEST_METHOD'] = 'GET';
     }
 
@@ -598,6 +598,8 @@ class FoldersControllersTest extends TestCase
 
     public function test_student_redirects_to_login_when_numetu_missing(): void
     {
+        $_SESSION = []; // pas de numetu, pas de role étudiant
+
         [$controller] = $this->makeStudentController();
 
         $this->expectException(\RuntimeException::class);
