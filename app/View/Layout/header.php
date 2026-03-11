@@ -142,7 +142,7 @@ $userRole === 'admin'        ? 'home-admin'        :
                     'en' => 'Destinations',
                 ],
                 'folders' => [
-                    'fr' => ($userRole === 'admin' ? 'Dossiers' : 'Mon Folder'),
+                    'fr' => ($userRole === 'admin' ? 'Dossiers' : 'Mon Dossier'),
                     'en' => ($userRole === 'admin' ? 'Folders' : 'My Folder'),
                 ],
             ];
