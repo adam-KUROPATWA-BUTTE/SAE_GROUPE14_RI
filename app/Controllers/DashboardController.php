@@ -3,6 +3,7 @@
 namespace Controllers;
 
 use Model\UseCase\ManageFolderUseCase;
+use Model\Persistence\DossierRepositoryPDO;
 use Core\View;
 
 class DashboardController implements ControllerInterface
@@ -66,6 +67,8 @@ class DashboardController implements ControllerInterface
         if (!is_array($folders)) {
             $folders = [];
         }
+
+        $departments = (new DossierRepositoryPDO())->getAllDepartements();
 
         $outgoing = [];
         $incoming = [];
@@ -133,12 +136,13 @@ class DashboardController implements ControllerInterface
         };
 
         View::render('Dashboard/dashboard_admin', [
-            'incoming' => $incoming,
-            'outgoing' => $outgoing,
-            'filters'  => $filters,
-            'lang'     => $lang,
-            't'        => $t,
-            'buildUrl' => $buildUrl
+            'incoming'    => $incoming,
+            'outgoing'    => $outgoing,
+            'filters'     => $filters,
+            'lang'        => $lang,
+            't'           => $t,
+            'buildUrl'    => $buildUrl,
+            'departments' => $departments,
         ]);
     }
 
