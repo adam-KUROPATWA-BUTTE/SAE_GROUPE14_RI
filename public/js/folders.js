@@ -1,29 +1,27 @@
-class FolderManager {
+/* ==========================================================================
+   FolderManager.js
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   FormManager — formulaire principal & mode modification
+   -------------------------------------------------------------------------- */
+class FormManager {
     constructor() {
-        this.initFormEvents();
-        this.initFilterEvents();
-        this.initTableEvents();
-        this.initAccordionEvents();
-        this.initAccordionPagination();
-        this.initValidationModal();
-        this.initStatutDocumentButtons();
-        this.initDateLimiteBanniere();
-        this.initFileUploadEvents();
+        this._initMobiliteSelect();
+        this._initBtnModifier();
     }
 
-    initFormEvents() {
+    _initMobiliteSelect() {
         const mobiliteSelect = document.getElementById('mobilite_type');
-        if (mobiliteSelect) {
-            this.changerTypeMobilite(mobiliteSelect.value);
-            mobiliteSelect.addEventListener('change', (e) => {
-                this.changerTypeMobilite(e.target.value);
-            });
-        }
+        if (!mobiliteSelect) return;
+        this.changerTypeMobilite(mobiliteSelect.value);
+        mobiliteSelect.addEventListener('change', (e) => this.changerTypeMobilite(e.target.value));
+    }
 
+    _initBtnModifier() {
         const btnModifier = document.getElementById('btn-modifier');
-        if (btnModifier) {
-            btnModifier.addEventListener('click', () => this.activerModification());
-        }
+        if (btnModifier) btnModifier.addEventListener('click', () => this.activerModification());
     }
 
     changerTypeMobilite(type) {
@@ -41,14 +39,12 @@ class FolderManager {
         const formPrincipal = document.querySelector('.creation-form');
         if (!formPrincipal) return;
 
-        // Mémoriser les valeurs originales avant activation
         formPrincipal.querySelectorAll('input:not([type="file"]):not([type="hidden"]), select').forEach(field => {
             if (field.id !== 'numetu' && field.id !== 'numetu_display') {
                 field.setAttribute('data-original-value', field.value);
             }
         });
 
-        // Retirer readonly sur les inputs texte
         formPrincipal.querySelectorAll('input').forEach(field => {
             if (field.id !== 'numetu' && field.id !== 'numetu_display') {
                 field.removeAttribute('readonly');
@@ -59,15 +55,12 @@ class FolderManager {
             }
         });
 
-        // Retirer disabled sur les selects et désactiver les hidden miroirs pour éviter la double soumission
         formPrincipal.querySelectorAll('select').forEach(field => {
             if (field.id !== 'numetu' && field.id !== 'numetu_display') {
                 field.disabled = false;
                 field.style.backgroundColor = 'white';
                 field.style.color = 'black';
                 field.classList.remove('input-disabled');
-
-                // Désactiver le hidden miroir pour éviter la double soumission
                 const mirror = formPrincipal.querySelector(`input[type="hidden"][name="${field.name}"].select-mirror`);
                 if (mirror) mirror.disabled = true;
             }
@@ -78,13 +71,8 @@ class FolderManager {
             input.classList.remove('input-disabled');
         });
 
-        document.querySelectorAll('.doc-actions textarea').forEach(ta => {
-            ta.disabled = false;
-        });
-
-        document.querySelectorAll('.btn-status').forEach(btn => {
-            btn.disabled = false;
-        });
+        document.querySelectorAll('.doc-actions textarea').forEach(ta => { ta.disabled = false; });
+        document.querySelectorAll('.btn-status').forEach(btn => { btn.disabled = false; });
 
         const btnMod    = document.getElementById('btn-modifier');
         const btnSave   = document.getElementById('btn-enregistrer');
@@ -94,8 +82,20 @@ class FolderManager {
         if (btnSave)   { btnSave.style.display = 'inline-block';   btnSave.classList.remove('btn-hidden'); }
         if (btnCancel) { btnCancel.style.display = 'inline-block'; btnCancel.classList.remove('btn-hidden'); }
     }
+}
 
-    initFilterEvents() {
+
+/* --------------------------------------------------------------------------
+   FilterManager — recherche & filtres → URL
+   -------------------------------------------------------------------------- */
+class FilterManager {
+    constructor() {
+        this._initSearchEvents();
+        this._initCheckboxFilters();
+        this._initSelectFilters();
+    }
+
+    _initSearchEvents() {
         const searchInput = document.getElementById('search');
         const searchBtn   = document.querySelector('#btn-search-loupe');
 
@@ -110,10 +110,10 @@ class FolderManager {
             });
         }
 
-        if (searchBtn) {
-            searchBtn.addEventListener('click', () => this.appliquerFiltres(true));
-        }
+        if (searchBtn) searchBtn.addEventListener('click', () => this.appliquerFiltres(true));
+    }
 
+    _initCheckboxFilters() {
         document.querySelectorAll('input[name="entrant_sortant"], input[name="zone"]').forEach(cb => {
             cb.addEventListener('click', (e) => {
                 const groupName = e.target.name;
@@ -123,7 +123,9 @@ class FolderManager {
                 this.appliquerFiltres(true);
             });
         });
+    }
 
+    _initSelectFilters() {
         document.querySelectorAll('#filter-complet, #date-debut, #date-fin, #filter-composante, #filter-accord').forEach(sel => {
             if (sel) sel.addEventListener('change', () => this.appliquerFiltres(true));
         });
@@ -138,29 +140,35 @@ class FolderManager {
 
         const typeChecked = document.querySelector('input[name="entrant_sortant"]:checked');
         if (typeChecked) url.searchParams.set('type', typeChecked.value);
-        else url.searchParams.delete('type');
+        else             url.searchParams.delete('type');
 
         const zoneChecked = document.querySelector('input[name="zone"]:checked');
         if (zoneChecked) url.searchParams.set('zone', zoneChecked.value);
-        else url.searchParams.delete('zone');
+        else             url.searchParams.delete('zone');
 
         const completVal = document.getElementById('filter-complet');
         if (completVal && completVal.value !== 'all') url.searchParams.set('complet', completVal.value);
-        else url.searchParams.delete('complet');
+        else                                           url.searchParams.delete('complet');
 
         const composanteVal = document.getElementById('filter-composante');
         if (composanteVal && composanteVal.value !== 'all') url.searchParams.set('composante', composanteVal.value);
-        else url.searchParams.delete('composante');
+        else                                                 url.searchParams.delete('composante');
 
         const accordVal = document.getElementById('filter-accord');
         if (accordVal && accordVal.value !== 'all') url.searchParams.set('accord', accordVal.value);
-        else url.searchParams.delete('accord');
+        else                                         url.searchParams.delete('accord');
 
-        url.searchParams.delete('p');
+        if (resetPage) url.searchParams.delete('p');
         window.location.href = url.toString();
     }
+}
 
-    initTableEvents() {
+
+/* --------------------------------------------------------------------------
+   TableManager — clics sur les lignes → fiche étudiant
+   -------------------------------------------------------------------------- */
+class TableManager {
+    constructor() {
         document.querySelectorAll('.table-etudiants tbody tr').forEach(row => {
             row.addEventListener('click', (e) => {
                 const numetu = e.currentTarget.dataset.numetu;
@@ -175,37 +183,44 @@ class FolderManager {
         url.searchParams.set('numetu', numetu);
         window.location.href = url.toString();
     }
+}
 
-    initAccordionEvents() {
+
+/* --------------------------------------------------------------------------
+   AccordionManager — toggle + pagination interne par section
+   -------------------------------------------------------------------------- */
+class AccordionManager {
+    constructor(itemsPerPage = 10) {
+        this.itemsPerPage = itemsPerPage;
+        this._initToggle();
+        this._initPagination();
+    }
+
+    _initToggle() {
         document.querySelectorAll('.barre-titre').forEach(barre => {
             barre.addEventListener('click', () => {
-                const targetId = barre.getAttribute('data-target');
-                const contenu  = document.getElementById(targetId);
-                const fleche   = barre.querySelector('.fleche');
+                const contenu = document.getElementById(barre.getAttribute('data-target'));
+                const fleche  = barre.querySelector('.fleche');
                 if (contenu) contenu.classList.toggle('afficher');
                 if (fleche)  fleche.classList.toggle('ouverte');
             });
         });
     }
 
-    initAccordionPagination() {
-        const itemsPerPage = 10;
+    _initPagination() {
         document.querySelectorAll('.section-composante').forEach((section) => {
             const tbody               = section.querySelector('.table-etudiants tbody');
             const paginationContainer = section.querySelector('.accordion-pagination');
             if (!tbody || !paginationContainer) return;
 
             const rows = Array.from(tbody.querySelectorAll('tr'));
-            if (rows.length <= itemsPerPage) {
-                paginationContainer.style.display = 'none';
-                return;
-            }
+            if (rows.length <= this.itemsPerPage) { paginationContainer.style.display = 'none'; return; }
 
-            const totalPages = Math.ceil(rows.length / itemsPerPage);
+            const totalPages = Math.ceil(rows.length / this.itemsPerPage);
 
             const showPage = (page) => {
                 rows.forEach((row, index) => {
-                    row.style.display = (index >= (page - 1) * itemsPerPage && index < page * itemsPerPage) ? '' : 'none';
+                    row.style.display = (index >= (page - 1) * this.itemsPerPage && index < page * this.itemsPerPage) ? '' : 'none';
                 });
                 renderButtons(page);
             };
@@ -215,7 +230,7 @@ class FolderManager {
 
                 const btnPrev = document.createElement('button');
                 btnPrev.textContent = '‹';
-                btnPrev.disabled = currentPage === 1;
+                btnPrev.disabled    = currentPage === 1;
                 btnPrev.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); showPage(currentPage - 1); });
                 paginationContainer.appendChild(btnPrev);
 
@@ -229,7 +244,7 @@ class FolderManager {
 
                 const btnNext = document.createElement('button');
                 btnNext.textContent = '›';
-                btnNext.disabled = currentPage === totalPages;
+                btnNext.disabled    = currentPage === totalPages;
                 btnNext.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); showPage(currentPage + 1); });
                 paginationContainer.appendChild(btnNext);
             };
@@ -237,58 +252,83 @@ class FolderManager {
             showPage(1);
         });
     }
+}
+
+
+/* --------------------------------------------------------------------------
+   DocumentManager — AJAX confirm/upload, statut global, boutons statut, upload unlock
+   -------------------------------------------------------------------------- */
+class DocumentManager {
+    constructor() {
+        this._initStatutButtons();
+        this._initFileUploadEvents();
+    }
+
+    _initStatutButtons() {
+        document.querySelectorAll('.statut-document-buttons .btn-status').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const doc = this.dataset.doc;
+                document.querySelectorAll(`.statut-document-buttons[data-doc="${doc}"] .btn-status`).forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    }
+
+    _initFileUploadEvents() {
+        document.querySelectorAll('.doc-review-item input[type="file"]').forEach(fileInput => {
+            fileInput.addEventListener('change', function () {
+                if (!this.files || this.files.length === 0) return;
+                const item = this.closest('.doc-review-item');
+                if (!item) return;
+                item.querySelectorAll('input[type="radio"], textarea, .btn-confirm-doc').forEach(el => {
+                    el.disabled = false;
+                    el.classList.remove('input-disabled');
+                });
+                const docActions = item.querySelector('.doc-actions');
+                if (docActions) docActions.classList.remove('disabled-area');
+            });
+        });
+    }
 
     async confirmDocument(numEtu, docType) {
         const container = document.querySelector(`.doc-review-item[data-doctype="${docType}"]`);
         if (!container) return;
 
-        // Lire le radio coché
-        const checkedRadio = container.querySelector(`input[name="status_${docType}"]:checked`);
-        const status       = checkedRadio ? checkedRadio.value : 'pending';
-        const comment      = container.querySelector(`textarea[name="comment_${docType}"]`)?.value ?? '';
-        const indicator    = document.getElementById(`indicator_${docType}`);
-        const btn          = container.querySelector('.btn-confirm-doc');
-
-        // Vérifier si un fichier est sélectionné
+        const checkedRadio  = container.querySelector(`input[name="status_${docType}"]:checked`);
+        const status        = checkedRadio ? checkedRadio.value : 'pending';
+        const comment       = container.querySelector(`textarea[name="comment_${docType}"]`)?.value ?? '';
+        const indicator     = document.getElementById(`indicator_${docType}`);
+        const btn           = container.querySelector('.btn-confirm-doc');
         const fileInputName = docType === 'langues' ? 'langues_file' : docType;
         const fileInput     = container.querySelector(`input[type="file"][name="${fileInputName}"]`);
         const hasNewFile    = fileInput && fileInput.files && fileInput.files.length > 0;
 
-        if (btn) btn.disabled = true;
+        if (btn)       btn.disabled = true;
         if (indicator) { indicator.textContent = "Sauvegarde en cours..."; indicator.style.color = "orange"; }
 
         if (hasNewFile) {
-            // ── Fichier à uploader : AJAX multipart vers update_document_status ──
-            const formData2 = new FormData();
-            formData2.append('numetu',   numEtu);
-            formData2.append('doc_type', docType);
-            formData2.append('status',   status);
-            formData2.append('comment',  comment);
-            formData2.append('file',     fileInput.files[0]);
+            const formData = new FormData();
+            formData.append('numetu',   numEtu);
+            formData.append('doc_type', docType);
+            formData.append('status',   status);
+            formData.append('comment',  comment);
+            formData.append('file',     fileInput.files[0]);
 
             try {
-                const response = await fetch('index.php?page=update_document_status', { method: 'POST', body: formData2 });
-                const result   = await response.json();
+                const result = await (await fetch('index.php?page=update_document_status', { method: 'POST', body: formData })).json();
                 if (indicator) {
                     indicator.textContent = result.success ? "Enregistré ✓" : (result.message || "Erreur serveur");
-                    indicator.style.color = result.success ? "green"        : "red";
+                    indicator.style.color = result.success ? "green" : "red";
                 }
-                if (result.success) {
-                    // Recharger la page pour afficher le fichier uploadé
-                    setTimeout(() => window.location.reload(), 800);
-                }
+                if (result.success) setTimeout(() => window.location.reload(), 800);
             } catch {
                 if (indicator) { indicator.textContent = "Erreur réseau"; indicator.style.color = "red"; }
             }
 
-            setTimeout(() => {
-                if (indicator) indicator.textContent = "";
-                if (btn) btn.disabled = false;
-            }, 3000);
+            setTimeout(() => { if (indicator) indicator.textContent = ""; if (btn) btn.disabled = false; }, 3000);
             return;
         }
 
-        // ── Pas de fichier : AJAX classique ──
         const formData = new FormData();
         formData.append('numetu',   numEtu);
         formData.append('doc_type', docType);
@@ -296,20 +336,16 @@ class FolderManager {
         formData.append('comment',  comment);
 
         try {
-            const response = await fetch('index.php?page=update_document_status', { method: 'POST', body: formData });
-            const result   = await response.json();
+            const result = await (await fetch('index.php?page=update_document_status', { method: 'POST', body: formData })).json();
             if (indicator) {
                 indicator.textContent = result.success ? "Enregistré ✓" : "Erreur serveur";
-                indicator.style.color = result.success ? "green"        : "red";
+                indicator.style.color = result.success ? "green" : "red";
             }
         } catch {
             if (indicator) { indicator.textContent = "Erreur réseau"; indicator.style.color = "red"; }
         }
 
-        setTimeout(() => {
-            if (indicator) indicator.textContent = "";
-            if (btn) btn.disabled = false;
-        }, 3000);
+        setTimeout(() => { if (indicator) indicator.textContent = ""; if (btn) btn.disabled = false; }, 3000);
     }
 
     async updateGlobalStatus(numEtu) {
@@ -317,19 +353,17 @@ class FolderManager {
         const indicator    = document.getElementById('global_status_indicator');
         if (!statusSelect) return;
 
-        const newStatus = statusSelect.value;
         if (indicator) { indicator.textContent = "Sauvegarde en cours..."; indicator.style.color = "orange"; }
 
         const formData = new FormData();
         formData.append('numetu', numEtu);
-        formData.append('status', newStatus);
+        formData.append('status', statusSelect.value);
 
         try {
-            const response = await fetch('index.php?page=update_global_status', { method: 'POST', body: formData });
-            const result   = await response.json();
+            const result = await (await fetch('index.php?page=update_global_status', { method: 'POST', body: formData })).json();
             if (indicator) {
                 indicator.textContent = result.success ? "Statut mis à jour ✓" : "Erreur";
-                indicator.style.color = result.success ? "green"               : "red";
+                indicator.style.color = result.success ? "green" : "red";
             }
         } catch {
             if (indicator) { indicator.textContent = "Erreur réseau"; indicator.style.color = "red"; }
@@ -337,20 +371,14 @@ class FolderManager {
 
         setTimeout(() => { if (indicator) indicator.textContent = ""; }, 3000);
     }
+}
 
-    initStatutDocumentButtons() {
-        document.querySelectorAll('.statut-document-buttons .btn-status').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const doc = this.dataset.doc;
-                document.querySelectorAll(`.statut-document-buttons[data-doc="${doc}"] .btn-status`).forEach(b => {
-                    b.classList.remove('active');
-                });
-                this.classList.add('active');
-            });
-        });
-    }
 
-    initDateLimiteBanniere() {
+/* --------------------------------------------------------------------------
+   DateLimiteManager — toggle formulaire date limite
+   -------------------------------------------------------------------------- */
+class DateLimiteManager {
+    constructor() {
         const btnEditDate    = document.getElementById('btn-edit-date-limite');
         const formDateLimite = document.getElementById('form-date-limite');
         const btnCancelDate  = document.getElementById('btn-cancel-date');
@@ -361,13 +389,21 @@ class FolderManager {
             });
         }
         if (btnCancelDate && formDateLimite) {
-            btnCancelDate.addEventListener('click', () => {
-                formDateLimite.style.display = 'none';
-            });
+            btnCancelDate.addEventListener('click', () => { formDateLimite.style.display = 'none'; });
         }
     }
+}
 
-    initValidationModal() {
+
+/* --------------------------------------------------------------------------
+   ValidationModalManager — modale de confirmation avant soumission
+   -------------------------------------------------------------------------- */
+class ValidationModalManager {
+    constructor() {
+        this._init();
+    }
+
+    _init() {
         const btnEnregistrer = document.getElementById('btn-enregistrer');
         const modal          = document.getElementById('modal-validation');
         const btnModalCancel = document.getElementById('btn-modal-cancel');
@@ -376,9 +412,7 @@ class FolderManager {
 
         if (!btnEnregistrer || !modal || !formPrincipal) return;
 
-        const appConfig = document.getElementById('app-config');
-        const lang      = appConfig ? appConfig.dataset.lang : 'fr';
-
+        const lang         = document.getElementById('app-config')?.dataset.lang ?? 'fr';
         const translations = {
             photo:             lang === 'fr' ? "Photo d'identité"          : 'ID Photo',
             cv:                lang === 'fr' ? 'CV'                         : 'Resume',
@@ -396,26 +430,16 @@ class FolderManager {
 
         btnEnregistrer.addEventListener('click', (e) => {
             e.preventDefault();
-
-            const modifications = this._detecterModifications(formPrincipal);
-
-            // Toujours ouvrir la modal pour permettre la notification des statuts de pièces
-            this._afficherModifications(modifications);
+            this._afficherModifications(this._detecterModifications(formPrincipal));
             this._afficherDocuments(analyseDocuments, translations);
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
         });
 
-        if (btnModalCancel) {
-            btnModalCancel.addEventListener('click', () => this._fermerModale(modal));
-        }
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) this._fermerModale(modal);
-        });
+        if (btnModalCancel) btnModalCancel.addEventListener('click', () => this._fermerModale(modal));
+        modal.addEventListener('click', (e) => { if (e.target === modal) this._fermerModale(modal); });
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal.classList.contains('active')) {
-                this._fermerModale(modal);
-            }
+            if (e.key === 'Escape' && modal.classList.contains('active')) this._fermerModale(modal);
         });
 
         if (formValidation) {
@@ -445,13 +469,10 @@ class FolderManager {
             if (!field.name) return;
             if (formModal.querySelector(`[name="${field.name}"]`)) return;
 
-            const hidden = document.createElement('input');
-            hidden.type  = 'hidden';
-            hidden.name  = field.name;
-            // Récupère la valeur même si readonly ou disabled
-            hidden.value = field.tagName === 'SELECT'
-                ? (field.options[field.selectedIndex]?.value ?? '')
-                : field.value;
+            const hidden   = document.createElement('input');
+            hidden.type    = 'hidden';
+            hidden.name    = field.name;
+            hidden.value   = field.tagName === 'SELECT' ? (field.options[field.selectedIndex]?.value ?? '') : field.value;
             hidden.classList.add('synced-field');
             formModal.appendChild(hidden);
         });
@@ -465,10 +486,10 @@ class FolderManager {
             if (!input.name || input.name === 'numetu' || input.name === 'mobilite_type') return;
 
             const valeurOriginale = input.getAttribute('data-original-value');
-            if (valeurOriginale === null) return; // champ non débloqué via activerModification()
+            if (valeurOriginale === null) return;
 
             const valeurActuelle = input.value;
-            if (valeurActuelle === valeurOriginale) return; // pas de changement
+            if (valeurActuelle === valeurOriginale) return;
 
             let label = input.name;
             if (input.id) {
@@ -476,11 +497,7 @@ class FolderManager {
                 if (labelEl) label = labelEl.textContent.trim().replace('*', '').trim();
             }
 
-            modifications.push({
-                champ:    label,
-                ancienne: valeurOriginale || '(vide)',
-                nouvelle: valeurActuelle  || '(vide)',
-            });
+            modifications.push({ champ: label, ancienne: valeurOriginale || '(vide)', nouvelle: valeurActuelle || '(vide)' });
         });
 
         return modifications;
@@ -491,10 +508,7 @@ class FolderManager {
         const liste   = document.getElementById('liste-modifications');
         if (!section || !liste) return;
 
-        if (modifications.length === 0) {
-            section.style.display = 'none';
-            return;
-        }
+        if (modifications.length === 0) { section.style.display = 'none'; return; }
 
         section.style.display = 'block';
         liste.innerHTML = modifications.map(m =>
@@ -506,31 +520,11 @@ class FolderManager {
         ).join('');
     }
 
-    initFileUploadEvents() {
-        document.querySelectorAll('.doc-review-item input[type="file"]').forEach(fileInput => {
-            fileInput.addEventListener('change', function () {
-                if (!this.files || this.files.length === 0) return;
-
-                const item = this.closest('.doc-review-item');
-                if (!item) return;
-
-                item.querySelectorAll('input[type="radio"], textarea, .btn-confirm-doc').forEach(el => {
-                    el.disabled = false;
-                    el.classList.remove('input-disabled');
-                });
-
-                const docActions = item.querySelector('.doc-actions');
-                if (docActions) docActions.classList.remove('disabled-area');
-            });
-        });
-    }
-
     _afficherDocuments(analyseDocuments, translations) {
         const manquants = analyseDocuments.manquants || [];
         const presents  = analyseDocuments.presents  || [];
         const statuts   = analyseDocuments.statuts   || {};
 
-        // Lire les radios cochés dans _doc_review.php
         const statutsVue = {};
         document.querySelectorAll('.doc-review-item').forEach(item => {
             const doc          = item.dataset.doctype;
@@ -539,18 +533,14 @@ class FolderManager {
         });
 
         const formValidation = document.getElementById('form-validation');
-
-        // Supprimer les anciens hidden pour repartir propre
         document.querySelectorAll('[id^="statut_modal_"]').forEach(el => el.remove());
 
-        // Créer un hidden par doc présent (valeur radio OU valeur BDD)
         presents.forEach(doc => {
-            const val   = statutsVue[doc] || statuts[doc] || 'pending';
             const input = document.createElement('input');
             input.type  = 'hidden';
             input.name  = 'statut_' + doc;
             input.id    = 'statut_modal_' + doc;
-            input.value = val;
+            input.value = statutsVue[doc] || statuts[doc] || 'pending';
             if (formValidation) formValidation.appendChild(input);
         });
 
@@ -569,7 +559,7 @@ class FolderManager {
         const listePresents = document.getElementById('liste-presents');
         if (listePresents) {
             listePresents.innerHTML = presents.map(doc => {
-                const s = statutsVue[doc] || statuts[doc] || '';
+                const s     = statutsVue[doc] || statuts[doc] || '';
                 const badge = s === 'accepted'
                     ? `<span class="document-status-badge" style="background:#28a745;color:white;">✅ ${translations.conforme}</span>`
                     : s === 'refused'
@@ -584,6 +574,33 @@ class FolderManager {
         }
     }
 }
+
+
+/* --------------------------------------------------------------------------
+   FolderManager — orchestre toutes les classes
+   -------------------------------------------------------------------------- */
+class FolderManager {
+    constructor() {
+        this._form       = new FormManager();
+        this._filter     = new FilterManager();
+        this._table      = new TableManager();
+        this._accordion  = new AccordionManager();
+        this._document   = new DocumentManager();
+        this._modal      = new ValidationModalManager();
+        this._dateLimite = new DateLimiteManager();
+    }
+
+    /** Proxy — appelé depuis le HTML : folderManager.confirmDocument(numEtu, docType) */
+    confirmDocument(numEtu, docType) {
+        return this._document.confirmDocument(numEtu, docType);
+    }
+
+    /** Proxy — appelé depuis le HTML : folderManager.updateGlobalStatus(numEtu) */
+    updateGlobalStatus(numEtu) {
+        return this._document.updateGlobalStatus(numEtu);
+    }
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
     window.folderManager = new FolderManager();

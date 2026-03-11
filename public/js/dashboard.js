@@ -25,6 +25,5 @@ class DashboardManager {
     }
 }
 
-// On instancie la classe et on l'attache à l'objet window 
-// pour qu'elle soit accessible depuis les attributs onclick du HTML
+
 window.dashboardManager = new DashboardManager();
