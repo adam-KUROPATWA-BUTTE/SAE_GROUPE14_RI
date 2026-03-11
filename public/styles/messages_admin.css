@@ -25,12 +25,6 @@ header .menu-toggle {
     display: none;
 }
 
-main.messages {
-    max-width: 100%;
-    margin: 0;
-    padding: 0;
-    background: transparent;
-}
 
 /* Full-height shell*/
 .outlook-shell {
