@@ -92,5 +92,6 @@ $styles     = ['styles/messages_admin.css'];
 $scripts    = []; 
 $activeMenu = 'messages';
 $userRole   = 'admin';
+$noMain     = true;
 
 include __DIR__ . '/../Layout/base.php';

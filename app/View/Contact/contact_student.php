@@ -44,12 +44,12 @@ $subjects = [
                 <?php foreach ($studentConversations as $conv): 
                     $subjectLabel = $subjects[$conv->getSubject()] ?? $conv->getSubject();
                 ?>
-                    <div class="history-card">
+                    <details class="history-card">
                         
-                        <div class="history-card-header">
+                        <summary class="history-card-header" style="cursor: pointer;">
                             <h3><?= htmlspecialchars($subjectLabel) ?></h3>
                             <small class="history-date">Ticket créé le <?= $conv->getCreatedAt()->format('d/m/Y H:i') ?></small>
-                        </div>
+                        </summary>
 
                         <div class="chat-thread">
                             <?php foreach ($conv->getMessages() as $msg): ?>
