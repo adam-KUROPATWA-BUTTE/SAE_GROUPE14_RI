@@ -384,8 +384,8 @@ h2 { color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin
     margin: 20px 0;
 }
 
-/* ======= RESPONSIVE 810px ======= */
-@media (max-width: 810px) {
+/* ======= RESPONSIVE  ======= */
+@media (max-width: 1024px) {
     main {
         width: 90%;
         padding: 40px 30px;
@@ -410,6 +410,7 @@ h2 { color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin
         font-size: 12px;
     }
 
+    /* Tables responsive */
     table {
         font-size: 0.9em;
         display: block;
@@ -436,7 +437,7 @@ h2 { color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin
 }
 
 /* ======= RESPONSIVE 500px ======= */
-@media (max-width: 500px) {
+@media (max-width: 480px) {
     main {
         width: 95%;
         padding: 20px 15px;
@@ -448,12 +449,14 @@ h2 { color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin
         text-align: center;
     }
 
+    /* Progress bar en vertical pour mobile */
     .progress-container {
         flex-direction: column;
         margin: 40px auto;
         align-items: stretch;
     }
 
+    /* Ligne verticale au lieu d'horizontale */
     .progress-container::before {
         width: 3px;
         height: 100%;
@@ -463,7 +466,8 @@ h2 { color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin
     }
 
     .progress-line {
-        width: 4px !important;
+        width: 4px;
+        height: 0;
         left: 25px;
         top: 0;
         transform: none;
@@ -496,6 +500,7 @@ h2 { color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin
         flex: 1;
     }
 
+    /* Tables très petits écrans - s'adapte sans scroll */
     table {
         font-size: 0.65em;
         width: 100%;
@@ -510,12 +515,14 @@ h2 { color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin
         vertical-align: middle;
     }
 
+    /* Réduire la largeur de la colonne NumEtu */
     table th:nth-child(1),
     table td:nth-child(1) {
         font-size: 0.9em;
         max-width: 50px;
     }
 
+    /* Colonne Nom/Prénom */
     table th:nth-child(2),
     table td:nth-child(2),
     table th:nth-child(3),
@@ -523,6 +530,7 @@ h2 { color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin
         max-width: 70px;
     }
 
+    /* Réduire la colonne Avancement */
     .progress-bar {
         min-width: 50px;
         height: 12px;
@@ -533,6 +541,7 @@ h2 { color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin
         line-height: 12px;
     }
 
+    /* Colonne Pièces fournies */
     table th:nth-child(5),
     table td:nth-child(5) {
         font-size: 0.85em;
