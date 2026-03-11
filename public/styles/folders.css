@@ -1361,14 +1361,11 @@ tr:nth-child(even) {
 
 
 
-
 @media (max-width: 768px) {
-    .doc-review-item  { flex-direction: column; }
-    .doc-info         { border-right: none; border-bottom: 1px solid #eee; padding-bottom: 15px; width: 100%; min-width: unset; }
-    .modal-content    { max-width: 100%; }
-    .global-status-controls { flex-direction: column; align-items: stretch; }
+    .doc-review-item { flex-direction: column; }
+    .doc-info { border-right: none; border-bottom: 1px solid #eee; padding-bottom: 15px; width: 100%; }
 }
-
+/* Média queries (inchangées) */
 @media (max-width: 900px) and (min-width: 801px) {
     main { padding: 1.5em; margin: 1.5em auto; }
     .student-toolbar input[type="text"] { width: 220px; }
