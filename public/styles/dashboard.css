@@ -29,10 +29,7 @@ body.tritanopie {
     margin-top: 40px;
 }
 
-/* ─── Ligne grise de fond ───
-   Elle va du centre de la 1ère boule au centre de la dernière boule.
-   3 étapes : chaque étape occupe 1/3. Le centre de la 1ère est à 1/6, le centre de la dernière à 5/6.
-   Largeur = 5/6 - 1/6 = 4/6 = 66.66%, départ à 1/6 = 16.66% */
+
 .progress-container::before {
     content: "";
     position: absolute;
@@ -125,7 +122,10 @@ body.tritanopie {
             drop-shadow(0 0 4px rgba(43, 145, 187, 0.6));
     transform: scale(1.03);
 }
-
+.progress-step .progress-icon {
+    margin-bottom: 40px;
+    z-index: 3;
+}
 /* ─── DÉCISION ACCEPTÉE → tout en vert ─── */
 .progress-container.decision-accepted .progress-line {
     background-color: #00701a !important;
@@ -449,10 +449,10 @@ h2 { color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin
 
     /* Ligne verticale au lieu d'horizontale */
     .progress-container::before {
+
         width: 3px;
         height: 100%;
         left: 25px;
-        top: 0;
         transform: none;
     }
 
@@ -460,7 +460,6 @@ h2 { color: #003366; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin
         width: 4px;
         height: 0;
         left: 25px;
-        top: 0;
         transform: none;
         transition: height 0.4s ease;
     }
