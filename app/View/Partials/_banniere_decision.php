@@ -9,7 +9,7 @@
  */
 ?>
 <div class="banniere-decision">
-    <span class="banniere-decision-label"><?= $t(['fr' => 'Décision sur le dossier :', 'en' => 'Decision on folder:']) ?></span>
+    <span class="banniere-decision-label"><?= $t(['fr' => 'Décision sur le dossier :', 'en' => 'Decision on profile:']) ?></span>
     <div class="banniere-decision-buttons">
 
         <!-- Bouton Accepter -->
@@ -19,7 +19,7 @@
             <input type="hidden" name="avis" value="accepte">
             <button type="submit"
                     class="btn-decision btn-accepter <?= $currentStatus === 'accepte' ? 'btn-decision-active' : '' ?>">
-                ✅ <?= $t(['fr' => 'Accepter le dossier', 'en' => 'Accept Folder']) ?>
+                ✅ <?= $t(['fr' => 'Accepter le dossier', 'en' => 'Accept Profile']) ?>
             </button>
         </form>
 
@@ -30,7 +30,7 @@
             <input type="hidden" name="avis" value="refuse">
             <button type="submit"
                     class="btn-decision btn-refuser <?= $currentStatus === 'refuse' ? 'btn-decision-active' : '' ?>">
-                ❌ <?= $t(['fr' => 'Refuser le dossier', 'en' => 'Refuse Folder']) ?>
+                ❌ <?= $t(['fr' => 'Refuser le dossier', 'en' => 'Refuse Profile']) ?>
             </button>
         </form>
 
