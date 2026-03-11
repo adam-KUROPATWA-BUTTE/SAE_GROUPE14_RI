@@ -301,6 +301,7 @@ class FoldersControllerAdmin
             'Zone'               => $_POST['zone']                ?? 'europe',
             'Composante'         => $_POST['composante']          ?? null,
             'Pays'               => $_POST['pays']                ?? null,
+            'Mobilite'           => $_POST['mobilite_type']       ?? null,
             'Campus'             => $_POST['campus']              ?? null,
             'Discipline'         => $_POST['discipline']          ?? null,
             'NiveauEtude'        => $_POST['niveau_etude']        ?? null,
@@ -341,6 +342,9 @@ class FoldersControllerAdmin
         $this->log("numetu: " . $numetu);
         $this->log("statutsDocuments: " . json_encode($statutsDocuments));
         $this->log("email_perso: " . ($_POST['email_perso'] ?? '(vide)'));
+        //debug
+        $this->log("mobilite_type POST = " . ($_POST['mobilite_type'] ?? 'NON RECU'));
+        $this->log("Mobilite data = " . ($studentData['Mobilite'] ?? 'NULL'));
 
         $success = $this->folderUseCase->enregistrerValidation($numetu, $statutsDocuments, $dateLimite, $commentaire);
 
@@ -533,6 +537,7 @@ class FoldersControllerAdmin
             'Zone'               => $_POST['zone']                ?? 'europe',
             'Composante'         => $_POST['composante']          ?? null,
             'Pays'               => $_POST['pays']                ?? null,
+            'Mobilite'           => $_POST['mobilite_type']       ?? null,
             'Campus'             => $_POST['campus']              ?? null,
             'Discipline'         => $_POST['discipline']          ?? null,
             'NiveauEtude'        => $_POST['niveau_etude']        ?? null,

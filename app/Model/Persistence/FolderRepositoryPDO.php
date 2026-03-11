@@ -375,14 +375,14 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     {
         try {
             $stmt = $this->db->prepare("
-                SELECT NumEtu, Nom, Prenom, DateNaissance, Sexe, Adresse, CodePostal, Ville,
-                       EmailPersonnel, EmailAMU, Telephone, CodeDepartement, Composante, Type, Zone, Pays,
-                       Campus, Discipline, NiveauEtude, Formation, MoyenneBac, MoyenneSansBac, AvisDRI,
-                       DateDebut, MobiliteAnterieure, IsComplete, PiecesJustificatives, status,
-                       StatutDocuments, DateLimite, CommentaireAdmin, ModifiePar, ModifieLe,
-                       avis_chef_departement
-                FROM dossiers WHERE NumEtu = :numetu LIMIT 1
-            ");
+            SELECT NumEtu, Nom, Prenom, DateNaissance, Sexe, Adresse, CodePostal, Ville,
+                   EmailPersonnel, EmailAMU, Telephone, CodeDepartement, Composante, Type, Zone, Pays,
+                   Campus, Discipline, NiveauEtude, Formation, MoyenneBac, MoyenneSansBac, AvisDRI,
+                   DateDebut, MobiliteAnterieure, IsComplete, PiecesJustificatives, status,
+                   StatutDocuments, DateLimite, CommentaireAdmin, ModifiePar, ModifieLe,
+                   avis_chef_departement, Mobilite
+            FROM dossiers WHERE NumEtu = :numetu LIMIT 1
+        ");
             $stmt->execute([':numetu' => $numEtu]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             return is_array($result) ? $result : null;
@@ -467,6 +467,7 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
                     Type = COALESCE(:Type, Type),
                     Zone = COALESCE(:Zone, Zone),
                     Pays = COALESCE(:Pays, Pays),
+                    Mobilite = COALESCE(:Mobilite, Mobilite),
                     Campus = COALESCE(:Campus, Campus),
                     Discipline = COALESCE(:Discipline, Discipline),
                     NiveauEtude = COALESCE(:NiveauEtude, NiveauEtude),

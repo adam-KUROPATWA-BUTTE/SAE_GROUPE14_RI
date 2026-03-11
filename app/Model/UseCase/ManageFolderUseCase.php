@@ -288,6 +288,7 @@ class ManageFolderUseCase
             ':Type'               => $data['type']                ?? ($data['Type']               ?? null),
             ':Zone'               => $data['zone']                ?? ($data['Zone']               ?? null),
             ':Pays'               => $data['pays']                ?? ($data['Pays']               ?? null),
+            ':Mobilite'           => $data['mobilite']            ?? ($data['Mobilite']                    ?? null),
             ':Campus'             => $data['campus']              ?? ($data['Campus']             ?? null),
             ':Discipline'         => $data['discipline']          ?? ($data['Discipline']         ?? null),
             ':NiveauEtude'        => $data['niveau_etude']        ?? ($data['NiveauEtude']        ?? null),
@@ -302,7 +303,7 @@ class ManageFolderUseCase
             ':ModifiePar'         => !empty($data['ModifiePar']) ? $data['ModifiePar'] : null,
             ':ModifieLe'          => !empty($data['ModifieLe'])  ? $data['ModifieLe']  : null,
         ];
-
+        error_log("updateDossier :Mobilite = " . ($formattedData[':Mobilite'] ?? 'NULL'));
         return $this->dossierRepo->update($numEtu, $formattedData);
     }
 
