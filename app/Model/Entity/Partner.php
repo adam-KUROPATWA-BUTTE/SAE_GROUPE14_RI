@@ -10,7 +10,6 @@ class Partner
     private string $institution;
     private string $type;
 
-    // FIX: $type was missing from the constructor parameters, causing "Undefined variable: $type"
     public function __construct(string $continent, string $country, string $city, string $institution, string $type)
     {
         $this->continent   = $continent;

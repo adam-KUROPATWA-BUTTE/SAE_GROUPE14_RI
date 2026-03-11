@@ -6,7 +6,7 @@ class Message
 {
     private ?int $id;
     private int $conversationId;
-    private string $senderType; // 'student' ou 'admin'
+    private string $senderType;
     private string $content;
     private bool $isRead;
     private \DateTime $createdAt;

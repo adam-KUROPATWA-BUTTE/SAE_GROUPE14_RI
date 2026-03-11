@@ -1,0 +1,1 @@
+<p>Template: document_validated</p>

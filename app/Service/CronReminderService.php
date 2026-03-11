@@ -1,6 +1,6 @@
 <?php
 
-namespace Service\Cron;
+namespace Service;
 
 use Model\Repository\FolderRepositoryInterface;
 use Model\Repository\RelanceRepositoryInterface;
