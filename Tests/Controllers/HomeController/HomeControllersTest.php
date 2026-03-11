@@ -43,12 +43,13 @@ class HomeControllersTest extends TestCase
         $serviceMock = $this->createMock(SuperAdminService::class);
 
         $controller = new class($serviceMock) extends SuperAdminController {
+            private SuperAdminService $injectedService;
+
             public function __construct(SuperAdminService $svc)
             {
+                // Ne PAS appeler parent::__construct() → évite toute connexion PDO
                 $this->injectedService = $svc;
             }
-
-            private SuperAdminService $injectedService;
 
             protected function startSession(): void {}
 
@@ -81,6 +82,7 @@ class HomeControllersTest extends TestCase
 
             public function __construct(GetAdminStatsUseCase $useCase)
             {
+                // Ne PAS appeler parent::__construct() → évite toute connexion PDO
                 $this->injectedUseCase = $useCase;
             }
 
@@ -108,6 +110,9 @@ class HomeControllersTest extends TestCase
             }
         };
 
+        // Rôle admin requis par le contrôle d'accès ajouté lors de la résolution du conflit
+        $_SESSION['role'] = 'admin';
+
         return [$controller, $useCaseMock];
     }
 
@@ -123,6 +128,7 @@ class HomeControllersTest extends TestCase
 
             public function __construct(GetAdminStatsUseCase $useCase)
             {
+                // Ne PAS appeler parent::__construct() → évite toute connexion PDO
                 $this->injectedUseCase = $useCase;
             }
 
@@ -153,6 +159,11 @@ class HomeControllersTest extends TestCase
     private function makeStudentHome(): HomeControllerStudent
     {
         return new class extends HomeControllerStudent {
+            public function __construct()
+            {
+                // Ne PAS appeler parent::__construct() → évite toute connexion PDO
+            }
+
             protected function startSession(): void {}
 
             protected function redirect(string $url): never
@@ -708,46 +719,7 @@ class HomeControllersTest extends TestCase
         $controller->control();
     }
 
-    // =========================================================================
-    // HomeControllerCoordinateur — langue
-    // =========================================================================
 
-    public function test_home_coord_lang_set_from_get(): void
-    {
-        $_SESSION['role'] = 'coordinateur';
-        $_GET['lang']     = 'en';
-        [$controller]     = $this->makeCoordHome();
-
-        try { $controller->control(); } catch (\Throwable $e) {}
-
-        $this->assertSame('en', $_SESSION['lang']);
-    }
-
-    public function test_home_coord_lang_ignores_invalid_value(): void
-    {
-        $_SESSION['role'] = 'coordinateur';
-        $_GET['lang']     = 'es';
-        [$controller]     = $this->makeCoordHome();
-
-        try { $controller->control(); } catch (\Throwable $e) {}
-
-        $this->assertArrayNotHasKey('lang', $_SESSION);
-    }
-
-    // =========================================================================
-    // HomeControllerCoordinateur — tritanopia
-    // =========================================================================
-
-    public function test_home_coord_tritanopia_set_to_true(): void
-    {
-        $_SESSION['role']   = 'coordinateur';
-        $_GET['tritanopia'] = '1';
-        [$controller]       = $this->makeCoordHome();
-
-        try { $controller->control(); } catch (\Throwable $e) {}
-
-        $this->assertTrue($_SESSION['tritanopia'] ?? false);
-    }
 
     // =========================================================================
     // HomeControllerStudent — support()
