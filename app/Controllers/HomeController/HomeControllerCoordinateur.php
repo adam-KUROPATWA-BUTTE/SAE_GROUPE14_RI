@@ -5,7 +5,6 @@ namespace Controllers\HomeController;
 use Controllers\ControllerInterface;
 use PDOException;
 use Model\UseCase\GetAdminStatsUseCase;
-use Model\Persistence\DossierRepositoryPDO;
 use Core\View;
 
 class HomeControllerCoordinateur implements ControllerInterface
@@ -15,31 +14,58 @@ class HomeControllerCoordinateur implements ControllerInterface
         return $page === 'home-coordinateur';
     }
 
-    public function control(): void
+    protected function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+    }
 
-        // Vérification rôle
+    protected function redirect(string $url): never
+    {
+        header('Location: ' . $url);
+        exit;
+    }
+
+    protected function renderView(string $view, array $data = []): void
+    {
+        View::render($view, $data);
+    }
+
+    protected function log(string $message): void
+    {
+        error_log($message);
+    }
+
+    protected function makeUseCase(): GetAdminStatsUseCase
+    {
+        $repo = new \Model\Persistence\DossierRepositoryPDO();
+        return new GetAdminStatsUseCase($repo);
+    }
+
+    protected function fetchDepartements(): array
+    {
+        return (new \Model\Persistence\DossierRepositoryPDO())->getAllDepartements();
+    }
+
+    public function control(): void
+    {
+        $this->startSession();
+
         $allowedRoles = ['coordinateur', 'coordinateur_etude', 'coordinateur_stage', 'chef_departement'];
         if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], $allowedRoles, true)) {
-            header('Location: index.php?page=login');
-            exit;
+            $this->redirect('index.php?page=login');
         }
 
-        // --- LANGUE ---
         if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en'], true)) {
             $_SESSION['lang'] = $_GET['lang'];
         }
         $lang = $_SESSION['lang'] ?? 'fr';
 
-        // --- TRITANOPIA ---
         if (isset($_GET['tritanopia'])) {
             $_SESSION['tritanopia'] = (strval($_GET['tritanopia']) === '1');
         }
 
-        // --- FILTRES ---
         $mobiliteFilter = null;
         if (isset($_GET['mobilite']) && in_array($_GET['mobilite'], ['etude', 'stage'], true)) {
             $mobiliteFilter = $_GET['mobilite'];
@@ -50,33 +76,28 @@ class HomeControllerCoordinateur implements ControllerInterface
             $departementFilter = strval($_GET['departement']);
         }
 
-        // --- LISTE DES DÉPARTEMENTS ---
         $allDepartements = [];
         try {
-            $repository      = new DossierRepositoryPDO();
-            $allDepartements = $repository->getAllDepartements();
+            $allDepartements = $this->fetchDepartements();
         } catch (PDOException $e) {
-            error_log('HomeControllerCoordinateur - getAllDepartements Error: ' . $e->getMessage());
+            $this->log('HomeControllerCoordinateur - getAllDepartements Error: ' . $e->getMessage());
         }
 
-        // --- STATISTIQUES ---
         $stats                = null;
         $completionPercentage = 0.0;
 
         try {
-            $repository = new DossierRepositoryPDO();
-            $useCase    = new GetAdminStatsUseCase($repository);
-            $stats      = $useCase->execute($mobiliteFilter, $departementFilter);
+            $useCase = $this->makeUseCase();
+            $stats   = $useCase->execute($mobiliteFilter, $departementFilter);
 
             $dossierStats         = $stats->getDossierStats();
             $completionPercentage = $dossierStats->getTotal() > 0
                 ? round($dossierStats->getCompleted() / $dossierStats->getTotal() * 100, 1)
                 : 0.0;
         } catch (PDOException $e) {
-            error_log('HomeControllerCoordinateur Error: ' . $e->getMessage());
+            $this->log('HomeControllerCoordinateur Error: ' . $e->getMessage());
         }
 
-        // --- HELPERS VUE ---
         $t = function (array $frEn) use ($lang): string {
             return $lang === 'en' ? $frEn['en'] : $frEn['fr'];
         };
@@ -87,8 +108,7 @@ class HomeControllerCoordinateur implements ControllerInterface
             return $path . $separator . http_build_query($params);
         };
 
-        // --- RENDU ---
-        View::render('HomePage/home_coordinateur', [
+        $this->renderView('HomePage/home_coordinateur', [
             'isLoggedIn'           => true,
             'lang'                 => $lang,
             'userRole'             => $_SESSION['role'],

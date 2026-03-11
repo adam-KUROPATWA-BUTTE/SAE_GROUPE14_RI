@@ -1,6 +1,6 @@
 <?php
 
-// phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
+
 class Database
 {
     private static ?Database $instance = null;

@@ -5,7 +5,6 @@ namespace Controllers\HomeController;
 use Controllers\ControllerInterface;
 use PDOException;
 use Model\UseCase\GetAdminStatsUseCase;
-use Model\Persistence\DossierRepositoryPDO;
 use Core\View;
 
 class HomeControllerAdmin implements ControllerInterface
@@ -15,20 +14,54 @@ class HomeControllerAdmin implements ControllerInterface
         return $page === 'home-admin' && $method === 'GET';
     }
 
-    public function control(): void
+    protected function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+    }
 
-        // Vérification rôle
+    protected function redirect(string $url): never
+    {
+        header('Location: ' . $url);
+        exit;
+    }
+
+    protected function renderView(string $view, array $data = []): void
+    {
+        View::render($view, $data);
+    }
+
+    protected function log(string $message): void
+    {
+        error_log($message);
+    }
+
+    /**
+     * Instancie le use case. Neutralisable en test via override.
+     */
+    protected function makeUseCase(): GetAdminStatsUseCase
+    {
+        return new GetAdminStatsUseCase(new \Model\Persistence\DossierRepositoryPDO());
+    }
+
+    /**
+     * Récupère la liste de tous les départements. Neutralisable en test.
+     */
+    protected function fetchDepartements(): array
+    {
+        return (new \Model\Persistence\DossierRepositoryPDO())->getAllDepartements();
+    }
+
+    public function control(): void
+    {
+        $this->startSession();
+
         $allowedRoles = ['admin'];
         if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], $allowedRoles, true)) {
-            header('Location: index.php?page=login');
-            exit;
+            $this->redirect('index.php?page=login');
         }
 
-        // LANGUE
         if (isset($_GET['lang'])) {
             $langParam = strval($_GET['lang']);
             if (in_array($langParam, ['fr', 'en'], true)) {
@@ -37,12 +70,10 @@ class HomeControllerAdmin implements ControllerInterface
         }
         $lang = $_SESSION['lang'] ?? 'fr';
 
-        // TRITANOPIA
         if (isset($_GET['tritanopia'])) {
             $_SESSION['tritanopia'] = (strval($_GET['tritanopia']) === '1');
         }
 
-        // FILTRES
         $mobiliteFilter = null;
         if (isset($_GET['mobilite']) && in_array($_GET['mobilite'], ['etude', 'stage'], true)) {
             $mobiliteFilter = $_GET['mobilite'];
@@ -53,33 +84,28 @@ class HomeControllerAdmin implements ControllerInterface
             $departementFilter = strval($_GET['departement']);
         }
 
-        // RÉCUPÉRER LA LISTE DES DÉPARTEMENTS
         $allDepartements = [];
         try {
-            $repository = new DossierRepositoryPDO();
-            $allDepartements = $repository->getAllDepartements(); // Méthode à créer
+            $allDepartements = $this->fetchDepartements();
         } catch (PDOException $e) {
-            error_log("Error fetching departments: " . $e->getMessage());
+            $this->log("Error fetching departments: " . $e->getMessage());
         }
 
-        // STATISTIQUES
-        $stats = null;
+        $stats                = null;
         $completionPercentage = 0.0;
 
         try {
-            $repository = new DossierRepositoryPDO();
-            $useCase = new GetAdminStatsUseCase($repository);
-            $stats = $useCase->execute($mobiliteFilter, $departementFilter); // Ajouter le filtre dept
+            $useCase = $this->makeUseCase();
+            $stats   = $useCase->execute($mobiliteFilter, $departementFilter);
 
-            $dossierStats = $stats->getDossierStats();
+            $dossierStats         = $stats->getDossierStats();
             $completionPercentage = $dossierStats->getTotal() > 0
                 ? round($dossierStats->getCompleted() / $dossierStats->getTotal() * 100, 1)
                 : 0.0;
         } catch (PDOException $e) {
-            error_log("HomeControllerAdmin Error: " . $e->getMessage());
+            $this->log("HomeControllerAdmin Error: " . $e->getMessage());
         }
 
-        // HELPERS VUE
         $t = function (array $frEn) use ($lang): string {
             return $lang === 'en' ? $frEn['en'] : $frEn['fr'];
         };
@@ -90,18 +116,17 @@ class HomeControllerAdmin implements ControllerInterface
             return $path . $separator . http_build_query($params);
         };
 
-        // RENDU
-        View::render('HomePage/home_admin', [
-            'isLoggedIn' => true,
-            'userRole' => $_SESSION['role'] ?? null,
-            'lang' => $lang,
+        $this->renderView('HomePage/home_admin', [
+            'isLoggedIn'           => true,
+            'userRole'             => $_SESSION['role'] ?? null,
+            'lang'                 => $lang,
             'completionPercentage' => $completionPercentage,
-            'stats' => $stats,
-            'mobiliteFilter' => $mobiliteFilter,
-            'departementFilter' => $departementFilter,
-            'allDepartements' => $allDepartements,
-            't' => $t,
-            'buildUrl' => $buildUrl,
+            'stats'                => $stats,
+            'mobiliteFilter'       => $mobiliteFilter,
+            'departementFilter'    => $departementFilter,
+            'allDepartements'      => $allDepartements,
+            't'                    => $t,
+            'buildUrl'             => $buildUrl,
         ]);
     }
 }

@@ -22,15 +22,30 @@ class FoldersControllerStudent implements ControllerInterface
         return in_array($page, ['folders-student', 'update_my_folder', 'create_folder'], true);
     }
 
-    public function control(): void
+    protected function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+    }
+
+    protected function redirect(string $url): never
+    {
+        header('Location: ' . $url);
+        exit;
+    }
+
+    protected function renderView(string $view, array $data = []): void
+    {
+        View::render($view, $data);
+    }
+
+    public function control(): void
+    {
+        $this->startSession();
 
         if (empty($_SESSION['numetu'])) {
-            header('Location: index.php?page=login&error=not_logged_in');
-            exit;
+            $this->redirect('index.php?page=login&error=not_logged_in');
         }
 
         $numetu = (string)$_SESSION['numetu'];
@@ -59,7 +74,7 @@ class FoldersControllerStudent implements ControllerInterface
 
         $data = is_array($studentData) ? $studentData : [];
 
-        View::render('Folder/folders_student', [
+        $this->renderView('Folder/folders_student', [
             'dossier'   => $data,
             'studentId' => $numetu,
             'message'   => $message,
@@ -68,7 +83,6 @@ class FoldersControllerStudent implements ControllerInterface
     }
 
     /**
-     * FIX line 87: add PHPDoc types to satisfy PHPStan level 9.
      * @param array<string, mixed> $data
      * @return array<int, string>
      */
@@ -104,8 +118,7 @@ class FoldersControllerStudent implements ControllerInterface
     {
         if ($this->folderUseCase->getStudentDetails($numetu)) {
             $_SESSION['message'] = $lang === 'fr' ? "Vous avez déjà déposé un dossier." : "You have already submitted an application.";
-            header('Location: index.php?page=folders-student&lang=' . $lang);
-            exit;
+            $this->redirect('index.php?page=folders-student&lang=' . $lang);
         }
 
         $data = [
@@ -138,26 +151,22 @@ class FoldersControllerStudent implements ControllerInterface
         $errors = $this->validateFolderData($data, $lang);
         if (!empty($errors)) {
             $_SESSION['message'] = implode('<br>', $errors);
-            header('Location: index.php?page=folders-student&lang=' . $lang);
-            exit;
+            $this->redirect('index.php?page=folders-student&lang=' . $lang);
         }
 
         $uploadErrors = $this->handleFileUploads($data, $lang);
         if (!empty($uploadErrors)) {
             $_SESSION['message'] = implode('<br>', $uploadErrors);
-            header('Location: index.php?page=folders-student&lang=' . $lang);
-            exit;
+            $this->redirect('index.php?page=folders-student&lang=' . $lang);
         }
 
         $success = $this->folderUseCase->creerDossier($data);
 
-        // Send email confirmation for each uploaded document
         if ($success && !empty($data['EmailPersonnel'])) {
             $studentName = trim(($data['Prenom'] ?? '') . ' ' . ($data['Nom'] ?? ''));
             $documents = ['photo', 'cv', 'convention', 'lettre_motivation'];
-            
+
             foreach ($documents as $docType) {
-                // Check if document was uploaded (handleFileUploads puts content in $data)
                 if (isset($data[$docType]) && !empty($data[$docType])) {
                     \Service\Email\EmailReminderService::sendDocumentDeposited(
                         $data['EmailPersonnel'],
@@ -173,16 +182,14 @@ class FoldersControllerStudent implements ControllerInterface
             ? ($lang === 'fr' ? 'Votre demande a été déposée avec succès.' : 'Application submitted successfully.')
             : ($lang === 'fr' ? 'Erreur lors du dépôt de la demande.' : 'Error submitting application.');
 
-        header('Location: index.php?page=folders-student&lang=' . $lang);
-        exit;
+        $this->redirect('index.php?page=folders-student&lang=' . $lang);
     }
 
     private function handleUpdateFolder(string $numetu, string $lang): void
     {
-        // Get existing folder to compare documents
         $existingFolder = $this->folderUseCase->getStudentDetails($numetu);
-        $oldPieces = is_array($existingFolder) && isset($existingFolder['pieces']) && is_array($existingFolder['pieces']) 
-            ? $existingFolder['pieces'] 
+        $oldPieces = is_array($existingFolder) && isset($existingFolder['pieces']) && is_array($existingFolder['pieces'])
+            ? $existingFolder['pieces']
             : [];
 
         $data = [
@@ -208,8 +215,7 @@ class FoldersControllerStudent implements ControllerInterface
 
         if (empty($data['EmailPersonnel'])) {
             $_SESSION['message'] = $lang === 'fr' ? "L'email personnel est requis." : "Personal email is required.";
-            header('Location: index.php?page=folders-student&lang=' . $lang);
-            exit;
+            $this->redirect('index.php?page=folders-student&lang=' . $lang);
         }
 
         $dossierExistant = $this->folderUseCase->getStudentDetails($numetu);
@@ -222,76 +228,57 @@ class FoldersControllerStudent implements ControllerInterface
                 $_SESSION['message'] = $success
                     ? ($lang === 'fr' ? 'Dossier mis à jour (fichiers refusés : date limite dépassée).' : 'Folder updated (files rejected: deadline passed).')
                     : ($lang === 'fr' ? 'Erreur lors de la mise à jour.' : 'Error updating folder.');
-                header('Location: index.php?page=folders-student&lang=' . $lang);
-                exit;
+                $this->redirect('index.php?page=folders-student&lang=' . $lang);
             }
         }
 
         $uploadErrors = $this->handleFileUploads($data, $lang);
         if (!empty($uploadErrors)) {
             $_SESSION['message'] = implode('<br>', $uploadErrors);
-            header('Location: index.php?page=folders-student&lang=' . $lang);
-            exit;
+            $this->redirect('index.php?page=folders-student&lang=' . $lang);
         }
 
         $success = $this->folderUseCase->updateDossier($data);
 
-        // Send email confirmation for every uploaded document
         if ($success && !empty($data['EmailPersonnel'])) {
             error_log("📧 DEBUG: Checking documents for email notification...");
             error_log("📧 DEBUG: Email = " . $data['EmailPersonnel']);
-            
+
             $studentName = '';
             if (is_array($existingFolder)) {
                 $prenom = $existingFolder['Prenom'] ?? '';
                 $nom = $existingFolder['Nom'] ?? '';
                 $studentName = trim($prenom . ' ' . $nom);
             }
-            error_log("📧 DEBUG: Student name = {$studentName}");
 
-            $documents = ['photo', 'cv', 'convention', 'lettre_motivation', 'langues_file'];
+            $documents  = ['photo', 'cv', 'convention', 'lettre_motivation', 'langues_file'];
             $emailsSent = 0;
-            
+
             foreach ($documents as $docType) {
-                // Send email for ANY uploaded document (new or replacement)
                 if (isset($data[$docType]) && !empty($data[$docType])) {
-                    error_log("📧 DEBUG: Sending email for {$docType} to {$data['EmailPersonnel']}");
-                    
                     $result = \Service\Email\EmailReminderService::sendDocumentDeposited(
                         $data['EmailPersonnel'],
                         $studentName,
                         $docType,
                         $numetu
                     );
-                    
+
                     if ($result) {
-                        error_log("✅ Email sent successfully for {$docType}");
                         $emailsSent++;
-                        // Small delay to avoid rate limiting
-                        usleep(500000); // 0.5 second
-                    } else {
-                        error_log("❌ Email failed for {$docType}");
+                        usleep(500000);
                     }
-                } else {
-                    error_log("⚠️ DEBUG: No file uploaded for {$docType}");
                 }
             }
-            
-            error_log("📧 DEBUG: Total emails sent = {$emailsSent}");
-        } else {
-            error_log("⚠️ DEBUG: Email conditions not met - success={$success}, email=" . ($data['EmailPersonnel'] ?? 'empty'));
         }
 
         $_SESSION['message'] = $success
             ? ($lang === 'fr' ? 'Dossier mis à jour avec succès.' : 'Folder updated successfully.')
             : ($lang === 'fr' ? 'Erreur lors de la mise à jour du dossier.' : 'Error updating folder.');
 
-        header('Location: index.php?page=folders-student&lang=' . $lang);
-        exit;
+        $this->redirect('index.php?page=folders-student&lang=' . $lang);
     }
 
     /**
-     * FIX line 235: add PHPDoc types.
      * @param array<string, mixed> $data
      * @return array<int, string>
      */
@@ -313,9 +300,6 @@ class FoldersControllerStudent implements ControllerInterface
         return $errors;
     }
 
-    /**
-     * Safely reads the binary content of an uploaded file.
-     */
     private function getUploadedFileContent(string $fieldName): ?string
     {
         if (!isset($_FILES[$fieldName]) || !is_array($_FILES[$fieldName])) return null;

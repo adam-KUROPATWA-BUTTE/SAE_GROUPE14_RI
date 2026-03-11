@@ -11,9 +11,9 @@ class ManageFolderUseCase
 {
     private DossierRepositoryInterface $dossierRepo;
 
-    public function __construct()
+    public function __construct(?DossierRepositoryInterface $repo = null)
     {
-        $this->dossierRepo = new DossierRepositoryPDO();
+        $this->dossierRepo = $repo ?? new DossierRepositoryPDO();
     }
 
     /**

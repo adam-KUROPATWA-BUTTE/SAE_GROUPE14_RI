@@ -14,15 +14,38 @@ class SuperAdminController implements ControllerInterface
         return $page === 'super-admin';
     }
 
-    public function control(): void
+    protected function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+    }
+
+    protected function redirect(string $url): never
+    {
+        header('Location: ' . $url);
+        exit;
+    }
+
+    protected function renderView(string $view, array $data = []): void
+    {
+        View::render($view, $data);
+    }
+
+    /**
+     * Instancie le service. Neutralisable en test via override.
+     */
+    protected function makeService(): SuperAdminService
+    {
+        return new SuperAdminService(new UserRepositoryPDO());
+    }
+
+    public function control(): void
+    {
+        $this->startSession();
 
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'super_admin') {
-            header('Location: index.php?page=login');
-            exit;
+            $this->redirect('index.php?page=login');
         }
 
         if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en'], true)) {
@@ -37,7 +60,7 @@ class SuperAdminController implements ControllerInterface
 
         $isTritanopia = $_SESSION['tritanopia'] ?? false;
 
-        $service = new SuperAdminService(new UserRepositoryPDO());
+        $service = $this->makeService();
 
         $success = null;
         $error   = null;
@@ -57,7 +80,6 @@ class SuperAdminController implements ControllerInterface
             }
         }
 
-        // ── Ajout d'un nouveau site ──
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'add_site') {
             $newSite = trim((string) ($_POST['new_site'] ?? ''));
             if ($newSite !== '' && !in_array($newSite, $sites, true)) {
@@ -70,7 +92,6 @@ class SuperAdminController implements ControllerInterface
             }
         }
 
-        // ── Suppression d'un compte ──
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
             $loginToDelete = trim((string) ($_POST['login'] ?? ''));
             if ($loginToDelete !== '') {
@@ -81,7 +102,6 @@ class SuperAdminController implements ControllerInterface
             }
         }
 
-        // ── Création d'un compte ──
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'create') {
             $login       = trim((string) ($_POST['login']       ?? ''));
             $password    = trim((string) ($_POST['password']    ?? ''));
@@ -152,7 +172,7 @@ class SuperAdminController implements ControllerInterface
 
         $accounts = $service->getAllAccounts();
 
-        View::render('HomePage/super_admin', [
+        $this->renderView('HomePage/super_admin', [
             'lang'        => $lang,
             't'           => $t,
             'buildUrl'    => $buildUrl,

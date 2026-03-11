@@ -20,16 +20,31 @@ class InternershipCoordinatorController implements ControllerInterface
         return $page === 'coordinateur-stage';
     }
 
-    public function control(): void
+    protected function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+    }
+
+    protected function redirect(string $url): never
+    {
+        header('Location: ' . $url);
+        exit;
+    }
+
+    protected function renderView(string $view, array $data = []): void
+    {
+        View::render($view, $data);
+    }
+
+    public function control(): void
+    {
+        $this->startSession();
 
         $allowedRoles = ['coordinateur', 'coordinateur_stage', 'admin'];
         if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], $allowedRoles, true)) {
-            header('Location: index.php?page=login');
-            exit;
+            $this->redirect('index.php?page=login');
         }
 
         if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en'], true)) {
@@ -79,7 +94,7 @@ class InternershipCoordinatorController implements ControllerInterface
         $message = $_SESSION['message'] ?? '';
         unset($_SESSION['message']);
 
-        View::render('Coordinator/internship_coordinator', [
+        $this->renderView('Coordinator/internship_coordinator', [
             'action'          => $action,
             'filters'         => $filters,
             'page'            => $currentPage,

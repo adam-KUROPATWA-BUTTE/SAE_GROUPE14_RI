@@ -12,13 +12,28 @@ class HomeControllerStudent implements ControllerInterface
         return $page === 'home-student' && $method === 'GET';
     }
 
-    public function control(): void
+    protected function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+    }
 
-        // --- GESTION DE LA SESSION ---
+    protected function redirect(string $url): never
+    {
+        header('Location: ' . $url);
+        exit;
+    }
+
+    protected function renderView(string $view, array $data = []): void
+    {
+        View::render($view, $data);
+    }
+
+    public function control(): void
+    {
+        $this->startSession();
+
         if (isset($_GET['lang'])) {
             $langParam = strval($_GET['lang']);
             if (in_array($langParam, ['fr', 'en'], true)) {
@@ -33,7 +48,6 @@ class HomeControllerStudent implements ControllerInterface
 
         $isStudentLoggedIn = isset($_SESSION['numetu']);
 
-        // --- HELPERS VUE ---
         $t = function (array $frEn) use ($lang): string {
             return $lang === 'en' ? $frEn['en'] : $frEn['fr'];
         };
@@ -44,12 +58,11 @@ class HomeControllerStudent implements ControllerInterface
             return $path . $separator . http_build_query($params);
         };
 
-        // --- RENDU ---
-        View::render('HomePage/home_student', [
+        $this->renderView('HomePage/home_student', [
             'isLoggedIn' => $isStudentLoggedIn,
             'lang'       => $lang,
             't'          => $t,
-            'buildUrl'   => $buildUrl
+            'buildUrl'   => $buildUrl,
         ]);
     }
 }

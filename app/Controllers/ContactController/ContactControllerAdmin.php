@@ -22,55 +22,77 @@ class ContactControllerAdmin implements ControllerInterface
         return $page === 'messages-admin';
     }
 
+    /**
+     * Démarre la session. Méthode protégée pour pouvoir être neutralisée en test.
+     */
+    protected function startSession(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+    }
+
+    /**
+     * Redirige vers une URL. Méthode protégée pour pouvoir être mockée en test.
+     */
+    protected function redirect(string $url): never
+    {
+        header('Location: ' . $url);
+        exit;
+    }
+
+    /**
+     * Rend une vue. Méthode protégée pour pouvoir être mockée en test.
+     */
+    protected function renderView(string $view, array $data = []): void
+    {
+        View::render($view, $data);
+    }
+
     public function control(): void
     {
-        if (session_status() === PHP_SESSION_NONE) session_start();
+        $this->startSession();
 
         $allowedRoles = ['admin'];
         if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], $allowedRoles, true)) {
-            header('Location: index.php?page=login');
-            exit;
+            $this->redirect('index.php?page=login');
         }
 
         if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en'], true)) {
             $_SESSION['lang'] = $_GET['lang'];
         }
-        $lang = $_SESSION['lang'] ?? 'fr';
-        $action = $_POST['action'] ?? $_GET['action'] ?? 'list';        
-        $conversationId = (int)($_POST['id'] ?? $_GET['id'] ?? 0);  
-        // --- GESTION DES ACTIONS POST (Formulaires) ---
+        $lang           = $_SESSION['lang'] ?? 'fr';
+        $action         = $_POST['action'] ?? $_GET['action'] ?? 'list';
+        $conversationId = (int)($_POST['id'] ?? $_GET['id'] ?? 0);
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            
+
             if ($action === 'respond' && $conversationId) {
                 $response = trim($_POST['response'] ?? '');
                 if (!empty($response)) {
                     $this->contactService->addMessage($conversationId, 'admin', $response);
                     $_SESSION['message'] = $lang === 'fr' ? 'Réponse envoyée !' : 'Response sent!';
-                    header('Location: index.php?page=messages-admin&action=view&id=' . $conversationId);
-                    exit;
+                    $this->redirect('index.php?page=messages-admin&action=view&id=' . $conversationId);
                 }
-            } 
-            
+            }
+
             elseif ($action === 'mark-read' && $conversationId) {
                 $this->contactService->markConversationAsRead($conversationId, 'admin');
-                header('Location: index.php?page=messages-admin');
-                exit;
-            } 
-            
-            // C'est ici que se trouvait l'erreur : cette action doit être DANS le bloc POST
+                $this->redirect('index.php?page=messages-admin');
+            }
+
             elseif ($action === 'delete') {
                 $idToDelete = $_POST['id'] ?? $_GET['id'] ?? null;
                 if ($idToDelete) {
                     $this->contactService->deleteConversation((int)$idToDelete);
                     $_SESSION['message'] = $lang === 'fr' ? 'Conversation supprimée.' : 'Conversation deleted.';
-                    header('Location: index.php?page=messages-admin&lang=' . $lang);
-                    exit;
+                    $this->redirect('index.php?page=messages-admin&lang=' . $lang);
                 }
             }
         }
 
-        $t = fn(array $translations) => $translations[$lang] ?? $translations['fr'] ?? '';
-        $buildUrl = function(string $url, array $params = []) use ($lang) {
+        $t        = fn(array $translations) => $translations[$lang] ?? $translations['fr'] ?? '';
+        $buildUrl = function (string $url, array $params = []) use ($lang) {
             $params['lang'] = $lang;
             return $url . '?' . http_build_query($params);
         };
@@ -78,33 +100,32 @@ class ContactControllerAdmin implements ControllerInterface
         if ($action === 'view' && $conversationId) {
             $conversation = $this->contactService->getConversationById($conversationId);
             if (!$conversation) {
-                header('Location: index.php?page=messages-admin');
-                exit;
+                $this->redirect('index.php?page=messages-admin');
             }
 
             $this->contactService->markConversationAsRead($conversationId, 'admin');
 
-            View::render('Contact/messages_admin_view', [
+            $this->renderView('Contact/messages_admin_view', [
                 'conversation'   => $conversation,
                 'lang'           => $lang,
                 't'              => $t,
                 'buildUrl'       => $buildUrl,
                 'action'         => $action,
-                'conversationId' => $conversationId
+                'conversationId' => $conversationId,
             ]);
         } else {
-            $filter = $_GET['filter'] ?? 'all';
-            $conversations = $filter === 'unread' 
-                ? $this->contactService->getUnreadConversations('admin') 
+            $filter        = $_GET['filter'] ?? 'all';
+            $conversations = $filter === 'unread'
+                ? $this->contactService->getUnreadConversations('admin')
                 : $this->contactService->getAllConversations();
 
-            View::render('Contact/messages_admin_list', [
+            $this->renderView('Contact/messages_admin_list', [
                 'conversations' => $conversations,
                 'filter'        => $filter,
                 'lang'          => $lang,
                 't'             => $t,
                 'buildUrl'      => $buildUrl,
-                'action'        => $action
+                'action'        => $action,
             ]);
         }
     }

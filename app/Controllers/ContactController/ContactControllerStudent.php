@@ -5,7 +5,7 @@ namespace Controllers\ContactController;
 use Controllers\ControllerInterface;
 use Model\Persistence\ConversationPDO;
 use Service\ContactService;
-use Core\View; 
+use Core\View;
 
 class ContactControllerStudent implements ControllerInterface
 {
@@ -22,13 +22,39 @@ class ContactControllerStudent implements ControllerInterface
         return $page === 'contact-student';
     }
 
+    /**
+     * Démarre la session. Méthode protégée pour pouvoir être neutralisée en test.
+     */
+    protected function startSession(): void
+    {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+    }
+
+    /**
+     * Redirige vers une URL. Méthode protégée pour pouvoir être mockée en test.
+     */
+    protected function redirect(string $url): never
+    {
+        header('Location: ' . $url);
+        exit;
+    }
+
+    /**
+     * Rend une vue. Méthode protégée pour pouvoir être mockée en test.
+     */
+    protected function renderView(string $view, array $data = []): void
+    {
+        View::render($view, $data);
+    }
+
     public function control(): void
     {
-        if (session_status() === PHP_SESSION_NONE) session_start();
+        $this->startSession();
 
         if (!isset($_SESSION['numetu'])) {
-            header('Location: index.php?page=login');
-            exit;
+            $this->redirect('index.php?page=login');
         }
 
         if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en'], true)) {
@@ -40,7 +66,7 @@ class ContactControllerStudent implements ControllerInterface
         $action = $_GET['action'] ?? 'form';
 
         $t = fn(array $translations) => $translations[$lang] ?? $translations['fr'] ?? '';
-        $buildUrl = function(string $url, array $params = []) use ($lang) {
+        $buildUrl = function (string $url, array $params = []) use ($lang) {
             $params['lang'] = $lang;
             return $url . '?' . http_build_query($params);
         };
@@ -53,8 +79,7 @@ class ContactControllerStudent implements ControllerInterface
                 $this->contactService->addMessage($conversationId, 'student', $reply);
                 $_SESSION['message'] = $lang === 'fr' ? 'Votre message a été envoyé !' : 'Message sent!';
             }
-            header('Location: index.php?page=contact-student&lang=' . $lang . '#messagesPanel');
-            exit;
+            $this->redirect('index.php?page=contact-student&lang=' . $lang . '#messagesPanel');
         }
 
         $messageSent = false;
@@ -78,19 +103,19 @@ class ContactControllerStudent implements ControllerInterface
         $studentConversations = $this->contactService->getStudentConversations($numEtu);
 
         $contactInfo = [
-            'email' => 'jocelyne.vial@univ-amu.fr',
-            'phone' => ' +33 4 13 94 65 02',
+            'email'   => 'jocelyne.vial@univ-amu.fr',
+            'phone'   => ' +33 4 13 94 65 02',
             'address' => [
                 'fr' => '413 Avenue Gaston Berger<br>13625 Aix-en-Provence',
                 'en' => '413 Avenue Gaston Berger<br>13625 Aix-en-Provence',
             ],
-            'hours' => [
+            'hours'   => [
                 'fr' => 'Lundi - Vendredi : 9h00 - 17h00',
                 'en' => 'Monday - Friday: 9:00 AM - 5:00 PM',
             ],
         ];
 
-        View::render('Contact/contact_student', [
+        $this->renderView('Contact/contact_student', [
             'lang'                 => $lang,
             'numEtu'               => $numEtu,
             'action'               => $action,
@@ -99,7 +124,7 @@ class ContactControllerStudent implements ControllerInterface
             'messageSent'          => $messageSent,
             'error'                => $error,
             'contactInfo'          => $contactInfo,
-            'studentConversations' => $studentConversations
+            'studentConversations' => $studentConversations,
         ]);
     }
 }

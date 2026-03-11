@@ -1,8 +1,7 @@
 <?php
 
-namespace Controllers\site;
+namespace Controllers;
 
-use Controllers\ControllerInterface;
 use Model\Persistence\UserRepositoryPDO;
 use Core\View;
 
