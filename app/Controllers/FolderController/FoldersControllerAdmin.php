@@ -70,9 +70,18 @@ class FoldersControllerAdmin
         $page   = $_GET['page']   ?? 'folders';
         $action = $_GET['action'] ?? 'list';
         $lang   = $_GET['lang']   ?? 'fr';
-        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-            header('Location: index.php?page=login');
-            exit;
+
+        $sharedPages  = ['update_student', 'update_document_status', 'update_global_status', 'valider_documents'];
+        $allowedRoles = ['admin', 'coordinateur_stage', 'coordinateur_etude', 'chef_departement'];
+
+        if (in_array($page, $sharedPages, true)) {
+            if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], $allowedRoles, true)) {
+                $this->redirect('index.php?page=login');
+            }
+        } else {
+            if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+                $this->redirect('index.php?page=login');
+            }
         }
 
         if ($page === 'toggle_complete') {
@@ -348,8 +357,8 @@ class FoldersControllerAdmin
                 $statut     = $statutsDocuments[$docKey] ?? ($oldStatuts[$docKey] ?? 'pending');
                 $docComment = trim(strval($_POST['comment_' . $docKey] ?? ($oldPieces[$docKey]['comment'] ?? '')));
 
-                if ($statut === 'accepted')     { $piecesAcceptees[] = ['name' => $docName, 'comment' => $docComment]; }
-                elseif ($statut === 'refused')  { $piecesRefusees[]  = ['name' => $docName, 'comment' => $docComment]; }
+                if ($statut === 'accepted')    { $piecesAcceptees[] = ['name' => $docName, 'comment' => $docComment]; }
+                elseif ($statut === 'refused') { $piecesRefusees[]  = ['name' => $docName, 'comment' => $docComment]; }
             }
 
             $updates = [];
