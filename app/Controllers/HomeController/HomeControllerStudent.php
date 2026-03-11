@@ -33,6 +33,9 @@ class HomeControllerStudent implements ControllerInterface
     public function control(): void
     {
         $this->startSession();
+        if (empty($_SESSION['numetu'])) {
+            $this->redirect('index.php?page=login&error=not_logged_in');
+        }
 
         if (isset($_GET['lang'])) {
             $langParam = strval($_GET['lang']);

@@ -21,6 +21,10 @@ class PartnersControllerAdmin implements ControllerInterface
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+            header('Location: index.php?page=login');
+            exit;
+        }
 
         if (isset($_GET['lang'])) {
             $langParam = strval($_GET['lang']);

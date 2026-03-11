@@ -17,6 +17,10 @@ class PartnersControllerStudent implements ControllerInterface
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+        if (empty($_SESSION['numetu'])) {
+            $this->redirect('index.php?page=login&error=not_logged_in');
+        }
+
 
         if (isset($_GET['lang'])) {
             $langParam = strval($_GET['lang']);
