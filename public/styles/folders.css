@@ -1,11 +1,3 @@
-main {
-    max-width: 900px;
-    margin: 2em auto;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    padding: 2em;
-}
 
 h1 {
     background-color: var(--primary-color);
@@ -171,7 +163,6 @@ tr:nth-child(even) {
     display: none;
 }
 
-/* Pagination globale (peut-être conservée si besoin ailleurs) */
 .pagination {
     display: flex;
     justify-content: center;
@@ -182,7 +173,7 @@ tr:nth-child(even) {
 }
 
 .pagination button {
-    background-color: #004080; /* Valeur par défaut */
+    background-color: #004080;
     color: white;
     border: none;
     padding: 8px 12px;
@@ -207,7 +198,6 @@ tr:nth-child(even) {
     opacity: 0.6;
 }
 
-/* ------------------- STYLES ACCORDÉON ET PAGINATION INTERNE ------------------- */
 .conteneur-composantes {
     margin-top: 20px;
 }
@@ -257,14 +247,13 @@ tr:nth-child(even) {
     display: block;
 }
 
-/* Spécifique à la pagination dans l'accordéon */
 .accordion-pagination {
     margin: 0;
     padding: 15px;
     background-color: #f9f9f9;
     border-top: 1px solid #e0e0e0;
 }
-/* ------------------------------------------------------------------------------- */
+
 
 .table-etudiants {
     table-layout: fixed;
@@ -452,9 +441,9 @@ tr:nth-child(even) {
 #justificatif_convention, #lettre_motivation { display: none; }
 .btn-download { margin-top: 10px; display: inline-block; }
 
-/* ------------------- NOUVELLE REVUE DES DOCUMENTS ------------------- */
 .doc-review-list {
     display: flex;
+    grid-column: 1 / -1;
     flex-direction: column;
     gap: 15px;
     margin-top: 20px;
@@ -539,12 +528,10 @@ tr:nth-child(even) {
     font-size: 0.95rem;
 }
 
-/* Utilitaire pour prendre toute la largeur */
 .full-width {
     grid-column: 1 / -1;
 }
 
-/* Section du statut global tout en bas */
 .global-status-section {
     margin-top: 30px;
     margin-bottom: 20px;
@@ -552,11 +539,18 @@ tr:nth-child(even) {
     background: #f8f9fa;
     border-radius: 8px;
     border-left: 5px solid var(--primary-color);
+    text-align: center;
+}
+
+.global-status-section .global-status-select {
+    width: auto;
+    min-width: 300px;
 }
 
 .global-status-title {
     font-size: 1.1em;
     display: block;
+    padding:10px;
 }
 
 .global-status-controls {
@@ -564,6 +558,10 @@ tr:nth-child(even) {
     gap: 15px;
     align-items: center;
     margin-top: 15px;
+    justify-content: center;
+}
+.global-status-section.form-section {
+    display: block;
 }
 
 .global-status-select {
@@ -578,7 +576,6 @@ tr:nth-child(even) {
     margin-left: 10px;
 }
 
-/* Pièces justificatives */
 .update-file-label {
     font-size: 0.85em;
     text-align: left;
@@ -596,7 +593,6 @@ tr:nth-child(even) {
     margin-top: 5px;
 }
 
-/* Barre d'outils et formulaires cachés */
 .toolbar-actions {
     display: flex;
     gap: 10px;
@@ -606,24 +602,775 @@ tr:nth-child(even) {
     display: none;
 }
 
-/* Couleurs des badges de statuts dans le tableau */
 .status-badge {
     font-weight: bold;
     padding: 4px 8px;
     border-radius: 4px;
 }
-.status-badge.accepte { color: green; }
-.status-badge.refuse { color: red; }
+.status-badge.accepte    { color: green; }
+.status-badge.refuse     { color: red; }
 .status-badge.instruction { color: orange; }
-.status-badge.depot { color: grey; }
+.status-badge.depot      { color: grey; }
+
+/* ═══════════════════════════════════════════════════════════
+   AJOUT — Bannière date limite (style jaune)
+   ═══════════════════════════════════════════════════════════ */
+.banniere-date-limite {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    font-size: 1rem;
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+    color: #856404;
+}
+
+.banniere-date-limite.sans-date {
+    border-style: dashed;
+}
+
+.banniere-modifie-par {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f0f4ff;
+    border-left: 4px solid #4a6cf7;
+    border-radius: 6px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    color: #333;
+}
+.banniere-modifie-par__icone {
+    flex-shrink: 0;
+}
+.banniere-modifie-par__texte strong {
+    color: #1a3ecf;
+}
+
+.banniere-modifie-par__texte{
+    font-size: var(--text-size);
+}
+
+.banniere-texte{
+    font-size: var(--text-size);
+}
+
+.doc-review-item.is-accepted {
+    opacity: 0.6;
+    background: #f4f7f4;
+    border-left: 4px solid #28a745;
+    border-radius: 6px;
+    transition: opacity 0.2s;
+}
+.doc-review-item.is-accepted:hover { opacity: 0.85; }
+.doc-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+}
+.doc-status-badge.accepted { background: #d4edda; color: #155724; }
+.doc-status-badge.refused  { background: #f8d7da; color: #721c24; }
+.btn-undo-accept {
+    font-size: 0.78rem;
+    padding: 3px 10px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    background: #fff;
+    color: #555;
+    cursor: pointer;
+    margin-top: 4px;
+}
+.btn-undo-accept:hover { background: #f0f0f0; color: #222; }
+.doc-review-item.is-accepted .status-radios-wrap { display: none; }
+.doc-review-item.is-accepted.editing .status-radios-wrap { display: block; }
+.doc-review-item.is-accepted.editing { opacity: 1; background: #fff; border-left-color: #ffc107; }
+.doc-review-item.is-accepted .doc-status-shown { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.doc-review-item.is-accepted.editing .doc-status-shown { display: none; }
+
+.banniere-icone {
+    font-size: 1.4rem;
+}
+
+.banniere-texte {
+    flex: 1;
+}
+
+.banniere-btn-edit {
+    background: #ffc107;
+    color: #333;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.banniere-btn-edit:hover {
+    background: #e0a800;
+}
+
+.banniere-date-form {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.date-limite-input {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 0.95rem;
+}
+/* ============================================================
+   Champs éditables (niveau_etude, moyenne_sans_bac, langues)
+   ============================================================ */
+
+.label-editable {
+    font-weight: 600;
+}
+
+.input-editable {
+    border: 1px solid #9ca3af !important;
+    background-color: #ffffff !important;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.input-editable:focus {
+    outline: none;
+    border-color: #6b7280 !important;
+    box-shadow: none;
+}
+
+/* ============================================================
+   Bannière de décision (chef de département uniquement)
+   ============================================================ */
+
+.banniere-decision {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px 20px;
+    margin-bottom: 16px;
+}
+
+.banniere-decision-label {
+    font-weight: 600;
+    color: #374151;
+    white-space: nowrap;
+}
+
+.banniere-decision-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-decision {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 20px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.1s;
+}
+
+.btn-decision:active {
+    transform: scale(0.97);
+}
+
+/* Accepter */
+.btn-accepter {
+    background-color: #f0fdf4;
+    border-color: #86efac;
+    color: #15803d;
+}
+
+.btn-accepter:hover {
+    background-color: #dcfce7;
+    border-color: #4ade80;
+}
+
+.btn-accepter.btn-decision-active {
+    background-color: #16a34a;
+    border-color: #15803d;
+    color: #ffffff;
+}
+
+/* Refuser */
+.btn-refuser {
+    background-color: #fff1f2;
+    border-color: #fca5a5;
+    color: #b91c1c;
+}
+
+.btn-refuser:hover {
+    background-color: #fee2e2;
+    border-color: #f87171;
+}
+
+.btn-refuser.btn-decision-active {
+    background-color: #dc2626;
+    border-color: #b91c1c;
+    color: #ffffff;
+}
+
+/* Indicateur de statut générique (réutilisé) */
+.status-indicator.status-ok {
+    color: #16a34a;
+    font-weight: 600;
+}
+
+.status-indicator.status-error {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AJOUT — "Revue des Pièces Justificatives" centré
+   ═══════════════════════════════════════════════════════════ */
+.documents-section.full-width {
+    grid-column: 1 / -1;
+    width: 100%;
+}
+
+.documents-section h2 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.statut-document-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.btn-status {
+    padding: 6px 14px;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    background: #f0f0f0;
+    color: #333;
+    transition: all 0.2s;
+}
+
+.btn-status.conforme {
+    border-color: #28a745;
+    color: #28a745;
+}
+
+
+.btn-status.conforme:hover,
+.btn-status.conforme.active {
+    background: #28a745;
+    color: white;
+}
+
+.btn-status.non-conforme {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-status.non-conforme:hover,
+.btn-status.non-conforme.active {
+    background: #dc3545;
+    color: white;
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════
+   AJOUT — Modale de validation (popup récapitulatif)
+   ═══════════════════════════════════════════════════════════ */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-content {
+    background: #fff;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    animation: modalFadeIn 0.25s ease;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+    background: var(--primary-color, #004080);
+    color: white;
+    padding: 18px 24px;
+    border-radius: 10px 10px 0 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: white;
+    text-align: left;
+    font-size: 1.2rem;
+    margin-top: 0;
+}
+
+.modal-section {
+    padding: 16px 24px;
+    border-bottom: 1px solid #eee;
+}
+
+.modal-section h3 {
+    margin-top: 0;
+    font-size: 1rem;
+    color: #333;
+}
+
+.modifications-list ul {
+    margin: 8px 0 0 0;
+    padding-left: 18px;
+}
+
+.modifications-list li {
+    margin-bottom: 6px;
+    line-height: 1.5;
+}
+
+.document-validation-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background: #f8f9fa;
+}
+
+.document-validation-item.manquant { border-left: 4px solid #dc3545; }
+.document-validation-item.present  { border-left: 4px solid #28a745; }
+
+.document-name {
+    font-weight: 500;
+}
+
+.document-status-badge {
+    font-size: 0.8rem;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.badge-manquant {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-present {
+    background: #d4edda;
+    color: #155724;
+}
+
+.commentaire-textarea {
+    width: 100%;
+    min-height: 90px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: vertical;
+    box-sizing: border-box;
+    margin-top: 8px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+}
+
+.btn-modal {
+    padding: 10px 22px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.95rem;
+    transition: opacity 0.2s;
+}
+
+.btn-modal:hover { opacity: 0.85; }
+
+.btn-modal-cancel {
+    background: #e0e0e0;
+    color: #333;
+}
+
+.btn-modal-submit {
+    background: var(--accent-color, #0066cc);
+    color: white;
+}
+
+#h2-titre2 {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Boutons Accepter / Refuser (style NewDev)
+   ═══════════════════════════════════════════════════════════ */
+.statut-document-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.btn-status {
+    padding: 6px 14px;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    background: #f0f0f0;
+    color: #333;
+    transition: all 0.2s;
+}
+
+.btn-status.conforme {
+    border-color: #28a745;
+    color: #28a745;
+}
+
+.btn-status.conforme:hover,
+.btn-status.conforme.active {
+    background: #28a745;
+    color: white;
+}
+
+.btn-status.non-conforme {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-status.non-conforme:hover,
+.btn-status.non-conforme.active {
+    background: #dc3545;
+    color: white;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   "Revue des Pièces Justificatives" centré dans le bloc
+   ═══════════════════════════════════════════════════════════ */
+.documents-section.full-width {
+    grid-column: 1 / -1;
+    width: 100%;
+}
+
+.documents-section h2 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.input-readonly {
+    background: #f7f7f7;
+}
+
+.input-admin {
+    background: #eee;
+    cursor: not-allowed;
+}
+
+.banniere-date-limite {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-left: 5px solid;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 28px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.07);
+}
+
+.banniere-date-limite__icone {
+    font-size: 2em;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.banniere-date-limite__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.banniere-date-limite__label {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1em;
+}
+
+.banniere-date-limite__date {
+    margin: 0;
+    font-size: 1.15em;
+    font-weight: 600;
+}
+
+.banniere-date-limite__sous-titre {
+    margin: 0;
+    font-size: 0.88em;
+    color: #555;
+}
+
+.banniere-date-limite--depasse {
+    background: #fff0f0;
+    border-color: #dc3545;
+}
+.banniere-date-limite--depasse .banniere-date-limite__label,
+.banniere-date-limite--depasse .banniere-date-limite__date {
+    color: #dc3545;
+}
+
+.banniere-date-limite--proche {
+    background: #fff8e1;
+    border-color: #ff9800;
+}
+.banniere-date-limite--proche .banniere-date-limite__label,
+.banniere-date-limite--proche .banniere-date-limite__date {
+    color: #e65100;
+}
+
+.banniere-date-limite--info {
+    background: #f0f7ff;
+    border-color: #1976d2;
+}
+.banniere-date-limite--info .banniere-date-limite__label,
+.banniere-date-limite--info .banniere-date-limite__date {
+    color: #1565c0;
+}
+
+.form-section--pieces {
+    margin-top: 40px;
+}
+
+.form-section__titre {
+    grid-column: 1 / -1;
+    margin-bottom: 20px;
+}
+
+.piece-block {
+    grid-column: 1 / -1;
+    margin-bottom: 20px;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fdfdfd;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.piece-block--hidden {
+    display: none;
+}
+
+.piece-block__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.piece-block__label {
+    margin: 0;
+    font-size: 1.1em;
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.piece-block__badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: bold;
+    color: white;
+}
+
+.piece-block__badge--pending {
+    background: #ffc107;
+    color: #333;
+}
+
+.piece-block__badge--accepted {
+    background: #28a745;
+}
+
+.piece-block__badge--refused {
+    background: #dc3545;
+}
+
+.piece-block__non-fourni {
+    color: #999;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+.piece-block__download {
+    margin-bottom: 15px;
+}
+
+.btn-download-piece {
+    font-size: 0.9em;
+    padding: 6px 12px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+
+.piece-block__comment {
+    background: #fff3cd;
+    color: #856404;
+    padding: 12px;
+    border-left: 4px solid #ffeeba;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    font-size: 0.95em;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+
+.piece-block__bloque {
+    margin-top: 10px;
+    color: #dc3545;
+    font-size: 0.85em;
+    font-weight: 600;
+    border-top: 1px dashed #ddd;
+    padding-top: 12px;
+}
+
+
+.piece-block__upload {
+    margin-top: 10px;
+    border-top: 1px dashed #ddd;
+    padding-top: 15px;
+}
+
+.piece-block__upload-label {
+    font-size: 0.9em;
+    color: #555;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.piece-block__file-input {
+    width: 100%;
+}
+
+
+.form-actions--centered {
+    margin-top: 30px;
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.btn-submit {
+    padding: 10px 30px;
+    font-size: 1.1em;
+}
+/* Avis chef de département (lecture seule dans vue admin) */
+.avis-chef {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 0.95em;
+    margin: 12px 0 20px;
+    border: 2px solid transparent;
+}
+
+.avis-chef-icon {
+    font-size: 1.2em;
+    flex-shrink: 0;
+}
+
+.avis-chef-label {
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.avis-chef-value {
+    font-weight: 400;
+}
+
+.avis-chef--accepte {
+    background-color: #e6f4ea;
+    border-color: #00701a;
+    color: #00701a;
+}
+
+.avis-chef--refuse {
+    background-color: #fdecea;
+    border-color: #8f0a19;
+    color: #8f0a19;
+}
+
+.avis-chef--pending {
+    background-color: #fff8e1;
+    border-color: #f1ae00;
+    color: #7a5800;
+}
+
+
+
 
 @media (max-width: 768px) {
-    .doc-review-item { flex-direction: column; }
-    .doc-info { border-right: none; border-bottom: 1px solid #eee; padding-bottom: 15px; width: 100%; }
+    .doc-review-item  { flex-direction: column; }
+    .doc-info         { border-right: none; border-bottom: 1px solid #eee; padding-bottom: 15px; width: 100%; min-width: unset; }
+    .modal-content    { max-width: 100%; }
+    .global-status-controls { flex-direction: column; align-items: stretch; }
 }
-/* Média queries (inchangées) */
+
 @media (max-width: 900px) and (min-width: 801px) {
-    main { padding: 1.5em; margin: 1.5em auto; }
+    main { padding: 1.5em; margin: 1.5em auto;width: 80%; }
     .student-toolbar input[type="text"] { width: 220px; }
     .form-section { grid-template-columns: 220px 1fr 130px 1fr; gap: 8px 15px; }
     table { font-size: 0.95rem; table-layout: auto; }
@@ -636,7 +1383,7 @@ tr:nth-child(even) {
 }
 
 @media (max-width: 600px) {
-    main { padding: 1em; margin: 1em; }
+    main { padding: 1em; margin: 1em; width: 80%; }
     h1, h2 { font-size: 1.5rem; }
     .student-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
     .student-toolbar input[type="text"] { width: 100%; }
