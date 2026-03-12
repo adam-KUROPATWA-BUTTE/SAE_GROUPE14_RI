@@ -3,6 +3,7 @@
 namespace Controllers;
 
 use Model\UseCase\ManageFolderUseCase;
+use Model\Persistence\FolderRepositoryPDO; // Correction de l'import pour correspondre à ton repo
 use Core\View;
 
 class DashboardController implements ControllerInterface
@@ -67,6 +68,8 @@ class DashboardController implements ControllerInterface
             $folders = [];
         }
 
+        $departments = (new FolderRepositoryPDO())->getAllDepartements();
+
         $outgoing = [];
         $incoming = [];
 
@@ -82,7 +85,8 @@ class DashboardController implements ControllerInterface
 
             $composante  = strval($d['Composante'] ?? '');
             $accord      = strval($d['Accord'] ?? '');
-            $destination = strval($d['Destination'] ?? '');
+            // RETOUR DU FALLBACK SUR "Pays" (Sinon le filtre plantait car "Destination" était vide)
+            $destination = strval($d['Destination'] ?? $d['Pays'] ?? '');
 
             if ($filters['student'] !== '') {
                 $fullName = strtolower("$nom $prenom $numEtu");
@@ -134,12 +138,13 @@ class DashboardController implements ControllerInterface
         };
 
         View::render('Dashboard/dashboard_admin', [
-            'incoming' => $incoming,
-            'outgoing' => $outgoing,
-            'filters'  => $filters,
-            'lang'     => $lang,
-            't'        => $t,
-            'buildUrl' => $buildUrl
+            'incoming'    => $incoming,
+            'outgoing'    => $outgoing,
+            'filters'     => $filters,
+            'lang'        => $lang,
+            't'           => $t,
+            'buildUrl'    => $buildUrl,
+            'departments' => $departments // RETOUR DE LA TRANSMISSION A LA VUE
         ]);
     }
 
