@@ -197,8 +197,32 @@ class FoldersControllerAdmin
 
         if ($name !== '') return $name;
 
-        $email = strval($_SESSION['user_identifier'] ?? '');
-        if ($email !== '') return strval(explode('@', $email)[0]);
+        $email = strval($_SESSION['user_identifier'] ?? $_SESSION['email'] ?? '');
+
+        if ($email !== '') {
+            try {
+                $pdo = \Database::getInstance()->getConnection();
+                $stmt = $pdo->prepare("SELECT prenom, nom FROM admins WHERE email = :email LIMIT 1");
+                $stmt->execute([':email' => $email]);
+                $admin = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+                if ($admin) {
+                    $dbPrenom = strval($admin['prenom'] ?? '');
+                    $dbNom    = strval($admin['nom'] ?? '');
+                    $dbName   = trim($dbPrenom . ' ' . $dbNom);
+
+                    if ($dbName !== '') {
+                        $_SESSION['admin_prenom'] = $dbPrenom;
+                        $_SESSION['admin_nom']    = $dbNom;
+                        return $dbName;
+                    }
+                }
+            } catch (\Exception $e) {
+                $this->log("Erreur lors de la récupération du nom de l'admin : " . $e->getMessage());
+            }
+
+            return strval(explode('@', $email)[0]);
+        }
 
         return 'Administrateur';
     }
