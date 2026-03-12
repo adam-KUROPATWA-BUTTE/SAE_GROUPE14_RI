@@ -4,20 +4,23 @@ namespace Service;
 
 use Model\Entity\Conversation;
 use Model\Persistence\ConversationPDO;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class ContactServiceTest extends TestCase
 {
-    private $repositoryMock;
-    private $service;
+    /** @var ConversationPDO&MockObject */
+    private ConversationPDO $repositoryMock;
+
+    private ContactService $service;
 
     protected function setUp(): void
     {
         $this->repositoryMock = $this->createMock(ConversationPDO::class);
-        $this->service = new ContactService($this->repositoryMock);
+        $this->service        = new ContactService($this->repositoryMock);
     }
 
-    public function testCreateConversationSuccess()
+    public function testCreateConversationSuccess(): void
     {
         $this->repositoryMock
             ->expects($this->once())
@@ -36,8 +39,7 @@ class ContactServiceTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
-
-    public function testAddMessageConversationNotFound()
+    public function testAddMessageConversationNotFound(): void
     {
         $this->repositoryMock
             ->method('findById')
@@ -48,7 +50,7 @@ class ContactServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
-    public function testAddMessageSuccess()
+    public function testAddMessageSuccess(): void
     {
         $conversationMock = $this->createMock(Conversation::class);
 
@@ -65,7 +67,7 @@ class ContactServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
-    public function testGetStudentConversations()
+    public function testGetStudentConversations(): void
     {
         $expected = [];
 
@@ -80,7 +82,7 @@ class ContactServiceTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
-    public function testGetAllConversations()
+    public function testGetAllConversations(): void
     {
         $expected = [];
 
@@ -94,7 +96,7 @@ class ContactServiceTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
-    public function testMarkConversationAsRead()
+    public function testMarkConversationAsRead(): void
     {
         $this->repositoryMock
             ->expects($this->once())
@@ -107,7 +109,7 @@ class ContactServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
-    public function testDeleteConversation()
+    public function testDeleteConversation(): void
     {
         $this->repositoryMock
             ->expects($this->once())

@@ -27,6 +27,9 @@ class HomeControllerAdmin implements ControllerInterface
         exit;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     protected function renderView(string $view, array $data = []): void
     {
         View::render($view, $data);
@@ -46,7 +49,7 @@ class HomeControllerAdmin implements ControllerInterface
     }
 
     /**
-     * Récupère la liste de tous les départements. Neutralisable en test.
+     * @return array<int, string>
      */
     protected function fetchDepartements(): array
     {

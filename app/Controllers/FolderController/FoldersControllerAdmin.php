@@ -38,6 +38,9 @@ class FoldersControllerAdmin
         exit;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     protected function renderView(string $view, array $data = []): void
     {
         View::render($view, $data);
@@ -45,6 +48,8 @@ class FoldersControllerAdmin
 
     /**
      * Envoie une réponse JSON et termine. Neutralisable en test.
+     *
+     * @param array<string, mixed> $data
      */
     protected function jsonResponse(array $data): never
     {
@@ -85,13 +90,18 @@ class FoldersControllerAdmin
         if ($page === 'toggle_complete') {
             $numetu = $_GET['numetu'] ?? null;
             if ($numetu) {
-                $numetu  = urldecode($numetu);
+                $numetu = urldecode($numetu);
+
+                // Fetch student data BEFORE toggling to know the previous state
+                $studentData   = $this->folderUseCase->getStudentDetails($numetu);
+                $wasIncomplete = $studentData !== null && empty($studentData['IsComplete']);
+
                 $success = $this->folderUseCase->toggleCompleteStatus($numetu);
 
-                if ($success && $wasIncomplete && $studentData) {
-                    $email       = $studentData['EmailPersonnel'] ?? '';
-                    $nom         = $studentData['Nom']    ?? '';
-                    $prenom      = $studentData['Prenom'] ?? '';
+                if ($success && $wasIncomplete && $studentData !== null) {
+                    $email       = strval($studentData['EmailPersonnel'] ?? '');
+                    $nom         = strval($studentData['Nom']    ?? '');
+                    $prenom      = strval($studentData['Prenom'] ?? '');
                     $studentName = trim($prenom . ' ' . $nom);
 
                     $pieces        = is_array($studentData['pieces'] ?? null) ? $studentData['pieces'] : [];
@@ -224,7 +234,7 @@ class FoldersControllerAdmin
 
         try {
             $oldDossier = $this->folderUseCase->getStudentDetails($numEtu);
-            $oldStatus  = $oldDossier['status'] ?? 'depot';
+            $oldStatus  = is_array($oldDossier) ? strval($oldDossier['status'] ?? 'depot') : 'depot';
 
             $success = $this->folderUseCase->setFolderStatus($numEtu, $status);
 
@@ -285,9 +295,9 @@ class FoldersControllerAdmin
         $oldDossier = $this->folderUseCase->getStudentDetails($numetu);
 
         /** @var array<string, string> $oldStatuts */
-        $oldStatuts = isset($oldDossier['statuts']) && is_array($oldDossier['statuts']) ? $oldDossier['statuts'] : [];
+        $oldStatuts = (is_array($oldDossier) && isset($oldDossier['statuts']) && is_array($oldDossier['statuts'])) ? $oldDossier['statuts'] : [];
         /** @var array<string, array{comment?: string, status?: string}> $oldPieces */
-        $oldPieces  = isset($oldDossier['pieces'])  && is_array($oldDossier['pieces'])  ? $oldDossier['pieces']  : [];
+        $oldPieces  = (is_array($oldDossier) && isset($oldDossier['pieces'])  && is_array($oldDossier['pieces']))  ? $oldDossier['pieces']  : [];
 
         $studentData = [
             'NumEtu'             => $numetu,
@@ -347,7 +357,6 @@ class FoldersControllerAdmin
         $this->log("numetu: " . $numetu);
         $this->log("statutsDocuments: " . json_encode($statutsDocuments));
         $this->log("email_perso: " . ($_POST['email_perso'] ?? '(vide)'));
-        //debug
         $this->log("mobilite_type POST = " . ($_POST['mobilite_type'] ?? 'NON RECU'));
         $this->log("Mobilite data = " . ($studentData['Mobilite'] ?? 'NULL'));
 
@@ -355,7 +364,7 @@ class FoldersControllerAdmin
 
         if ($success) {
             $currentDossier = $this->folderUseCase->getStudentDetails($numetu);
-            $globalStatus   = $currentDossier['status'] ?? 'depot';
+            $globalStatus   = is_array($currentDossier) ? strval($currentDossier['status'] ?? 'depot') : 'depot';
             $globalLabels   = ['depot' => 'Dépôt', 'instruction' => 'En instruction', 'accepte' => 'Accepté', 'refuse' => 'Refusé'];
 
             $piecesAcceptees = [];
@@ -389,7 +398,7 @@ class FoldersControllerAdmin
 
             if (!empty($dateLimite)) {
                 $formattedDate = date('d/m/Y', strtotime($dateLimite));
-                $oldDateLimite = $oldDossier['DateLimite'] ?? null;
+                $oldDateLimite = is_array($oldDossier) ? ($oldDossier['DateLimite'] ?? null) : null;
                 if ($dateLimite !== $oldDateLimite) {
                     $updates[] = '__DATE_LIMITE__' . $formattedDate . '__END_DATE__';
                 }

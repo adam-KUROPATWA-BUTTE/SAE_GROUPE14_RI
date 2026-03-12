@@ -9,7 +9,7 @@
  * @var array<string> $scripts
  * @var string $activeMenu
  * @var string $userRole
- * @var bool|null $noMain       — si true, le contenu n'est pas enveloppé dans <main>
+ * @var bool|null $noMain
  * @var Closure(array<string, string>): string $t
  * @var Closure(string, array<string, mixed>=): string $buildUrl
  */
@@ -24,12 +24,10 @@ $noMain       = $noMain ?? false;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($title) ?></title>
 
-    <!-- Styles de base -->
     <link rel="stylesheet" href="styles/index.css">
     <link rel="stylesheet" href="styles/chatbot.css">
     <link rel="icon" type="image/png" href="img/favicon.webp"/>
 
-    <!-- Styles additionnels -->
     <?php foreach ($styles as $style): ?>
         <link rel="stylesheet" href="<?= htmlspecialchars($style) ?>">
     <?php endforeach; ?>
@@ -64,15 +62,14 @@ $noMain       = $noMain ?? false;
 
 <?php endif; ?>
 
-<?php if (!in_array($userRole ?? '', ['coordinateur', 'coordinateur_etude', 'coordinateur_stage', 'chef_departement'])): ?>
+<?php if (!in_array($userRole, ['coordinateur', 'coordinateur_etude', 'coordinateur_stage', 'chef_departement'])): ?>
     <?php include __DIR__ . '/chatbot.php'; ?>
-<?php endif; ?><?php include __DIR__ . '/footer.php'; ?>
+<?php endif; ?>
+<?php include __DIR__ . '/footer.php'; ?>
 
-<!-- Scripts de base -->
 <script src="js/main.js"></script>
 <script src="js/chatbot.js"></script>
 
-<!-- Scripts additionnels -->
 <?php foreach ($scripts as $script): ?>
     <script src="<?= htmlspecialchars($script) ?>"></script>
 <?php endforeach; ?>

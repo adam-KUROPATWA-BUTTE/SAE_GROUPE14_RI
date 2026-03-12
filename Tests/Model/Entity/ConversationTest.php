@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase;
 
 class ConversationTest extends TestCase
 {
-    public function testSetStatus()
+    public function testSetStatus(): void
     {
         $conversation = new Conversation(
             "12345",
@@ -20,7 +20,7 @@ class ConversationTest extends TestCase
         $this->assertEquals("closed", $conversation->getStatus());
     }
 
-    public function testAddAndGetMessages()
+    public function testAddAndGetMessages(): void
     {
         $conversation = new Conversation(
             "12345",
@@ -30,7 +30,6 @@ class ConversationTest extends TestCase
         );
 
         $message = $this->createMock(Message::class);
-
         $conversation->addMessage($message);
 
         $messages = $conversation->getMessages();
@@ -39,7 +38,7 @@ class ConversationTest extends TestCase
         $this->assertSame($message, $messages[0]);
     }
 
-    public function testGetFirstMessage()
+    public function testGetFirstMessage(): void
     {
         $conversation = new Conversation(
             "12345",
@@ -59,7 +58,7 @@ class ConversationTest extends TestCase
         $this->assertSame($message1, $conversation->getFirstMessage());
     }
 
-    public function testGetLastMessage()
+    public function testGetLastMessage(): void
     {
         $conversation = new Conversation(
             "12345",
@@ -79,7 +78,7 @@ class ConversationTest extends TestCase
         $this->assertSame($message2, $conversation->getLastMessage());
     }
 
-    public function testHasUnreadMessagesForAdmin()
+    public function testHasUnreadMessagesForAdmin(): void
     {
         $conversation = new Conversation(
             "12345",
@@ -97,7 +96,7 @@ class ConversationTest extends TestCase
         $this->assertTrue($conversation->hasUnreadMessagesFor('admin'));
     }
 
-    public function testHasUnreadMessagesForStudent()
+    public function testHasUnreadMessagesForStudent(): void
     {
         $conversation = new Conversation(
             "12345",
@@ -115,7 +114,7 @@ class ConversationTest extends TestCase
         $this->assertTrue($conversation->hasUnreadMessagesFor('student'));
     }
 
-    public function testNoUnreadMessages()
+    public function testNoUnreadMessages(): void
     {
         $conversation = new Conversation(
             "12345",

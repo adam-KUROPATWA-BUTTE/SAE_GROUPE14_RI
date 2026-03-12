@@ -6,17 +6,20 @@ use Model\Entity\Conversation;
 use Model\Persistence\ConversationPDO;
 use PDO;
 use PDOStatement;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests unitaires pour ConversationPDO.
+ * Unit tests for ConversationPDO.
  *
- * Stratégie : newInstanceWithoutConstructor() + injection ReflectionProperty
- * pour ne jamais toucher le singleton Database.
+ * Strategy: newInstanceWithoutConstructor() + ReflectionProperty injection
+ * to never touch the Database singleton.
  */
 class ConversationPDOTest extends TestCase
 {
+    /** @var PDO&MockObject */
     private PDO $pdoMock;
+
     private ConversationPDO $repo;
 
     protected function setUp(): void
@@ -32,9 +35,14 @@ class ConversationPDOTest extends TestCase
     }
 
     // =========================================================
-    // Helpers inline (pas de méthodes privées séparées)
+    // Inline helpers (no separate private methods)
     // =========================================================
 
+    /**
+     * Builds a mock PDOStatement that returns the given rows one by one via fetch().
+     *
+     * @param array<int, array<string, mixed>> $rows
+     */
     private function makeFetchStmt(array $rows): PDOStatement
     {
         $stmt = $this->createMock(PDOStatement::class);
@@ -44,6 +52,11 @@ class ConversationPDOTest extends TestCase
         return $stmt;
     }
 
+    /**
+     * Returns a fake conversation row for the given ID.
+     *
+     * @return array<string, mixed>
+     */
     private function convRow(int $id): array
     {
         return [
@@ -57,6 +70,11 @@ class ConversationPDOTest extends TestCase
         ];
     }
 
+    /**
+     * Returns a fake message row for the given IDs.
+     *
+     * @return array<string, mixed>
+     */
     private function msgRow(int $id, int $convId): array
     {
         return [
@@ -210,8 +228,12 @@ class ConversationPDOTest extends TestCase
 
     public function testFindUnreadByRoleAdminFiltersStudentSender(): void
     {
-        $stmtConv = $this->makeFetchStmt([$this->convRow(1)]);
-        $stmtMsg  = $this->makeFetchStmt([]);
+        /** @var PDOStatement&MockObject $stmtConv */
+        $stmtConv = $this->createMock(PDOStatement::class);
+        $stmtConv->method('execute')->willReturn(true);
+        $stmtConv->method('fetch')->willReturnOnConsecutiveCalls($this->convRow(1), false);
+
+        $stmtMsg = $this->makeFetchStmt([]);
 
         $this->pdoMock->method('prepare')
             ->willReturnOnConsecutiveCalls($stmtConv, $stmtMsg);
@@ -225,7 +247,10 @@ class ConversationPDOTest extends TestCase
 
     public function testFindUnreadByRoleStudentFiltersAdminSender(): void
     {
-        $stmt = $this->makeFetchStmt([]);
+        /** @var PDOStatement&MockObject $stmt */
+        $stmt = $this->createMock(PDOStatement::class);
+        $stmt->method('fetch')->willReturn(false);
+
         $this->pdoMock->method('prepare')->willReturn($stmt);
 
         $stmt->expects($this->once())

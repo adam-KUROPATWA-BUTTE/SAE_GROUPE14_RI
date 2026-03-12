@@ -2,16 +2,16 @@
 /**
  * Partial : Section statut global du dossier (select + bouton)
  *
- * @var string  $numEtu        NumEtu déjà htmlspecialchars-é
- * @var string  $currentStatus statut courant du dossier
+ * @var string  $numEtu
+ * @var string  $currentStatus
  * @var Closure $t
- * @var string  $userRole      Rôle de l'utilisateur courant
+ * @var string  $userRole
  */
 
-$isAdmin = (($_SESSION['role'] ?? $userRole ?? '') === 'admin');
+$isAdmin = (($_SESSION['role'] ?? $userRole) === 'admin');
 
 $statusLabels = [
-    'depot'       => $t(['fr' => 'Dépôt',         'en' => 'Submitted']),
+    'depot'       => $t(['fr' => 'Dépôt',          'en' => 'Submitted']),
     'instruction' => $t(['fr' => 'En instruction', 'en' => 'Under Review']),
     'accepte'     => $t(['fr' => 'Accepté',        'en' => 'Accepted']),
     'refuse'      => $t(['fr' => 'Refusé',         'en' => 'Refused']),

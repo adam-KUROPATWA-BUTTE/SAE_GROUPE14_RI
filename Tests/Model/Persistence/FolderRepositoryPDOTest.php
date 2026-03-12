@@ -35,7 +35,9 @@ class FolderRepositoryPDOTest extends TestCase
         $prop->setValue($this->repo, $this->pdoMock);
     }
 
-
+    /**
+     * @param array<int, array<string, mixed>> $rows
+     */
     private function buildFetchAllStmt(array $rows): PDOStatement
     {
         $stmt = $this->createMock(PDOStatement::class);

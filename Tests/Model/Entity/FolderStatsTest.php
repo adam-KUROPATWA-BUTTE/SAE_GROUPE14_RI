@@ -2,13 +2,12 @@
 
 namespace Tests\Model\Entity;
 
-
 use PHPUnit\Framework\TestCase;
 use Model\Entity\FolderStats;
 
 class FolderStatsTest extends TestCase
 {
-    public function testConstructorAndGetters()
+    public function testConstructorAndGetters(): void
     {
         $stats = new FolderStats(10, 7);
 
@@ -16,14 +15,14 @@ class FolderStatsTest extends TestCase
         $this->assertEquals(7, $stats->getCompleted());
     }
 
-    public function testCompletionPercentage()
+    public function testCompletionPercentage(): void
     {
         $stats = new FolderStats(10, 5);
 
         $this->assertEquals(50.0, $stats->getCompletionPercentage());
     }
 
-    public function testCompletionPercentageWithZeroTotal()
+    public function testCompletionPercentageWithZeroTotal(): void
     {
         $stats = new FolderStats(0, 0);
 

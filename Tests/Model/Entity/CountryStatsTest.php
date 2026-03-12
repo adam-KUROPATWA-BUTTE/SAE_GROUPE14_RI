@@ -2,26 +2,25 @@
 
 namespace Model\Entity;
 
-
 use PHPUnit\Framework\TestCase;
 
 class CountryStatsTest extends TestCase
 {
-    public function testConstructorAndGetters()
+    public function testConstructorAndGetters(): void
     {
-        $countryStats = new CountryStats("France", 12);
+        $countryStats = new CountryStats("France", 42);
 
         $this->assertEquals("France", $countryStats->getName());
-        $this->assertEquals(12, $countryStats->getCount());
+        $this->assertEquals(42, $countryStats->getCount());
     }
 
-    public function testToArray()
+    public function testToArray(): void
     {
-        $countryStats = new CountryStats("Spain", 7);
+        $countryStats = new CountryStats("Espagne", 10);
 
         $expected = [
-            'name' => 'Spain',
-            'count' => 7
+            'name'  => 'Espagne',
+            'count' => 10,
         ];
 
         $this->assertEquals($expected, $countryStats->toArray());

@@ -33,6 +33,9 @@ class DepartmentHeadController implements ControllerInterface
         exit;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     protected function renderView(string $view, array $data = []): void
     {
         View::render($view, $data);

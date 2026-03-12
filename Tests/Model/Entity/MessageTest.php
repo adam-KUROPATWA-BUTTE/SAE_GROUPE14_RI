@@ -7,7 +7,7 @@ use Model\Entity\Message;
 
 class MessageTest extends TestCase
 {
-    public function testConstructorAndGetters()
+    public function testConstructorAndGetters(): void
     {
         $date = new \DateTime();
 
@@ -20,15 +20,15 @@ class MessageTest extends TestCase
             $date
         );
 
-        $this->assertEquals(10, $message->getId());
-        $this->assertEquals(1, $message->getConversationId());
+        $this->assertEquals(10,        $message->getId());
+        $this->assertEquals(1,         $message->getConversationId());
         $this->assertEquals("student", $message->getSenderType());
         $this->assertEquals("Bonjour", $message->getContent());
         $this->assertFalse($message->isRead());
-        $this->assertSame($date, $message->getCreatedAt());
+        $this->assertSame($date,       $message->getCreatedAt());
     }
 
-    public function testDefaultValues()
+    public function testDefaultValues(): void
     {
         $message = new Message(
             2,
@@ -37,13 +37,14 @@ class MessageTest extends TestCase
         );
 
         $this->assertNull($message->getId());
-        $this->assertEquals(2, $message->getConversationId());
-        $this->assertEquals("admin", $message->getSenderType());
+        $this->assertEquals(2,              $message->getConversationId());
+        $this->assertEquals("admin",        $message->getSenderType());
         $this->assertEquals("Message test", $message->getContent());
         $this->assertFalse($message->isRead());
-        $this->assertInstanceOf(\DateTime::class, $message->getCreatedAt());    }
+        $this->assertInstanceOf(\DateTime::class, $message->getCreatedAt());
+    }
 
-    public function testMarkAsRead()
+    public function testMarkAsRead(): void
     {
         $message = new Message(
             1,

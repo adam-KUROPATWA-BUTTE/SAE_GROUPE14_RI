@@ -94,7 +94,15 @@ class UserRepositoryPDO implements UserRepositoryInterface
     }
 
     /**
-     * @return array{success: bool, role?: string, numetu?: string|null, departement?: string|null, force_change_password?: bool}
+     * @return array{
+     *   success: bool,
+     *   role?: string,
+     *   numetu?: string|null,
+     *   departement?: string|null,
+     *   nom?: string|null,
+     *   prenom?: string|null,
+     *   force_change_password?: bool
+     * }
      */
     public function login(string $identifier, string $password): array
     {
@@ -103,36 +111,39 @@ class UserRepositoryPDO implements UserRepositoryInterface
             : $this->findByStudentNumber($identifier);
 
         if ($user && password_verify($password, $user->getPassword())) {
-            
-            // Mise à jour de la date de dernière connexion pour le personnel
+
             if ($user->getRole() !== 'student') {
                 try {
-                    $upd = $this->pdo->prepare("UPDATE admins SET last_login = NOW() WHERE email = :email");
+                    $upd = $this->pdo->prepare(
+                        "UPDATE admins SET last_login = NOW() WHERE email = :email"
+                    );
                     $upd->execute([':email' => $identifier]);
-                } catch (PDOException $e) { /* silencieux */ }
+                } catch (PDOException $e) {
+                }
             }
 
             $forceChange = false;
-            
-            // Vérification ultra-robuste de force_change_password
+
             try {
                 if ($user->getRole() === 'student') {
-                    $stmtCheck = $this->pdo->prepare("SELECT force_change_password FROM etudiants WHERE numetu = :id LIMIT 1");
+                    $stmtCheck = $this->pdo->prepare(
+                        "SELECT force_change_password FROM etudiants WHERE numetu = :id LIMIT 1"
+                    );
                     $stmtCheck->execute([':id' => $user->getNumetu()]);
                 } else {
-                    $stmtCheck = $this->pdo->prepare("SELECT force_change_password FROM admins WHERE email = :id LIMIT 1");
+                    $stmtCheck = $this->pdo->prepare(
+                        "SELECT force_change_password FROM admins WHERE email = :id LIMIT 1"
+                    );
                     $stmtCheck->execute([':id' => $identifier]);
                 }
-                
-                // fetchColumn récupère directement la valeur au lieu d'un tableau
-                $forceVal = $stmtCheck->fetchColumn(); 
-                
-                // On s'assure que même si MySQL renvoie '1' (string), ce soit compté comme vrai
-                if ($forceVal !== false && (int)$forceVal === 1) {
+
+                $forceVal = $stmtCheck->fetchColumn();
+
+                if ($forceVal !== false && (int) $forceVal === 1) {
                     $forceChange = true;
                 }
-            } catch (PDOException $e) { 
-                error_log("Force Change Check Error: " . $e->getMessage()); 
+            } catch (PDOException $e) {
+                error_log("Force Change Check Error: " . $e->getMessage());
             }
 
             return [
@@ -148,7 +159,6 @@ class UserRepositoryPDO implements UserRepositoryInterface
 
         return ['success' => false];
     }
-
     public function register(User $user): bool
     {
         $existing = $user->getNumetu()

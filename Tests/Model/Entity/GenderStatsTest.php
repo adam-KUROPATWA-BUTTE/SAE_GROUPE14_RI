@@ -2,13 +2,12 @@
 
 namespace Tests\Model\Entity;
 
-
 use PHPUnit\Framework\TestCase;
 use Model\Entity\GenderStats;
 
 class GenderStatsTest extends TestCase
 {
-    public function testConstructorAndGetters()
+    public function testConstructorAndGetters(): void
     {
         $stats = new GenderStats(6, 4);
 
@@ -16,28 +15,28 @@ class GenderStatsTest extends TestCase
         $this->assertEquals(4, $stats->getFemale());
     }
 
-    public function testGetTotal()
+    public function testGetTotal(): void
     {
         $stats = new GenderStats(6, 4);
 
         $this->assertEquals(10, $stats->getTotal());
     }
 
-    public function testMalePercentage()
+    public function testMalePercentage(): void
     {
         $stats = new GenderStats(6, 4);
 
         $this->assertEquals(60.0, $stats->getMalePercentage());
     }
 
-    public function testFemalePercentage()
+    public function testFemalePercentage(): void
     {
         $stats = new GenderStats(6, 4);
 
         $this->assertEquals(40.0, $stats->getFemalePercentage());
     }
 
-    public function testPercentagesWithZeroTotal()
+    public function testPercentagesWithZeroTotal(): void
     {
         $stats = new GenderStats(0, 0);
 
@@ -45,13 +44,13 @@ class GenderStatsTest extends TestCase
         $this->assertEquals(0, $stats->getFemalePercentage());
     }
 
-    public function testToArray()
+    public function testToArray(): void
     {
         $stats = new GenderStats(3, 7);
 
         $expected = [
-            'male' => 3,
-            'female' => 7
+            'male'   => 3,
+            'female' => 7,
         ];
 
         $this->assertEquals($expected, $stats->toArray());

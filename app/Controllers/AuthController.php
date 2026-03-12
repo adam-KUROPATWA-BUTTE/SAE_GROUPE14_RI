@@ -26,7 +26,7 @@ class AuthController implements ControllerInterface
             'reset-password',
             'force-reset-password',
             'mentions-legales',
-            'forgot_password',   // ← NOUVEAU
+            'forgot_password',
         ]);
     }
 
@@ -54,7 +54,7 @@ class AuthController implements ControllerInterface
             case 'mentions-legales':
                 $this->handleMentionsLegales();
                 break;
-            case 'forgot_password':          // ← NOUVEAU
+            case 'forgot_password':
                 $this->handleForgotPassword();
                 break;
         }
@@ -89,8 +89,13 @@ class AuthController implements ControllerInterface
                     $_SESSION['departement'] = $result['departement'];
                 }
 
-                if (isset($result['nom']))    $_SESSION['admin_nom']    = $result['nom'];
-                if (isset($result['prenom'])) $_SESSION['admin_prenom'] = $result['prenom'];
+                if (isset($result['nom'])) {
+                    $_SESSION['admin_nom'] = $result['nom'];
+                }
+
+                if (isset($result['prenom'])) {
+                    $_SESSION['admin_prenom'] = $result['prenom'];
+                }
 
                 if (!empty($result['force_change_password'])) {
                     header('Location: index.php?page=force-reset-password');
@@ -124,7 +129,6 @@ class AuthController implements ControllerInterface
         ]);
     }
 
-    // ── NOUVEAU ────────────────────────────────────────────────────────────────
     /**
      * Page "Mot de passe oublié".
      * Envoie un email de réinitialisation via UserRepositoryPDO::resetPassword().
@@ -141,10 +145,7 @@ class AuthController implements ControllerInterface
                 $message     = 'Veuillez saisir votre adresse email.';
                 $messageType = 'error';
             } else {
-                // On appelle la même méthode que handleResetPassword utilisait
-                $sent = $this->userRepository->resetPassword($email);
-
-                // Toujours afficher un message de succès (sécurité : pas de fuite d'email)
+                $this->userRepository->resetPassword($email);
                 $message     = 'Si cette adresse est connue, un lien de réinitialisation a été envoyé.';
                 $messageType = 'success';
             }
@@ -155,7 +156,6 @@ class AuthController implements ControllerInterface
             'messageType' => $messageType,
         ]);
     }
-    // ──────────────────────────────────────────────────────────────────────────
 
     private function handleForceResetPassword(): void
     {

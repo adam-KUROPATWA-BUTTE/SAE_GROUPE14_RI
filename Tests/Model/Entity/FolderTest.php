@@ -2,13 +2,12 @@
 
 namespace Tests\Model\Entity;
 
-
 use PHPUnit\Framework\TestCase;
 use Model\Entity\Folder;
 
 class FolderTest extends TestCase
 {
-    public function testConstructorAndGetters()
+    public function testConstructorAndGetters(): void
     {
         $dossier = new Folder(1, true);
 
@@ -16,7 +15,7 @@ class FolderTest extends TestCase
         $this->assertTrue($dossier->isComplete());
     }
 
-    public function testIsCompleteFalse()
+    public function testIsCompleteFalse(): void
     {
         $dossier = new Folder(2, false);
 

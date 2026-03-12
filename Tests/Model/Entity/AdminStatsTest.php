@@ -6,16 +6,15 @@ use PHPUnit\Framework\TestCase;
 
 class AdminStatsTest extends TestCase
 {
-    public function testGetters()
+    public function testGetters(): void
     {
         $dossierStats = $this->createMock(FolderStats::class);
-        $genderStats = $this->createMock(GenderStats::class);
-
-        $country = $this->createMock(CountryStats::class);
-        $department = $this->createMock(DepartmentStats::class);
+        $genderStats  = $this->createMock(GenderStats::class);
+        $country      = $this->createMock(CountryStats::class);
+        $department   = $this->createMock(DepartmentStats::class);
 
         $topCountries = [$country];
-        $departments = [$department];
+        $departments  = [$department];
 
         $adminStats = new AdminStats(
             $dossierStats,
@@ -31,11 +30,11 @@ class AdminStatsTest extends TestCase
 
         $this->assertSame($dossierStats, $adminStats->getDossierStats());
         $this->assertSame($topCountries, $adminStats->getTopCountries());
-        $this->assertSame($genderStats, $adminStats->getGenderStats());
-        $this->assertSame($departments, $adminStats->getDepartments());
+        $this->assertSame($genderStats,  $adminStats->getGenderStats());
+        $this->assertSame($departments,  $adminStats->getDepartments());
 
         $this->assertEquals(10, $adminStats->getIncomingStudents());
-        $this->assertEquals(5, $adminStats->getOutgoingStudents());
+        $this->assertEquals(5,  $adminStats->getOutgoingStudents());
 
         $this->assertEquals([['name' => 'Europe', 'count' => 3]], $adminStats->getZoneStats());
 
@@ -43,7 +42,7 @@ class AdminStatsTest extends TestCase
         $this->assertEquals(2, $adminStats->getNonEuropeCountriesCount());
     }
 
-    public function testToArray()
+    public function testToArray(): void
     {
         $dossierStats = $this->createMock(FolderStats::class);
         $dossierStats->method('getCompleted')->willReturn(7);
@@ -72,8 +71,8 @@ class AdminStatsTest extends TestCase
 
         $result = $adminStats->toArray();
 
-        $this->assertEquals(7, $result['complete_folders']);
-        $this->assertEquals(3, $result['incomplete_folders']);
+        $this->assertEquals(7,  $result['complete_folders']);
+        $this->assertEquals(3,  $result['incomplete_folders']);
         $this->assertEquals(10, $result['total_folders']);
 
         $this->assertEquals([['country' => 'France']], $result['top_countries']);
@@ -85,8 +84,8 @@ class AdminStatsTest extends TestCase
 
         $this->assertEquals([['name' => 'Europe', 'count' => 3]], $result['top_continents']);
 
-        $this->assertEquals(8, $result['europe_countries_count']);
-        $this->assertEquals(2, $result['non_europe_countries_count']);
+        $this->assertEquals(8,  $result['europe_countries_count']);
+        $this->assertEquals(2,  $result['non_europe_countries_count']);
         $this->assertEquals(10, $result['total_countries_count']);
     }
 }

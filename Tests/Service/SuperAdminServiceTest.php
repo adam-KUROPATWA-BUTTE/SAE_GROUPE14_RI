@@ -2,20 +2,22 @@
 
 namespace Tests\Service;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Service\SuperAdminService;
 use Model\Persistence\UserRepositoryPDO;
 
 class SuperAdminServiceTest extends TestCase
 {
-    private $userRepoMock;
-    private $service;
+    /** @var UserRepositoryPDO&MockObject */
+    private UserRepositoryPDO $userRepoMock;
+
+    private SuperAdminService $service;
 
     protected function setUp(): void
     {
         $this->userRepoMock = $this->createMock(UserRepositoryPDO::class);
-
-        $this->service = new SuperAdminService($this->userRepoMock);
+        $this->service      = new SuperAdminService($this->userRepoMock);
     }
 
     public function testGetAvailableDepartments(): void
@@ -70,14 +72,14 @@ class SuperAdminServiceTest extends TestCase
     {
         $accounts = [
             [
-                'login' => 'admin@test.com',
-                'role' => 'admin',
+                'login'       => 'admin@test.com',
+                'role'        => 'admin',
                 'departement' => 'INFO',
-                'site' => 'Aix',
-                'nom' => 'Doe',
-                'prenom' => 'John',
-                'created_at' => '2025-01-01'
-            ]
+                'site'        => 'Aix',
+                'nom'         => 'Doe',
+                'prenom'      => 'John',
+                'created_at'  => '2025-01-01',
+            ],
         ];
 
         $this->userRepoMock

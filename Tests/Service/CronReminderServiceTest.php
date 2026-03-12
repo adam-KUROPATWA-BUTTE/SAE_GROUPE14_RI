@@ -4,17 +4,22 @@ namespace Service;
 
 use Model\Repository\FolderRepositoryInterface;
 use Model\Repository\RelanceRepositoryInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class CronReminderServiceTest extends TestCase
 {
-    private $folderRepoMock;
-    private $relanceRepoMock;
-    private $service;
+    /** @var FolderRepositoryInterface&MockObject */
+    private FolderRepositoryInterface $folderRepoMock;
+
+    /** @var RelanceRepositoryInterface&MockObject */
+    private RelanceRepositoryInterface $relanceRepoMock;
+
+    private CronReminderService $service;
 
     protected function setUp(): void
     {
-        $this->folderRepoMock = $this->createMock(FolderRepositoryInterface::class);
+        $this->folderRepoMock  = $this->createMock(FolderRepositoryInterface::class);
         $this->relanceRepoMock = $this->createMock(RelanceRepositoryInterface::class);
 
         $this->service = new CronReminderService(
@@ -23,16 +28,16 @@ class CronReminderServiceTest extends TestCase
         );
     }
 
-    public function testDryRunDoesNotSendRelance()
+    public function testDryRunDoesNotSendRelance(): void
     {
         $folders = [
             [
-                'NumEtu' => '12345',
-                'EmailAMU' => 'test@amu.fr',
-                'EmailPersonnel' => '',
-                'Prenom' => 'John',
-                'Nom' => 'Doe'
-            ]
+                'NumEtu'          => '12345',
+                'EmailAMU'        => 'test@amu.fr',
+                'EmailPersonnel'  => '',
+                'Prenom'          => 'John',
+                'Nom'             => 'Doe',
+            ],
         ];
 
         $this->folderRepoMock
@@ -49,19 +54,19 @@ class CronReminderServiceTest extends TestCase
 
         $this->service->run(true, 7);
 
-        $this->assertTrue(true); // dry-run exécuté sans erreur
+        $this->assertTrue(true);
     }
 
-    public function testSkipIfNoEmail()
+    public function testSkipIfNoEmail(): void
     {
         $folders = [
             [
-                'NumEtu' => '12345',
-                'EmailAMU' => '',
-                'EmailPersonnel' => '',
-                'Prenom' => 'John',
-                'Nom' => 'Doe'
-            ]
+                'NumEtu'          => '12345',
+                'EmailAMU'        => '',
+                'EmailPersonnel'  => '',
+                'Prenom'          => 'John',
+                'Nom'             => 'Doe',
+            ],
         ];
 
         $this->folderRepoMock
@@ -77,16 +82,16 @@ class CronReminderServiceTest extends TestCase
         $this->assertTrue(true);
     }
 
-    public function testSkipIfRecentlySent()
+    public function testSkipIfRecentlySent(): void
     {
         $folders = [
             [
-                'NumEtu' => '12345',
-                'EmailAMU' => 'test@amu.fr',
-                'EmailPersonnel' => '',
-                'Prenom' => 'John',
-                'Nom' => 'Doe'
-            ]
+                'NumEtu'          => '12345',
+                'EmailAMU'        => 'test@amu.fr',
+                'EmailPersonnel'  => '',
+                'Prenom'          => 'John',
+                'Nom'             => 'Doe',
+            ],
         ];
 
         $this->folderRepoMock
