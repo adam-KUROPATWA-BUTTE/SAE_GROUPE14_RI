@@ -147,38 +147,28 @@ ob_start();
                 <div class="stat-slide active">
                     <h2><?= $t(['fr' => 'État des dossiers', 'en' => 'Folder Status']) ?></h2>
                     <div class="stat-content">
-                        <div class="stat-item complete">
+                        <a href="<?= $buildUrl('index.php', array_filter([
+                                'page'        => 'folders-admin',
+                                'mobilite'    => $mobiliteFilter,
+                                'departement' => $departementFilter,
+                            ]) + ['complet' => '1']) ?>" class="stat-item complete stat-item--link">
                             <div class="stat-number"><?= $completed ?></div>
                             <div class="stat-label"><?= $t(['fr' => 'Dossiers complets', 'en' => 'Complete folders']) ?></div>
-                        </div>
-                        <div class="stat-item incomplete">
+                        </a>
+                        <a href="<?= $buildUrl('index.php', array_filter([
+                                'page'        => 'folders-admin',
+                                'mobilite'    => $mobiliteFilter,
+                                'departement' => $departementFilter,
+                            ]) + ['complet' => '0']) ?>" class="stat-item incomplete stat-item--link">
                             <div class="stat-number"><?= $incomplete ?></div>
                             <div class="stat-label"><?= $t(['fr' => 'Dossiers incomplets', 'en' => 'Incomplete folders']) ?></div>
-                        </div>
+                        </a>
                     </div>
                     <div class="completion-bar">
                         <div class="completion-fill" style="width: <?= $completionRate ?>%"></div>
                     </div>
                     <div class="stat-percentage">
                         <?= $completionRate ?>% <?= $t(['fr' => 'de complétion', 'en' => 'completion']) ?>
-                    </div>
-                </div>
-
-                <!-- Slide 2 : Répartition par département -->
-                <div class="stat-slide">
-                    <h2><?= $t(['fr' => 'Répartition par département', 'en' => 'Distribution by Department']) ?></h2>
-                    <div class="stat-content departments">
-                        <?php foreach (array_slice($departments, 0, 5) as $dept):
-                            $barWidth = round($dept->getCount() / max($maxDept, 1) * 100);
-                            ?>
-                            <div class="dept-item">
-                                <span class="dept-name"><?= htmlspecialchars($dept->getName()) ?></span>
-                                <div class="dept-bar-container">
-                                    <div class="dept-bar" style="width: <?= $barWidth ?>%"></div>
-                                </div>
-                                <span class="dept-count"><?= $dept->getCount() ?></span>
-                            </div>
-                        <?php endforeach; ?>
                     </div>
                 </div>
 

@@ -1,6 +1,7 @@
+
 /* ==========================================================================
    FolderManager.js
-   ========================================================================== */
+========================================================================== */
 
 
 /* --------------------------------------------------------------------------
@@ -134,8 +135,35 @@ class FilterManager {
         document.querySelectorAll('#filter-complet, #date-debut, #date-fin, #filter-composante, #filter-accord').forEach(sel => {
             if (sel) sel.addEventListener('change', () => this.appliquerFiltres(true));
         });
+        this._preselectFromUrl();
     }
+    _preselectFromUrl() {
+        const params = new URLSearchParams(window.location.search);
 
+        const complet = params.get('complet');
+        const filterComplet = document.getElementById('filter-complet');
+        if (filterComplet && complet !== null) filterComplet.value = complet;
+
+        const composante = params.get('composante');
+        const filterComposante = document.getElementById('filter-composante');
+        if (filterComposante && composante !== null) filterComposante.value = composante;
+
+        const accord = params.get('accord');
+        const filterAccord = document.getElementById('filter-accord');
+        if (filterAccord && accord !== null) filterAccord.value = accord;
+
+        const type = params.get('type');
+        if (type) {
+            const cb = document.querySelector(`input[name="entrant_sortant"][value="${type}"]`);
+            if (cb) cb.checked = true;
+        }
+
+        const zone = params.get('zone');
+        if (zone) {
+            const cb = document.querySelector(`input[name="zone"][value="${zone}"]`);
+            if (cb) cb.checked = true;
+        }
+    }
     appliquerFiltres(resetPage = false) {
         const url = new URL(window.location.href);
 
@@ -536,8 +564,8 @@ class ValidationModalManager {
         liste.innerHTML = modifications.map(m =>
             `<li>
                 <strong>${m.champ}</strong> :
-                <span style="color:#dc3545;text-decoration:line-through;">${m.ancienne}</span>
-                → <span style="color:#28a745;font-weight:600;">${m.nouvelle}</span>
+                <span>${m.ancienne}</span>
+                → <span>${m.nouvelle}</span>
              </li>`
         ).join('');
     }
@@ -569,7 +597,7 @@ class ValidationModalManager {
         const listeManquants = document.getElementById('liste-manquants');
         if (listeManquants) {
             listeManquants.innerHTML = manquants.length === 0
-                ? `<p style="color:#28a745;font-weight:600;">${translations.aucun_manquant}</p>`
+                ? `<p>${translations.aucun_manquant}</p>`
                 : manquants.map(doc => `
                     <div class="document-validation-item manquant">
                         <span class="document-name">${translations[doc] || doc}</span>
@@ -583,9 +611,9 @@ class ValidationModalManager {
             listePresents.innerHTML = presents.map(doc => {
                 const s     = statutsVue[doc] || statuts[doc] || '';
                 const badge = s === 'accepted'
-                    ? `<span class="document-status-badge" style="background:#28a745;color:white;">✅ ${translations.conforme}</span>`
+                    ? `<span class="document-status-badge">✅ ${translations.conforme}</span>`
                     : s === 'refused'
-                        ? `<span class="document-status-badge" style="background:#dc3545;color:white;">❌ ${translations.non_conforme}</span>`
+                        ? `<span class="document-status-badge" >❌ ${translations.non_conforme}</span>`
                         : `<span class="document-status-badge badge-present">${translations.present}</span>`;
                 return `
                     <div class="document-validation-item present">

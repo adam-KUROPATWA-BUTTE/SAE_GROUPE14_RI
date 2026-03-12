@@ -876,6 +876,18 @@ body.tritanopie .mobilite-filter__badge::before {
 .dept-dropdown-content a:last-child {
     border-radius: 0 0 8px 8px;
 }
+.stat-item--link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stat-item--link:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
 /* ================================================================
    Responsive
 ================================================================ */
