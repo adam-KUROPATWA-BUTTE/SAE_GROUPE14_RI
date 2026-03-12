@@ -221,6 +221,7 @@ class ManageFolderUseCase
             ':Type'               => null,
             ':Zone'               => null,
             ':Pays'               => null,
+            ':Mobilite'           => null,
             ':Campus'             => null,
             ':Discipline'         => null,
             ':NiveauEtude'        => null,
