@@ -1,9 +1,15 @@
 <?php
 /**
- * Vue : Mot de passe oublié
+ * View: Forgot Password
  *
- * @var string $message
- * @var string $messageType  'success' | 'error' | 'info'
+ * Allows a user to request a password-reset link by submitting their email
+ * address. Displays a feedback message styled according to $messageType.
+ * The reset form is hidden once a successful submission has been made
+ * (i.e. when $messageType is 'success'). Applies the tritanopia accessibility
+ * CSS class when the corresponding session preference is active.
+ *
+ * @var string $message     Feedback message to display (may be empty)
+ * @var string $messageType CSS class / severity of the message: 'success' | 'error' | 'info'
  */
 $messageType  = $messageType ?? 'info';
 $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);

@@ -7,21 +7,37 @@ use Database;
 use Model\Entity\FolderStats;
 use Model\Entity\GenderStats;
 
+/**
+ * Class FolderRepositoryPDO
+ * * Manages operations for student folders (dossiers), statistics, and administrative workflows.
+ */
 class FolderRepositoryPDO implements FolderRepositoryInterface
 {
+    /** @var PDO Database connection */
     private PDO $db;
 
+    /**
+     * FolderRepositoryPDO constructor.
+     */
     public function __construct()
     {
         $this->db = Database::getInstance()->getConnection();
     }
 
+    /**
+     * Validates mobility type.
+     * * @param string|null $mobilite
+     * @return string|null 'etude', 'stage' or null.
+     */
     private function validMobilite(?string $mobilite): ?string
     {
         return in_array($mobilite, ['etude', 'stage'], true) ? $mobilite : null;
     }
 
     /**
+     * Generates SQL WHERE clause and bindings for mobility.
+     * * @param string|null $mobilite
+     * @param bool $hasExistingWhere Whether a WHERE clause already exists.
      * @return array{clause: string, bindings: array<string, string>}
      */
     private function mobiliteWhere(?string $mobilite, bool $hasExistingWhere = false): array
@@ -38,6 +54,9 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     }
 
     /**
+     * Generates SQL WHERE clause and bindings for department.
+     * * @param string|null $departement
+     * @param bool $hasExistingWhere Whether a WHERE clause already exists.
      * @return array{clause: string, bindings: array<string, string>}
      */
     private function departementWhere(?string $departement, bool $hasExistingWhere = false): array
@@ -53,7 +72,10 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     }
 
     /**
+     * Helper to run a query with or without parameters.
+     * * @param string $sql
      * @param array<string, mixed> $bindings
+     * @return \PDOStatement|false
      */
     private function run(string $sql, array $bindings = []): \PDOStatement|false
     {
@@ -69,11 +91,21 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     // STATS
     // ===========================================================
 
+    /**
+     * Proxy for getDossierStats.
+     * @return FolderStats
+     */
     public function getGlobalStats(): FolderStats
     {
         return $this->getDossierStats();
     }
 
+    /**
+     * Calculates folder counts (total vs completed) with optional filters.
+     * * @param string|null $mobilite
+     * @param string|null $departement
+     * @return FolderStats
+     */
     public function getDossierStats(?string $mobilite = null, ?string $departement = null): FolderStats
     {
         try {
@@ -97,6 +129,12 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
         }
     }
 
+    /**
+     * Calculates gender-based statistics.
+     * * @param string|null $mobilite
+     * @param string|null $departement
+     * @return GenderStats
+     */
     public function getGenderStats(?string $mobilite = null, ?string $departement = null): GenderStats
     {
         try {
@@ -127,6 +165,10 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     }
 
     /**
+     * Gets the most frequent destination countries excluding France.
+     * * @param int $limit Max results.
+     * @param string|null $mobilite
+     * @param string|null $departement
      * @return array<int, array{name: string, count: int}>
      */
     public function getTopCountries(int $limit, ?string $mobilite = null, ?string $departement = null): array
@@ -162,6 +204,10 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     }
 
     /**
+     * Gets statistics per department.
+     * * @param int $limit Max results.
+     * @param string|null $mobilite
+     * @param string|null $departement
      * @return array<int, array{name: string, count: int}>
      */
     public function getDepartmentStats(int $limit, ?string $mobilite = null, ?string $departement = null): array
@@ -195,6 +241,9 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     }
 
     /**
+     * Compares incoming vs outgoing student counts.
+     * * @param string|null $mobilite
+     * @param string|null $departement
      * @return array{incoming: int, outgoing: int}
      */
     public function getIncomingOutgoingStats(?string $mobilite = null, ?string $departement = null): array
@@ -225,6 +274,9 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     }
 
     /**
+     * Gets statistics per continent.
+     * * @param string|null $mobilite
+     * @param string|null $departement
      * @return array<int, array{name: string, count: int}>
      */
     public function getContinentStats(?string $mobilite = null, ?string $departement = null): array
@@ -259,6 +311,9 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     }
 
     /**
+     * Compares number of distinct countries in Europe vs rest of the world.
+     * * @param string|null $mobilite
+     * @param string|null $departement
      * @return array{europe_countries: int, non_europe_countries: int}
      */
     public function getEuropeVsNonEuropeStats(?string $mobilite = null, ?string $departement = null): array
@@ -294,6 +349,9 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     }
 
     /**
+     * Gets folder counts per geographic zone.
+     * * @param string|null $mobilite
+     * @param string|null $departement
      * @return array<int, array{name: string, count: int}>
      */
     public function getZoneStats(?string $mobilite = null, ?string $departement = null): array
@@ -327,6 +385,12 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
         }
     }
 
+    /**
+     * Infers a continent based on country name and zone.
+     * * @param string $pays Country name.
+     * @param string $zone Zone (e.g., 'europe').
+     * @return string|null Continent name.
+     */
     public function inferContinent(string $pays, string $zone): ?string
     {
         if (strtolower($zone) === 'europe') return 'Europe';
@@ -348,7 +412,8 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     // ===========================================================
 
     /**
-     * @return array<int, array<string, mixed>>
+     * Retrieves all dossiers.
+     * * @return array<int, array<string, mixed>>
      */
     public function findAll(): array
     {
@@ -368,8 +433,9 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     }
 
     /**
-     * Inclut StatutDocuments, DateLimite, CommentaireAdmin, avis_chef_departement
-     * @return array<string, mixed>|null
+     * Finds a specific dossier by student number.
+     * * @param string $numEtu Student number.
+     * @return array<string, mixed>|null Dossier data or null.
      */
     public function findByNumEtu(string $numEtu): ?array
     {
@@ -392,7 +458,9 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     }
 
     /**
-     * @param array<string, mixed> $data
+     * Creates a new dossier.
+     * * @param array<string, mixed> $data
+     * @return bool
      */
     public function create(array $data): bool
     {
@@ -402,7 +470,7 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
                     NumEtu, Nom, Prenom, DateNaissance, Sexe, Adresse, CodePostal, Ville,
                     EmailPersonnel, EmailAMU, Telephone, CodeDepartement, Composante, Type, Zone, Pays,
                     Campus, Discipline, NiveauEtude, Formation, MoyenneBac, MoyenneSansBac, AvisDRI,
-                    DateDebut, MobiliteAnterieure, IsComplete, PiecesJustificatives, status
+                    DateDebut, MobiliteAnterieure, 0, :PiecesJustificatives, :status
                 ) VALUES (
                     :NumEtu, :Nom, :Prenom, :DateNaissance, :Sexe, :Adresse, :CodePostal, :Ville,
                     :EmailPersonnel, :EmailAMU, :Telephone, :CodeDepartement, :Composante, :Type, :Zone, :Pays,
@@ -445,7 +513,10 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     }
 
     /**
-     * @param array<string, mixed> $data
+     * Updates an existing dossier.
+     * * @param string $numEtu Student number.
+     * @param array<string, mixed> $data Key-value pairs to update.
+     * @return bool
      */
     public function update(string $numEtu, array $data): bool
     {
@@ -492,12 +563,14 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     }
 
     // ===========================================================
-    // AVIS CHEF DE DÉPARTEMENT  ← NOUVEAU
+    // AVIS CHEF DE DÉPARTEMENT
     // ===========================================================
 
     /**
-     * Enregistre la décision du chef de département dans la colonne dédiée.
-     * Valeurs acceptées : 'accepte', 'refuse', ou null pour réinitialiser.
+     * Records the decision from the department head.
+     * * @param string $numEtu
+     * @param string|null $avis 'accepte', 'refuse' or null to reset.
+     * @return bool
      */
     public function setAvisChef(string $numEtu, ?string $avis): bool
     {
@@ -520,6 +593,11 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     // STATUS
     // ===========================================================
 
+    /**
+     * Toggles the "IsComplete" boolean status of a folder.
+     * * @param string $numEtu
+     * @return bool
+     */
     public function toggleCompleteStatus(string $numEtu): bool
     {
         try {
@@ -535,11 +613,20 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
         }
     }
 
+    /**
+     * Proxy for toggleCompleteStatus.
+     */
     public function toggleStatus(string $numEtu): bool
     {
         return $this->toggleCompleteStatus($numEtu);
     }
 
+    /**
+     * Explicitly sets the workflow status of a folder.
+     * * @param string $numEtu
+     * @param string $status 'depot', 'instruction', 'accepte', 'refuse'.
+     * @return bool
+     */
     public function setStatus(string $numEtu, string $status): bool
     {
         $allowed = ['depot', 'instruction', 'accepte', 'refuse'];
@@ -552,6 +639,11 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
         }
     }
 
+    /**
+     * Cycles through available statuses in order.
+     * * @param string $numEtu
+     * @return bool
+     */
     public function cycleStatus(string $numEtu): bool
     {
         try {
@@ -576,7 +668,10 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     // ===========================================================
 
     /**
-     * @param array<string, mixed> $filters
+     * Performs a filtered search with pagination.
+     * * @param array<string, mixed> $filters Filter parameters (search, type, zone, etc).
+     * @param int $page Current page number.
+     * @param int $perPage Items per page.
      * @return array{data: array<int, array<string, mixed>>, total: int, totalPages: int}
      */
     public function searchWithPagination(array $filters, int $page, int $perPage): array
@@ -648,7 +743,6 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
             
             $data = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
             
-            // --- NOUVEAU : Récupérer les relances de manière sécurisée ---
             if (!empty($data)) {
                 $numEtus = array_column($data, 'NumEtu');
                 $inQuery = implode(',', array_fill(0, count($numEtus), '?'));
@@ -658,31 +752,33 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
                 
                 $counts = [];
                 while ($row = $relancesStmt->fetch(PDO::FETCH_ASSOC)) {
-                    $counts[$row['numetu']] = (int)$row['cnt'];
+                    if (is_array($row) && isset($row['numetu'], $row['cnt'])) {
+                        $counts[(string)$row['numetu']] = (int)$row['cnt'];
+                    }
                 }
                 
                 foreach ($data as &$row) {
                     $row['nb_relances'] = $counts[$row['NumEtu']] ?? 0;
                 }
             }
-            // -------------------------------------------------------------
 
             $totalPages = ($perPage > 0 && $totalCount > 0) ? (int) ceil($totalCount / $perPage) : 1;
             return ['data' => $data, 'total' => $totalCount, 'totalPages' => $totalPages];
             
         } catch (\PDOException $e) {
-            // Ajout d'un log pour ne plus jamais avoir d'erreur silencieuse
-            error_log("Erreur SQL searchWithPagination : " . $e->getMessage() . " | SQL: " . $sql);
+            error_log("SQL Error searchWithPagination : " . $e->getMessage() . " | SQL: " . $sql);
             return ['data' => [], 'total' => 0, 'totalPages' => 0];
         }
     }
 
     // ===========================================================
-    // IMPORT & COMPTES UTILISATEURS
+    // IMPORT & USER ACCOUNTS
     // ===========================================================
 
     /**
-     * @param array<int, array<string, mixed>> $dossiers
+     * Batch inserts or updates dossiers and creates associated student accounts.
+     * * @param array<int, array<string, mixed>> $dossiers List of dossier data.
+     * @return int Number of processed records.
      */
     public function upsertMultiple(array $dossiers): int
     {
@@ -807,6 +903,7 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     }
 
     /**
+     * Fetches all unique departments from the dossiers table.
      * @return array<int, string>
      */
     public function getAllDepartements(): array
@@ -834,6 +931,8 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     // ===========================================================
 
     /**
+     * Checks which required documents are missing or present.
+     * * @param string $numetu
      * @return array{manquants: array<int, string>, presents: array<int, string>, statuts: array<string, string>}
      */
     public function analyserDocuments(string $numetu): array
@@ -903,7 +1002,12 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
     }
 
     /**
-     * @param array<string, string> $statutsDocuments
+     * Saves the validation status and metadata for uploaded documents.
+     * * @param string $numetu
+     * @param array<string, string> $statutsDocuments Validation states (e.g. 'validé', 'refusé').
+     * @param string|null $dateLimite Deadline for correction.
+     * @param string|null $commentaire Admin comments.
+     * @return bool
      */
     public function enregistrerValidation(
         string $numetu,
@@ -915,7 +1019,7 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
             if ($dateLimite !== null && !empty($dateLimite)) {
                 $date = \DateTime::createFromFormat('Y-m-d', $dateLimite);
                 if (!$date || $date->format('Y-m-d') !== $dateLimite) {
-                    error_log("Date limite invalide: $dateLimite");
+                    error_log("Invalid deadline date: $dateLimite");
                     return false;
                 }
             } else {
@@ -943,8 +1047,10 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
             return false;
         }
     }
+
     /**
-     * @return array<int, array<string, mixed>>
+     * Finds folders that are marked as incomplete.
+     * * @return array<int, array<string, mixed>>
      */
     public function findIncompleteFolders(): array
     {

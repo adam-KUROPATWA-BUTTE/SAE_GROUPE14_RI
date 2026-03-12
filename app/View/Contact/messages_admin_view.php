@@ -1,9 +1,50 @@
 <?php
 /**
- * Détail d'une conversation admin
- * @var callable $t
- * @var string $lang
- * @var \Model\Entity\Conversation $conversation
+ * View: Admin Conversation Detail
+ *
+ * Displays the full thread of a single student support conversation and
+ * provides an admin reply form and a delete action.
+ *
+ * ── HEADER ───────────────────────────────────────────────────────────────────
+ * - Back link: returns to the inbox list (index.php?page=messages-admin).
+ * - Delete form: a POST form with action=delete and the conversation id as a
+ *   hidden field. A JS confirm() prompt is shown before submission.
+ *
+ * ── CONVERSATION METADATA ────────────────────────────────────────────────────
+ * Three info rows:
+ * - Student: full name + student number from getStudentNumEtu().
+ * - Email: clickable mailto: link.
+ * - Subject: translated label from the local $subjects map, falling back to the
+ *   raw subject key stored on the conversation.
+ *
+ * ── MESSAGE THREAD (.chat-history) ───────────────────────────────────────────
+ * All messages from $conversation->getMessages() are rendered in order.
+ * Admin messages (getSenderType() === 'admin') receive the class
+ * chat-message--admin; student messages receive chat-message--student.
+ * The sender label for admin messages is "Vous (Service RI)" / "You (IR Office)";
+ * for student messages it is the student's name from getName().
+ * Each message timestamp is formatted as d/m/Y H:i.
+ * Content is sanitised with nl2br() + htmlspecialchars().
+ *
+ * ── REPLY FORM ───────────────────────────────────────────────────────────────
+ * POSTs to index.php?page=messages-admin&action=respond&id={id}&lang={lang}.
+ * A single required textarea (name="response") with a submit button.
+ * No client-side validation beyond the HTML required attribute.
+ *
+ * $subjects is built locally (identical to the list view) so the subject
+ * label resolves correctly without an extra variable from the controller.
+ *
+ * A hidden #app-config div carries data-lang and data-role="admin".
+ *
+ * The page title is built as "$t('Ticket de / Ticket from') {name}".
+ * The rendered HTML is passed to the base layout with styles (messages_admin.css),
+ * no scripts, $activeMenu = 'messages', $userRole = 'admin'.
+ * Note: $noMain is NOT set here (unlike the list view), so the standard
+ * <main> wrapper is used.
+ *
+ * @var callable                       $t            Translation callable — accepts ['fr' => '...', 'en' => '...']
+ * @var string                         $lang         Current language code (e.g. 'fr' or 'en')
+ * @var \Model\Entity\Conversation     $conversation The conversation entity to display; assumed non-null (controller guards this)
  */
 ob_start();
 

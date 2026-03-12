@@ -1,9 +1,20 @@
 <?php
 /**
- * Page des mentions légales et RGPD
+ * View: Legal Notice & Privacy Policy (Mentions Légales / RGPD)
  *
- * @var callable $t
- * @var string $lang
+ * Renders the full legal notice and GDPR privacy policy page, covering:
+ * site publisher details, hosting information, intellectual property,
+ * personal data processing (GDPR), and cookie policy.
+ *
+ * Content is bilingual: all user-facing strings are passed through the $t()
+ * translation callable, which selects the appropriate text based on $lang.
+ *
+ * The rendered HTML is captured via output buffering into $content and then
+ * included into the shared base layout (Layout/base.php) along with the
+ * resolved page title, active menu item, user role, and asset lists.
+ *
+ * @var callable $t    Translation function — accepts ['fr' => '...', 'en' => '...'] and returns the string for the current language
+ * @var string   $lang Current language code (e.g. 'fr' or 'en'), embedded in the page as a data attribute
  */
 ob_start();
 ?>

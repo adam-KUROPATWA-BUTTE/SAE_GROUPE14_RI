@@ -1,16 +1,56 @@
 <?php
 /**
- * Page Chef de département
+ * View: Department Head — Student List / Folder Detail
  *
- * @var string $lang
- * @var Closure $t
- * @var Closure $buildUrl
- * @var array<string, mixed> $filters
- * @var array<int, array<string, mixed>> $paginatedData
- * @var int $totalCount
- * @var array<string, mixed>|null $studentData
- * @var string $action
- * @var string $message
+ * Dual-mode view for the chef_departement role, controlled by $action:
+ *
+ * ── LIST MODE ($action !== 'view') ──────────────────────────────────────────
+ * Displays all students assigned to the department head's scope (both study
+ * and internship mobility). Provides a text search toolbar (name, first name,
+ * email) and a filter bar via _filters.php ($showAccordFilter = false).
+ * The student table is rendered by _table_etudiants.php, grouped by component,
+ * with clickable rows navigating to the detail view.
+ * $hasActiveFilters is computed locally from the $filters array (type, zone,
+ * complet, composante, search).
+ *
+ * ── DETAIL MODE ($action === 'view') ────────────────────────────────────────
+ * Renders a partially editable folder form for a single student.
+ * When $studentData is null, a "Student not found" notice is shown.
+ * Otherwise the following sections are composed:
+ *
+ * - _banniere_decision.php  : quick accept/refuse decision banner.
+ *   $currentStatus is set to avis_chef_departement (the department head's
+ *   own opinion column) for the active-button highlight in this partial.
+ * - _banniere_date_limite.php : submission deadline banner (read-only for
+ *   this role; $redirectPage = $PAGE).
+ * - _form_fields.php        : folder form with only 'niveau_etude' and
+ *   'moyenne_sans_bac' editable ($EDITABLE list, $allEditable = false).
+ * - _doc_review.php         : document review panel with $languesEditable = true
+ *   (language certificate can be updated by the department head).
+ * - _global_status.php      : global workflow status dropdown.
+ *   Note: $currentStatus is reassigned to $globalStatus (the folder's global
+ *   status column) before including this partial, since _global_status.php
+ *   uses $currentStatus for its own pre-selection.
+ * - _modal_validation.php   : confirmation modal for save-and-notify.
+ *
+ * The form posts to index.php?page=update_student with a hidden redirect_to
+ * field set to $PAGE so the controller redirects back here after saving.
+ * Mobility type is detected from the presence of convention vs. motivation-
+ * letter files in $pieces.
+ *
+ * The user role is read from $_SESSION['role'] (defaults to 'chef_departement').
+ * The rendered HTML is captured into $content and passed to the base layout
+ * with styles (index.css, folders.css, chatbot.css) and scripts (folders.js).
+ *
+ * @var string                           $lang          Current language code (e.g. 'fr' or 'en')
+ * @var Closure                          $t             Translation callable — accepts ['fr' => '...', 'en' => '...']
+ * @var Closure                          $buildUrl      URL builder callable — accepts a base URL and an optional query-parameter array
+ * @var array<string, mixed>             $filters       Current active filter values (type, zone, complet, composante, search)
+ * @var array<int, array<string, mixed>> $paginatedData Current page of student records for the table partial
+ * @var int                              $totalCount    Total number of matching students across all pages
+ * @var array<string, mixed>|null        $studentData   Full folder data from the repository (including 'pieces', 'statuts', metadata); null when not found
+ * @var string                           $action        View mode: 'view' for the detail form, any other value for the list
+ * @var string                           $message       Optional feedback message displayed at the top of either mode (may be empty)
  */
 
 $PAGE     = 'chef-departement';

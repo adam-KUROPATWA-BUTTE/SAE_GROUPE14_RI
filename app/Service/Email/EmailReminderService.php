@@ -6,26 +6,25 @@ use Mailjet\Client;
 use Mailjet\Resources;
 use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
 
+/**
+ * Service handling email communications via the Mailjet API.
+ * Provides templates and methods for reminders, update notifications, and message alerts.
+ */
 class EmailReminderService
 {
-    /**
-     * Sender email address
-     */
+    /** @var string Sender email address */
     private static string $fromEmail = 'relance-iut-amu@ri-amu.app';
 
-    /**
-     * Sender display name
-     */
+    /** @var string Sender display name */
     private static string $fromName = 'IUT Aix - Gestion Dossiers';
 
-    /**
-     * Logo URL used in all email templates
-     */
+    /** @var string Logo URL used in all email templates */
     private static string $logoUrl = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBl1mF7ktLaJxYCRD64rZyUJ1WcUDvcJBcIw&s';
 
     /**
-     * Create and return a configured Mailjet client
-     * @throws \RuntimeException if credentials are missing
+     * Create and return a configured Mailjet client.
+     * * @return Client
+     * @throws \RuntimeException if credentials (API Key or Secret) are missing in environment variables.
      */
     private static function createMailjetClient(): Client
     {
@@ -46,15 +45,14 @@ class EmailReminderService
     }
 
     /**
-     * Render an email template and return HTML string
-     * @param string $template Template name (without .php)
-     * @param array<string, mixed> $data Variables to pass to template
-     * @return string Rendered HTML
+     * Render an email template, inject variables, and apply inline CSS.
+     * * @param string $template Template filename (without .php).
+     * @param array<string, mixed> $data Variables to extract into the template scope.
+     * @return string Rendered HTML content with inlined styles.
      */
     private static function renderEmailTemplate(string $template, array $data = []): string
     {
         extract($data);
-        // From app/Service/Email, go up 3 levels to project root
         $root = defined('ROOT_PATH') ? ROOT_PATH : dirname(__DIR__, 3);
         $file = $root . '/app/View/Email/' . $template . '.php';
 
@@ -67,7 +65,6 @@ class EmailReminderService
         require $file;
         $html = ob_get_clean() ?: '';
 
-        // Injection du CSS inline (requis par les clients mail)
         $cssFile = $root . '/public/styles/emails.css';
         if (file_exists($cssFile)) {
             $css    = file_get_contents($cssFile) ?: '';
@@ -80,7 +77,12 @@ class EmailReminderService
     }
 
     /**
-     * @param array<string> $itemsToComplete List of missing items (strings)
+     * Sends a reminder (relance) to a student about an incomplete folder.
+     * * @param string $toEmail Recipient email.
+     * @param int|string $dossierId Folder ID or student number.
+     * @param string $studentName Student's display name.
+     * @param array<string> $itemsToComplete List of missing documents or actions.
+     * @return bool True if the email was accepted by Mailjet, false otherwise.
      */
     public static function sendRelance(
         string $toEmail,
@@ -93,7 +95,6 @@ class EmailReminderService
 
             $subject = "Rappel : Folder incomplet (ID {$dossierId})";
 
-            // Render email template
             $htmlMessage = self::renderEmailTemplate('relance', [
                 'logoUrl'          => self::$logoUrl,
                 'studentName'      => trim($studentName ?: ''),
@@ -102,7 +103,6 @@ class EmailReminderService
                 'folderLink'       => "https://ri-amu.app/index.php?page=folders-student&action=view&id=" . urlencode((string)$dossierId)
             ]);
 
-            // Build Mailjet payload
             $body = [
                 'Messages' => [
                     [
@@ -123,7 +123,6 @@ class EmailReminderService
                 ]
             ];
 
-            // Send via Mailjet API
             $response = $mj->post(Resources::$Email, ['body' => $body]);
 
             if ($response->success()) {
@@ -140,12 +139,13 @@ class EmailReminderService
     }
 
     /**
-     * Send folder update notification email
+     * Sends a notification when a folder's content or status is updated.
      *
-     * @param string $toEmail Student's email
-     * @param string $studentName Student's name
-     * @param string $numEtu Student ID
-     * @param array<int, string> $updates List of updates to notify
+     * @param string $toEmail Student's email.
+     * @param string $studentName Student's name.
+     * @param string $numEtu Student ID.
+     * @param array<int, string> $updates List of update strings containing section markers.
+     * @return bool
      */
     public static function sendFolderUpdateNotification(
         string $toEmail,
@@ -162,7 +162,6 @@ class EmailReminderService
 
             $subject = "Mise à jour de votre dossier RI (ID {$numEtu})";
 
-            // Parse structured sections from updates
             $sectionAcceptees = '';
             $sectionRefusees  = '';
             $statutGlobal     = '';
@@ -230,12 +229,13 @@ class EmailReminderService
     }
 
     /**
-     * Send validation confirmation email when documents are accepted
+     * Sends a confirmation email when all submitted documents are validated.
      *
-     * @param string $toEmail Recipient email address
-     * @param string $studentName Student's full name
-     * @param array<string> $validatedDocuments List of validated document names
-     * @param string $numEtu Student ID
+     * @param string $toEmail Recipient email.
+     * @param string $studentName Student's name.
+     * @param array<string> $validatedDocuments List of document keys (photo, cv, etc.).
+     * @param string $numEtu Student ID.
+     * @return bool
      */
     public static function sendValidationConfirmation(
         string $toEmail,
@@ -248,7 +248,6 @@ class EmailReminderService
 
             $subject = "Documents Validés - Folder #{$numEtu}";
 
-            // Map technical names to user-friendly names
             $documentLabels = [
                 'photo'             => 'Photo',
                 'cv'                => 'CV',
@@ -266,7 +265,6 @@ class EmailReminderService
                 'folderLink'         => "https://ri-amu.app/index.php?page=folders-student&action=view&numetu=" . urlencode($numEtu)
             ]);
 
-            // Build Mailjet payload
             $body = [
                 'Messages' => [
                     [
@@ -287,7 +285,6 @@ class EmailReminderService
                 ]
             ];
 
-            // Send via Mailjet API
             $response = $mj->post(Resources::$Email, ['body' => $body]);
 
             if ($response->success()) {
@@ -304,12 +301,13 @@ class EmailReminderService
     }
 
     /**
-     * Send email confirmation when student deposits a document
+     * Sends an email confirming that a document has been successfully deposited.
      *
-     * @param string $toEmail Student's email
-     * @param string $studentName Student's name
-     * @param string $documentType Type of document deposited
-     * @param string $numEtu Student ID
+     * @param string $toEmail Student email.
+     * @param string $studentName Student name.
+     * @param string $documentType Key representing the document type.
+     * @param string $numEtu Student ID.
+     * @return bool
      */
     public static function sendDocumentDeposited(
         string $toEmail,
@@ -374,12 +372,13 @@ class EmailReminderService
     }
 
     /**
-     * Send email confirmation when admin validates a specific document
+     * Sends an email notifying the student that a specific document has been validated.
      *
-     * @param string $toEmail Student's email
-     * @param string $studentName Student's name
-     * @param string $documentType Type of document validated
-     * @param string $numEtu Student ID
+     * @param string $toEmail Student email.
+     * @param string $studentName Student name.
+     * @param string $documentType Document type key.
+     * @param string $numEtu Student ID.
+     * @return bool
      */
     public static function sendDocumentValidated(
         string $toEmail,
@@ -444,7 +443,13 @@ class EmailReminderService
     }
 
     /**
-     * Send notification when a new message is received
+     * Sends a notification when a new message is received on the platform.
+     * * @param string $toEmail Recipient email.
+     * @param string $recipientName Recipient name.
+     * @param string $senderName Sender name.
+     * @param string $messagePreview Short preview of the message content.
+     * @param string $platformLink Absolute URL to the message on the platform.
+     * @return bool
      */
     public static function sendMessageNotification(
         string $toEmail,
@@ -458,9 +463,8 @@ class EmailReminderService
 
             $subject = "Nouveau message de {$senderName}";
 
-            // Truncate message preview to 150 characters
             $truncatedPreview = strlen($messagePreview) > 150
-                ? substr($messagePreview, 0, 150)
+                ? substr($messagePreview, 0, 150) . '...'
                 : $messagePreview;
 
             $htmlMessage = self::renderEmailTemplate('message_notification', [

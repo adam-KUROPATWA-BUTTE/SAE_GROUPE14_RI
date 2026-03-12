@@ -1,12 +1,55 @@
 <?php
 /**
- * Partners Admin - Contenu uniquement
+ * View: Admin Partner Management
  *
- * @var string $lang
- * @var string $titre
- * @var Closure(array<string, string>): string $t
- * @var bool $success
- * @var string|null $errorMessage
+ * Displays the partner universities page for the admin role. Contains two
+ * distinct sections: a partner creation form and a static reference panel.
+ *
+ * ── FEEDBACK MESSAGES ────────────────────────────────────────────────────────
+ * Shown below the page heading, mutually exclusive:
+ * - $success = true  : a #success-message paragraph is rendered (the JS in
+ *   partner.js may use this ID to scroll to or auto-dismiss the notice).
+ * - $errorMessage non-empty : an error paragraph is rendered with the escaped
+ *   error string.
+ * Neither is shown when $success is false and $errorMessage is null / empty.
+ *
+ * ── PARTNER CREATION FORM ────────────────────────────────────────────────────
+ * A .btn-add-partner button toggles the visibility of #partner-form-container
+ * (.partner-form.hidden) via partner.js. The cancel button inside the form
+ * also hides the panel.
+ *
+ * The form POSTs to the current URL (action=""). Five required fields:
+ * - name        (text)   : continent (e.g. "Europe")
+ * - country     (text)   : country name
+ * - city        (text)   : city name
+ * - institution (text)   : university / institution name
+ * - type        (select) : 'amu' or 'iut' — determines which partner list the
+ *                          entry belongs to
+ *
+ * ── STATIC REFERENCE PANEL ───────────────────────────────────────────────────
+ * Two external links to the official AMU and IUT partner directories (open in
+ * new tab). These are hardcoded URLs, not driven by any injected variable.
+ *
+ * ── PARTNER MAP IMAGE ────────────────────────────────────────────────────────
+ * A static map image (#Université_partenaires) switches between two variants
+ * based on the tritanopia session flag:
+ * - $_SESSION['tritanopia'] === true → img/University_green.png
+ * - otherwise                        → img/University.png
+ * This check is performed inline with no PHP variable; it reads the session
+ * directly in the template.
+ *
+ * A hidden #app-config div carries data-lang and data-role="admin" for partner.js.
+ *
+ * The rendered HTML is passed to the base layout with styles (partners.css)
+ * and scripts (partner.js). $activeMenu = 'partners', $userRole = 'admin'.
+ * Note: $title is set via htmlspecialchars($titre) — the layout variable is
+ * the already-escaped version of the injected $titre string.
+ *
+ * @var string                                    $lang         Current language code (e.g. 'fr' or 'en')
+ * @var string                                    $titre        Raw page title string; htmlspecialchars() is applied when setting both the <h1> and the $title layout variable
+ * @var Closure(array<string, string>): string    $t            Translation callable — accepts ['fr' => '...', 'en' => '...']
+ * @var bool                                      $success      True when a partner was successfully added in the current request
+ * @var string|null                               $errorMessage Non-null, non-empty string when partner creation failed; null or empty otherwise
  */
 
 ob_start();

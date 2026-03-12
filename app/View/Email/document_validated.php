@@ -1,9 +1,20 @@
 <?php
 /**
- * @var string $logoUrl
- * @var string $studentName
- * @var string $documentLabel
- * @var string $folderLink
+ * Email template: Document validated notification
+ *
+ * Transactional email sent to a student to notify them that a specific
+ * supporting document has been reviewed and accepted by the International
+ * Relations team. The email encourages the student to submit any remaining
+ * documents and provides a call-to-action button linking to their folder.
+ *
+ * Rendered with a green header and a green highlighted document-name block
+ * to visually distinguish a positive validation outcome from other email types.
+ * All user-supplied values are escaped with ENT_QUOTES / UTF-8.
+ *
+ * @var string $logoUrl       Absolute URL of the AMU logo image to embed in the email header
+ * @var string $studentName   Full name of the student, displayed in the greeting
+ * @var string $documentLabel Human-readable label of the validated document (e.g. 'CV', 'Motivation Letter')
+ * @var string $folderLink    Absolute URL to the student's folder on the platform
  */
 ?>
 <!DOCTYPE html>

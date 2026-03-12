@@ -1,11 +1,22 @@
 <?php
 /**
- * Partial : Section statut global du dossier (select + bouton)
+ * Partial: Global folder status section (dropdown + update button)
  *
- * @var string  $numEtu
- * @var string  $currentStatus
- * @var Closure $t
- * @var string  $userRole
+ * Renders a select element pre-set to the folder's current workflow status.
+ * The available statuses are: 'depot' (Submitted), 'instruction' (Under Review),
+ * 'accepte' (Accepted), and 'refuse' (Refused).
+ *
+ * The select is disabled and the update button is hidden for non-admin roles.
+ * For admins, clicking the button triggers window.folderManager.updateGlobalStatus()
+ * via JavaScript to persist the new status asynchronously, with a status indicator
+ * span (#global_status_indicator) available for feedback.
+ *
+ * The active role is resolved from $_SESSION['role'] with $userRole as a fallback.
+ *
+ * @var string  $numEtu        Student number passed to the JavaScript update call
+ * @var string  $currentStatus Current global workflow status of the folder
+ * @var Closure $t             Translation callable — accepts ['fr' => '...', 'en' => '...']
+ * @var string  $userRole      Role of the current user, used as a fallback when the session role is absent
  */
 
 $isAdmin = (($_SESSION['role'] ?? $userRole) === 'admin');
