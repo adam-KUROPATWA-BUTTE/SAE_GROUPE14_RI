@@ -638,9 +638,14 @@ class ValidationModalManager {
      * Sets up the "Save" button, modal open/close logic, field-change
      * detection, document status display, and form synchronisation.
      *
+     * The student number is read from `#app-config[data-numetu]` and used
+     * to fetch document analysis data from the server via AJAX on page load,
+     * replacing the former inline PHP <script> injection.
+     *
      * @private
+     * @async
      */
-    _init() {
+    async _init() {
         const btnEnregistrer = document.getElementById('btn-enregistrer');
         const modal          = document.getElementById('modal-validation');
         const btnModalCancel = document.getElementById('btn-modal-cancel');
@@ -649,8 +654,11 @@ class ValidationModalManager {
 
         if (!btnEnregistrer || !modal || !formPrincipal) return;
 
-        // Determine UI language from the app config element (defaults to 'fr')
-        const lang         = document.getElementById('app-config')?.dataset.lang ?? 'fr';
+        // Read language and student number from the shared app-config element
+        const appConfig = document.getElementById('app-config');
+        const lang      = appConfig?.dataset.lang   ?? 'fr';
+        const numEtu    = appConfig?.dataset.numetu  ?? '';
+
         const translations = {
             photo:             lang === 'fr' ? "Photo d'identité"          : 'ID Photo',
             cv:                lang === 'fr' ? 'CV'                         : 'Resume',
@@ -664,8 +672,20 @@ class ValidationModalManager {
             aucun_manquant:    lang === 'fr' ? '✅ Aucun document manquant'  : '✅ No missing documents',
         };
 
-        // Document analysis data injected by the server (missing, present, statuses)
-        const analyseDocuments = window.analyseDocumentsData || { manquants: [], presents: [], statuts: {} };
+        // Fetch document analysis data from the server via AJAX.
+        // The student number comes from #app-config[data-numetu], which is set
+        // by the PHP view instead of the former inline <script> block that
+        // instantiated FolderRepositoryPDO and injected window.analyseDocumentsData.
+        let analyseDocuments = { manquants: [], presents: [], statuts: {} };
+        if (numEtu) {
+            try {
+                const response = await fetch(`index.php?page=analyse_documents&numetu=${encodeURIComponent(numEtu)}`);
+                if (response.ok) analyseDocuments = await response.json();
+            } catch {
+                // Non-blocking: the modal will open with empty document lists
+                console.warn('Could not fetch document analysis data.');
+            }
+        }
 
         // Snapshot original field values so changes can be detected
         formPrincipal.querySelectorAll('input:not([type="file"]):not([type="hidden"]), select').forEach(field => {
@@ -829,7 +849,7 @@ class ValidationModalManager {
      *
      * @private
      * @param {{ manquants: string[], presents: string[], statuts: Object }} analyseDocuments
-     *   Server-side document analysis data.
+     *   Document analysis data fetched from the server via AJAX.
      * @param {Object} translations - Localised label map for document types and statuses.
      */
     _afficherDocuments(analyseDocuments, translations) {
@@ -881,7 +901,7 @@ class ValidationModalManager {
                 const badge = s === 'accepted'
                     ? `<span class="document-status-badge">✅ ${translations.conforme}</span>`
                     : s === 'refused'
-                        ? `<span class="document-status-badge" >❌ ${translations.non_conforme}</span>`
+                        ? `<span class="document-status-badge">❌ ${translations.non_conforme}</span>`
                         : `<span class="document-status-badge badge-present">${translations.present}</span>`;
                 return `
                     <div class="document-validation-item present">
