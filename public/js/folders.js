@@ -461,6 +461,13 @@ class ValidationModalManager {
 
         const analyseDocuments = window.analyseDocumentsData || { manquants: [], presents: [], statuts: {} };
 
+
+        formPrincipal.querySelectorAll('input:not([type="file"]):not([type="hidden"]), select').forEach(field => {
+            if (field.id !== 'numetu' && field.id !== 'numetu_display') {
+                field.setAttribute('data-original-value', field.value);
+            }
+        });
+
         btnEnregistrer.addEventListener('click', (e) => {
             e.preventDefault();
             this._afficherModifications(this._detecterModifications(formPrincipal));
@@ -563,10 +570,10 @@ class ValidationModalManager {
         section.style.display = 'block';
         liste.innerHTML = modifications.map(m =>
             `<li>
-                <strong>${m.champ}</strong> :
-                <span>${m.ancienne}</span>
-                → <span>${m.nouvelle}</span>
-             </li>`
+        <strong>${m.champ}</strong> :
+        <span class="valeur-ancienne">${m.ancienne}</span>
+        → <span class="valeur-nouvelle">${m.nouvelle}</span>
+     </li>`
         ).join('');
     }
 
