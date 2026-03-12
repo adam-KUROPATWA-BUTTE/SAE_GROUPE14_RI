@@ -20,14 +20,14 @@ $subjects = [
 ];
 ?>
 
-<div class="contact-container">
+    <div class="contact-container">
     <h1><?= $t(['fr' => 'Nous Contacter', 'en' => 'Contact Us']) ?></h1>
 
     <div class="contact-intro">
         <p><?= $t([
-            'fr' => 'Une question sur votre mobilité ? Notre équipe est là pour vous aider.',
-            'en' => 'A question about your mobility? Our team is here to help you.'
-        ]) ?></p>
+                'fr' => 'Une question sur votre mobilité ? Notre équipe est là pour vous aider.',
+                'en' => 'A question about your mobility? Our team is here to help you.'
+            ]) ?></p>
 
         <?php if (!empty($studentConversations)): ?>
             <button class="btn-my-messages" onclick="toggleMessages()">
@@ -38,54 +38,54 @@ $subjects = [
         <?php endif; ?>
     </div>
 
-    <?php if (!empty($studentConversations)): ?>
-        <div class="contact-history" id="messagesPanel" style="display:none;">
-            <div class="history-list">
-                <?php foreach ($studentConversations as $conv): 
-                    $subjectLabel = $subjects[$conv->getSubject()] ?? $conv->getSubject();
-                ?>
-                    <details class="history-card">
-                        
-                        <summary class="history-card-header" style="cursor: pointer;">
-                            <h3><?= htmlspecialchars($subjectLabel) ?></h3>
-                            <small class="history-date">Ticket créé le <?= $conv->getCreatedAt()->format('d/m/Y H:i') ?></small>
-                        </summary>
+<?php if (!empty($studentConversations)): ?>
+    <div class="contact-history" id="messagesPanel" style="display:none;">
+        <div class="history-list">
+            <?php foreach ($studentConversations as $conv):
+            $subjectLabel = $subjects[$conv->getSubject()] ?? $conv->getSubject();
+            ?>
+            <details class="history-card">
 
-                        <div class="chat-thread">
-                            <?php foreach ($conv->getMessages() as $msg): ?>
-                                <?php $isStudent = $msg->getSenderType() === 'student'; ?>
-                                <div class="chat-message <?= $isStudent ? 'chat-message--student' : 'chat-message--admin' ?>">
-                                    <div class="chat-message-meta">
-                                        <strong><?= $isStudent ? $t(['fr' => 'Vous', 'en' => 'You']) : $t(['fr' => 'Service RI', 'en' => 'IR Office']) ?></strong> 
-                                        — <?= $msg->getCreatedAt()->format('d/m/Y H:i') ?>
-                                    </div>
-                                    <div class="chat-message-content">
-                                        <?= nl2br(htmlspecialchars($msg->getContent())) ?>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
+                <summary class="history-card-header" style="cursor: pointer;">
+                    <h3><?= htmlspecialchars($subjectLabel) ?></h3>
+                    <small class="history-date">Ticket créé le <?= $conv->getCreatedAt()->format('d/m/Y H:i') ?></small>
+                </summary>
+
+                <div class="chat-thread">
+                    <?php foreach ($conv->getMessages() as $msg): ?>
+                        <?php $isStudent = $msg->getSenderType() === 'student'; ?>
+                        <div class="chat-message <?= $isStudent ? 'chat-message--student' : 'chat-message--admin' ?>">
+                            <div class="chat-message-meta">
+                                <strong><?= $isStudent ? $t(['fr' => 'Vous', 'en' => 'You']) : $t(['fr' => 'Service RI', 'en' => 'IR Office']) ?></strong>
+                                — <?= $msg->getCreatedAt()->format('d/m/Y H:i') ?>
+                            </div>
+                            <div class="chat-message-content">
+                                <?= nl2br(htmlspecialchars($msg->getContent())) ?>
+                            </div>
                         </div>
+                    <?php endforeach; ?>
+                </div>
 
-                        <div class="history-reply-form">
-                            <form method="POST" action="index.php?page=contact-student&action=reply&id=<?= $conv->getId() ?>&lang=<?= $lang ?>">
+                <div class="history-reply-form">
+                    <form method="POST" action="index.php?page=contact-student&action=reply&id=<?= $conv->getId() ?>&lang=<?= $lang ?>">
                                 <textarea
-                                    name="student_reply"
-                                    rows="2"
-                                    required
-                                    class="reply-textarea"
-                                    placeholder="<?= $t(['fr' => 'Ajouter une réponse à ce ticket...', 'en' => 'Add a reply to this ticket...']) ?>"
+                                        name="student_reply"
+                                        rows="2"
+                                        required
+                                        class="reply-textarea"
+                                        placeholder="<?= $t(['fr' => 'Ajouter une réponse à ce ticket...', 'en' => 'Add a reply to this ticket...']) ?>"
                                 ></textarea>
-                                <button type="submit" class="btn-submit reply-submit">
-                                    <?= $t(['fr' => 'Répondre', 'en' => 'Reply']) ?>
-                                </button>
-                            </form>
-                        </div>
+                        <button type="submit" class="btn-submit reply-submit">
+                            <?= $t(['fr' => 'Répondre', 'en' => 'Reply']) ?>
+                        </button>
+                    </form>
+                </div>
 
-                    </div>
-                <?php endforeach; ?>
-            </div>
         </div>
-    <?php endif; ?>
+        <?php endforeach; ?>
+    </div>
+    </div>
+<?php endif; ?>
 
     <div class="contact-content">
 
@@ -167,13 +167,13 @@ $subjects = [
             </div>
         </div>
     </div>
-</div>
+    </div>
 
-<div id="app-config"
-     data-lang="<?= htmlspecialchars($lang) ?>"
-     data-role="admin"
-     style="display:none;">
-</div>
+    <div id="app-config"
+         data-lang="<?= htmlspecialchars($lang) ?>"
+         data-role="student"
+         style="display:none;">
+    </div>
 <?php
 $content    = ob_get_clean();
 $title      = $t(['fr' => 'Contact - Relations Internationales', 'en' => 'Contact - International Relations']);

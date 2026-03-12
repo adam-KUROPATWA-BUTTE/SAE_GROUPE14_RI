@@ -19,7 +19,7 @@
                 <strong><?= htmlspecialchars(date('H:i', (int) strtotime($modifieLe))) ?></strong>
             <?php endif; ?>
         <?php else : ?>
-            <?= $t(['fr' => 'Folder jamais modifié', 'en' => 'Folder never modified']) ?>
+            <?= $t(['fr' => 'Dossier jamais modifié', 'en' => 'Folder never modified']) ?>
         <?php endif; ?>
     </span>
 </div>

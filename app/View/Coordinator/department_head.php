@@ -83,7 +83,6 @@ ob_start();
             </div>
 
             <?php
-            // On passe le statut global à _global_status
             $currentStatus = $globalStatus;
             include __DIR__ . '/../Partials/_global_status.php';
             ?>

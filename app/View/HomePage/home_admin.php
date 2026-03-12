@@ -148,18 +148,20 @@ ob_start();
                     <h2><?= $t(['fr' => 'État des dossiers', 'en' => 'Folder Status']) ?></h2>
                     <div class="stat-content">
                         <a href="<?= $buildUrl('index.php', array_filter([
-                                'page'        => 'folders-admin',
-                                'mobilite'    => $mobiliteFilter,
-                                'departement' => $departementFilter,
-                            ]) + ['complet' => '1']) ?>" class="stat-item complete stat-item--link">
+                            'page'        => 'folders-admin',
+                            'complet'     => '1',
+                            'mobilite'    => $mobiliteFilter,
+                            'departement' => $departementFilter,
+                        ])) ?>" class="stat-item complete stat-item--link">
                             <div class="stat-number"><?= $completed ?></div>
-                            <div class="stat-label"><?= $t(['fr' => 'Dossiers complets', 'en' => 'Complete folders']) ?></div>
+                            <div class="stat-label"><?= $t(['fr' => 'Dossiers complets', 'en' => 'Complete Profiles']) ?></div>
                         </a>
                         <a href="<?= $buildUrl('index.php', array_filter([
-                                'page'        => 'folders-admin',
-                                'mobilite'    => $mobiliteFilter,
-                                'departement' => $departementFilter,
-                            ]) + ['complet' => '0']) ?>" class="stat-item incomplete stat-item--link">
+                            'page'        => 'folders-admin',
+                            'incomplet'     => '0',
+                            'mobilite'    => $mobiliteFilter,
+                            'departement' => $departementFilter,
+                        ])) ?>" class="stat-item incomplete stat-item--link">
                             <div class="stat-number"><?= $incomplete ?></div>
                             <div class="stat-label"><?= $t(['fr' => 'Dossiers incomplets', 'en' => 'Incomplete folders']) ?></div>
                         </a>
