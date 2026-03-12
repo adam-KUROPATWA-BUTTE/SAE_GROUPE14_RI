@@ -30,15 +30,20 @@ interface FolderRepositoryInterface
     // Status
     // ---------------------------------------------------------------
 
-    /** Toggle via direct flip (NewDev collègue) */
+    /** Toggle via direct flip */
     public function toggleStatus(string $numEtu): bool;
 
-    /** Toggle via PDO select+update (NewDev toi) — kept for compatibility */
+    /** Toggle via PDO select+update — kept for compatibility */
     public function toggleCompleteStatus(string $numEtu): bool;
 
     public function setStatus(string $numEtu, string $status): bool;
 
     public function cycleStatus(string $numEtu): bool;
+
+    /**
+     * Saves the department head's opinion ('accepte', 'refuse', or null to reset).
+     */
+    public function setAvisChef(string $numEtu, ?string $avis): bool;
 
     // ---------------------------------------------------------------
     // Pagination & search
@@ -64,9 +69,9 @@ interface FolderRepositoryInterface
     public function getDossierStats(?string $mobilite = null, ?string $departement = null): FolderStats;
 
     public function getGlobalStats(): FolderStats;
-    
+
     public function getGenderStats(?string $mobilite = null, ?string $departement = null): GenderStats;
-    
+
     /**
      * @return array<int, array{name: string, count: int}>
      */
@@ -98,7 +103,7 @@ interface FolderRepositoryInterface
     public function getZoneStats(?string $mobilite = null): array;
 
     // ---------------------------------------------------------------
-    // Document validation (ta branche)
+    // Document validation
     // ---------------------------------------------------------------
 
     /**
@@ -115,4 +120,11 @@ interface FolderRepositoryInterface
         ?string $dateLimite = null,
         ?string $commentaire = null
     ): bool;
+
+    /**
+     * Returns folders where IsComplete = 0 or IS NULL.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function findIncompleteFolders(): array;
 }

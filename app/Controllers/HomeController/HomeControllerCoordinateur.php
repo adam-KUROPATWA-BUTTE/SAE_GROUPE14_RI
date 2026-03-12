@@ -27,6 +27,9 @@ class HomeControllerCoordinateur implements ControllerInterface
         exit;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     protected function renderView(string $view, array $data = []): void
     {
         View::render($view, $data);
@@ -43,6 +46,9 @@ class HomeControllerCoordinateur implements ControllerInterface
         return new GetAdminStatsUseCase($repo);
     }
 
+    /**
+     * @return array<int, string>
+     */
     protected function fetchDepartements(): array
     {
         return (new \Model\Persistence\FolderRepositoryPDO())->getAllDepartements();

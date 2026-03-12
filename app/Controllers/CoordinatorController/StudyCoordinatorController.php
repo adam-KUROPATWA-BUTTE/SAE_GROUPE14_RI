@@ -33,11 +33,13 @@ class StudyCoordinatorController implements ControllerInterface
         exit;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     protected function renderView(string $view, array $data = []): void
     {
         View::render($view, $data);
     }
-
     public function control(): void
     {
         $this->startSession();

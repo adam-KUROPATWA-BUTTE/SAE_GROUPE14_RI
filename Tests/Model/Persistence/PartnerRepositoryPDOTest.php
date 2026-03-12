@@ -11,9 +11,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 class PartnerRepositoryPDOTest extends TestCase
 {
-    /** @var PDO&MockObject */
-    private PDO $pdoMock;
-
     private PartnerRepositoryPDO $repo;
 
     protected function setUp(): void
@@ -23,11 +20,11 @@ class PartnerRepositoryPDOTest extends TestCase
     }
 
     private function makePartner(
-        string $continent = 'Europe',
-        string $country   = 'Allemagne',
-        string $city      = 'Berlin',
+        string $continent   = 'Europe',
+        string $country     = 'Allemagne',
+        string $city        = 'Berlin',
         string $institution = 'TU Berlin',
-        string $type      = 'université'
+        string $type        = 'université'
     ): Partner {
         $p = $this->createMock(Partner::class);
         $p->method('getContinent')->willReturn($continent);
@@ -40,12 +37,10 @@ class PartnerRepositoryPDOTest extends TestCase
 
     private function injectPdo(PDO $pdo): void
     {
-        // addPartner() appelle Database::getInstance()->getConnection()
-        // On remplace le singleton Database par réflexion
         $dbMock = $this->createMock(\Database::class);
         $dbMock->method('getConnection')->willReturn($pdo);
 
-        $ref = new \ReflectionClass(\Database::class);
+        $ref  = new \ReflectionClass(\Database::class);
         $prop = $ref->getProperty('instance');
         $prop->setAccessible(true);
         $prop->setValue(null, $dbMock);

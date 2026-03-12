@@ -36,6 +36,9 @@ class UserRepositoryPDOTest extends TestCase
         return $stmt;
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $rows
+     */
     private function buildFetchAllStmt(array $rows): PDOStatement
     {
         $stmt = $this->createMock(PDOStatement::class);
@@ -44,11 +47,17 @@ class UserRepositoryPDOTest extends TestCase
         return $stmt;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function adminRow(): array
     {
         return ['id' => 1, 'email' => 'admin@test.com', 'password' => 'hashed', 'role' => 'admin', 'numetu' => null, 'departement' => 'INFO'];
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function studentRow(): array
     {
         return ['id' => 2, 'email' => 'etu@test.com', 'password' => 'hashed', 'role' => 'student', 'numetu' => '12345678', 'departement' => null];
@@ -445,9 +454,7 @@ class UserRepositoryPDOTest extends TestCase
 
     public function testResetPasswordReturnsTrueWhenUserFound(): void
     {
-        // findByEmail → admins hit → returns user
         $stmtFind   = $this->buildFetchStmt($this->adminRow());
-        // updatePassword → admins UPDATE (rowCount > 0)
         $stmtUpdate = $this->createMock(PDOStatement::class);
         $stmtUpdate->method('execute')->willReturn(true);
         $stmtUpdate->method('rowCount')->willReturn(1);

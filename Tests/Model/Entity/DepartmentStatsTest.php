@@ -2,14 +2,12 @@
 
 namespace Tests\Model\Entity;
 
-
-
 use PHPUnit\Framework\TestCase;
 use Model\Entity\DepartmentStats;
 
 class DepartmentStatsTest extends TestCase
 {
-    public function testConstructorAndGetters()
+    public function testConstructorAndGetters(): void
     {
         $departmentStats = new DepartmentStats("Informatique", 15);
 
@@ -17,7 +15,7 @@ class DepartmentStatsTest extends TestCase
         $this->assertEquals(15, $departmentStats->getCount());
     }
 
-    public function testToArray()
+    public function testToArray(): void
     {
         $departmentStats = new DepartmentStats("Réseaux", 8);
 

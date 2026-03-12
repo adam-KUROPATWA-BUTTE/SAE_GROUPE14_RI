@@ -5,6 +5,7 @@
  * @var string $message
  * @var string $messageType  'success' | 'error' | 'info'
  */
+$messageType  = $messageType ?? 'info';
 $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
 ?>
 <!DOCTYPE html>
@@ -21,12 +22,12 @@ $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'
     <h2>Réinitialisation du mot de passe<br>Aix-Marseille University</h2>
 
     <?php if (!empty($message)) : ?>
-        <div class="message <?= htmlspecialchars($messageType ?? 'info') ?>">
+        <div class="message <?= htmlspecialchars($messageType) ?>">
             <?= htmlspecialchars($message) ?>
         </div>
     <?php endif; ?>
 
-    <?php if (empty($messageType) || $messageType !== 'success') : ?>
+    <?php if ($messageType !== 'success') : ?>
         <form method="POST" action="">
             <div class="field-group email">
                 <label for="email">Adresse email</label>

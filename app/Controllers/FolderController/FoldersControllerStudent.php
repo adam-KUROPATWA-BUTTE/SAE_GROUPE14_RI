@@ -35,6 +35,9 @@ class FoldersControllerStudent implements ControllerInterface
         exit;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     protected function renderView(string $view, array $data = []): void
     {
         View::render($view, $data);
@@ -219,7 +222,9 @@ class FoldersControllerStudent implements ControllerInterface
         }
 
         $dossierExistant = $this->folderUseCase->getStudentDetails($numetu);
-        $dateLimite = $dossierExistant['DateLimite'] ?? null;
+        $dateLimiteRaw   = is_array($dossierExistant) ? ($dossierExistant['DateLimite'] ?? null) : null;
+        $dateLimite      = is_string($dateLimiteRaw) && $dateLimiteRaw !== '' ? $dateLimiteRaw : null;
+
         if (!empty($dateLimite)) {
             $dateObj    = \DateTime::createFromFormat('Y-m-d', $dateLimite);
             $aujourdhui = new \DateTime('today');
@@ -246,8 +251,8 @@ class FoldersControllerStudent implements ControllerInterface
 
             $studentName = '';
             if (is_array($existingFolder)) {
-                $prenom = $existingFolder['Prenom'] ?? '';
-                $nom = $existingFolder['Nom'] ?? '';
+                $prenom      = strval($existingFolder['Prenom'] ?? '');
+                $nom         = strval($existingFolder['Nom'] ?? '');
                 $studentName = trim($prenom . ' ' . $nom);
             }
 
@@ -298,15 +303,5 @@ class FoldersControllerStudent implements ControllerInterface
             $errors[] = $lang === 'fr' ? "Type et Zone requis." : "Type and Zone required.";
         }
         return $errors;
-    }
-
-    private function getUploadedFileContent(string $fieldName): ?string
-    {
-        if (!isset($_FILES[$fieldName]) || !is_array($_FILES[$fieldName])) return null;
-        if ($_FILES[$fieldName]['error'] !== UPLOAD_ERR_OK) return null;
-        $tmpName = $_FILES[$fieldName]['tmp_name'];
-        if (!is_string($tmpName) || !file_exists($tmpName)) return null;
-        $content = file_get_contents($tmpName);
-        return $content !== false ? $content : null;
     }
 }

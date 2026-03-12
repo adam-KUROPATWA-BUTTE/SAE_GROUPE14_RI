@@ -918,4 +918,22 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
             return false;
         }
     }
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function findIncompleteFolders(): array
+    {
+        try {
+            $stmt = $this->db->query("
+            SELECT NumEtu, Nom, Prenom, EmailAMU, EmailPersonnel
+            FROM dossiers
+            WHERE IsComplete = 0 OR IsComplete IS NULL
+            ORDER BY Nom, Prenom
+        ");
+            return $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+        } catch (\PDOException $e) {
+            error_log("findIncompleteFolders Error: " . $e->getMessage());
+            return [];
+        }
+    }
 }

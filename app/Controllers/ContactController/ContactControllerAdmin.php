@@ -42,7 +42,9 @@ class ContactControllerAdmin implements ControllerInterface
     }
 
     /**
-     * Rend une vue. Méthode protégée pour pouvoir être mockée en test.
+     * Rend une vue.
+     *
+     * @param array<string, mixed> $data
      */
     protected function renderView(string $view, array $data = []): void
     {

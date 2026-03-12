@@ -20,6 +20,10 @@ class ManageFolderUseCaseTest extends TestCase
         $this->useCase  = new ManageFolderUseCase($this->repoMock);
     }
 
+    /**
+     * @param array<string, mixed> $overrides
+     * @return array<string, mixed>
+     */
     private function baseDossier(array $overrides = []): array
     {
         return array_merge([
@@ -69,9 +73,13 @@ class ManageFolderUseCaseTest extends TestCase
 
         $this->assertIsArray($result);
         $this->assertArrayHasKey('pieces', $result);
-        $this->assertArrayHasKey('photo', $result['pieces']);
-        $this->assertSame('file.jpg', $result['pieces']['photo']['file']);
-        $this->assertSame('pending', $result['pieces']['photo']['status']);
+        /** @var array<string, mixed> $pieces */
+        $pieces = $result['pieces'];
+        $this->assertArrayHasKey('photo', $pieces);
+        /** @var array<string, mixed> $photo */
+        $photo = $pieces['photo'];
+        $this->assertSame('file.jpg', $photo['file']);
+        $this->assertSame('pending', $photo['status']);
     }
 
     public function testGetStudentDetailsReturnsParsedStatuts(): void
@@ -83,8 +91,11 @@ class ManageFolderUseCaseTest extends TestCase
 
         $result = $this->useCase->getStudentDetails('12345678');
 
+        $this->assertIsArray($result);
         $this->assertArrayHasKey('statuts', $result);
-        $this->assertSame('valide', $result['statuts']['photo']);
+        /** @var array<string, mixed> $statuts */
+        $statuts = $result['statuts'];
+        $this->assertSame('valide', $statuts['photo']);
     }
 
     public function testGetStudentDetailsHandlesEmptyPiecesJson(): void
@@ -94,6 +105,7 @@ class ManageFolderUseCaseTest extends TestCase
 
         $result = $this->useCase->getStudentDetails('12345678');
 
+        $this->assertIsArray($result);
         $this->assertSame([], $result['pieces']);
     }
 
@@ -150,7 +162,6 @@ class ManageFolderUseCaseTest extends TestCase
         $this->assertTrue($this->useCase->cycleFolderStatus('12345678'));
     }
 
-
     // =========================================================
     // rechercherAvecPagination()
     // =========================================================
@@ -198,6 +209,7 @@ class ManageFolderUseCaseTest extends TestCase
 
     public function testCreerDossierConvertsEmptyStringsToNull(): void
     {
+        /** @var array<string, mixed>|null $captured */
         $captured = null;
         $this->repoMock->method('create')->willReturnCallback(function (array $data) use (&$captured) {
             $captured = $data;
@@ -206,11 +218,13 @@ class ManageFolderUseCaseTest extends TestCase
 
         $this->useCase->creerDossier(['numetu' => '12345678', 'nom' => '', 'prenom' => 'Alice']);
 
+        $this->assertIsArray($captured);
         $this->assertNull($captured['Nom']);
     }
 
     public function testCreerDossierSetsDefaultStatusDepot(): void
     {
+        /** @var array<string, mixed>|null $captured */
         $captured = null;
         $this->repoMock->method('create')->willReturnCallback(function (array $data) use (&$captured) {
             $captured = $data;
@@ -219,11 +233,13 @@ class ManageFolderUseCaseTest extends TestCase
 
         $this->useCase->creerDossier(['numetu' => '12345678']);
 
+        $this->assertIsArray($captured);
         $this->assertSame('depot', $captured['status']);
     }
 
     public function testCreerDossierIgnoresInvalidDate(): void
     {
+        /** @var array<string, mixed>|null $captured */
         $captured = null;
         $this->repoMock->method('create')->willReturnCallback(function (array $data) use (&$captured) {
             $captured = $data;
@@ -232,11 +248,13 @@ class ManageFolderUseCaseTest extends TestCase
 
         $this->useCase->creerDossier(['numetu' => '12345678', 'naissance' => 'not-a-date']);
 
+        $this->assertIsArray($captured);
         $this->assertNull($captured['DateNaissance']);
     }
 
     public function testCreerDossierEncodesPhotoAsPiecesJson(): void
     {
+        /** @var array<string, mixed>|null $captured */
         $captured = null;
         $this->repoMock->method('create')->willReturnCallback(function (array $data) use (&$captured) {
             $captured = $data;
@@ -245,9 +263,13 @@ class ManageFolderUseCaseTest extends TestCase
 
         $this->useCase->creerDossier(['numetu' => '12345678', 'photo' => 'binarydata']);
 
-        $pieces = json_decode($captured['PiecesJustificatives'], true);
+        $this->assertIsArray($captured);
+        /** @var array<string, mixed> $pieces */
+        $pieces = json_decode((string) $captured['PiecesJustificatives'], true);
         $this->assertArrayHasKey('photo', $pieces);
-        $this->assertSame(base64_encode('binarydata'), $pieces['photo']['file']);
+        /** @var array<string, mixed> $photo */
+        $photo = $pieces['photo'];
+        $this->assertSame(base64_encode('binarydata'), $photo['file']);
     }
 
     // =========================================================
@@ -282,6 +304,7 @@ class ManageFolderUseCaseTest extends TestCase
         ]);
         $this->repoMock->method('findByNumEtu')->willReturn($existing);
 
+        /** @var array<string, mixed>|null $captured */
         $captured = null;
         $this->repoMock->method('update')->willReturnCallback(function (string $num, array $data) use (&$captured) {
             $captured = $data;
@@ -290,7 +313,9 @@ class ManageFolderUseCaseTest extends TestCase
 
         $this->useCase->updateDossier(['numetu' => '12345678', 'photo' => 'newphoto']);
 
-        $pieces = json_decode($captured[':PiecesJustificatives'], true);
+        $this->assertIsArray($captured);
+        /** @var array<string, mixed> $pieces */
+        $pieces = json_decode((string) $captured[':PiecesJustificatives'], true);
         $this->assertArrayHasKey('photo', $pieces);
         $this->assertArrayHasKey('cv', $pieces);
     }
