@@ -13,9 +13,11 @@ class SuperAdminManager {
      * @returns {boolean} True if confirmed, false otherwise.
      */
     confirmDelete(login) {
-        const label = (typeof window.SA_DELETE_LABEL !== 'undefined')
-            ? window.SA_DELETE_LABEL
+        const configEl = document.getElementById('app-config');
+        const label = (configEl && configEl.dataset.deleteLabel) 
+            ? configEl.dataset.deleteLabel 
             : 'Supprimer le compte';
+            
         return confirm(`${label} ${login} ?`);
     }
 
