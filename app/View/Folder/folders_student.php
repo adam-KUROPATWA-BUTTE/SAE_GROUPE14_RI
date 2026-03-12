@@ -352,7 +352,7 @@ endif;
 <?php
 $content = ob_get_clean();
 
-$title = $t(['fr' => 'Mon dossier - Étudiant', 'en' => 'My Folder - Student']);
+$title = $t(['fr' => 'Mon profil - Étudiant', 'en' => 'My Profile - Student']);
 
 $styles    = ['styles/folders.css', 'styles/chatbot.css'];
 $scripts   = ['js/chatbot.js', 'js/folders.js'];

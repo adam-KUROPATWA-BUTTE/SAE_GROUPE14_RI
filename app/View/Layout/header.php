@@ -143,7 +143,7 @@ $userRole === 'admin'        ? 'home-admin'        :
                 ],
                 'folders' => [
                     'fr' => ($userRole === 'admin' ? 'Dossiers' : 'Mon Dossier'),
-                    'en' => ($userRole === 'admin' ? 'Folders' : 'My Folder'),
+                    'en' => ($userRole === 'admin' ? 'Profiles' : 'My Profile'),
                 ],
             ];
 

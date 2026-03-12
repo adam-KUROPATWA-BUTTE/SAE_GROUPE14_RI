@@ -85,8 +85,8 @@ ob_start();
         <?php
         $avisChef  = strval($studentData['avis_chef_departement'] ?? '');
         $avisLabel = match($avisChef) {
-            'accepte' => ['fr' => 'Folder accepté par le chef de département',  'en' => 'Folder accepted by department head'],
-            'refuse'  => ['fr' => 'Folder refusé par le chef de département',   'en' => 'Folder refused by department head'],
+            'accepte' => ['fr' => 'Dossier accepté par le chef de département',  'en' => 'Profile accepted by department head'],
+            'refuse'  => ['fr' => 'Dossier refusé par le chef de département',   'en' => 'Profile refused by department head'],
             default   => ['fr' => 'Aucune décision du chef de département',       'en' => 'No decision from department head'],
         };
         $avisIcon = match($avisChef) {
@@ -201,7 +201,7 @@ ob_start();
 <?php
 $content = ob_get_clean();
 
-$title      = $t(['fr' => 'Gestion des dossiers - Admin', 'en' => 'Folders Management - Admin']);
+$title      = $t(['fr' => 'Gestion des dossiers - Admin', 'en' => 'Profiles Management - Admin']);
 $styles     = ['styles/index.css', 'styles/folders.css', 'styles/chatbot.css'];
 $scripts    = ['js/folders.js'];
 $activeMenu = $PAGE;
