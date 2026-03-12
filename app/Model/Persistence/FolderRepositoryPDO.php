@@ -634,7 +634,7 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
         $sql = "SELECT NumEtu, Nom, Prenom, EmailPersonnel as email, Telephone, Type, Zone, Pays,
                        Campus, Discipline, NiveauEtude, Formation, MoyenneBac, MoyenneSansBac, AvisDRI,
                        DateDebut, MobiliteAnterieure, DateNaissance, Sexe, Adresse, CodePostal, Ville,
-                       EmailAMU, CodeDepartement, Composante, IsComplete, PiecesJustificatives, status
+                       EmailAMU, CodeDepartement, Composante, IsComplete, PiecesJustificatives, status, Mobilite
                 FROM dossiers" . $where . " ORDER BY Nom ASC, Prenom ASC" . $limitClause;
 
         try {
@@ -645,9 +645,34 @@ class FolderRepositoryPDO implements FolderRepositoryInterface
                 $stmt->bindValue(':offset', ($page - 1) * $perPage, PDO::PARAM_INT);
             }
             $stmt->execute();
+            
+            $data = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+            
+            // --- NOUVEAU : Récupérer les relances de manière sécurisée ---
+            if (!empty($data)) {
+                $numEtus = array_column($data, 'NumEtu');
+                $inQuery = implode(',', array_fill(0, count($numEtus), '?'));
+                
+                $relancesStmt = $this->db->prepare("SELECT numetu, COUNT(*) as cnt FROM relances WHERE numetu IN ($inQuery) GROUP BY numetu");
+                $relancesStmt->execute($numEtus);
+                
+                $counts = [];
+                while ($row = $relancesStmt->fetch(PDO::FETCH_ASSOC)) {
+                    $counts[$row['numetu']] = (int)$row['cnt'];
+                }
+                
+                foreach ($data as &$row) {
+                    $row['nb_relances'] = $counts[$row['NumEtu']] ?? 0;
+                }
+            }
+            // -------------------------------------------------------------
+
             $totalPages = ($perPage > 0 && $totalCount > 0) ? (int) ceil($totalCount / $perPage) : 1;
-            return ['data' => $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [], 'total' => $totalCount, 'totalPages' => $totalPages];
+            return ['data' => $data, 'total' => $totalCount, 'totalPages' => $totalPages];
+            
         } catch (\PDOException $e) {
+            // Ajout d'un log pour ne plus jamais avoir d'erreur silencieuse
+            error_log("Erreur SQL searchWithPagination : " . $e->getMessage() . " | SQL: " . $sql);
             return ['data' => [], 'total' => 0, 'totalPages' => 0];
         }
     }
