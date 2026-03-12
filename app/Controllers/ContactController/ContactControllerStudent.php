@@ -22,6 +22,9 @@ class ContactControllerStudent implements ControllerInterface
         return $page === 'contact-student';
     }
 
+    /**
+     * Starts the session if it is not already started.
+     */
     protected function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -29,6 +32,10 @@ class ContactControllerStudent implements ControllerInterface
         }
     }
 
+    /**
+     * Redirects the user to a specific URL.
+     * Protected to allow mocking during tests.
+     */
     protected function redirect(string $url): never
     {
         header('Location: ' . $url);
@@ -36,23 +43,30 @@ class ContactControllerStudent implements ControllerInterface
     }
 
     /**
-     * Rend une vue.
+     * Renders a view.
      *
-     * @param array<string, mixed> $data
+     * @param array<string, mixed> $data Data passed to the view
      */
     protected function renderView(string $view, array $data = []): void
     {
         View::render($view, $data);
     }
 
+    /**
+     * Main controller logic for the student contact page.
+     * Handles sending messages, replying to conversations,
+     * language selection, and displaying student conversations.
+     */
     public function control(): void
     {
         $this->startSession();
 
+        // Ensure the student is authenticated
         if (!isset($_SESSION['numetu'])) {
             $this->redirect('index.php?page=login');
         }
 
+        // Handle language selection
         if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en'], true)) {
             $_SESSION['lang'] = $_GET['lang'];
         }
@@ -61,13 +75,16 @@ class ContactControllerStudent implements ControllerInterface
         $numEtu = $_SESSION['numetu'];
         $action = $_GET['action'] ?? 'form';
 
+        // Translation helper
         $t = fn(array $translations) => $translations[$lang] ?? $translations['fr'] ?? '';
 
+        // Helper to build URLs with the language parameter
         $buildUrl = function (string $url, array $params = []) use ($lang) {
             $params['lang'] = $lang;
             return $url . '?' . http_build_query($params);
         };
 
+        // Handle reply to an existing conversation
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'reply') {
             $conversationId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             $reply = trim($_POST['student_reply'] ?? '');
@@ -83,6 +100,7 @@ class ContactControllerStudent implements ControllerInterface
         $messageSent = false;
         $error = null;
 
+        // Handle the submission of the contact form
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'form') {
             try {
                 $this->contactService->createConversation(
@@ -100,8 +118,10 @@ class ContactControllerStudent implements ControllerInterface
             }
         }
 
+        // Retrieve all conversations for the current student
         $studentConversations = $this->contactService->getStudentConversations($numEtu);
 
+        // Contact information displayed on the page
         $contactInfo = [
             'email' => 'jocelyne.vial@univ-amu.fr',
             'phone' => ' +33 4 13 94 65 02',
@@ -115,6 +135,7 @@ class ContactControllerStudent implements ControllerInterface
             ],
         ];
 
+        // Render the contact page
         $this->renderView('Contact/contact_student', [
             'lang' => $lang,
             'numEtu' => $numEtu,

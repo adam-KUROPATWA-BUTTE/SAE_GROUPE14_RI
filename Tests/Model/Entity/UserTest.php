@@ -5,8 +5,21 @@ namespace Tests\Model\Entity;
 use PHPUnit\Framework\TestCase;
 use Model\Entity\User;
 
+/**
+ * Class UserTest
+ *
+ * Unit tests for the User entity.
+ *
+ * Tests:
+ * - Constructor and getters
+ * - Setters
+ */
 class UserTest extends TestCase
 {
+    /**
+     * Test that the constructor correctly sets all properties
+     * and that getters return the expected values.
+     */
     public function testConstructorAndGetters(): void
     {
         $user = new User(1, "john@example.com", "12345", "password123", "student");
@@ -19,6 +32,9 @@ class UserTest extends TestCase
         $this->assertNull($user->getDepartement());
     }
 
+    /**
+     * Test that setters correctly update the entity properties.
+     */
     public function testSetters(): void
     {
         $user = new User(null, "a@a.com", null, "pass", "admin");
@@ -30,7 +46,7 @@ class UserTest extends TestCase
         $user->setRole("teacher");
         $user->setDepartement("Informatique");
 
-        $this->assertEquals(10,               $user->getId());
+        $this->assertEquals(10,                $user->getId());
         $this->assertEquals("new@example.com",$user->getEmail());
         $this->assertEquals("54321",          $user->getNumetu());
         $this->assertEquals("newpass",        $user->getPassword());

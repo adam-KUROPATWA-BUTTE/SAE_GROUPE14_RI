@@ -5,31 +5,37 @@ namespace Controllers;
 use Controllers\ControllerInterface;
 use Core\View;
 
+/**
+ * Controller for handling 404 Not Found pages.
+ * This controller is a fallback and does not support any specific route.
+ */
 class NotFoundController implements ControllerInterface
 {
     /**
-     * Méthode principale qui prépare les données et appelle la vue.
+     * Main method that prepares data and renders the 404 view.
      */
     public function control(): void
     {
-        // 1. Logique (session, vérification tritanopie)
+        // Start session if not started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
-        $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
-        $titre = 'Page non trouvée';
+        // Check if tritanopia mode is enabled
+        $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool) $_SESSION['tritanopia'] === true);
 
-        // 2. Appel de la vue (Template) via Core\View
-        // On passe les variables 'titre' et 'isTritanopia' à la vue
+        // Page title
+        $title = 'Page Not Found';
+
+        // Render the 404 view, passing title and tritanopia flag
         View::render('404', [
-            'titre' => $titre,
-            'isTritanopia' => $isTritanopia
+            'title'        => $title,
+            'isTritanopia' => $isTritanopia,
         ]);
     }
 
     /**
-     * Ce contrôleur est un fallback, il ne supporte aucune route spécifique.
+     * This controller does not support any specific page.
      */
     public static function support(string $page, string $method): bool
     {

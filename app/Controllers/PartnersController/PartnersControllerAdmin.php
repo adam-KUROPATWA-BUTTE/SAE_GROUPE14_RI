@@ -9,13 +9,24 @@ use Model\Entity\Partner;
 use Core\View;
 use PDOException;
 
+/**
+ * Admin controller for managing partner universities.
+ *
+ * Handles displaying the partners page and processing new partner submissions.
+ */
 class PartnersControllerAdmin implements ControllerInterface
 {
+    /**
+     * Returns true if this controller handles the partners-admin page.
+     */
     public static function support(string $page, string $method): bool
     {
         return $page === 'partners-admin';
     }
 
+    /**
+     * Starts the PHP session if not already active.
+     */
     protected function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -23,6 +34,9 @@ class PartnersControllerAdmin implements ControllerInterface
         }
     }
 
+    /**
+     * Redirects the user to the given URL and exits.
+     */
     protected function redirect(string $url): never
     {
         header('Location: ' . $url);
@@ -30,13 +44,19 @@ class PartnersControllerAdmin implements ControllerInterface
     }
 
     /**
-     * @param array<string, mixed> $data
+     * Renders a view template with the given data.
+     *
+     * @param array<string, mixed> $data Variables passed to the view
      */
     protected function renderView(string $view, array $data = []): void
     {
         View::render($view, $data);
     }
 
+    /**
+     * Main entry point. Enforces admin authentication, resolves language and
+     * accessibility settings, handles partner creation on POST, then renders the view.
+     */
     public function control(): void
     {
         $this->startSession();
@@ -45,6 +65,7 @@ class PartnersControllerAdmin implements ControllerInterface
             $this->redirect('index.php?page=login');
         }
 
+        // Persist language preference in session
         if (isset($_GET['lang'])) {
             $langParam = strval($_GET['lang']);
             if (in_array($langParam, ['fr', 'en'], true)) {
@@ -53,6 +74,7 @@ class PartnersControllerAdmin implements ControllerInterface
         }
         $lang = $_SESSION['lang'] ?? 'fr';
 
+        // Persist tritanopia (colour-blindness) accessibility preference in session
         if (isset($_GET['tritanopia'])) {
             $_SESSION['tritanopia'] = (strval($_GET['tritanopia']) === '1');
         }
@@ -86,7 +108,7 @@ class PartnersControllerAdmin implements ControllerInterface
             }
         }
 
-        $titre = $lang === 'en' ? 'Destinaions Universities' : 'Universités Destinations';
+        $titre = $lang === 'en' ? 'Destination Universities' : 'Universités Destinations';
 
         $t = function (array $frEn) use ($lang): string {
             return $lang === 'en' ? $frEn['en'] : $frEn['fr'];

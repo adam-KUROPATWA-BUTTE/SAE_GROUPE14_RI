@@ -7,19 +7,41 @@ use Model\Persistence\ConversationPDO;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * Class ContactServiceTest
+ *
+ * Unit tests for the ContactService class.
+ *
+ * These tests verify the interaction between the service layer and the
+ * ConversationPDO repository, including conversation creation, message addition,
+ * retrieval, marking as read, and deletion.
+ */
 class ContactServiceTest extends TestCase
 {
-    /** @var ConversationPDO&MockObject */
+    /**
+     * @var ConversationPDO&MockObject Mocked repository for conversations.
+     */
     private ConversationPDO $repositoryMock;
 
+    /** @var ContactService The service under test. */
     private ContactService $service;
 
+    /**
+     * Setup before each test: create a repository mock and the service instance.
+     */
     protected function setUp(): void
     {
         $this->repositoryMock = $this->createMock(ConversationPDO::class);
         $this->service        = new ContactService($this->repositoryMock);
     }
 
+    // -------------------------------------------------------------------------
+    // Conversation creation
+    // -------------------------------------------------------------------------
+
+    /**
+     * Test that createConversation calls the repository and returns the ID.
+     */
     public function testCreateConversationSuccess(): void
     {
         $this->repositoryMock
@@ -39,6 +61,13 @@ class ContactServiceTest extends TestCase
         $this->assertEquals(1, $result);
     }
 
+    // -------------------------------------------------------------------------
+    // Message addition
+    // -------------------------------------------------------------------------
+
+    /**
+     * Test adding a message to a conversation that does not exist returns false.
+     */
     public function testAddMessageConversationNotFound(): void
     {
         $this->repositoryMock
@@ -50,6 +79,9 @@ class ContactServiceTest extends TestCase
         $this->assertFalse($result);
     }
 
+    /**
+     * Test adding a message to an existing conversation succeeds.
+     */
     public function testAddMessageSuccess(): void
     {
         $conversationMock = $this->createMock(Conversation::class);
@@ -67,6 +99,13 @@ class ContactServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
+    // -------------------------------------------------------------------------
+    // Retrieval methods
+    // -------------------------------------------------------------------------
+
+    /**
+     * Test getting conversations for a student by their number.
+     */
     public function testGetStudentConversations(): void
     {
         $expected = [];
@@ -82,6 +121,9 @@ class ContactServiceTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
+    /**
+     * Test retrieving all conversations.
+     */
     public function testGetAllConversations(): void
     {
         $expected = [];
@@ -96,6 +138,13 @@ class ContactServiceTest extends TestCase
         $this->assertEquals($expected, $result);
     }
 
+    // -------------------------------------------------------------------------
+    // Mark as read
+    // -------------------------------------------------------------------------
+
+    /**
+     * Test marking a conversation as read for a given user role.
+     */
     public function testMarkConversationAsRead(): void
     {
         $this->repositoryMock
@@ -109,6 +158,13 @@ class ContactServiceTest extends TestCase
         $this->assertTrue($result);
     }
 
+    // -------------------------------------------------------------------------
+    // Deletion
+    // -------------------------------------------------------------------------
+
+    /**
+     * Test deleting a conversation by its ID.
+     */
     public function testDeleteConversation(): void
     {
         $this->repositoryMock

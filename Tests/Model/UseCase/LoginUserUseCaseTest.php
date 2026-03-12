@@ -7,16 +7,33 @@ use Model\UseCase\LoginUserUseCase;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 
+/**
+ * Class LoginUserUseCaseTest
+ *
+ * Unit tests for the LoginUserUseCase.
+ *
+ * These tests verify that login requests are routed correctly to either the admin
+ * or student repository based on input (email vs student number) and that results
+ * are propagated correctly.
+ */
 class LoginUserUseCaseTest extends TestCase
 {
-    /** @var UserRepositoryInterface&MockObject */
+    /**
+     * @var UserRepositoryInterface&MockObject Mocked repository for admin users.
+     */
     private UserRepositoryInterface $adminRepo;
 
-    /** @var UserRepositoryInterface&MockObject */
+    /**
+     * @var UserRepositoryInterface&MockObject Mocked repository for student users.
+     */
     private UserRepositoryInterface $studentRepo;
 
+    /** @var LoginUserUseCase The use case under test. */
     private LoginUserUseCase $useCase;
 
+    /**
+     * Setup before each test: create repository mocks and the use case instance.
+     */
     protected function setUp(): void
     {
         $this->adminRepo   = $this->createMock(UserRepositoryInterface::class);
@@ -24,10 +41,13 @@ class LoginUserUseCaseTest extends TestCase
         $this->useCase     = new LoginUserUseCase($this->adminRepo, $this->studentRepo);
     }
 
-    // =========================================================
-    // Routage email → adminRepo
-    // =========================================================
+    // -------------------------------------------------------------------------
+    // Routing: Email → Admin Repository
+    // -------------------------------------------------------------------------
 
+    /**
+     * Test that login with an email calls the admin repository.
+     */
     public function testExecuteWithEmailUsesAdminRepo(): void
     {
         $this->adminRepo->expects($this->once())
@@ -43,6 +63,9 @@ class LoginUserUseCaseTest extends TestCase
         $this->assertSame('admin', $result['role']);
     }
 
+    /**
+     * Test that login failure from admin repository returns failure.
+     */
     public function testExecuteWithEmailReturnsFailureWhenAdminRepoFails(): void
     {
         $this->adminRepo->method('login')->willReturn(['success' => false]);
@@ -52,10 +75,13 @@ class LoginUserUseCaseTest extends TestCase
         $this->assertFalse($result['success']);
     }
 
-    // =========================================================
-    // Routage numéro étudiant → studentRepo
-    // =========================================================
+    // -------------------------------------------------------------------------
+    // Routing: Student Number → Student Repository
+    // -------------------------------------------------------------------------
 
+    /**
+     * Test that login with a student number calls the student repository.
+     */
     public function testExecuteWithStudentNumberUsesStudentRepo(): void
     {
         $this->studentRepo->expects($this->once())
@@ -71,6 +97,9 @@ class LoginUserUseCaseTest extends TestCase
         $this->assertSame('student', $result['role']);
     }
 
+    /**
+     * Test that login failure from student repository returns failure.
+     */
     public function testExecuteWithStudentNumberReturnsFailureWhenStudentRepoFails(): void
     {
         $this->studentRepo->method('login')->willReturn(['success' => false]);
@@ -80,13 +109,15 @@ class LoginUserUseCaseTest extends TestCase
         $this->assertFalse($result['success']);
     }
 
-    // =========================================================
-    // Validation email
-    // =========================================================
+    // -------------------------------------------------------------------------
+    // Email format validation
+    // -------------------------------------------------------------------------
 
+    /**
+     * Test that invalid email format (not a valid email) routes to student repository.
+     */
     public function testExecuteWithInvalidEmailUsesStudentRepo(): void
     {
-        // "not-an-email" n'est pas une adresse valide → studentRepo
         $this->studentRepo->expects($this->once())
             ->method('login')
             ->willReturn(['success' => false]);
@@ -96,6 +127,9 @@ class LoginUserUseCaseTest extends TestCase
         $this->useCase->execute('not-an-email', 'pass');
     }
 
+    /**
+     * Test that valid email format routes to admin repository.
+     */
     public function testExecuteWithValidEmailFormatUsesAdminRepo(): void
     {
         $this->adminRepo->expects($this->once())
@@ -108,10 +142,13 @@ class LoginUserUseCaseTest extends TestCase
         $this->assertTrue($result['success']);
     }
 
-    // =========================================================
-    // Transmission du résultat brut du repo
-    // =========================================================
+    // -------------------------------------------------------------------------
+    // Raw result propagation
+    // -------------------------------------------------------------------------
 
+    /**
+     * Test that execute() returns the exact array from the admin repository.
+     */
     public function testExecuteReturnsRawArrayFromAdminRepo(): void
     {
         $expected = ['success' => true, 'role' => 'admin', 'departement' => 'INFO', 'force_change_password' => false];
@@ -122,6 +159,9 @@ class LoginUserUseCaseTest extends TestCase
         $this->assertSame($expected, $result);
     }
 
+    /**
+     * Test that execute() returns the exact array from the student repository.
+     */
     public function testExecuteReturnsRawArrayFromStudentRepo(): void
     {
         $expected = ['success' => true, 'role' => 'student', 'numetu' => '12345678'];
