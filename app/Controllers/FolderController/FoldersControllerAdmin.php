@@ -1,12 +1,17 @@
 <?php
 
-
 namespace Controllers\FolderController;
 
 use Model\UseCase\ManageFolderUseCase;
 use Service\Email\EmailReminderService;
 use Core\View;
 
+/**
+ * Admin controller for managing student folders.
+ *
+ * Handles listing, viewing, creating, updating, importing folders,
+ * managing document statuses, and sending email notifications.
+ */
 class FoldersControllerAdmin
 {
     private ManageFolderUseCase $folderUseCase;
@@ -16,6 +21,9 @@ class FoldersControllerAdmin
         $this->folderUseCase = new ManageFolderUseCase();
     }
 
+    /**
+     * Returns true if this controller handles the given page and HTTP method.
+     */
     public static function support(string $page, string $method): bool
     {
         return in_array($page, [
@@ -25,6 +33,9 @@ class FoldersControllerAdmin
         ]);
     }
 
+    /**
+     * Starts the PHP session if not already active.
+     */
     protected function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -32,6 +43,9 @@ class FoldersControllerAdmin
         }
     }
 
+    /**
+     * Redirects the user to the given URL and exits.
+     */
     protected function redirect(string $url): never
     {
         header('Location: ' . $url);
@@ -39,7 +53,9 @@ class FoldersControllerAdmin
     }
 
     /**
-     * @param array<string, mixed> $data
+     * Renders a view template with the given data.
+     *
+     * @param array<string, mixed> $data Variables passed to the view
      */
     protected function renderView(string $view, array $data = []): void
     {
@@ -47,9 +63,9 @@ class FoldersControllerAdmin
     }
 
     /**
-     * Envoie une réponse JSON et termine. Neutralisable en test.
+     * Sends a JSON response and exits.
      *
-     * @param array<string, mixed> $data
+     * @param array<string, mixed> $data Data to encode as JSON
      */
     protected function jsonResponse(array $data): never
     {
@@ -60,13 +76,17 @@ class FoldersControllerAdmin
     }
 
     /**
-     * Wrapper error_log neutralisable en test.
+     * Logs a message to the PHP error log.
      */
     protected function log(string $message): void
     {
         error_log($message);
     }
 
+    /**
+     * Main entry point. Handles routing, authentication, and dispatches
+     * to the appropriate action based on GET/POST parameters.
+     */
     public function control(): void
     {
         $this->startSession();
@@ -75,8 +95,10 @@ class FoldersControllerAdmin
         $action = $_GET['action'] ?? 'list';
         $lang   = $_GET['lang']   ?? 'fr';
 
+        // Pages accessible to multiple roles (not just admin)
         $sharedPages  = ['update_student', 'update_document_status', 'update_global_status', 'valider_documents'];
         $allowedRoles = ['admin', 'coordinateur_stage', 'coordinateur_etude', 'coordinateur', 'chef_departement'];
+
         if (in_array($page, $sharedPages, true)) {
             if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], $allowedRoles, true)) {
                 $this->redirect('index.php?page=login');
@@ -87,17 +109,19 @@ class FoldersControllerAdmin
             }
         }
 
+        // Toggle complete status and optionally send confirmation email
         if ($page === 'toggle_complete') {
             $numetu = $_GET['numetu'] ?? null;
             if ($numetu) {
                 $numetu = urldecode($numetu);
 
-                // Fetch student data BEFORE toggling to know the previous state
+                // Fetch student data before toggling to know the previous state
                 $studentData   = $this->folderUseCase->getStudentDetails($numetu);
                 $wasIncomplete = $studentData !== null && empty($studentData['IsComplete']);
 
                 $success = $this->folderUseCase->toggleCompleteStatus($numetu);
 
+                // Send confirmation email only when folder transitions from incomplete to complete
                 if ($success && $wasIncomplete && $studentData !== null) {
                     $email       = strval($studentData['EmailPersonnel'] ?? '');
                     $nom         = strval($studentData['Nom']    ?? '');
@@ -111,6 +135,7 @@ class FoldersControllerAdmin
 
                     if (!empty($email)) {
                         if (empty($validatedDocs)) {
+                            // Fall back to a default document list if none are found
                             $validatedDocs = ['photo', 'cv', 'convention', 'lettre_motivation'];
                             $this->log("ℹ️ No documents found, using default list for email");
                         }
@@ -129,33 +154,17 @@ class FoldersControllerAdmin
             }
         }
 
+        // Dispatch POST actions
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if ($page === 'update_global_status') {
-                $this->updateGlobalStatus();
-                return;
-            }
-            if ($page === 'update_document_status') {
-                $this->updateDocumentStatus();
-                return;
-            }
-            if ($page === 'import_folders') {
-                $this->importFolders($lang);
-                return;
-            }
-            if ($page === 'save_student') {
-                $this->saveStudent($lang);
-                return;
-            }
-            if ($page === 'update_student') {
-                $this->updateStudent($lang);
-                return;
-            }
-            if ($page === 'valider_documents') {
-                $this->validerDocuments($lang);
-                return;
-            }
+            if ($page === 'update_global_status')    { $this->updateGlobalStatus();    return; }
+            if ($page === 'update_document_status')  { $this->updateDocumentStatus();  return; }
+            if ($page === 'import_folders')          { $this->importFolders($lang);    return; }
+            if ($page === 'save_student')            { $this->saveStudent($lang);      return; }
+            if ($page === 'update_student')          { $this->updateStudent($lang);    return; }
+            if ($page === 'valider_documents')       { $this->validerDocuments($lang); return; }
         }
 
+        // Load student details when viewing a specific folder
         $studentData = null;
         if ($action === 'view' && !empty($_GET['numetu'])) {
             $studentData = $this->folderUseCase->getStudentDetails($_GET['numetu']);
@@ -189,6 +198,10 @@ class FoldersControllerAdmin
         ]);
     }
 
+    /**
+     * Returns the full name of the currently logged-in admin.
+     * Falls back to database lookup, then email prefix, then a default string.
+     */
     private function getAdminName(): string
     {
         $prenom = strval($_SESSION['admin_prenom'] ?? '');
@@ -201,33 +214,40 @@ class FoldersControllerAdmin
 
         if ($email !== '') {
             try {
-                $pdo = \Database::getInstance()->getConnection();
+                $pdo  = \Database::getInstance()->getConnection();
                 $stmt = $pdo->prepare("SELECT prenom, nom FROM admins WHERE email = :email LIMIT 1");
                 $stmt->execute([':email' => $email]);
                 $admin = $stmt->fetch(\PDO::FETCH_ASSOC);
 
                 if ($admin) {
                     $dbPrenom = strval($admin['prenom'] ?? '');
-                    $dbNom    = strval($admin['nom'] ?? '');
+                    $dbNom    = strval($admin['nom']    ?? '');
                     $dbName   = trim($dbPrenom . ' ' . $dbNom);
 
                     if ($dbName !== '') {
+                        // Cache in session to avoid repeated DB queries
                         $_SESSION['admin_prenom'] = $dbPrenom;
                         $_SESSION['admin_nom']    = $dbNom;
                         return $dbName;
                     }
                 }
             } catch (\Exception $e) {
-                $this->log("Erreur lors de la récupération du nom de l'admin : " . $e->getMessage());
+                $this->log("Error retrieving admin name: " . $e->getMessage());
             }
 
+            // Use the part before @ as a fallback display name
             return strval(explode('@', $email)[0]);
         }
 
         return 'Administrateur';
     }
 
-    /** @param array<int, string> $updates */
+    /**
+     * Sends a folder update notification email to the student.
+     * Does nothing if the update list is empty or the student has no email.
+     *
+     * @param array<int, string> $updates Human-readable list of changes
+     */
     private function notifyStudent(string $numEtu, array $updates): void
     {
         if (empty($updates)) return;
@@ -237,6 +257,7 @@ class FoldersControllerAdmin
 
         $emailAmu    = strval($studentData['EmailAMU']       ?? '');
         $emailPerso  = strval($studentData['EmailPersonnel'] ?? '');
+        // Prefer personal email over AMU email
         $email       = $emailPerso !== '' ? $emailPerso : $emailAmu;
         if ($email === '') return;
 
@@ -247,13 +268,17 @@ class FoldersControllerAdmin
         EmailReminderService::sendFolderUpdateNotification($email, $studentName, $numEtu, $updates);
     }
 
+    /**
+     * AJAX handler — updates the global workflow status of a folder.
+     * Sends a notification email if the status actually changed.
+     */
     private function updateGlobalStatus(): void
     {
         $numEtu = $_POST['numetu'] ?? '';
         $status = $_POST['status'] ?? 'depot';
 
         if (empty($numEtu)) {
-            $this->jsonResponse(['success' => false, 'message' => 'Paramètre manquant']);
+            $this->jsonResponse(['success' => false, 'message' => 'Missing parameter']);
         }
 
         try {
@@ -275,11 +300,15 @@ class FoldersControllerAdmin
 
             $this->jsonResponse(['success' => $success]);
         } catch (\Throwable $e) {
-            $this->log("AJAX updateGlobalStatus Error: " . $e->getMessage());
-            $this->jsonResponse(['success' => false, 'message' => 'Erreur Serveur interne']);
+            $this->log("AJAX updateGlobalStatus error: " . $e->getMessage());
+            $this->jsonResponse(['success' => false, 'message' => 'Internal server error']);
         }
     }
 
+    /**
+     * AJAX handler — updates the status and optional comment for a single document.
+     * Also handles replacing the document file if one is uploaded.
+     */
     private function updateDocumentStatus(): void
     {
         $numEtu  = $_POST['numetu']   ?? '';
@@ -288,7 +317,7 @@ class FoldersControllerAdmin
         $comment = trim(strval($_POST['comment'] ?? ''));
 
         if (empty($numEtu) || empty($docType)) {
-            $this->jsonResponse(['success' => false, 'message' => 'Paramètres manquants']);
+            $this->jsonResponse(['success' => false, 'message' => 'Missing parameters']);
         }
 
         try {
@@ -301,11 +330,15 @@ class FoldersControllerAdmin
             $success = $this->folderUseCase->updateDocumentStatus($numEtu, $docType, $status, $comment, $fileContent);
             $this->jsonResponse(['success' => $success]);
         } catch (\Throwable $e) {
-            $this->log("AJAX updateDocumentStatus Error: " . $e->getMessage());
-            $this->jsonResponse(['success' => false, 'message' => 'Erreur Serveur interne']);
+            $this->log("AJAX updateDocumentStatus error: " . $e->getMessage());
+            $this->jsonResponse(['success' => false, 'message' => 'Internal server error']);
         }
     }
 
+    /**
+     * Validates and saves document statuses for a student folder.
+     * Updates student data, persists document decisions, and notifies the student.
+     */
     private function validerDocuments(string $lang): void
     {
         $numetu     = $_POST['numetu']      ?? '';
@@ -318,9 +351,9 @@ class FoldersControllerAdmin
 
         $oldDossier = $this->folderUseCase->getStudentDetails($numetu);
 
-        /** @var array<string, string> $oldStatuts */
+        /** @var array<string, string> $oldStatuts Previous document statuses */
         $oldStatuts = (is_array($oldDossier) && isset($oldDossier['statuts']) && is_array($oldDossier['statuts'])) ? $oldDossier['statuts'] : [];
-        /** @var array<string, array{comment?: string, status?: string}> $oldPieces */
+        /** @var array<string, array{comment?: string, status?: string}> $oldPieces Previous document pieces */
         $oldPieces  = (is_array($oldDossier) && isset($oldDossier['pieces'])  && is_array($oldDossier['pieces']))  ? $oldDossier['pieces']  : [];
 
         $studentData = [
@@ -364,6 +397,7 @@ class FoldersControllerAdmin
             'langues'           => 'Attestation de langues',
         ];
 
+        // Merge previous statuses with new ones submitted via POST
         /** @var array<string, string> $statutsDocuments */
         $statutsDocuments = $oldStatuts;
         foreach (array_keys($docLabels) as $doc) {
@@ -380,8 +414,8 @@ class FoldersControllerAdmin
         $this->log("=== validerDocuments POST ===");
         $this->log("numetu: " . $numetu);
         $this->log("statutsDocuments: " . json_encode($statutsDocuments));
-        $this->log("email_perso: " . ($_POST['email_perso'] ?? '(vide)'));
-        $this->log("mobilite_type POST = " . ($_POST['mobilite_type'] ?? 'NON RECU'));
+        $this->log("email_perso: " . ($_POST['email_perso'] ?? '(empty)'));
+        $this->log("mobilite_type POST = " . ($_POST['mobilite_type'] ?? 'NOT RECEIVED'));
         $this->log("Mobilite data = " . ($studentData['Mobilite'] ?? 'NULL'));
 
         $success = $this->folderUseCase->enregistrerValidation($numetu, $statutsDocuments, $dateLimite, $commentaire);
@@ -394,6 +428,7 @@ class FoldersControllerAdmin
             $piecesAcceptees = [];
             $piecesRefusees  = [];
 
+            // Categorise each document as accepted or refused for the notification email
             foreach ($docLabels as $doc => $docName) {
                 $docKey     = (string)$doc;
                 $statut     = $statutsDocuments[$docKey] ?? ($oldStatuts[$docKey] ?? 'pending');
@@ -410,7 +445,7 @@ class FoldersControllerAdmin
                     foreach ($list as $p) {
                         $lines .= '<li style="margin-bottom:4px;">' . $p['name'];
                         if (!empty($p['comment'])) {
-                            $lines .= ' — <i style="color:#555;">' . htmlspecialchars($p['comment'], ENT_QUOTES, 'UTF-8') . '</i>';
+                            $lines = htmlspecialchars($p['comment'], ENT_QUOTES, 'UTF-8') . '</>';
                         }
                         $lines .= '</li>';
                     }
@@ -420,6 +455,7 @@ class FoldersControllerAdmin
 
             $updates[] = '__STATUT_GLOBAL__' . ($globalLabels[$globalStatus] ?? $globalStatus) . '__END_STATUT__';
 
+            // Include deadline change in notification only if the date actually changed
             if (!empty($dateLimite)) {
                 $formattedDate = date('d/m/Y', strtotime($dateLimite));
                 $oldDateLimite = is_array($oldDossier) ? ($oldDossier['DateLimite'] ?? null) : null;
@@ -439,8 +475,12 @@ class FoldersControllerAdmin
     }
 
     /**
-     * @param array<string, mixed> $data
-     * @return array<int, string>
+     * Processes uploaded files from the current request.
+     * Reads file contents into $data under the matching field key.
+     * Returns an array of error messages for any failed uploads.
+     *
+     * @param  array<string, mixed> $data    Data array to populate with file contents
+     * @return array<int, string>            List of error messages (empty if all succeeded)
      */
     private function handleFileUploads(array &$data, string $lang): array
     {
@@ -469,6 +509,10 @@ class FoldersControllerAdmin
         return $errors;
     }
 
+    /**
+     * Handles CSV/Excel file import for bulk folder creation.
+     * Validates the file extension before processing.
+     */
     private function importFolders(string $lang): void
     {
         if (isset($_FILES['excel_file']) && $_FILES['excel_file']['error'] === UPLOAD_ERR_OK) {
@@ -494,6 +538,10 @@ class FoldersControllerAdmin
         $this->redirect('index.php?page=folders-admin&lang=' . $lang);
     }
 
+    /**
+     * Creates a new student folder from POST data.
+     * Validates required fields and checks for duplicate student ID before saving.
+     */
     private function saveStudent(string $lang): void
     {
         $data = [
@@ -533,6 +581,7 @@ class FoldersControllerAdmin
             $this->redirect('index.php?page=folders-admin&action=create&lang=' . $lang);
         }
 
+        // Prevent duplicate student IDs
         if ($this->folderUseCase->getByNumetu($data['NumEtu'])) {
             $_SESSION['message'] = ($lang === 'fr') ? 'Ce numéro étudiant existe déjà' : 'ID already exists';
             $this->redirect('index.php?page=folders-admin&action=create&lang=' . $lang);
@@ -553,6 +602,10 @@ class FoldersControllerAdmin
         $this->redirect('index.php?page=folders-admin&lang=' . $lang);
     }
 
+    /**
+     * Updates an existing student folder from POST data.
+     * Detects field-level changes and sends a notification email listing what changed.
+     */
     private function updateStudent(string $lang): void
     {
         $redirectTo = $_POST['redirect_to'] ?? 'folders-admin';
@@ -593,6 +646,7 @@ class FoldersControllerAdmin
             $this->redirect('index.php?page=' . $redirectTo . '&action=view&numetu=' . urlencode($numetu) . '&lang=' . $lang);
         }
 
+        // Load existing data before saving so we can diff the changes
         $oldDossier = !empty($numetu) ? $this->folderUseCase->getStudentDetails($numetu) : null;
 
         $data['ModifiePar'] = $this->getAdminName();
@@ -602,22 +656,37 @@ class FoldersControllerAdmin
 
         if ($success && $oldDossier) {
             $fieldLabels = [
-                'Nom' => 'Nom', 'Prenom' => 'Prénom', 'EmailPersonnel' => 'Email personnel',
-                'EmailAMU' => 'Email AMU', 'Telephone' => 'Téléphone', 'Adresse' => 'Adresse',
-                'CodePostal' => 'Code postal', 'Ville' => 'Ville', 'Pays' => 'Pays',
-                'Type' => 'Type (entrant/sortant)', 'Zone' => 'Zone', 'Composante' => 'Composante',
-                'CodeDepartement' => 'Département', 'Campus' => 'Campus', 'Discipline' => 'Discipline',
-                'NiveauEtude' => 'Niveau d\'étude', 'Formation' => 'Formation',
-                'MoyenneBac' => 'Moyenne Bac', 'MoyenneSansBac' => 'Moyenne sans Bac',
-                'AvisDRI' => 'Avis DRI', 'DateDebut' => 'Date de début',
-                'MobiliteAnterieure' => 'Mobilité antérieure', 'DateNaissance' => 'Date de naissance',
-                'Sexe' => 'Sexe',
+                'Nom'                => 'Nom',
+                'Prenom'             => 'Prénom',
+                'EmailPersonnel'     => 'Email personnel',
+                'EmailAMU'           => 'Email AMU',
+                'Telephone'          => 'Téléphone',
+                'Adresse'            => 'Adresse',
+                'CodePostal'         => 'Code postal',
+                'Ville'              => 'Ville',
+                'Pays'               => 'Pays',
+                'Type'               => 'Type (entrant/sortant)',
+                'Zone'               => 'Zone',
+                'Composante'         => 'Composante',
+                'CodeDepartement'    => 'Département',
+                'Campus'             => 'Campus',
+                'Discipline'         => 'Discipline',
+                'NiveauEtude'        => 'Niveau d\'étude',
+                'Formation'          => 'Formation',
+                'MoyenneBac'         => 'Moyenne Bac',
+                'MoyenneSansBac'     => 'Moyenne sans Bac',
+                'AvisDRI'            => 'Avis DRI',
+                'DateDebut'          => 'Date de début',
+                'MobiliteAnterieure' => 'Mobilité antérieure',
+                'DateNaissance'      => 'Date de naissance',
+                'Sexe'               => 'Sexe',
             ];
 
+            // Build a human-readable diff for the notification email
             $updates = [];
             foreach ($fieldLabels as $field => $label) {
                 $oldVal = trim(strval($oldDossier[$field] ?? ''));
-                $newVal = trim(strval($data[$field] ?? ''));
+                $newVal = trim(strval($data[$field]      ?? ''));
                 if ($oldVal !== $newVal && $newVal !== '') {
                     $safeOld   = htmlspecialchars($oldVal ?: '—', ENT_QUOTES, 'UTF-8');
                     $safeNew   = htmlspecialchars($newVal,         ENT_QUOTES, 'UTF-8');
@@ -625,9 +694,13 @@ class FoldersControllerAdmin
                 }
             }
 
+            // Mention updated files in the notification
             $fileLabels = [
-                'photo' => 'Photo', 'cv' => 'CV', 'convention' => 'Convention de stage',
-                'lettre_motivation' => 'Lettre de motivation', 'langues_file' => 'Attestation de langues',
+                'photo'             => 'Photo',
+                'cv'                => 'CV',
+                'convention'        => 'Convention de stage',
+                'lettre_motivation' => 'Lettre de motivation',
+                'langues_file'      => 'Attestation de langues',
             ];
             foreach ($fileLabels as $field => $label) {
                 if (!empty($data[$field])) {

@@ -12,10 +12,23 @@ use Service\SuperAdminService;
 use Model\UseCase\GetAdminStatsUseCase;
 
 /**
- * Tests unitaires pour SuperAdminController, HomeControllerAdmin,
- * HomeControllerCoordinateur et HomeControllerStudent.
+ * Unit tests for SuperAdminController, HomeControllerAdmin,
+ * HomeControllerCoordinateur, and HomeControllerStudent.
  *
- * Lancement : ./vendor/bin/phpunit Tests/Controllers/HomeController/HomeControllersTest.php
+ * Coverage areas:
+ * - Route matching via support()
+ * - Authentication and role-based access guards
+ * - Language selection and session persistence
+ * - POST action dispatching (add_department, add_site, delete, create)
+ * - Input validation (email format, password strength, required fields)
+ * - Tritanopia accessibility flag handling
+ * - buildUrl() query-string helper behaviour
+ *
+ * All HTTP superglobals ($_GET, $_POST, $_SESSION, $_SERVER) are reset in
+ * setUp() before every test to prevent state leakage between test cases.
+ *
+ * Run with:
+ *   ./vendor/bin/phpunit Tests/Controllers/HomeController/HomeControllersTest.php
  */
 class HomeControllersTest extends TestCase
 {
@@ -23,6 +36,9 @@ class HomeControllersTest extends TestCase
     // setUp
     // =========================================================================
 
+    /**
+     * Resets all HTTP superglobals before each test to ensure full isolation.
+     */
     protected function setUp(): void
     {
         $_GET     = [];
@@ -36,6 +52,16 @@ class HomeControllersTest extends TestCase
     // =========================================================================
 
     /**
+     * Builds an anonymous subclass of {@see SuperAdminController} backed by a
+     * mocked {@see SuperAdminService}.
+     *
+     * Infrastructure overrides keep the controller in-process:
+     * - {@see startSession()} is a no-op.
+     * - {@see redirect()} throws RuntimeException prefixed with "redirect:".
+     * - {@see renderView()} is a no-op.
+     * - {@see makeService()} returns the injected mock instead of building a
+     *   real service.
+     *
      * @return array{0: SuperAdminController, 1: MockObject&SuperAdminService}
      */
     private function makeSuperAdmin(): array
@@ -50,16 +76,26 @@ class HomeControllersTest extends TestCase
                 $this->injectedService = $svc;
             }
 
+            /** No-op: prevents real session_start() calls during tests. */
             protected function startSession(): void {}
 
+            /**
+             * Converts a redirect into a catchable exception so tests can
+             * assert on the target URL without leaving the test process.
+             */
             protected function redirect(string $url): never
             {
                 throw new \RuntimeException('redirect:' . $url);
             }
 
-            /** @param array<string, mixed> $data */
+            /**
+             * No-op: prevents real view rendering (file inclusion) during tests.
+             *
+             * @param array<string, mixed> $data
+             */
             protected function renderView(string $view, array $data = []): void {}
 
+            /** Returns the injected mock instead of constructing a real service. */
             protected function makeService(): SuperAdminService
             {
                 return $this->injectedService;
@@ -70,6 +106,20 @@ class HomeControllersTest extends TestCase
     }
 
     /**
+     * Builds an anonymous subclass of {@see HomeControllerAdmin} backed by a
+     * mocked {@see GetAdminStatsUseCase}.
+     *
+     * Also seeds $_SESSION['role'] = 'admin' so the controller passes its
+     * authentication guard without an explicit setup call in each test.
+     *
+     * Infrastructure overrides:
+     * - {@see startSession()} is a no-op.
+     * - {@see redirect()} throws RuntimeException prefixed with "redirect:".
+     * - {@see renderView()} is a no-op.
+     * - {@see log()} is a no-op.
+     * - {@see makeUseCase()} returns the injected mock.
+     * - {@see fetchDepartements()} returns an empty array.
+     *
      * @return array{0: HomeControllerAdmin, 1: MockObject&GetAdminStatsUseCase}
      */
     private function makeAdminHome(): array
@@ -84,36 +134,62 @@ class HomeControllersTest extends TestCase
                 $this->injectedUseCase = $useCase;
             }
 
+            /** No-op: prevents real session_start() calls during tests. */
             protected function startSession(): void {}
 
+            /**
+             * Converts a redirect into a catchable exception so tests can
+             * assert on the target URL without leaving the test process.
+             */
             protected function redirect(string $url): never
             {
                 throw new \RuntimeException('redirect:' . $url);
             }
 
-            /** @param array<string, mixed> $data */
+            /**
+             * No-op: prevents real view rendering (file inclusion) during tests.
+             *
+             * @param array<string, mixed> $data
+             */
             protected function renderView(string $view, array $data = []): void {}
 
+            /** No-op: suppresses log output during tests. */
             protected function log(string $message): void {}
 
+            /** Returns the injected mock instead of constructing a real use case. */
             protected function makeUseCase(): GetAdminStatsUseCase
             {
                 return $this->injectedUseCase;
             }
 
-            /** @return array<int, mixed> */
+            /**
+             * Returns an empty department list to avoid database access during tests.
+             *
+             * @return array<int, mixed>
+             */
             protected function fetchDepartements(): array
             {
                 return [];
             }
         };
 
+        // Pre-authenticate as admin so the controller does not redirect in every test.
         $_SESSION['role'] = 'admin';
 
         return [$controller, $useCaseMock];
     }
 
     /**
+     * Builds an anonymous subclass of {@see HomeControllerCoordinateur} backed
+     * by a mocked {@see GetAdminStatsUseCase}.
+     *
+     * Infrastructure overrides:
+     * - {@see startSession()} is a no-op.
+     * - {@see redirect()} throws RuntimeException prefixed with "redirect:".
+     * - {@see renderView()} is a no-op.
+     * - {@see log()} is a no-op.
+     * - {@see makeUseCase()} returns the injected mock.
+     *
      * @return array{0: HomeControllerCoordinateur, 1: MockObject&GetAdminStatsUseCase}
      */
     private function makeCoordHome(): array
@@ -128,18 +204,29 @@ class HomeControllersTest extends TestCase
                 $this->injectedUseCase = $useCase;
             }
 
+            /** No-op: prevents real session_start() calls during tests. */
             protected function startSession(): void {}
 
+            /**
+             * Converts a redirect into a catchable exception so tests can
+             * assert on the target URL without leaving the test process.
+             */
             protected function redirect(string $url): never
             {
                 throw new \RuntimeException('redirect:' . $url);
             }
 
-            /** @param array<string, mixed> $data */
+            /**
+             * No-op: prevents real view rendering (file inclusion) during tests.
+             *
+             * @param array<string, mixed> $data
+             */
             protected function renderView(string $view, array $data = []): void {}
 
+            /** No-op: suppresses log output during tests. */
             protected function log(string $message): void {}
 
+            /** Returns the injected mock instead of constructing a real use case. */
             protected function makeUseCase(): GetAdminStatsUseCase
             {
                 return $this->injectedUseCase;
@@ -150,6 +237,12 @@ class HomeControllersTest extends TestCase
     }
 
     /**
+     * Builds an anonymous subclass of {@see HomeControllerStudent} with all
+     * infrastructure methods overridden to stay in-process.
+     *
+     * No session pre-seeding is performed here; each test is responsible for
+     * setting the session state it requires (e.g. $_SESSION['numetu']).
+     *
      * @return HomeControllerStudent
      */
     private function makeStudentHome(): HomeControllerStudent
@@ -157,16 +250,26 @@ class HomeControllersTest extends TestCase
         return new class extends HomeControllerStudent {
             public function __construct()
             {
+                // Empty constructor: bypasses any real DI / service wiring.
             }
 
+            /** No-op: prevents real session_start() calls during tests. */
             protected function startSession(): void {}
 
+            /**
+             * Converts a redirect into a catchable exception so tests can
+             * assert on the target URL without leaving the test process.
+             */
             protected function redirect(string $url): never
             {
                 throw new \RuntimeException('redirect:' . $url);
             }
 
-            /** @param array<string, mixed> $data */
+            /**
+             * No-op: prevents real view rendering (file inclusion) during tests.
+             *
+             * @param array<string, mixed> $data
+             */
             protected function renderView(string $view, array $data = []): void {}
         };
     }
@@ -175,12 +278,22 @@ class HomeControllersTest extends TestCase
     // SuperAdminController — support()
     // =========================================================================
 
+    /**
+     * @test
+     * The super-admin controller must claim the "super-admin" page for both GET
+     * and POST so the router directs all its traffic through this handler.
+     */
     public function test_superadmin_support_returns_true_for_super_admin(): void
     {
         $this->assertTrue(SuperAdminController::support('super-admin', 'GET'));
         $this->assertTrue(SuperAdminController::support('super-admin', 'POST'));
     }
 
+    /**
+     * @test
+     * Pages not belonging to the super-admin area must return false so the
+     * router can delegate to another controller.
+     */
     public function test_superadmin_support_returns_false_for_other_pages(): void
     {
         $this->assertFalse(SuperAdminController::support('home', 'GET'));
@@ -189,9 +302,14 @@ class HomeControllersTest extends TestCase
     }
 
     // =========================================================================
-    // SuperAdminController — accès
+    // SuperAdminController — access guard
     // =========================================================================
 
+    /**
+     * @test
+     * When no session exists (unauthenticated request), the controller must
+     * redirect to the login page immediately.
+     */
     public function test_superadmin_redirects_to_login_when_not_authenticated(): void
     {
         [$controller] = $this->makeSuperAdmin();
@@ -202,6 +320,11 @@ class HomeControllersTest extends TestCase
         $controller->control();
     }
 
+    /**
+     * @test
+     * A user with a lower-privilege role (e.g. "admin") must be redirected to
+     * login instead of accessing the super-admin panel.
+     */
     public function test_superadmin_redirects_to_login_for_wrong_role(): void
     {
         $_SESSION['role'] = 'admin';
@@ -214,9 +337,14 @@ class HomeControllersTest extends TestCase
     }
 
     // =========================================================================
-    // SuperAdminController — langue
+    // SuperAdminController — language selection
     // =========================================================================
 
+    /**
+     * @test
+     * When no lang parameter is supplied, the controller should default to
+     * French ("fr") without writing anything unexpected to the session.
+     */
     public function test_superadmin_lang_defaults_to_fr(): void
     {
         $_SESSION['role'] = 'super_admin';
@@ -231,6 +359,10 @@ class HomeControllersTest extends TestCase
         $this->assertSame('fr', $_SESSION['lang'] ?? 'fr');
     }
 
+    /**
+     * @test
+     * When lang=en is supplied via $_GET, the session must be updated to "en".
+     */
     public function test_superadmin_lang_set_from_get(): void
     {
         $_SESSION['role'] = 'super_admin';
@@ -246,6 +378,11 @@ class HomeControllersTest extends TestCase
         $this->assertSame('en', $_SESSION['lang']);
     }
 
+    /**
+     * @test
+     * An unsupported locale (e.g. "de") must be silently ignored; the
+     * controller must not persist it in the session.
+     */
     public function test_superadmin_lang_ignores_invalid_value(): void
     {
         $_SESSION['role'] = 'super_admin';
@@ -265,6 +402,11 @@ class HomeControllersTest extends TestCase
     // SuperAdminController — POST action=add_department
     // =========================================================================
 
+    /**
+     * @test
+     * When a valid new department name is submitted, addDepartment() must be
+     * called with the name uppercased.
+     */
     public function test_superadmin_add_department_calls_addDepartment(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
@@ -283,6 +425,11 @@ class HomeControllersTest extends TestCase
         try { $controller->control(); } catch (\Throwable $e) {}
     }
 
+    /**
+     * @test
+     * When the submitted department name already exists in the list, the
+     * controller must not call addDepartment() to avoid duplicates.
+     */
     public function test_superadmin_add_department_does_not_add_when_already_exists(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
@@ -300,6 +447,13 @@ class HomeControllersTest extends TestCase
         try { $controller->control(); } catch (\Throwable $e) {}
     }
 
+    /**
+     * @test
+     * A successful add_department action with lang=fr must complete without
+     * exceptions. The actual message string is an implementation detail and
+     * not asserted here; this test guards against regressions in the happy
+     * path.
+     */
     public function test_superadmin_add_department_sets_success_message_in_french(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
@@ -319,6 +473,11 @@ class HomeControllersTest extends TestCase
         $this->assertTrue(true);
     }
 
+    /**
+     * @test
+     * When the submitted department name is empty, the controller must silently
+     * skip the operation and not call addDepartment().
+     */
     public function test_superadmin_add_department_sets_error_when_empty(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
@@ -339,6 +498,11 @@ class HomeControllersTest extends TestCase
     // SuperAdminController — POST action=add_site
     // =========================================================================
 
+    /**
+     * @test
+     * When a valid new site name is submitted, addSite() must be called with
+     * the exact value from the POST body.
+     */
     public function test_superadmin_add_site_calls_addSite(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
@@ -356,6 +520,11 @@ class HomeControllersTest extends TestCase
         try { $controller->control(); } catch (\Throwable $e) {}
     }
 
+    /**
+     * @test
+     * When the submitted site already exists, addSite() must not be called
+     * to avoid creating duplicate entries.
+     */
     public function test_superadmin_add_site_does_not_add_when_already_exists(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
@@ -372,6 +541,11 @@ class HomeControllersTest extends TestCase
         try { $controller->control(); } catch (\Throwable $e) {}
     }
 
+    /**
+     * @test
+     * When the submitted site name is empty, the controller must skip the
+     * operation without calling addSite().
+     */
     public function test_superadmin_add_site_does_not_add_when_empty(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
@@ -392,6 +566,11 @@ class HomeControllersTest extends TestCase
     // SuperAdminController — POST action=delete
     // =========================================================================
 
+    /**
+     * @test
+     * A valid delete request must invoke deleteAccount() with the login value
+     * from the POST body.
+     */
     public function test_superadmin_delete_calls_deleteAccount(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
@@ -404,11 +583,19 @@ class HomeControllersTest extends TestCase
         $serviceMock->method('getAvailableSites')->willReturn([]);
         $serviceMock->method('getAllAccounts')->willReturn([]);
 
-        $serviceMock->expects($this->once())->method('deleteAccount')->with('user@example.com')->willReturn(true);
+        $serviceMock->expects($this->once())
+            ->method('deleteAccount')
+            ->with('user@example.com')
+            ->willReturn(true);
 
         try { $controller->control(); } catch (\Throwable $e) {}
     }
 
+    /**
+     * @test
+     * When the login field is empty, the controller must skip the deletion to
+     * prevent accidentally removing an unintended account.
+     */
     public function test_superadmin_delete_does_nothing_when_login_empty(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
@@ -429,6 +616,12 @@ class HomeControllersTest extends TestCase
     // SuperAdminController — POST action=create
     // =========================================================================
 
+    /**
+     * @test
+     * When all required fields are valid and the role is "coordinateur",
+     * createAccount() must be called with the correct arguments, including
+     * the department and a null site.
+     */
     public function test_superadmin_create_calls_createAccount_with_valid_data(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
@@ -453,6 +646,11 @@ class HomeControllersTest extends TestCase
         try { $controller->control(); } catch (\Throwable $e) {}
     }
 
+    /**
+     * @test
+     * When the login field is empty, the controller must not attempt to create
+     * an account with an invalid identifier.
+     */
     public function test_superadmin_create_does_not_call_createAccount_when_login_empty(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
@@ -471,13 +669,18 @@ class HomeControllersTest extends TestCase
         try { $controller->control(); } catch (\Throwable $e) {}
     }
 
+    /**
+     * @test
+     * A password that does not meet the strength policy must be rejected
+     * without calling createAccount().
+     */
     public function test_superadmin_create_rejects_weak_password(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_SESSION['role']          = 'super_admin';
         $_POST['action']           = 'create';
         $_POST['login']            = 'admin@univ.fr';
-        $_POST['password']         = 'weak';
+        $_POST['password']         = 'weak'; // intentionally too simple
         $_POST['role']             = 'admin';
         $_POST['site']             = 'Marseille';
 
@@ -490,12 +693,17 @@ class HomeControllersTest extends TestCase
         try { $controller->control(); } catch (\Throwable $e) {}
     }
 
+    /**
+     * @test
+     * A login that is not a valid email address must be rejected without
+     * calling createAccount().
+     */
     public function test_superadmin_create_rejects_invalid_email_login(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $_SESSION['role']          = 'super_admin';
         $_POST['action']           = 'create';
-        $_POST['login']            = 'not-an-email';
+        $_POST['login']            = 'not-an-email'; // intentionally malformed
         $_POST['password']         = 'Secure@Password1!';
         $_POST['role']             = 'admin';
         $_POST['site']             = 'Marseille';
@@ -509,6 +717,11 @@ class HomeControllersTest extends TestCase
         try { $controller->control(); } catch (\Throwable $e) {}
     }
 
+    /**
+     * @test
+     * A "coordinateur" account creation request without a department must be
+     * rejected, as a coordinator must be associated with a department.
+     */
     public function test_superadmin_create_rejects_coord_without_department(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
@@ -517,7 +730,7 @@ class HomeControllersTest extends TestCase
         $_POST['login']            = 'coord@univ.fr';
         $_POST['password']         = 'Secure@Password1!';
         $_POST['role']             = 'coordinateur';
-        $_POST['departement']      = '';
+        $_POST['departement']      = ''; // missing required field
 
         [$controller, $serviceMock] = $this->makeSuperAdmin();
         $serviceMock->method('getAvailableDepartments')->willReturn([]);
@@ -528,6 +741,11 @@ class HomeControllersTest extends TestCase
         try { $controller->control(); } catch (\Throwable $e) {}
     }
 
+    /**
+     * @test
+     * An "admin" account creation request without a site must be rejected,
+     * as an admin must be scoped to a specific site.
+     */
     public function test_superadmin_create_rejects_admin_without_site(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
@@ -536,7 +754,7 @@ class HomeControllersTest extends TestCase
         $_POST['login']            = 'admin@univ.fr';
         $_POST['password']         = 'Secure@Password1!';
         $_POST['role']             = 'admin';
-        $_POST['site']             = '';
+        $_POST['site']             = ''; // missing required field
 
         [$controller, $serviceMock] = $this->makeSuperAdmin();
         $serviceMock->method('getAvailableDepartments')->willReturn([]);
@@ -547,6 +765,12 @@ class HomeControllersTest extends TestCase
         try { $controller->control(); } catch (\Throwable $e) {}
     }
 
+    /**
+     * @test
+     * When creating an admin account, the site must be passed as the fifth
+     * argument and the department must be null (admins are site-scoped, not
+     * department-scoped).
+     */
     public function test_superadmin_create_passes_site_for_admin_role(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'POST';
@@ -575,16 +799,29 @@ class HomeControllersTest extends TestCase
     // HomeControllerAdmin — support()
     // =========================================================================
 
+    /**
+     * @test
+     * The admin home controller must claim the "home-admin" page on GET.
+     */
     public function test_home_admin_support_returns_true_for_home_admin_get(): void
     {
         $this->assertTrue(HomeControllerAdmin::support('home-admin', 'GET'));
     }
 
+    /**
+     * @test
+     * POST requests to "home-admin" must not be handled by this controller
+     * since the admin dashboard is read-only.
+     */
     public function test_home_admin_support_returns_false_for_post(): void
     {
         $this->assertFalse(HomeControllerAdmin::support('home-admin', 'POST'));
     }
 
+    /**
+     * @test
+     * Pages outside the admin home area must return false.
+     */
     public function test_home_admin_support_returns_false_for_other_pages(): void
     {
         $this->assertFalse(HomeControllerAdmin::support('home', 'GET'));
@@ -592,9 +829,13 @@ class HomeControllersTest extends TestCase
     }
 
     // =========================================================================
-    // HomeControllerAdmin — langue
+    // HomeControllerAdmin — language selection
     // =========================================================================
 
+    /**
+     * @test
+     * When lang=en is supplied via $_GET, the session must be updated to "en".
+     */
     public function test_home_admin_lang_set_from_get(): void
     {
         $_GET['lang'] = 'en';
@@ -605,6 +846,11 @@ class HomeControllersTest extends TestCase
         $this->assertSame('en', $_SESSION['lang']);
     }
 
+    /**
+     * @test
+     * An unsupported locale must be silently ignored; it must not be written
+     * to the session.
+     */
     public function test_home_admin_lang_ignores_invalid_value(): void
     {
         $_GET['lang'] = 'zh';
@@ -616,9 +862,14 @@ class HomeControllersTest extends TestCase
     }
 
     // =========================================================================
-    // HomeControllerAdmin — filtres mobilite / departement
+    // HomeControllerAdmin — mobility / department filters
     // =========================================================================
 
+    /**
+     * @test
+     * A recognised mobility filter value (e.g. "etude") must be accepted
+     * without causing errors or redirects.
+     */
     public function test_home_admin_mobilite_filter_accepted(): void
     {
         $_GET['mobilite'] = 'etude';
@@ -629,6 +880,11 @@ class HomeControllersTest extends TestCase
         $this->assertTrue(true);
     }
 
+    /**
+     * @test
+     * An unrecognised mobility filter value must be silently ignored; the
+     * controller must not crash or redirect.
+     */
     public function test_home_admin_mobilite_filter_rejected_for_invalid_value(): void
     {
         $_GET['mobilite'] = 'invalid';
@@ -639,6 +895,11 @@ class HomeControllersTest extends TestCase
         $this->assertTrue(true);
     }
 
+    /**
+     * @test
+     * A department filter value supplied via $_GET must be accepted without
+     * causing errors or redirects.
+     */
     public function test_home_admin_departement_filter_set_from_get(): void
     {
         $_GET['departement'] = 'Informatique';
@@ -650,9 +911,14 @@ class HomeControllersTest extends TestCase
     }
 
     // =========================================================================
-    // HomeControllerAdmin — tritanopia
+    // HomeControllerAdmin — tritanopia accessibility flag
     // =========================================================================
 
+    /**
+     * @test
+     * When tritanopia=1 is supplied via $_GET, the session flag must be set
+     * to true to activate the accessible colour scheme.
+     */
     public function test_home_admin_tritanopia_set_to_true(): void
     {
         $_GET['tritanopia'] = '1';
@@ -663,6 +929,11 @@ class HomeControllersTest extends TestCase
         $this->assertTrue($_SESSION['tritanopia'] ?? false);
     }
 
+    /**
+     * @test
+     * When tritanopia=0 is supplied via $_GET, the session flag must be set
+     * to false to deactivate the accessible colour scheme.
+     */
     public function test_home_admin_tritanopia_set_to_false(): void
     {
         $_GET['tritanopia'] = '0';
@@ -677,12 +948,21 @@ class HomeControllersTest extends TestCase
     // HomeControllerCoordinateur — support()
     // =========================================================================
 
+    /**
+     * @test
+     * The coordinator home controller must handle "home-coordinateur" on both
+     * GET and POST.
+     */
     public function test_home_coord_support_returns_true_for_home_coordinateur(): void
     {
         $this->assertTrue(HomeControllerCoordinateur::support('home-coordinateur', 'GET'));
         $this->assertTrue(HomeControllerCoordinateur::support('home-coordinateur', 'POST'));
     }
 
+    /**
+     * @test
+     * Pages outside the coordinator home area must return false.
+     */
     public function test_home_coord_support_returns_false_for_other_pages(): void
     {
         $this->assertFalse(HomeControllerCoordinateur::support('home-admin', 'GET'));
@@ -690,9 +970,13 @@ class HomeControllersTest extends TestCase
     }
 
     // =========================================================================
-    // HomeControllerCoordinateur — accès
+    // HomeControllerCoordinateur — access guard
     // =========================================================================
 
+    /**
+     * @test
+     * An unauthenticated request (no session) must be redirected to login.
+     */
     public function test_home_coord_redirects_to_login_when_not_authenticated(): void
     {
         [$controller] = $this->makeCoordHome();
@@ -703,6 +987,11 @@ class HomeControllersTest extends TestCase
         $controller->control();
     }
 
+    /**
+     * @test
+     * A user with a role that does not have coordinator privileges must be
+     * redirected to login rather than shown the coordinator dashboard.
+     */
     public function test_home_coord_redirects_to_login_for_wrong_role(): void
     {
         $_SESSION['role'] = 'admin';
@@ -718,16 +1007,29 @@ class HomeControllersTest extends TestCase
     // HomeControllerStudent — support()
     // =========================================================================
 
+    /**
+     * @test
+     * The student home controller must claim "home-student" on GET.
+     */
     public function test_home_student_support_returns_true_for_home_student_get(): void
     {
         $this->assertTrue(HomeControllerStudent::support('home-student', 'GET'));
     }
 
+    /**
+     * @test
+     * POST requests to "home-student" must not be handled by this controller
+     * since the student dashboard is read-only.
+     */
     public function test_home_student_support_returns_false_for_post(): void
     {
         $this->assertFalse(HomeControllerStudent::support('home-student', 'POST'));
     }
 
+    /**
+     * @test
+     * Pages outside the student home area must return false.
+     */
     public function test_home_student_support_returns_false_for_other_pages(): void
     {
         $this->assertFalse(HomeControllerStudent::support('home-admin', 'GET'));
@@ -735,13 +1037,20 @@ class HomeControllersTest extends TestCase
     }
 
     // =========================================================================
-    // HomeControllerStudent — langue
+    // HomeControllerStudent — language selection
     // =========================================================================
 
+    /**
+     * @test
+     * When lang=en is supplied and the student is authenticated, the session
+     * must be updated to "en".
+     * Note: numetu is required in the session, otherwise the controller redirects
+     * to login before the language assignment can take place.
+     */
     public function test_home_student_lang_set_from_get(): void
     {
         $_GET['lang']       = 'en';
-        $_SESSION['numetu'] = '12345'; // requis sinon redirect avant traitement lang
+        $_SESSION['numetu'] = '12345'; // required to pass the authentication guard
         $controller         = $this->makeStudentHome();
 
         try { $controller->control(); } catch (\Throwable $e) {}
@@ -749,6 +1058,10 @@ class HomeControllersTest extends TestCase
         $this->assertSame('en', $_SESSION['lang']);
     }
 
+    /**
+     * @test
+     * An unsupported locale (e.g. "ru") must not be persisted in the session.
+     */
     public function test_home_student_lang_ignores_invalid_value(): void
     {
         $_GET['lang']       = 'ru';
@@ -760,6 +1073,11 @@ class HomeControllersTest extends TestCase
         $this->assertArrayNotHasKey('lang', $_SESSION);
     }
 
+    /**
+     * @test
+     * When no lang parameter is provided, the effective language should
+     * default to French ("fr").
+     */
     public function test_home_student_lang_defaults_to_fr_when_not_set(): void
     {
         $_SESSION['numetu'] = '12345';
@@ -771,13 +1089,20 @@ class HomeControllersTest extends TestCase
     }
 
     // =========================================================================
-    // HomeControllerStudent — tritanopia
+    // HomeControllerStudent — tritanopia accessibility flag
     // =========================================================================
 
+    /**
+     * @test
+     * When tritanopia=1 is supplied and the student is authenticated, the
+     * session flag must be set to true.
+     * Note: numetu is required to pass the authentication guard before the flag
+     * assignment occurs.
+     */
     public function test_home_student_tritanopia_set_to_true(): void
     {
         $_GET['tritanopia'] = '1';
-        $_SESSION['numetu'] = '12345'; // requis sinon redirect avant traitement tritanopia
+        $_SESSION['numetu'] = '12345'; // required to pass the authentication guard
         $controller         = $this->makeStudentHome();
 
         try { $controller->control(); } catch (\Throwable $e) {}
@@ -785,10 +1110,15 @@ class HomeControllersTest extends TestCase
         $this->assertTrue($_SESSION['tritanopia'] ?? false);
     }
 
+    /**
+     * @test
+     * When tritanopia=0 is supplied and the student is authenticated, the
+     * session flag must be set to false.
+     */
     public function test_home_student_tritanopia_set_to_false(): void
     {
         $_GET['tritanopia'] = '0';
-        $_SESSION['numetu'] = '12345'; // requis sinon redirect avant traitement tritanopia
+        $_SESSION['numetu'] = '12345'; // required to pass the authentication guard
         $controller         = $this->makeStudentHome();
 
         try { $controller->control(); } catch (\Throwable $e) {}
@@ -800,6 +1130,11 @@ class HomeControllersTest extends TestCase
     // HomeControllerStudent — isLoggedIn
     // =========================================================================
 
+    /**
+     * @test
+     * When numetu is present in the session, the student is considered
+     * authenticated and no redirect must occur.
+     */
     public function test_home_student_is_logged_in_when_numetu_in_session(): void
     {
         $_SESSION['numetu'] = '12345';
@@ -817,9 +1152,14 @@ class HomeControllersTest extends TestCase
         $this->assertFalse($redirected);
     }
 
+    /**
+     * @test
+     * When numetu is absent from the session, the student is unauthenticated
+     * and the controller must redirect to the login page.
+     */
     public function test_home_student_not_logged_in_when_numetu_absent(): void
     {
-        // Sans numetu → le contrôleur redirige vers login
+        // No numetu in session → controller must redirect to login.
         $controller = $this->makeStudentHome();
 
         $redirected = false;
@@ -831,16 +1171,22 @@ class HomeControllersTest extends TestCase
             }
         }
 
-        $this->assertTrue($redirected); // correction : sans numetu = redirect
+        $this->assertTrue($redirected);
     }
 
     // =========================================================================
-    // buildUrl helper (commun à tous)
+    // buildUrl helper (shared across all controllers)
     // =========================================================================
 
+    /**
+     * @test
+     * buildUrl() must append the lang parameter to the query string when the
+     * base path does not already contain a query string.
+     */
     public function test_buildUrl_appends_lang_parameter(): void
     {
-        $lang     = 'en';
+        $lang = 'en';
+
         /** @param array<string, string> $params */
         $buildUrl = function (string $path, array $params = []) use ($lang): string {
             $params['lang'] = $lang;
@@ -853,9 +1199,15 @@ class HomeControllersTest extends TestCase
         $this->assertStringContainsString('page=home-admin', $result);
     }
 
+    /**
+     * @test
+     * When the base path already contains a query string, buildUrl() must use
+     * "&" as the separator to produce a valid URL.
+     */
     public function test_buildUrl_uses_ampersand_when_path_already_has_query(): void
     {
-        $lang     = 'fr';
+        $lang = 'fr';
+
         /** @param array<string, string> $params */
         $buildUrl = function (string $path, array $params = []) use ($lang): string {
             $params['lang'] = $lang;

@@ -5,31 +5,48 @@ namespace Controllers\WebPlanController;
 use Controllers\ControllerInterface;
 use Core\View;
 
+/**
+ * Controller for the student site map.
+ * Handles session, language selection, translation, and renders the student links.
+ */
 class WebPlanControllerStudent implements ControllerInterface
 {
+    /**
+     * Checks if this controller supports the given page and method.
+     */
     public static function support(string $page, string $method): bool
     {
         return $page === 'web_plan-student' && $method === 'GET';
     }
 
+    /**
+     * Main controller logic for the student site map.
+     * Starts session, checks student authentication, sets language,
+     * and prepares link list and translations for the view.
+     */
     public function control(): void
     {
+        // Start session if not started
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
 
+        // Ensure the student is logged in
         if (!isset($_SESSION['numetu'])) {
             header('Location: index.php?page=login');
             exit;
         }
 
+        // Set language, default to French
         $lang = $_SESSION['lang'] ?? 'fr';
 
-        $t = function(array $translations) use ($lang) {
+        // Translation helper function
+        $t = function(array $translations) use ($lang): string {
             return $translations[$lang] ?? $translations['fr'];
         };
 
-        $buildUrl = function(string $path, array $params = []) use ($lang) {
+        // URL builder helper
+        $buildUrl = function(string $path, array $params = []) use ($lang): string {
             $params['lang'] = $lang;
             $url = 'index.php?page=' . $path;
             foreach ($params as $key => $value) {
@@ -38,8 +55,8 @@ class WebPlanControllerStudent implements ControllerInterface
             return $url;
         };
 
-        // Fonction de traduction des labels
-        $translateLabel = function(string $label) use ($lang) {
+        // Label translation helper
+        $translateLabel = function(string $label) use ($lang): string {
             $translations = [
                 'Accueil' => 'Home',
                 'Mon Tableau de bord' => 'My Dashboard',
@@ -51,7 +68,7 @@ class WebPlanControllerStudent implements ControllerInterface
             return $lang === 'en' ? ($translations[$label] ?? $label) : $label;
         };
 
-        // Liste des liens pour les étudiants
+        // List of student links
         $links = [
             ['url' => 'home-student', 'label' => 'Accueil'],
             ['url' => 'dashboard-student', 'label' => 'Mon Tableau de bord'],
@@ -60,13 +77,13 @@ class WebPlanControllerStudent implements ControllerInterface
             ['url' => 'contact-student', 'label' => 'Contact'],
         ];
 
-        // Utiliser View::render
+        // Render the student site map view
         View::render('WebPlan/web_plan_student', [
-            'lang' => $lang,
-            't' => $t,
-            'buildUrl' => $buildUrl,
-            'links' => $links,
-            'translateLabel' => $translateLabel
+            'lang'           => $lang,
+            't'              => $t,
+            'buildUrl'       => $buildUrl,
+            'links'          => $links,
+            'translateLabel' => $translateLabel,
         ]);
     }
 }

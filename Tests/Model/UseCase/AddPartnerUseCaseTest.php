@@ -8,19 +8,41 @@ use Model\UseCase\AddPartnerUseCase;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 
+/**
+ * Class AddPartnerUseCaseTest
+ *
+ * Unit tests for the AddPartnerUseCase.
+ *
+ * Tests verify that the use case correctly delegates adding a partner
+ * to the repository, propagates exceptions, and passes the exact Partner instance.
+ */
 class AddPartnerUseCaseTest extends TestCase
 {
-    /** @var PartnerRepositoryInterface&MockObject */
+    /**
+     * @var PartnerRepositoryInterface&MockObject
+     * Mocked repository for testing the use case.
+     */
     private PartnerRepositoryInterface $repositoryMock;
 
+    /** @var AddPartnerUseCase The use case under test. */
     private AddPartnerUseCase $useCase;
 
+    /**
+     * Setup before each test: create repository mock and use case instance.
+     */
     protected function setUp(): void
     {
         $this->repositoryMock = $this->createMock(PartnerRepositoryInterface::class);
         $this->useCase = new AddPartnerUseCase($this->repositoryMock);
     }
 
+    // -------------------------------------------------------------------------
+    // Tests for execute() method
+    // -------------------------------------------------------------------------
+
+    /**
+     * Test that execute() calls addPartner() on the repository.
+     */
     public function testExecuteCallsAddPartnerOnRepository(): void
     {
         $partner = $this->createMock(Partner::class);
@@ -33,6 +55,9 @@ class AddPartnerUseCaseTest extends TestCase
         $this->useCase->execute($partner);
     }
 
+    /**
+     * Test that execute() passes the exact Partner instance to the repository.
+     */
     public function testExecutePassesExactPartnerInstance(): void
     {
         $partner = $this->createMock(Partner::class);
@@ -45,10 +70,13 @@ class AddPartnerUseCaseTest extends TestCase
 
         $this->useCase->execute($partner);
 
-        // $otherPartner n'a jamais été passé
+        // Ensure $otherPartner was never passed
         $this->assertNotSame($otherPartner, $partner);
     }
 
+    /**
+     * Test that execute() propagates any PDOException thrown by the repository.
+     */
     public function testExecutePropagatesPDOException(): void
     {
         $partner = $this->createMock(Partner::class);
@@ -61,6 +89,9 @@ class AddPartnerUseCaseTest extends TestCase
         $this->useCase->execute($partner);
     }
 
+    /**
+     * Test that execute() calls addPartner() exactly once.
+     */
     public function testExecuteCallsAddPartnerExactlyOnce(): void
     {
         $partner = $this->createMock(Partner::class);

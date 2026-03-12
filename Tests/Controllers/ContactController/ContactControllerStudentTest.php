@@ -9,12 +9,15 @@ use Service\ContactService;
 use Model\Entity\Conversation;
 
 /**
- * Tests unitaires pour ContactControllerStudent
+ * Unit tests for ContactControllerStudent.
  *
- * Lancement : ./vendor/bin/phpunit Tests/Controllers/ContactController/ContactControllerStudentTest.php
+ * Run: ./vendor/bin/phpunit Tests/Controllers/ContactController/ContactControllerStudentTest.php
  */
 class ContactControllerStudentTest extends TestCase
 {
+    /**
+     * Resets superglobals before each test to ensure a clean state.
+     */
     protected function setUp(): void
     {
         $_GET     = [];
@@ -24,6 +27,10 @@ class ContactControllerStudentTest extends TestCase
     }
 
     /**
+     * Creates a testable ContactControllerStudent instance with a mocked ContactService.
+     * The anonymous subclass disables session start, stubs redirect as an exception,
+     * and silences renderView.
+     *
      * @return array{0: ContactControllerStudent, 1: MockObject&ContactService}
      */
     private function makeController(): array
@@ -53,7 +60,9 @@ class ContactControllerStudentTest extends TestCase
         return [$controller, $serviceMock];
     }
 
+    // -------------------------------------------------------------------------
     // support()
+    // -------------------------------------------------------------------------
 
     public function test_support_returns_true_for_contact_student_page(): void
     {
@@ -62,12 +71,14 @@ class ContactControllerStudentTest extends TestCase
 
     public function test_support_returns_false_for_other_pages(): void
     {
-        $this->assertFalse(ContactControllerStudent::support('home', 'GET'));
+        $this->assertFalse(ContactControllerStudent::support('home',           'GET'));
         $this->assertFalse(ContactControllerStudent::support('messages-admin', 'POST'));
-        $this->assertFalse(ContactControllerStudent::support('', 'GET'));
+        $this->assertFalse(ContactControllerStudent::support('',               'GET'));
     }
 
-    // Langue
+    // -------------------------------------------------------------------------
+    // Language resolution
+    // -------------------------------------------------------------------------
 
     public function test_lang_defaults_to_fr_when_not_set(): void
     {
@@ -93,7 +104,9 @@ class ContactControllerStudentTest extends TestCase
         $this->assertArrayNotHasKey('lang', $_SESSION);
     }
 
-    // Action : reply (POST)
+    // -------------------------------------------------------------------------
+    // POST action: reply
+    // -------------------------------------------------------------------------
 
     public function test_reply_action_calls_addMessage_with_correct_params(): void
     {
@@ -104,7 +117,9 @@ class ContactControllerStudentTest extends TestCase
         $_POST['student_reply']    = 'Merci pour votre réponse.';
 
         [$controller, $serviceMock] = $this->makeController();
-        $serviceMock->expects($this->once())->method('addMessage')->with(10, 'student', 'Merci pour votre réponse.');
+        $serviceMock->expects($this->once())
+            ->method('addMessage')
+            ->with(10, 'student', 'Merci pour votre réponse.');
 
         try { $controller->control(); } catch (\Throwable $e) {}
     }
@@ -171,7 +186,9 @@ class ContactControllerStudentTest extends TestCase
         $this->assertSame('Message sent!', $_SESSION['message'] ?? '');
     }
 
-    // Action : form (POST) — createConversation
+    // -------------------------------------------------------------------------
+    // POST action: form — createConversation
+    // -------------------------------------------------------------------------
 
     public function test_form_action_calls_createConversation_with_correct_params(): void
     {
@@ -185,17 +202,15 @@ class ContactControllerStudentTest extends TestCase
 
         [$controller, $serviceMock] = $this->makeController();
 
-        $serviceMock
-            ->expects($this->once())
+        $serviceMock->expects($this->once())
             ->method('createConversation')
             ->with(
-                studentNumEtu: '12345',
-                name: 'Alice',
-                email: 'alice@example.com',
-                subject: 'Question',
+                studentNumEtu:  '12345',
+                name:           'Alice',
+                email:          'alice@example.com',
+                subject:        'Question',
                 initialMessage: 'Bonjour, j\'ai une question.'
             );
-
         $serviceMock->method('getStudentConversations')->willReturn([]);
 
         try { $controller->control(); } catch (\Throwable $e) {}
@@ -213,17 +228,15 @@ class ContactControllerStudentTest extends TestCase
 
         [$controller, $serviceMock] = $this->makeController();
 
-        $serviceMock
-            ->expects($this->once())
+        $serviceMock->expects($this->once())
             ->method('createConversation')
             ->with(
-                studentNumEtu: '12345',
-                name: 'Alice',
-                email: 'alice@example.com',
-                subject: 'Question',
+                studentNumEtu:  '12345',
+                name:           'Alice',
+                email:          'alice@example.com',
+                subject:        'Question',
                 initialMessage: 'Mon message'
             );
-
         $serviceMock->method('getStudentConversations')->willReturn([]);
 
         try { $controller->control(); } catch (\Throwable $e) {}
@@ -252,10 +265,15 @@ class ContactControllerStudentTest extends TestCase
             }
         } catch (\Throwable $e) {}
 
-        $this->assertFalse($exceptionPropagated, 'L\'exception de createConversation doit être catchée par le contrôleur.');
+        $this->assertFalse(
+            $exceptionPropagated,
+            'The createConversation exception must be caught by the controller.'
+        );
     }
 
-    // Action : form (GET) — getStudentConversations
+    // -------------------------------------------------------------------------
+    // GET action: form — getStudentConversations
+    // -------------------------------------------------------------------------
 
     public function test_get_request_calls_getStudentConversations(): void
     {
@@ -263,7 +281,10 @@ class ContactControllerStudentTest extends TestCase
         $_SESSION['numetu']        = '12345';
 
         [$controller, $serviceMock] = $this->makeController();
-        $serviceMock->expects($this->once())->method('getStudentConversations')->with('12345')->willReturn([]);
+        $serviceMock->expects($this->once())
+            ->method('getStudentConversations')
+            ->with('12345')
+            ->willReturn([]);
 
         try { $controller->control(); } catch (\Throwable $e) {}
     }
@@ -276,16 +297,22 @@ class ContactControllerStudentTest extends TestCase
         [$controller, $serviceMock] = $this->makeController();
 
         $fakeConversation = $this->createMock(Conversation::class);
-        $serviceMock->expects($this->once())->method('getStudentConversations')->with('99999')->willReturn([$fakeConversation]);
+        $serviceMock->expects($this->once())
+            ->method('getStudentConversations')
+            ->with('99999')
+            ->willReturn([$fakeConversation]);
 
         try { $controller->control(); } catch (\Throwable $e) {}
     }
 
+    // -------------------------------------------------------------------------
     // buildUrl helper
+    // -------------------------------------------------------------------------
 
     public function test_buildUrl_always_appends_lang_parameter(): void
     {
-        $lang     = 'en';
+        $lang = 'en';
+
         /** @param array<string, string> $params */
         $buildUrl = function (string $url, array $params = []) use ($lang): string {
             $params['lang'] = $lang;
@@ -293,13 +320,14 @@ class ContactControllerStudentTest extends TestCase
         };
 
         $result = $buildUrl('index.php', ['page' => 'contact-student']);
-        $this->assertStringContainsString('lang=en', $result);
+        $this->assertStringContainsString('lang=en',             $result);
         $this->assertStringContainsString('page=contact-student', $result);
     }
 
     public function test_buildUrl_works_with_french_lang(): void
     {
-        $lang     = 'fr';
+        $lang = 'fr';
+
         /** @param array<string, string> $params */
         $buildUrl = function (string $url, array $params = []) use ($lang): string {
             $params['lang'] = $lang;
@@ -307,8 +335,8 @@ class ContactControllerStudentTest extends TestCase
         };
 
         $result = $buildUrl('index.php', ['action' => 'reply', 'id' => '5']);
-        $this->assertStringContainsString('lang=fr', $result);
+        $this->assertStringContainsString('lang=fr',      $result);
         $this->assertStringContainsString('action=reply', $result);
-        $this->assertStringContainsString('id=5', $result);
+        $this->assertStringContainsString('id=5',         $result);
     }
 }

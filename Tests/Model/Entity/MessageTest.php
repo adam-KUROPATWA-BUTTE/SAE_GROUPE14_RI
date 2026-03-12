@@ -5,8 +5,22 @@ namespace Tests\Model\Entity;
 use PHPUnit\Framework\TestCase;
 use Model\Entity\Message;
 
+/**
+ * Class MessageTest
+ *
+ * Unit tests for the Message entity.
+ *
+ * Tests:
+ * - Constructor and getters
+ * - Default values
+ * - markAsRead functionality
+ */
 class MessageTest extends TestCase
 {
+    /**
+     * Test that the constructor correctly sets all properties
+     * and that getters return the expected values.
+     */
     public function testConstructorAndGetters(): void
     {
         $date = new \DateTime();
@@ -28,6 +42,10 @@ class MessageTest extends TestCase
         $this->assertSame($date,       $message->getCreatedAt());
     }
 
+    /**
+     * Test that default values are correctly applied when optional parameters
+     * are not provided (id, read status, createdAt).
+     */
     public function testDefaultValues(): void
     {
         $message = new Message(
@@ -44,6 +62,9 @@ class MessageTest extends TestCase
         $this->assertInstanceOf(\DateTime::class, $message->getCreatedAt());
     }
 
+    /**
+     * Test that markAsRead sets the message's read status to true.
+     */
     public function testMarkAsRead(): void
     {
         $message = new Message(
