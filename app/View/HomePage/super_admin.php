@@ -310,16 +310,10 @@ ob_start();
         <input type="hidden" name="new_site" id="hiddenSiteValue">
     </form>
 
-<?php
-$deleteLabel = $t(['fr' => 'Supprimer le compte', 'en' => 'Delete account']);
-?>
-    <script>
-        window.SA_DELETE_LABEL = <?= json_encode($deleteLabel) ?>;
-    </script>
-
 <div id="app-config"
      data-lang="<?= htmlspecialchars($lang) ?>"
      data-role="admin"
+     data-delete-label="<?= htmlspecialchars($t(['fr' => 'Supprimer le compte', 'en' => 'Delete account'])) ?>"
      style="display:none;">
 </div>
 <?php
