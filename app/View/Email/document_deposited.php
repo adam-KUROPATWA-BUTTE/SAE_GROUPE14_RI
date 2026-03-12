@@ -1,9 +1,21 @@
 <?php
 /**
- * @var string $logoUrl
- * @var string $studentName
- * @var string $documentLabel
- * @var string $folderLink
+ * Email template: Document deposited confirmation
+ *
+ * Transactional email sent to a student to confirm that one of their
+ * supporting documents has been successfully received by the platform.
+ * The email informs the student that the document will be reviewed by
+ * the International Relations team and that a further notification will
+ * be sent once it has been validated. A call-to-action button links
+ * directly to the student's folder.
+ *
+ * Rendered with a blue header and a blue highlighted document-name block.
+ * All user-supplied values are escaped with ENT_QUOTES / UTF-8.
+ *
+ * @var string $logoUrl       Absolute URL of the AMU logo image to embed in the email header
+ * @var string $studentName   Full name of the student, displayed in the greeting
+ * @var string $documentLabel Human-readable label of the deposited document (e.g. 'CV', 'Photo')
+ * @var string $folderLink    Absolute URL to the student's folder on the platform
  */
 ?>
 <!DOCTYPE html>

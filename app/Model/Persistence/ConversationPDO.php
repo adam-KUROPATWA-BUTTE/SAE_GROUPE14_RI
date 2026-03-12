@@ -7,15 +7,35 @@ use Model\Entity\Message;
 use Database;
 use PDO;
 
+/**
+ * Class ConversationPDO
+ * * Handles persistence operations for conversations and associated messages using PDO.
+ */
 class ConversationPDO
 {
+    /** @var PDO The database connection instance */
     private PDO $pdo;
 
+    /**
+     * ConversationPDO constructor.
+     * Initializes the PDO connection via the Database singleton.
+     */
     public function __construct()
     {
         $this->pdo = Database::getInstance()->getConnection();
     }
 
+    /**
+     * Creates a new conversation and its initial message within a transaction.
+     *
+     * @param string $numEtu Student number.
+     * @param string $name Student name.
+     * @param string $email Student email.
+     * @param string $subject Subject of the conversation.
+     * @param string $messageContent Content of the first message.
+     * @return int The ID of the newly created conversation.
+     * @throws \Exception If the transaction fails.
+     */
     public function create(string $numEtu, string $name, string $email, string $subject, string $messageContent): int
     {
         $this->pdo->beginTransaction();
@@ -49,6 +69,14 @@ class ConversationPDO
         }
     }
 
+    /**
+     * Adds a message to an existing conversation.
+     *
+     * @param int $conversationId The ID of the conversation.
+     * @param string $senderType The type of sender ('student' or 'admin').
+     * @param string $content The message body.
+     * @return bool True on success, false on failure.
+     */
     public function addMessage(int $conversationId, string $senderType, string $content): bool
     {
         $sql = "INSERT INTO messages (conversation_id, sender_type, content, is_read, created_at) 
@@ -61,6 +89,12 @@ class ConversationPDO
         ]);
     }
 
+    /**
+     * Finds a conversation by its unique identifier.
+     *
+     * @param int $id Conversation ID.
+     * @return Conversation|null The conversation entity or null if not found.
+     */
     public function findById(int $id): ?Conversation
     {
         $stmt = $this->pdo->prepare("SELECT * FROM conversations WHERE id = :id");
@@ -75,7 +109,10 @@ class ConversationPDO
     }
 
     /**
-     * @return array<int, Conversation>
+     * Retrieves all conversations belonging to a specific student.
+     *
+     * @param string $numEtu The student number.
+     * @return array<int, Conversation> List of conversations.
      */
     public function findByStudentNumEtu(string $numEtu): array
     {
@@ -85,7 +122,9 @@ class ConversationPDO
     }
 
     /**
-     * @return array<int, Conversation>
+     * Retrieves all conversations in the system.
+     *
+     * @return array<int, Conversation> List of all conversations.
      */
     public function findAll(): array
     {
@@ -97,7 +136,10 @@ class ConversationPDO
     }
 
     /**
-     * @return array<int, Conversation>
+     * Finds conversations containing unread messages for a specific role.
+     *
+     * @param string $role The role of the person reading (admin/student).
+     * @return array<int, Conversation> List of conversations with unread messages.
      */
     public function findUnreadByRole(string $role): array
     {
@@ -111,6 +153,13 @@ class ConversationPDO
         return $this->fetchAndHydrateList($stmt);
     }
 
+    /**
+     * Marks all messages from the opposite party as read.
+     *
+     * @param int $conversationId The conversation ID.
+     * @param string $readerRole The role of the user reading the messages.
+     * @return bool True on success.
+     */
     public function markAsRead(int $conversationId, string $readerRole): bool
     {
         $senderToMark = $readerRole === 'admin' ? 'student' : 'admin';
@@ -121,6 +170,12 @@ class ConversationPDO
         ]);
     }
 
+    /**
+     * Deletes a conversation by its ID.
+     *
+     * @param int $id Conversation ID.
+     * @return bool True on success.
+     */
     public function delete(int $id): bool
     {
         $stmt = $this->pdo->prepare("DELETE FROM conversations WHERE id = :id");
@@ -128,6 +183,8 @@ class ConversationPDO
     }
 
     /**
+     * Iterates through a statement result to hydrate a list of Conversation entities.
+     *
      * @param \PDOStatement $stmt
      * @return array<int, Conversation>
      */
@@ -135,7 +192,6 @@ class ConversationPDO
     {
         $conversations = [];
         while ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            // Guarantee to PHPStan that $data is an array before passing it
             if (is_array($data)) {
                 $conv = $this->hydrateConversation($data);
                 $this->attachMessagesToConversation($conv);
@@ -146,7 +202,10 @@ class ConversationPDO
     }
 
     /**
+     * Transforms a database row into a Conversation entity.
+     *
      * @param array<string, mixed> $data
+     * @return Conversation
      */
     private function hydrateConversation(array $data): Conversation
     {
@@ -163,6 +222,12 @@ class ConversationPDO
         );
     }
 
+    /**
+     * Fetches and attaches all messages to a given Conversation entity.
+     *
+     * @param Conversation $conversation
+     * @return void
+     */
     private function attachMessagesToConversation(Conversation $conversation): void
     {
         $stmt = $this->pdo->prepare("SELECT * FROM messages WHERE conversation_id = :cid ORDER BY created_at ASC");

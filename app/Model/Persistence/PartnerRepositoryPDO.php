@@ -7,8 +7,18 @@ use Model\Entity\Partner;
 use Database;
 use PDOException;
 
+/**
+ * Class PartnerRepositoryPDO
+ * * Manages persistence for partner institutions using PDO.
+ */
 class PartnerRepositoryPDO implements PartnerRepositoryInterface
 {
+    /**
+     * Adds a new partner institution to the database.
+     *
+     * @param Partner $partner The partner entity to persist.
+     * @return void
+     */
     public function addPartner(Partner $partner): void
     {
         $pdo = Database::getInstance()->getConnection();
@@ -24,7 +34,6 @@ class PartnerRepositoryPDO implements PartnerRepositoryInterface
             'ville'      => $partner->getCity(),
             'universite' => $partner->getInstitution(),
             'type'       => $partner->getType()
-
         ]);
     }
 }

@@ -1,14 +1,70 @@
 <?php
 /**
- * Vue : Dossiers Admin
+ * View: Admin Folder Management (list / detail)
  *
- * @var string $lang
- * @var string $action
- * @var array<string, mixed>|null $studentData
- * @var array<string, mixed> $filters
- * @var int $totalCount
- * @var array<int, array<string, mixed>> $paginatedData
- * @var string $message
+ * Dual-mode view controlled by $action:
+ *
+ * ── LIST MODE ($action !== 'view') ──────────────────────────────────────────
+ * Renders a searchable, filterable, paginated list of all student folders.
+ *
+ * Toolbar:
+ * - Text search input (name, first name, email) with a loupe button that
+ *   triggers the search via JavaScript.
+ * - Excel/CSV import button that opens a hidden file input and auto-submits
+ *   the form to index.php?page=import_folders on file selection.
+ *
+ * Filters (via the _filters.php partial):
+ * - Direction: entrant / sortant
+ * - Zone: Europe / Non-Europe
+ * - Status: all / complete / incomplete
+ * - Component: all / AMU CIVIS / IUT
+ * - Agreement (admin-only): all / Erasmus / Bilatéral ($showAccordFilter = true)
+ * - Reset link shown when at least one filter is active ($hasActiveFilters).
+ *
+ * Student table is rendered by the _table_etudiants.php partial, grouped by
+ * component, with clickable rows navigating to the detail view.
+ *
+ * $hasActiveFilters is computed locally from the $filters array by checking
+ * all known filter keys against their default 'all' / empty values.
+ * $buildUrl is defined locally (falls back to injected $t when absent) and
+ * always appends the current $lang to every generated URL.
+ *
+ * ── DETAIL MODE ($action === 'view') ────────────────────────────────────────
+ * Renders the full admin edit form for a single student folder.
+ *
+ * When $studentData is null, a "Student not found" notice is displayed.
+ * Otherwise the following sections are composed from partials:
+ *
+ * - _banniere_modifie_par.php  : last-modified-by banner (ModifiePar / ModifieLe).
+ * - _banniere_date_limite.php  : submission deadline banner with inline edit form.
+ * - Department head opinion    : a read-only badge showing avis_chef_departement
+ *   (accepte ✅ / refuse ❌ / pending ⏳) with matching CSS class.
+ * - _form_fields.php           : full student data form, all fields active
+ *   ($allEditable = true, $editableFields = []).
+ * - _doc_review.php            : document review panel; all file types editable
+ *   ($allFilesEditable = true, $languesEditable = false).
+ * - _global_status.php         : global workflow status dropdown + update button.
+ * - Form action buttons        : "Save and Notify" (#btn-enregistrer, wired to the
+ *   validation modal via JavaScript) and a "Back" button.
+ * - _modal_validation.php      : confirmation modal shown before final save.
+ * - Inline <script>            : calls analyserDocuments() via a temporary
+ *   FolderRepositoryPDO instance and exposes the result as
+ *   window.analyseDocumentsData for use by folders.js.
+ *
+ * The mobility type is resolved first from the Mobilite column, then falls
+ * back to detecting presence of convention vs. motivation-letter files.
+ *
+ * The rendered HTML is captured via output buffering into $content and passed
+ * to the base layout with styles (index.css, folders.css, chatbot.css),
+ * scripts (folders.js), active menu key 'folders-admin', and role 'admin'.
+ *
+ * @var string                           $lang          Current language code (e.g. 'fr' or 'en')
+ * @var string                           $action        View mode: 'view' for the detail form, any other value for the list
+ * @var array<string, mixed>|null        $studentData   Full folder data array from the repository (including 'pieces', 'statuts', and metadata); null when the student was not found
+ * @var array<string, mixed>             $filters       Current active filter values keyed by filter name (type, zone, complet, composante, accord, date_debut, date_fin, search)
+ * @var int                              $totalCount    Total number of folders matching the active filters (used by the student table partial)
+ * @var array<int, array<string, mixed>> $paginatedData Current page of folder records for the student table partial
+ * @var string                           $message       Optional feedback message displayed at the top of either mode (may be empty)
  */
 
 if (!isset($t)) {

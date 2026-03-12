@@ -1,13 +1,27 @@
 <?php
 
-namespace Core; 
+namespace Core;
 
+/**
+ * View
+ *
+ * Utility class for rendering PHP template files.
+ * Resolves templates relative to the application's root path and
+ * exposes the provided data array as local variables within the template.
+ */
 class View
 {
     /**
-     * Génère et affiche une vue
-     * @param string $template Le nom du fichier vue (ex: 'login')
-     * @param array<string, mixed> $data Les variables à envoyer à la vue
+     * Renders a view template and sends its output to the browser.
+     *
+     * Extracts the key-value pairs of $data as local variables, resolves
+     * the template path using ROOT_PATH (or the project root as a fallback),
+     * and requires the corresponding PHP file under app/View/.
+     * Terminates execution with an error message if the template file is not found.
+     *
+     * @param string               $template The template name without extension (e.g. 'login')
+     * @param array<string, mixed> $data     Variables to expose inside the template
+     * @return void
      */
     public static function render(string $template, array $data = []): void
     {

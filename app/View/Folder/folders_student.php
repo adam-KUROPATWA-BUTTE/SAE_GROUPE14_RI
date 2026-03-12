@@ -1,12 +1,55 @@
 <?php
 /**
- * Vue : Dossiers Étudiant
+ * View: Student Folder (create / update)
+ *
+ * Dual-mode view that serves both the initial folder creation form and the
+ * update form for an existing folder. The mode is determined by $isCreateMode
+ * (true when $dossier is empty). Key behavioural differences between modes:
+ *
+ * CREATE MODE ($isCreateMode = true):
+ * - Required fields (last name, first name, personal email, phone, type, zone)
+ *   are active and marked with *.
+ * - Name, gender, component, department, AMU email, type, zone, and mobility
+ *   type are editable.
+ * - Administration-only fields (campus, study level, averages, DRI advice,
+ *   start date, previous mobility) are disabled with 'input-admin' styling.
+ * - Mobility type select is active (used to show/hide convention vs. motivation
+ *   letter upload blocks via JavaScript).
+ * - Form posts to create_folder.
+ *
+ * UPDATE MODE ($isCreateMode = false):
+ * - Administrative fields remain disabled. Personal-contact fields (address,
+ *   postal code, city, personal email, phone, discipline, degree program,
+ *   country) stay editable so the student can keep their details current.
+ * - Locked fields (name, gender, AMU email, component, department, type,
+ *   zone, mobility type) are readonly/disabled to prevent unilateral changes.
+ * - Form posts to update_my_folder.
+ *
+ * DEADLINE BANNER:
+ * When $dossier contains a DateLimite in update mode, a colour-coded banner
+ * is shown above the form:
+ * - Blue/info  : deadline is more than 7 days away.
+ * - Orange/warn: deadline is within 7 days.
+ * - Red/locked : deadline has passed — file upload inputs are replaced by a
+ *   locked message ($uploadBloque = true) and no new documents can be submitted.
+ *
+ * DOCUMENTS SECTION:
+ * Renders individual upload blocks for five document types (photo, CV,
+ * convention, motivation letter, language certificate). Convention and
+ * motivation letter blocks are hidden by default and toggled by JavaScript
+ * based on the mobility type. Each block shows the current validation status
+ * badge, a download link when a file exists, any admin comment, and a file
+ * upload input (or the locked message when $uploadBloque is true).
+ *
+ * The rendered HTML is captured via output buffering into $content and passed
+ * to the base layout with styles (folders.css, chatbot.css), scripts
+ * (chatbot.js, folders.js), active menu key 'folders', and role 'student'.
+ *
+ * @var array<string, mixed> $dossier    Raw folder data from the repository (PascalCase keys); empty array in create mode
+ * @var string               $studentId Student number, displayed as a readonly field and embedded in hidden inputs
+ * @var string               $message   Optional feedback message to display at the top of the view (may be empty)
+ * @var string               $lang      Current language code (e.g. 'fr' or 'en')
  */
-
-/** @var array<string, mixed> $dossier */
-/** @var string $studentId */
-/** @var string $message */
-/** @var string $lang */
 
 if (!isset($t)) {
     $t = function(array $translations) use ($lang) {

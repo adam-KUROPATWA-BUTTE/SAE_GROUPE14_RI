@@ -1,10 +1,22 @@
 <?php
 /**
- * @var string $logoUrl
- * @var string $studentName
- * @var string $dossierId
- * @var string $folderLink
- * @var array<int, string> $itemsToComplete
+ * Email template: Incomplete folder reminder (relance)
+ *
+ * Transactional reminder email sent to a student whose folder is still
+ * incomplete. When $itemsToComplete is non-empty, the missing items are listed
+ * as individual bullet points; otherwise a generic fallback message is shown
+ * asking the student to complete their missing documents.
+ *
+ * The email includes a call-to-action button linking directly to the student's
+ * folder so they can take action immediately. $itemsToComplete defaults to an
+ * empty array when not injected by the caller.
+ * All user-supplied values are escaped with ENT_QUOTES / UTF-8.
+ *
+ * @var string             $logoUrl          Absolute URL of the AMU logo image to embed in the email header
+ * @var string             $studentName      Full name of the student, displayed in the greeting
+ * @var string             $dossierId        Folder identifier (typically the student number), displayed in the reminder body
+ * @var string             $folderLink       Absolute URL to the student's folder on the platform
+ * @var array<int, string> $itemsToComplete  List of human-readable labels for the missing documents; defaults to []
  */
 $itemsToComplete = $itemsToComplete ?? [];
 ?>

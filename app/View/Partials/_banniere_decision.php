@@ -1,11 +1,21 @@
 <?php
 /**
- * Partial : Bannière décision rapide (chef de département uniquement)
+ * Partial: Quick-decision banner (department head only)
  *
- * @var string $numEtu
- * @var string $currentStatus   — valeur de avis_chef_departement ('accepte', 'refuse', ou '')
- * @var string $lang
- * @var Closure $t
+ * Renders two POST form buttons that allow the department head to record their
+ * opinion on a student folder directly from the folder view:
+ * - "Accept" sets avis_chef_departement to 'accepte'
+ * - "Refuse" sets avis_chef_departement to 'refuse'
+ *
+ * The active button (matching $currentStatus) receives the CSS class
+ * 'btn-decision-active'. Both forms post to the chef-departement page with
+ * the set_avis_chef action. A status indicator span (#decision_indicator)
+ * is available for JavaScript feedback.
+ *
+ * @var string  $numEtu        Student number used to identify the folder and build form action URLs
+ * @var string  $currentStatus Current value of avis_chef_departement: 'accepte', 'refuse', or ''
+ * @var string  $lang          Current language code, appended to form action URLs
+ * @var Closure $t             Translation callable — accepts ['fr' => '...', 'en' => '...']
  */
 
 $numEtuRaw = strval($studentData['NumEtu'] ?? '');

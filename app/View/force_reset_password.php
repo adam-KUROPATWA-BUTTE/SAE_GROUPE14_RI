@@ -1,7 +1,15 @@
 <?php
 /**
- * @var string|null $error
- * @var string|null $success
+ * View: Force Password Reset (First Login)
+ *
+ * Displayed when a user logs in for the first time and is required to set a
+ * personal password before proceeding. Shows optional error and success
+ * feedback messages and renders a password confirmation form that posts to
+ * index.php?page=force-reset-password. Applies the tritanopia accessibility
+ * CSS class when the corresponding session preference is active.
+ *
+ * @var string|null $error   Error message to display, or null if none
+ * @var string|null $success Success message to display, or null if none
  */
 $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
 ?>

@@ -1,12 +1,45 @@
 <?php
 /**
- * Dashboard Student - Contenu uniquement
+ * View: Student Dashboard — Folder Progress Tracker
  *
- * @var string $lang
- * @var Closure(array<string, string>): string $t
- * @var string $progressStyle
- * @var string $status
- * @var array<string, mixed> $folder
+ * Displays the current processing status of a student's mobility folder as a
+ * three-step horizontal progress bar, followed by a support contact box.
+ *
+ * ── PROGRESS BAR (.progress-container) ───────────────────────────────────────
+ * Three sequential steps rendered as .progress-step elements:
+ * 1. "Dépôt de la demande / Application Submitted" — active for any status.
+ * 2. "Instruction en cours / Under Review" — active from 'instruction' onward.
+ * 3. "Décision prise / Decision Made" — active only for 'accepte' or 'refuse'.
+ *
+ * A step is marked active (CSS class 'active') when $status matches its
+ * expected set via in_array(). The visual connector line between steps is
+ * driven by the inline style injected via $progressStyle (e.g. a CSS width or
+ * background-position value calculated by the controller).
+ *
+ * When the folder has reached a final decision the container receives an
+ * additional modifier class:
+ * - 'decision-accepted' when $status === 'accepte'
+ * - 'decision-refused'  when $status === 'refuse'
+ * - '' (empty) for any other status
+ *
+ * $decisionClass is computed locally at the top of the file from $status.
+ *
+ * ── CONTACT BOX (.contact-info-box) ──────────────────────────────────────────
+ * A static informational card with a hardcoded mailto link to the
+ * international relations office (relations.internationale@amu-univ.fr).
+ * Not driven by any injected $contactInfo variable.
+ *
+ * A hidden #app-config div carries data-lang and data-role="student".
+ *
+ * The rendered HTML is passed to the base layout with styles
+ * (dashboard.css, index.css, chatbot.css), no scripts, $activeMenu = 'dashboard',
+ * $userRole = 'student'.
+ *
+ * @var string                             $lang          Current language code (e.g. 'fr' or 'en')
+ * @var Closure(array<string, string>): string $t          Translation callable — accepts ['fr' => '...', 'en' => '...']
+ * @var string                             $progressStyle Inline CSS string for the .progress-line element (controls visual fill width/position); computed by the controller from $status
+ * @var string                             $status        Current folder workflow status: 'depot' | 'instruction' | 'accepte' | 'refuse'
+ * @var array<string, mixed>               $folder        Full folder data array from the repository (available for future use; not directly referenced in this template)
  */
 
 ob_start();

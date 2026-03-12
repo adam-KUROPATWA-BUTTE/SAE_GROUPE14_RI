@@ -1,11 +1,26 @@
 <?php
 /**
- * Partial : Modal de validation du dossier
+ * Partial: Folder validation modal
  *
- * @var string  $numEtu       NumEtu déjà htmlspecialchars-é
- * @var string  $redirectPage page de redirection après validation
- * @var string  $lang
- * @var Closure $t
+ * Renders a modal overlay (#modal-validation) that presents a summary of the
+ * document review before the admin submits the final validation. The modal
+ * contains three dynamically populated sections (populated via JavaScript
+ * before the modal is opened):
+ *
+ * - #section-modifications: list of changes made during the current session
+ *   (hidden by default, shown by JS when changes exist).
+ * - #section-manquants: list of missing supporting documents.
+ * - #section-presents: list of documents ready to be validated.
+ *
+ * Submitting the form posts to index.php?page=valider_documents, which saves
+ * the document statuses and triggers student notification. The Cancel button
+ * (#btn-modal-cancel) is wired up by the parent page's JavaScript to close
+ * the modal without submitting.
+ *
+ * @var string  $numEtu       Already htmlspecialchars-encoded student number, embedded in the hidden form field
+ * @var string  $redirectPage Page identifier placed in the hidden redirect_to field; controls where the controller redirects after saving
+ * @var string  $lang         Current language code appended to the form action URL
+ * @var Closure $t            Translation callable — accepts ['fr' => '...', 'en' => '...']
  */
 ?>
 <div id="modal-validation" class="modal-overlay">

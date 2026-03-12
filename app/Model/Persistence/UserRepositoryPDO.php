@@ -8,15 +8,28 @@ use Database;
 use PDO;
 use PDOException;
 
+/**
+ * Class UserRepositoryPDO
+ * * Handles user authentication, registration, and management for both Admins and Students.
+ */
 class UserRepositoryPDO implements UserRepositoryInterface
 {
+    /** @var PDO Database connection */
     private PDO $pdo;
 
+    /**
+     * UserRepositoryPDO constructor.
+     */
     public function __construct()
     {
         $this->pdo = Database::getInstance()->getConnection();
     }
 
+    /**
+     * Finds a user (admin or student) by their email.
+     * @param string $email
+     * @return User|null
+     */
     public function findByEmail(string $email): ?User
     {
         $stmt = $this->pdo->prepare("SELECT * FROM admins WHERE email = :email");
@@ -36,6 +49,11 @@ class UserRepositoryPDO implements UserRepositoryInterface
         return null;
     }
 
+    /**
+     * Finds a student user by their student number.
+     * @param string $numetu
+     * @return User|null
+     */
     public function findByStudentNumber(string $numetu): ?User
     {
         $stmt = $this->pdo->prepare("SELECT *, 'student' as role FROM etudiants WHERE numetu = :numetu");
@@ -44,6 +62,11 @@ class UserRepositoryPDO implements UserRepositoryInterface
         return is_array($data) ? $this->mapToUser($data, 'student') : null;
     }
 
+    /**
+     * Saves a user entity to the appropriate table.
+     * @param User $user
+     * @return bool
+     */
     public function save(User $user): bool
     {
         try {
@@ -60,6 +83,12 @@ class UserRepositoryPDO implements UserRepositoryInterface
         }
     }
 
+    /**
+     * Updates user password across all relevant tables.
+     * @param string $email
+     * @param string $hashedPassword
+     * @return bool
+     */
     public function updatePassword(string $email, string $hashedPassword): bool
     {
         try {
@@ -75,14 +104,18 @@ class UserRepositoryPDO implements UserRepositoryInterface
         }
     }
 
+    /**
+     * Updates password and resets the force_change_password flag.
+     * @param string $identifier Email or student number.
+     * @param string $hashedPassword
+     * @return bool
+     */
     public function updatePasswordAndUnlock(string $identifier, string $hashedPassword): bool
     {
         try {
-            // Tente la mise à jour dans la table admins (Personnels / Super Admin)
             $stmt1 = $this->pdo->prepare("UPDATE admins SET password = :password, force_change_password = 0 WHERE email = :id");
             $stmt1->execute([':password' => $hashedPassword, ':id' => $identifier]);
             
-            // Tente la mise à jour dans la table etudiants (Étudiants)
             $stmt2 = $this->pdo->prepare("UPDATE etudiants SET password = :password, force_change_password = 0 WHERE numetu = :id OR email = :id");
             $stmt2->execute([':password' => $hashedPassword, ':id' => $identifier]);
 
@@ -94,15 +127,10 @@ class UserRepositoryPDO implements UserRepositoryInterface
     }
 
     /**
-     * @return array{
-     *   success: bool,
-     *   role?: string,
-     *   numetu?: string|null,
-     *   departement?: string|null,
-     *   nom?: string|null,
-     *   prenom?: string|null,
-     *   force_change_password?: bool
-     * }
+     * Authenticates a user and retrieves session metadata.
+     * @param string $identifier
+     * @param string $password
+     * @return array{success: bool, role?: string, numetu?: string|null, departement?: string|null, nom?: string|null, prenom?: string|null, force_change_password?: bool}
      */
     public function login(string $identifier, string $password): array
     {
@@ -118,27 +146,20 @@ class UserRepositoryPDO implements UserRepositoryInterface
                         "UPDATE admins SET last_login = NOW() WHERE email = :email"
                     );
                     $upd->execute([':email' => $identifier]);
-                } catch (PDOException $e) {
-                }
+                } catch (PDOException $e) {}
             }
 
             $forceChange = false;
-
             try {
                 if ($user->getRole() === 'student') {
-                    $stmtCheck = $this->pdo->prepare(
-                        "SELECT force_change_password FROM etudiants WHERE numetu = :id LIMIT 1"
-                    );
+                    $stmtCheck = $this->pdo->prepare("SELECT force_change_password FROM etudiants WHERE numetu = :id LIMIT 1");
                     $stmtCheck->execute([':id' => $user->getNumetu()]);
                 } else {
-                    $stmtCheck = $this->pdo->prepare(
-                        "SELECT force_change_password FROM admins WHERE email = :id LIMIT 1"
-                    );
+                    $stmtCheck = $this->pdo->prepare("SELECT force_change_password FROM admins WHERE email = :id LIMIT 1");
                     $stmtCheck->execute([':id' => $identifier]);
                 }
 
                 $forceVal = $stmtCheck->fetchColumn();
-
                 if ($forceVal !== false && (int) $forceVal === 1) {
                     $forceChange = true;
                 }
@@ -159,6 +180,12 @@ class UserRepositoryPDO implements UserRepositoryInterface
 
         return ['success' => false];
     }
+
+    /**
+     * Registers a new user.
+     * @param User $user
+     * @return bool
+     */
     public function register(User $user): bool
     {
         $existing = $user->getNumetu()
@@ -169,6 +196,11 @@ class UserRepositoryPDO implements UserRepositoryInterface
         return $this->save($user);
     }
 
+    /**
+     * Resets a user password with a random string.
+     * @param string $email
+     * @return bool
+     */
     public function resetPassword(string $email): bool
     {
         $user = $this->findByEmail($email);
@@ -180,7 +212,10 @@ class UserRepositoryPDO implements UserRepositoryInterface
     }
 
     /**
+     * Maps database array data to a User entity.
      * @param array<string, mixed> $data
+     * @param string $role
+     * @return User
      */
     private function mapToUser(array $data, string $role): User
     {
@@ -196,6 +231,8 @@ class UserRepositoryPDO implements UserRepositoryInterface
     }
 
     /**
+     * Find admin data by email.
+     * @param string $email
      * @return array<string, mixed>|null
      */
     public function findByLogin(string $email): ?array
@@ -211,11 +248,25 @@ class UserRepositoryPDO implements UserRepositoryInterface
         }
     }
 
+    /**
+     * Checks if an admin login exists.
+     */
     public function loginExists(string $email): bool
     {
         return $this->findByLogin($email) !== null;
     }
 
+    /**
+     * Creates a new admin user.
+     * @param string $email
+     * @param string $hashedPassword
+     * @param string $role
+     * @param string|null $departement
+     * @param string|null $site
+     * @param string|null $nom
+     * @param string|null $prenom
+     * @return bool
+     */
     public function create(
         string $email,
         string $hashedPassword,
@@ -245,6 +296,11 @@ class UserRepositoryPDO implements UserRepositoryInterface
         }
     }
 
+    /**
+     * Deletes an admin user by email (preventing super_admin deletion).
+     * @param string $email
+     * @return bool
+     */
     public function deleteByLogin(string $email): bool
     {
         try {
@@ -257,6 +313,7 @@ class UserRepositoryPDO implements UserRepositoryInterface
     }
 
     /**
+     * Retrieves all non-super-admin staff users.
      * @return array<int, array{login: string, role: string, departement: string|null, site: string|null, nom: string|null, prenom: string|null, created_at: string}>
      */
     public function findAll(): array
@@ -283,28 +340,27 @@ class UserRepositoryPDO implements UserRepositoryInterface
         }
     }
 
-    /**
-     * @deprecated Use findAll() instead.
+    /** * @deprecated Use findAll() 
      * @return array<int, array{login: string, role: string, departement: string|null, site: string|null, nom: string|null, prenom: string|null, created_at: string}>
      */
     public function getAllNonSuperAdmin(): array { return $this->findAll(); }
 
-    /**
-     * @deprecated Use findAll() instead.
+    /** * @deprecated Use findAll() 
      * @return array<int, array{login: string, role: string, departement: string|null, site: string|null, nom: string|null, prenom: string|null, created_at: string}>
      */
     public function getAllAdmins(): array { return $this->findAll(); }
 
-    /** @deprecated */
+    /** @deprecated Use create() */
     public function createAdmin(string $email, string $hashedPassword, string $role): bool { return $this->create($email, $hashedPassword, $role); }
 
-    /** @deprecated */
+    /** @deprecated Use deleteByLogin() */
     public function deleteAdminByEmail(string $email): bool { return $this->deleteByLogin($email); }
 
-    /** @deprecated */
+    /** @deprecated Use create() */
     public function createUser(string $login, string $hashedPassword, string $role): bool { return $this->create($login, $hashedPassword, $role); }
 
     /**
+     * Gets a list of unique departments from dossiers and custom settings.
      * @return array<int, string>
      */
     public function getDistinctDepartments(): array
@@ -324,12 +380,15 @@ class UserRepositoryPDO implements UserRepositoryInterface
                 $custom = $stmt->fetchAll(PDO::FETCH_COLUMN);
                 if (is_array($custom)) $depts = array_values(array_unique(array_merge($depts, $custom)));
             }
-        } catch (PDOException $e) { /* silencieux */ }
+        } catch (PDOException $e) {}
 
         sort($depts);
         return $depts;
     }
 
+    /**
+     * Manually adds a department to the custom list.
+     */
     public function addCustomDepartment(string $code): void
     {
         try {
@@ -340,6 +399,7 @@ class UserRepositoryPDO implements UserRepositoryInterface
     }
 
     /**
+     * Retrieves all available sites (geographic locations).
      * @return array<int, string>
      */
     public function getDistinctSites(): array
@@ -352,13 +412,16 @@ class UserRepositoryPDO implements UserRepositoryInterface
                 $rows   = $stmt->fetchAll(PDO::FETCH_COLUMN);
                 $custom = array_values(array_filter($rows, 'is_string'));
             }
-        } catch (PDOException $e) { /* silencieux */ }
+        } catch (PDOException $e) {}
 
         $all = array_values(array_unique(array_merge($defaults, $custom)));
         sort($all);
         return $all;
     }
 
+    /**
+     * Manually adds a site to the custom list.
+     */
     public function addCustomSite(string $name): void
     {
         try {

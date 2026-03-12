@@ -1,12 +1,36 @@
 <?php
 /**
- * @var string $logoUrl
- * @var string $studentName
- * @var string $sectionAcceptees
- * @var string $sectionRefusees
- * @var array<int, string> $autresLignes
- * @var string $statutGlobal
- * @var string $dateLimite
+ * Email template: Folder review update
+ *
+ * Transactional email sent to a student after an administrator has reviewed
+ * their folder. Summarises the outcome of the review across three optional
+ * sections:
+ *
+ * - Validated documents ($sectionAcceptees): pre-rendered HTML list items
+ *   for documents that were accepted (shown with a green title when non-empty).
+ * - Rejected documents ($sectionRefusees): pre-rendered HTML list items for
+ *   documents that were refused, typically including admin comments
+ *   (shown with a red title when non-empty).
+ * - Additional lines ($autresLignes): arbitrary pre-rendered HTML paragraphs
+ *   for any supplementary information (defaults to an empty array).
+ *
+ * When $statutGlobal is non-empty, the current global workflow status of the
+ * folder is displayed in a colour-coded badge (depot / instruction / accepte /
+ * refuse). When $dateLimite is non-empty, the document submission deadline is
+ * shown below the status badge.
+ *
+ * A call-to-action button links to the student's space at ri-amu.app.
+ * All scalar user-supplied values are escaped with ENT_QUOTES / UTF-8;
+ * the pre-rendered HTML variables ($sectionAcceptees, $sectionRefusees,
+ * $autresLignes) are output raw and must be sanitised by the caller.
+ *
+ * @var string         $logoUrl          Absolute URL of the AMU logo image to embed in the email header
+ * @var string         $studentName      Full name of the student, displayed in the greeting
+ * @var string         $sectionAcceptees Pre-rendered HTML <li> items for accepted documents; empty string to hide the section
+ * @var string         $sectionRefusees  Pre-rendered HTML <li> items for refused documents; empty string to hide the section
+ * @var array<int, string> $autresLignes Additional pre-rendered HTML paragraph strings; defaults to []
+ * @var string         $statutGlobal     Human-readable global folder status (e.g. 'Accepté', 'Refusé'); empty string to hide the badge
+ * @var string         $dateLimite       Formatted document submission deadline string; empty string to hide the deadline line
  */
 $autresLignes = $autresLignes ?? [];
 ?>

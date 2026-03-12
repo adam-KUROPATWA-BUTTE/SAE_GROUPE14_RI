@@ -1,17 +1,39 @@
 <?php
 /**
- * Home Coordinateur
+ * View: Coordinator Home Page (Dashboard)
  *
- * @var string $lang
- * @var string $userRole
- * @var Closure(array<string, string>): string $t
- * @var Closure(string, array<string, mixed>=): string $buildUrl
- * @var float|int $completionPercentage
- * @var bool $isLoggedIn
- * @var string|null $mobiliteFilter
- * @var string|null $departementFilter
- * @var array<int, string> $allDepartements
- * @var \Model\Entity\AdminStats|null $stats
+ * Landing page for coordinateur_etude, coordinateur_stage, coordinateur, and
+ * chef_departement roles. Structurally identical to the admin dashboard but
+ * with two key differences:
+ *
+ * - The folder-status slide shows plain counts (no clickable links to the
+ *   folder list, unlike the admin version).
+ * - An additional slide 2 displays a department distribution bar chart
+ *   (top 5 departments, bar widths scaled relative to the highest count).
+ *
+ * The user role is read from $userRole and falls back to $_SESSION['role']
+ * (defaulting to 'coordinateur_etude') when the controller did not inject it.
+ *
+ * All display variables are derived from $stats before rendering: folder
+ * completion, gender split, mobility direction, Europe/non-Europe split,
+ * and department bar scaling. The filter bar and carousel behave identically
+ * to the admin view (see home_admin.php for a full description of each slide).
+ *
+ * The rendered HTML is captured via output buffering into $content and passed
+ * to the base layout along with the page title, styles (homepage.css),
+ * scripts (carousel.js), active menu key ('home-coordinateur'), and meta
+ * description. $noMain = true suppresses the default <main> wrapper.
+ *
+ * @var string                                         $lang               Current language code (e.g. 'fr' or 'en')
+ * @var string                                         $userRole           Role of the current user; falls back to $_SESSION['role'] when empty
+ * @var Closure(array<string, string>): string         $t                  Translation callable — accepts ['fr' => '...', 'en' => '...']
+ * @var Closure(string, array<string, mixed>=): string $buildUrl           URL builder callable — accepts a base URL and an optional query-parameter array
+ * @var float|int                                      $completionPercentage Overall folder completion percentage (injected by controller, unused in template — computed locally)
+ * @var bool                                           $isLoggedIn         Whether the current user is authenticated
+ * @var string|null                                    $mobiliteFilter     Active mobility-type filter: 'etude', 'stage', or null for all
+ * @var string|null                                    $departementFilter  Active department filter code, or null for all departments
+ * @var array<int, string>                             $allDepartements    Ordered list of all available department codes for the department dropdown
+ * @var \Model\Entity\AdminStats|null                  $stats              Aggregated statistics object; null triggers safe fallbacks (zero counts)
  */
 
 $isTritanopia   = !empty($_SESSION['tritanopia']) && ((bool) $_SESSION['tritanopia'] === true);

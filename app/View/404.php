@@ -1,7 +1,13 @@
 <?php
 /**
- * @var string $titre
- * @var bool $isTritanopia
+ * View: 404 Not Found
+ *
+ * Displays a user-friendly error page when the requested route or resource
+ * does not exist. Applies the tritanopia accessibility CSS class when the
+ * corresponding session preference is active.
+ *
+ * @var string $titre       Page title injected by the controller
+ * @var bool   $isTritanopia Whether the tritanopia colour-blindness mode is enabled
  */
 ?>
 <!DOCTYPE html>
