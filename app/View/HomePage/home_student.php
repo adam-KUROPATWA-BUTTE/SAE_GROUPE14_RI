@@ -52,7 +52,7 @@ ob_start();
                     <a href="<?= $buildUrl('index.php', ['page' => 'partners-student', 'partner' => 'iut']) ?>">IUT</a>
                 </div>
             </div>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'folders-student']) ?>'"><?= $t(['fr' => 'Mon Folder','en' => 'My Folder']) ?></button>
+            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'folders-student']) ?>'"><?= $t(['fr' => 'Mon Dossier','en' => 'My Folder']) ?></button>
             <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'contact-student']) ?>'"><?= $t(['fr' => 'Contact','en' => 'Contact']) ?></button>
 
         </nav>

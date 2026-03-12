@@ -44,7 +44,7 @@ class WebPlanControllerStudent implements ControllerInterface
                 'Accueil' => 'Home',
                 'Mon Tableau de bord' => 'My Dashboard',
                 'Partenaires' => 'Partners',
-                'Mon Folder' => 'My Folder',
+                'Mon Dossier' => 'My Folder',
                 'Contact' => 'Contact',
                 'Plan du site' => 'Site Map',
             ];
@@ -56,7 +56,7 @@ class WebPlanControllerStudent implements ControllerInterface
             ['url' => 'home-student', 'label' => 'Accueil'],
             ['url' => 'dashboard-student', 'label' => 'Mon Tableau de bord'],
             ['url' => 'partners-student', 'label' => 'Partenaires'],
-            ['url' => 'folders-student', 'label' => 'Mon Folder'],
+            ['url' => 'folders-student', 'label' => 'Mon Dossier'],
             ['url' => 'contact-student', 'label' => 'Contact'],
         ];
 
