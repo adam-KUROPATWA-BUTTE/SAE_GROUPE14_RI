@@ -1,29 +1,35 @@
+/**
+ * Manages dashboard UI interactions
+ * - Currently supports accordion toggle for sections
+ */
 class DashboardManager {
     constructor() {
-        // Vous pourrez ajouter ici des initialisations si le tableau de bord se complexifie
-        console.log("DashboardManager initialisé");
+        // Additional initializations can be added here if the dashboard grows
+        console.log("DashboardManager initialized");
     }
 
     /**
-     * Ouvre ou ferme un menu déroulant (accordéons)
-     * @param {string} section - Le nom de la section (ex: 'sortants', 'entrants')
+     * Toggle a dropdown/accordion section
+     * @param {string} section - The section name (e.g., 'sortants', 'entrants')
      */
     toggleAccordion(section) {
-        const contenu = document.getElementById('contenu-' + section);
-        const fleche = document.getElementById('fleche-' + section);
+        const content = document.getElementById('contenu-' + section);
+        const arrow   = document.getElementById('fleche-' + section);
 
-        // Vérification de sécurité au cas où l'élément n'existe pas
-        if (!contenu || !fleche) return;
+        // Safety check in case elements do not exist
+        if (!content || !arrow) return;
 
-        if (contenu.classList.contains('afficher')) {
-            contenu.classList.remove('afficher');
-            fleche.classList.remove('ouverte');
+        const isShown = content.classList.contains('afficher');
+
+        if (isShown) {
+            content.classList.remove('afficher');
+            arrow.classList.remove('ouverte');
         } else {
-            contenu.classList.add('afficher');
-            fleche.classList.add('ouverte');
+            content.classList.add('afficher');
+            arrow.classList.add('ouverte');
         }
     }
 }
 
-
+// Make a global instance accessible in the window
 window.dashboardManager = new DashboardManager();
