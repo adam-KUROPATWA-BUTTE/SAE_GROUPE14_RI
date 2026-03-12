@@ -219,7 +219,8 @@ class FoldersControllerAdmin
                 $stmt->execute([':email' => $email]);
                 $admin = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-                if ($admin) {
+                // FIXED: Added is_array check to satisfy PHPStan and ensure safe offset access
+                if (is_array($admin)) { 
                     $dbPrenom = strval($admin['prenom'] ?? '');
                     $dbNom    = strval($admin['nom']    ?? '');
                     $dbName   = trim($dbPrenom . ' ' . $dbNom);
