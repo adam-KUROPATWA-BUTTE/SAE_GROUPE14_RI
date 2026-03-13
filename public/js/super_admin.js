@@ -21,6 +21,7 @@ class SuperAdminManager {
         return confirm(`${label} ${login} ?`);
     }
 
+    
     /**
      * Shows/hides form fields based on the selected role.
      * @param {string} role - The role selected ('admin' or other).
