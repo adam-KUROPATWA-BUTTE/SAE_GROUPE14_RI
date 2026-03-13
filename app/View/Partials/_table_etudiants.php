@@ -52,7 +52,7 @@ foreach ($paginatedData as $etudiant) {
                         <th><?= $t(['fr' => 'Nom',                 'en' => 'Last Name'])             ?></th>
                         <th><?= $t(['fr' => 'Prénom',              'en' => 'First Name'])            ?></th>
                         <th><?= $t(['fr' => 'Type',                'en' => 'Type'])                  ?></th>
-                        <th><?= $t(['fr' => 'Composante / Accord', 'en' => 'Component / Agreement']) ?></th>
+                        <th><?= $t(['fr' => 'Composante',          'en' => 'Component'])             ?></th>
                         <th><?= $t(['fr' => 'Département',         'en' => 'Department'])            ?></th>
                         <th><?= $t(['fr' => 'Mobilité',            'en' => 'Mobility'])              ?></th>
                         <th><?= $t(['fr' => 'Relances',            'en' => 'Reminders'])             ?></th>

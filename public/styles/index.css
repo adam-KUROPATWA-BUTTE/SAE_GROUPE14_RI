@@ -196,7 +196,7 @@ body.tritanopie button:hover {
 
 main {
     flex: 1;
-    width: 1000px;
+    width: 1200px;
     margin: 2em auto;
     background: #fff;
     border-radius: 8px;
@@ -255,13 +255,6 @@ footer p {
     color: #f0f4ff;
     font-size: var(--text-small-size);
 }
-
-.insta {
-    height:32px;
-    margin-top: 10px;
-}
-
-
 
 
 li a {
