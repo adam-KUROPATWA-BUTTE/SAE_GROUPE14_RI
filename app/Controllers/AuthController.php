@@ -293,8 +293,9 @@ class AuthController implements ControllerInterface
         };
 
         View::render('mentions_legales', [
-            'lang' => $lang,
-            't'    => $t,
+            'lang'     => $lang,
+            't'        => $t,
+            'userRole' => $_SESSION['role'] ?? 'guest',  // ← ajout
         ]);
-    }
+}
 }
