@@ -2,19 +2,8 @@
 /**
  * View: Legal Notice & Privacy Policy (Mentions Légales / RGPD)
  *
- * Renders the full legal notice and GDPR privacy policy page, covering:
- * site publisher details, hosting information, intellectual property,
- * personal data processing (GDPR), and cookie policy.
- *
- * Content is bilingual: all user-facing strings are passed through the $t()
- * translation callable, which selects the appropriate text based on $lang.
- *
- * The rendered HTML is captured via output buffering into $content and then
- * included into the shared base layout (Layout/base.php) along with the
- * resolved page title, active menu item, user role, and asset lists.
- *
- * @var callable $t    Translation function — accepts ['fr' => '...', 'en' => '...'] and returns the string for the current language
- * @var string   $lang Current language code (e.g. 'fr' or 'en'), embedded in the page as a data attribute
+ * @var callable $t    Translation function
+ * @var string   $lang Current language code
  */
 ob_start();
 ?>
@@ -106,17 +95,17 @@ ob_start();
 
     <div id="app-config"
          data-lang="<?= htmlspecialchars($lang) ?>"
-         data-role="admin"
+         data-role="<?= htmlspecialchars($_SESSION['role'] ?? 'guest') ?>"
          style="display:none;">
     </div>
 
 <?php
 $content = ob_get_clean();
-$title = $t(['fr' => 'Mentions Légales', 'en' => 'Legal Notice']);
+$title      = $t(['fr' => 'Mentions Légales', 'en' => 'Legal Notice']);
 $activeMenu = 'legal';
-$userRole = $_SESSION['role'] ?? 'guest';
+$hideChat   = true;
+$userRole   = $_SESSION['role'] ?? 'guest';
+$styles     = ['styles/homepage.css', 'styles/mentions_legales.css'];
+$scripts    = [];
 
-$styles = ['styles/homepage.css', 'styles/mentions_legales.css'];
-$scripts = [];
-
-include __DIR__ . '/../Layout/base.php';
+include __DIR__ . '/Layout/base.php';
