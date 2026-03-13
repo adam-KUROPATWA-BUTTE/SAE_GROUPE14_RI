@@ -6,12 +6,12 @@
     --accent-color: #2B91BB;
     --hero-bg-color: #00558B;
 
-    --h1-size: 2.5rem;
-    --h2-size: 1.8rem;
-    --text-size: 1rem;
-    --text-small-size: 0.9rem;
-    --button-size: 1rem;
-    --button-small-size: 0.8rem;
+    --h1-size: 3rem;
+    --h2-size: 2.5rem;
+    --text-size: 1.5rem;
+    --text-small-size: 1.4rem;
+    --button-size: 1.5rem;
+    --button-small-size: 1.3rem;
 }
 
 body.tritanopie {
