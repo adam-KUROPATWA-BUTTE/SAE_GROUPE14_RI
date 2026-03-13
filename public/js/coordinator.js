@@ -1,69 +1,91 @@
 /**
- * JS pour la page coordinateur d'étude
- * Gère les filtres dynamiques et la recherche
+ * Manages the coordinator page filters:
+ * - Entrant/Sortant type toggle
+ * - Zone filter conditional display
+ * - Completion filter and search input
+ * - Updates URL with filter parameters
  */
-document.addEventListener('DOMContentLoaded', function () {
-
-    const BASE_URL = 'index.php?page=coordinateur-etude';
-    const lang     = document.getElementById('app-config')?.dataset?.lang || 'fr';
-
-    // ── Filtre zone conditionnel (visible seulement si Sortant coché) ──
-    const sortantCb = document.querySelector('input[name="entrant_sortant"][value="sortant"]');
-    const zoneGroup = document.getElementById('zone-filter-group');
-
-    if (sortantCb && zoneGroup) {
-        sortantCb.addEventListener('change', function () {
-            zoneGroup.style.display = this.checked ? '' : 'none';
-            if (!this.checked) {
-                zoneGroup.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false);
-            }
-            applyFilters();
-        });
+class CoordinatorManager {
+    constructor() {
+        // Detect language from DOM dataset, default to 'fr'
+        this.lang = document.getElementById('app-config')?.dataset?.lang || 'fr';
+        this.init();
     }
 
-    // ── Application des filtres → redirect URL ──
-    function applyFilters() {
-        const params = new URLSearchParams({ page: 'coordinateur-etude', lang });
+    /**
+     * Initialize DOM elements and event listeners
+     */
+    init() {
+        this.sortantCb = document.querySelector('input[name="entrant_sortant"][value="sortant"]');
+        this.zoneGroup = document.getElementById('zone-filter-group');
+        this.bindEvents();
+    }
 
-        // Type (entrant/sortant)
+    /**
+     * Bind all UI event listeners
+     */
+    bindEvents() {
+        // ── Conditional zone filter for "sortant" ──
+        if (this.sortantCb && this.zoneGroup) {
+            this.sortantCb.addEventListener('change', () => {
+                this.zoneGroup.style.display = this.sortantCb.checked ? '' : 'none';
+                if (!this.sortantCb.checked) {
+                    // Uncheck all zone checkboxes when disabled
+                    this.zoneGroup.querySelectorAll('input[type=checkbox]')
+                        .forEach(cb => cb.checked = false);
+                }
+                this.applyFilters();
+            });
+        }
+
+        // ── Checkboxes trigger filter application ──
+        document.querySelectorAll('.filters input[type=checkbox]')
+            .forEach(cb => cb.addEventListener('change', () => this.applyFilters()));
+
+        // Completion select filter
+        const complet = document.getElementById('filter-complet');
+        if (complet) complet.addEventListener('change', () => this.applyFilters());
+
+        // ── Search functionality ──
+        const btnSearch = document.getElementById('btn-search-loupe');
+        if (btnSearch) btnSearch.addEventListener('click', () => this.applyFilters());
+
+        const searchInput = document.getElementById('search');
+        if (searchInput) {
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') this.applyFilters();
+            });
+        }
+    }
+
+    /**
+     * Gather all active filters and redirect to the updated URL
+     */
+    applyFilters() {
+        const params = new URLSearchParams({ page: 'coordinateur-etude', lang: this.lang });
+
+        // Entrant/Sortant type
         const typeCb = document.querySelector('input[name="entrant_sortant"]:checked');
         if (typeCb) params.set('type', typeCb.value);
 
-        // Zone (seulement si sortant)
-        if (sortantCb?.checked) {
+        // Zone (only if sortant is selected)
+        if (this.sortantCb?.checked) {
             const zoneCb = document.querySelector('input[name="zone"]:checked');
             if (zoneCb) params.set('zone', zoneCb.value);
         }
 
-        // Statut
+        // Completion filter
         const complet = document.getElementById('filter-complet');
         if (complet && complet.value !== 'all') params.set('complet', complet.value);
 
-        // Recherche
+        // Search input
         const search = document.getElementById('search');
         if (search?.value.trim()) params.set('search', search.value.trim());
 
+        // Redirect to filtered page
         window.location.href = 'index.php?' + params.toString();
     }
+}
 
-    // Écoute tous les checkboxes de filtre
-    document.querySelectorAll('.filters input[type=checkbox]').forEach(cb => {
-        cb.addEventListener('change', applyFilters);
-    });
-
-    // Écoute le select statut
-    const complet = document.getElementById('filter-complet');
-    if (complet) complet.addEventListener('change', applyFilters);
-
-    // Bouton loupe
-    const btnSearch = document.getElementById('btn-search-loupe');
-    if (btnSearch) btnSearch.addEventListener('click', applyFilters);
-
-    // Touche Entrée dans le champ recherche
-    const searchInput = document.getElementById('search');
-    if (searchInput) {
-        searchInput.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') applyFilters();
-        });
-    }
-});
+// Initialize CoordinatorManager when DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => new CoordinatorManager());

@@ -1,18 +1,43 @@
 <?php
 
 /**
- * Home Admin
+ * View: Admin Home Page (Dashboard)
  *
- * @var string $lang
- * @var string $userRole
- * @var Closure(array<string, string>): string $t
- * @var Closure(string, array<string, mixed>=): string $buildUrl
- * @var float|int $completionPercentage
- * @var bool $isLoggedIn
- * @var string|null $mobiliteFilter
- * @var string|null $departementFilter
- * @var array<int, string> $allDepartements
- * @var \Model\Entity\AdminStats|null $stats
+ * Administrator landing page that displays an interactive statistics carousel
+ * and a combined mobility-type / department filter bar. Before rendering,
+ * all necessary display variables are derived from the injected $stats object:
+ * folder completion counts and rate, gender distribution percentages, incoming
+ * vs. outgoing mobility percentages, Europe vs. non-Europe country percentages,
+ * and the maximum department count used for bar-chart scaling.
+ *
+ * The filter bar allows the admin to toggle between all mobility types, études
+ * (studies), and stage (internship), and to narrow results by department. Each
+ * filter link preserves the other active filter via $buildUrl with array_filter.
+ *
+ * The statistics carousel (js/carousel.js) contains six slides:
+ * 1. Folder status — complete vs. incomplete with a completion progress bar,
+ *    both items are clickable links to the filtered folder list.
+ * 2. Gender distribution — male/female counts and percentages with a split bar.
+ * 3. Student mobility — incoming vs. outgoing counts and percentages.
+ * 4. Continent ranking — top 6 zones by student count.
+ * 5. Europe vs. non-Europe — country counts and percentages with a split bar.
+ * 6. Most requested countries — top 5 countries by student count.
+ *
+ * The rendered HTML is captured via output buffering into $content and passed
+ * to the base layout along with the page title, styles (homepage.css),
+ * scripts (carousel.js), active menu key, user role, and meta description.
+ * $noMain = true suppresses the default <main> wrapper in the layout.
+ *
+ * @var string                                         $lang               Current language code (e.g. 'fr' or 'en')
+ * @var string                                         $userRole           Role of the current user (always 'admin' for this view)
+ * @var Closure(array<string, string>): string         $t                  Translation callable — accepts ['fr' => '...', 'en' => '...']
+ * @var Closure(string, array<string, mixed>=): string $buildUrl           URL builder callable — accepts a base URL and an optional query-parameter array
+ * @var float|int                                      $completionPercentage Overall folder completion percentage (injected by controller, unused in template — computed locally)
+ * @var bool                                           $isLoggedIn         Whether the current user is authenticated
+ * @var string|null                                    $mobiliteFilter     Active mobility-type filter: 'etude', 'stage', or null for all
+ * @var string|null                                    $departementFilter  Active department filter code, or null for all departments
+ * @var array<int, string>                             $allDepartements    Ordered list of all available department codes for the department dropdown
+ * @var \Model\Entity\AdminStats|null                  $stats              Aggregated statistics object; null triggers safe fallbacks (zero counts)
  */
 
 $isTritanopia   = !empty($_SESSION['tritanopia']) && ((bool) $_SESSION['tritanopia'] === true);
@@ -147,38 +172,28 @@ ob_start();
                 <div class="stat-slide active">
                     <h2><?= $t(['fr' => 'État des dossiers', 'en' => 'Folder Status']) ?></h2>
                     <div class="stat-content">
-                        <div class="stat-item complete">
-                            <div class="stat-number"><?= $completed ?></div>
-                            <div class="stat-label"><?= $t(['fr' => 'Dossiers complets', 'en' => 'Complete folders']) ?></div>
-                        </div>
-                        <div class="stat-item incomplete">
-                            <div class="stat-number"><?= $incomplete ?></div>
-                            <div class="stat-label"><?= $t(['fr' => 'Dossiers incomplets', 'en' => 'Incomplete folders']) ?></div>
-                        </div>
+                    <a href="<?= $buildUrl('index.php', array_filter([
+                        'page'        => 'folders-admin',
+                        'mobilite'    => $mobiliteFilter,
+                        'departement' => $departementFilter,
+                    ]) + ['complet' => '1']) ?>" class="stat-item complete stat-item--link">
+                        <div class="stat-number"><?= $completed ?></div>
+                        <div class="stat-label"><?= $t(['fr' => 'Dossiers complets', 'en' => 'Complete folders']) ?></div>
+                    </a>
+                    <a href="<?= $buildUrl('index.php', array_filter([
+                        'page'        => 'folders-admin',
+                        'mobilite'    => $mobiliteFilter,
+                        'departement' => $departementFilter,
+                    ]) + ['complet' => '0']) ?>" class="stat-item incomplete stat-item--link">
+                        <div class="stat-number"><?= $incomplete ?></div>
+                        <div class="stat-label"><?= $t(['fr' => 'Dossiers incomplets', 'en' => 'Incomplete folders']) ?></div>
+                    </a>
                     </div>
                     <div class="completion-bar">
                         <div class="completion-fill" style="width: <?= $completionRate ?>%"></div>
                     </div>
                     <div class="stat-percentage">
                         <?= $completionRate ?>% <?= $t(['fr' => 'de complétion', 'en' => 'completion']) ?>
-                    </div>
-                </div>
-
-                <!-- Slide 2 : Répartition par département -->
-                <div class="stat-slide">
-                    <h2><?= $t(['fr' => 'Répartition par département', 'en' => 'Distribution by Department']) ?></h2>
-                    <div class="stat-content departments">
-                        <?php foreach (array_slice($departments, 0, 5) as $dept):
-                            $barWidth = round($dept->getCount() / max($maxDept, 1) * 100);
-                            ?>
-                            <div class="dept-item">
-                                <span class="dept-name"><?= htmlspecialchars($dept->getName()) ?></span>
-                                <div class="dept-bar-container">
-                                    <div class="dept-bar" style="width: <?= $barWidth ?>%"></div>
-                                </div>
-                                <span class="dept-count"><?= $dept->getCount() ?></span>
-                            </div>
-                        <?php endforeach; ?>
                     </div>
                 </div>
 

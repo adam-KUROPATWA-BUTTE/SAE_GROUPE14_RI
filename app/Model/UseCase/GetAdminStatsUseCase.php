@@ -5,20 +5,45 @@ namespace Model\UseCase;
 use Model\Entity\AdminStats;
 use Model\Entity\CountryStats;
 use Model\Entity\DepartmentStats;
-use Model\Repository\DossierRepositoryInterface;
+use Model\Repository\FolderRepositoryInterface;
 
+/**
+ * GetAdminStatsUseCase
+ *
+ * Use case responsible for assembling the full set of statistics
+ * displayed on the administration dashboard.
+ *
+ * Queries the folder repository with optional mobility-type and department
+ * filters, then combines folder completion, gender, student mobility,
+ * continent, country, and Europe/non-Europe breakdowns into a single
+ * AdminStats value object.
+ */
 class GetAdminStatsUseCase
 {
-    private DossierRepositoryInterface $repository;
+    /** @var FolderRepositoryInterface Repository used to retrieve folder and student statistics */
+    private FolderRepositoryInterface $repository;
 
-    public function __construct(DossierRepositoryInterface $repository)
+    /**
+     * @param FolderRepositoryInterface $repository Repository used to retrieve folder and student statistics
+     */
+    public function __construct(FolderRepositoryInterface $repository)
     {
         $this->repository = $repository;
     }
 
     /**
-     * @param string|null $mobilite null = tous | 'etude' | 'stage'
-     * @param string|null $departement Code du département ou null pour tous
+     * Builds and returns the aggregated administration statistics.
+     *
+     * Applies an optional mobility-type filter ('etude' or 'stage'; any other
+     * value is treated as no filter) and an optional department filter.
+     * Fetches folder stats, gender stats, incoming/outgoing mobility counts,
+     * continent breakdowns, Europe vs. non-Europe country counts, top 5 countries,
+     * and top 5 departments from the repository, then wraps everything in an
+     * AdminStats instance.
+     *
+     * @param string|null $mobilite    Mobility type filter: null = all | 'etude' | 'stage'
+     * @param string|null $departement Department code to filter by, or null for all departments
+     * @return AdminStats The fully assembled administration statistics
      */
     public function execute(?string $mobilite = null, ?string $departement = null): AdminStats
     {

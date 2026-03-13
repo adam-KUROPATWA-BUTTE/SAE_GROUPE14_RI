@@ -2,69 +2,47 @@
 
 namespace Model\Entity;
 
+/**
+ * Folder
+ *
+ * Represents a student application folder (dossier).
+ * Tracks the folder's unique identifier and its completion state.
+ */
 class Folder
 {
+    /** @var int Unique identifier of the folder */
+    private int $id;
+
+    /** @var bool Whether the folder has been fully completed */
+    private bool $isComplete;
+
     /**
-     * @param array<string, mixed> $pieces
+     * @param int  $id         Unique identifier of the folder
+     * @param bool $isComplete Whether the folder has been fully completed
      */
-    public function __construct(
-        private string $numEtu,
-        private ?string $nom = null,
-        private ?string $prenom = null,
-        private ?string $emailPersonnel = null,
-        private ?string $telephone = null,
-        private bool $isComplete = false,
-        private array $pieces = []
-    ) {}
-
-    public function getNumEtu(): string
+    public function __construct(int $id, bool $isComplete)
     {
-        return $this->numEtu;
+        $this->id = $id;
+        $this->isComplete = $isComplete;
     }
 
-    public function getNom(): ?string
+    /**
+     * Returns the unique identifier of the folder.
+     *
+     * @return int
+     */
+    public function getId(): int
     {
-        return $this->nom;
+        return $this->id;
     }
 
-    public function getPrenom(): ?string
-    {
-        return $this->prenom;
-    }
-
-    public function getEmailPersonnel(): ?string
-    {
-        return $this->emailPersonnel;
-    }
-
-    public function getTelephone(): ?string
-    {
-        return $this->telephone;
-    }
-
+    /**
+     * Returns whether the folder has been fully completed.
+     *
+     * @return bool
+     */
     public function isComplete(): bool
     {
         return $this->isComplete;
-    }
-
-    public function setComplete(bool $value): void
-    {
-        $this->isComplete = $value;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function getPieces(): array
-    {
-        return $this->pieces;
-    }
-
-    /**
-     * @param array<string, mixed> $pieces
-     */
-    public function setPieces(array $pieces): void
-    {
-        $this->pieces = $pieces;
     }
 }

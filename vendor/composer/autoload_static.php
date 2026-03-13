@@ -24,6 +24,11 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         array (
             'ZipStream\\' => 10,
         ),
+        'T' =>
+        array (
+            'TijsVerkoyen\\CssToInlineStyles\\' => 31,
+            'Tests\\' => 6,
+        ),
         'S' =>
         array (
             'Symfony\\Polyfill\\Php83\\' => 23,
@@ -36,7 +41,9 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
             'Symfony\\Component\\Validator\\' => 28,
             'Symfony\\Component\\Filesystem\\' => 29,
             'Symfony\\Component\\DependencyInjection\\' => 38,
+            'Symfony\\Component\\CssSelector\\' => 30,
             'Symfony\\Component\\Config\\' => 25,
+            'Service\\' => 8,
         ),
         'P' =>
         array (
@@ -53,6 +60,7 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         ),
         'M' =>
         array (
+            'Model\\' => 6,
             'Matrix\\' => 7,
         ),
         'G' =>
@@ -69,6 +77,8 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         ),
         'C' =>
         array (
+            'Core\\' => 5,
+            'Controllers\\' => 12,
             'Composer\\XdebugHandler\\' => 23,
             'Composer\\Pcre\\' => 14,
             'Complex\\' => 8,
@@ -79,6 +89,14 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         'ZipStream\\' =>
         array (
             0 => __DIR__ . '/..' . '/maennchen/zipstream-php/src',
+        ),
+        'TijsVerkoyen\\CssToInlineStyles\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/tijsverkoyen/css-to-inline-styles/src',
+        ),
+        'Tests\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/Tests',
         ),
         'Symfony\\Polyfill\\Php83\\' =>
         array (
@@ -120,9 +138,17 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         array (
             0 => __DIR__ . '/..' . '/symfony/dependency-injection',
         ),
+        'Symfony\\Component\\CssSelector\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/css-selector',
+        ),
         'Symfony\\Component\\Config\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/config',
+        ),
+        'Service\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/app/Service',
         ),
         'Psr\\SimpleCache\\' =>
         array (
@@ -165,6 +191,10 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         array (
             0 => __DIR__ . '/..' . '/pdepend/pdepend/src/main/php/PDepend',
         ),
+        'Model\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/app/Model',
+        ),
         'Matrix\\' =>
         array (
             0 => __DIR__ . '/..' . '/markbaker/matrix/classes/src',
@@ -192,6 +222,14 @@ class ComposerStaticInite875ae8441d070d7dda5f4b47a2117aa
         'DeepCopy\\' =>
         array (
             0 => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy',
+        ),
+        'Core\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/app/Core',
+        ),
+        'Controllers\\' =>
+        array (
+            0 => __DIR__ . '/../..' . '/app/Controllers',
         ),
         'Composer\\XdebugHandler\\' =>
         array (

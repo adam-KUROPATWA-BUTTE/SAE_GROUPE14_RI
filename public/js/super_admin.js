@@ -1,20 +1,31 @@
 /**
- * super_admin.js
- * Gestion de l'interface super administrateur.
- * Toutes les fonctions sont regroupées dans l'objet SuperAdmin.
+ * Class handling Super Admin panel actions:
+ * - Confirming deletions
+ * - Toggling role-specific form fields
+ * - Generating secure passwords
+ * - Adding departments and sites
  */
+class SuperAdminManager {
 
-const SuperAdmin = (() => {
-
-    // Label de suppression injecté par PHP dans la vue (window.SA_DELETE_LABEL)
-    function confirmDelete(login) {
-        const label = (typeof window.SA_DELETE_LABEL !== 'undefined')
-            ? window.SA_DELETE_LABEL
+    /**
+     * Displays a confirmation dialog for deleting a user account.
+     * @param {string} login - User login to confirm deletion.
+     * @returns {boolean} True if confirmed, false otherwise.
+     */
+    confirmDelete(login) {
+        const configEl = document.getElementById('app-config');
+        const label = (configEl && configEl.dataset.deleteLabel) 
+            ? configEl.dataset.deleteLabel 
             : 'Supprimer le compte';
-        return confirm(label + ' ' + login + ' ?');
+            
+        return confirm(`${label} ${login} ?`);
     }
 
-    function toggleRoleFields(role) {
+    /**
+     * Shows/hides form fields based on the selected role.
+     * @param {string} role - The role selected ('admin' or other).
+     */
+    toggleRoleFields(role) {
         const deptField      = document.getElementById('deptField');
         const siteField      = document.getElementById('siteField');
         const coordTypeField = document.getElementById('coordTypeField');
@@ -46,7 +57,11 @@ const SuperAdmin = (() => {
         }
     }
 
-    function generatePassword() {
+    /**
+     * Generates a random secure password and sets it in the password field.
+     * Ensures at least one uppercase letter and one special character, min 12 chars.
+     */
+    generatePassword() {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%';
         const regex = /^(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{12,}$/;
         let pwd = '';
@@ -62,54 +77,82 @@ const SuperAdmin = (() => {
         if (el) el.value = pwd;
     }
 
-    function _showMsg(el, color, text) {
+    /**
+     * Private helper to show a colored message in the UI.
+     * @param {HTMLElement|null} el - Element to display the message.
+     * @param {string} color - CSS color string.
+     * @param {string} text - Message text.
+     * @private
+     */
+    _showMsg(el, color, text) {
         if (!el) return;
         el.style.color   = color;
         el.textContent   = text;
         el.style.display = '';
     }
 
-    function addDepartment() {
+    /**
+     * Adds a new department if it doesn't already exist.
+     * Validates input and submits the hidden form.
+     */
+    addDepartment() {
         const input  = document.getElementById('newDeptInput');
         const msg    = document.getElementById('deptMsg');
         const select = document.getElementById('departement');
         if (!input) return;
 
         const code = input.value.trim().toUpperCase();
-        if (!code) { _showMsg(msg, 'red', 'Veuillez saisir un code.'); return; }
+        if (!code) {
+            this._showMsg(msg, 'red', 'Please enter a code.');
+            return;
+        }
 
         for (let opt of select.options) {
-            if (opt.value === code) { _showMsg(msg, 'orange', 'Déjà existant.'); return; }
+            if (opt.value === code) {
+                this._showMsg(msg, 'orange', 'Already exists.');
+                return;
+            }
         }
 
         const hidden = document.getElementById('hiddenDeptValue');
         const form   = document.getElementById('addDeptForm');
-        if (hidden && form) { hidden.value = code; form.submit(); }
+        if (hidden && form) {
+            hidden.value = code;
+            form.submit();
+        }
     }
 
-    function addSite() {
+    /**
+     * Adds a new site if it doesn't already exist.
+     * Validates input and submits the hidden form.
+     */
+    addSite() {
         const input  = document.getElementById('newSiteInput');
         const msg    = document.getElementById('siteMsg');
         const select = document.getElementById('site');
         if (!input) return;
 
         const name = input.value.trim();
-        if (!name) { _showMsg(msg, 'red', 'Veuillez saisir un nom.'); return; }
+        if (!name) {
+            this._showMsg(msg, 'red', 'Please enter a name.');
+            return;
+        }
 
         for (let opt of select.options) {
-            if (opt.value === name) { _showMsg(msg, 'orange', 'Déjà existant.'); return; }
+            if (opt.value === name) {
+                this._showMsg(msg, 'orange', 'Already exists.');
+                return;
+            }
         }
 
         const hidden = document.getElementById('hiddenSiteValue');
         const form   = document.getElementById('addSiteForm');
-        if (hidden && form) { hidden.value = name; form.submit(); }
+        if (hidden && form) {
+            hidden.value = name;
+            form.submit();
+        }
     }
+}
 
-    return {
-        toggleRoleFields,
-        generatePassword,
-        confirmDelete,
-        addDepartment,
-        addSite,
-    };
-})();
+// Instantiate globally so HTML can call methods directly
+window.SuperAdmin = new SuperAdminManager();

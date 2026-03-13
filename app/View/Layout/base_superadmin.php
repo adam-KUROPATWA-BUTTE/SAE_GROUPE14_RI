@@ -1,14 +1,50 @@
 <?php
 /**
- * Layout Super Admin
+ * Layout: Super Admin Shell
  *
- * @var string $lang
- * @var string $title
- * @var string $content
- * @var array<string> $styles
- * @var array<string> $scripts
- * @var string $userRole
- * @var string|null $metaDescription
+ * A self-contained layout for the super-admin page. Unlike base.php it does
+ * not include header.php; instead it renders its own simplified top bar with
+ * only the AMU logo, a language switcher, a login/logout button, and the
+ * tritanopia toggle. No navigation menu is rendered.
+ *
+ * ── SELF-CONTAINED HELPERS ───────────────────────────────────────────────────
+ * $t and $buildUrl are defined locally at the top of this file rather than
+ * being injected by a controller. This makes the layout self-sufficient and
+ * independent of whatever scope the including view runs in:
+ * - $t          : returns $frEn['en'] when $lang === 'en', else $frEn['fr'].
+ * - $buildUrl   : appends lang={$lang} to the given path; uses '?' or '&'
+ *                 depending on whether the path already contains a query string.
+ * These local definitions are also available to footer.php via include scope.
+ *
+ * ── <head> ───────────────────────────────────────────────────────────────────
+ * Always loads styles/index.css and styles/chatbot.css, then any additional
+ * stylesheets from $styles. An optional <meta name="description"> tag is
+ * rendered when $metaDescription is non-empty.
+ *
+ * ── <body> CLASS ─────────────────────────────────────────────────────────────
+ * 'tritanopie' is added when $_SESSION['tritanopia'] === true. No 'home-page'
+ * class is applied (the layout always wraps content in <main>).
+ *
+ * ── TOP BAR ──────────────────────────────────────────────────────────────────
+ * Language switcher links are hardcoded to ?page=super-admin&lang=fr / en.
+ * Login/logout is determined by isset($_SESSION['role']) ($isLoggedIn).
+ * The tritanopia toggle (#theme-toggle) is always visible.
+ *
+ * ── CONTENT WRAPPER ──────────────────────────────────────────────────────────
+ * $content is always rendered inside <main>. Session flash messages are shown
+ * in a .message div and immediately unset from the session.
+ *
+ * ── SCRIPTS ──────────────────────────────────────────────────────────────────
+ * Only js/main.js is loaded unconditionally (no chatbot.js — the chatbot is
+ * not included for this layout). Additional $scripts are appended after it.
+ *
+ * @var string        $lang            Current language code (e.g. 'fr' or 'en')
+ * @var string        $title           Full HTML <title> text for the page
+ * @var string        $content         Pre-rendered HTML string from the view's ob_get_clean()
+ * @var array<string> $styles          Additional stylesheet paths to link
+ * @var array<string> $scripts         Additional script paths to load after main.js
+ * @var string        $userRole        Role of the current user (expected 'super_admin')
+ * @var string|null   $metaDescription Optional meta description string; omitted when empty
  */
 
 $isTritanopia = isset($_SESSION['tritanopia']) && $_SESSION['tritanopia'] === true;

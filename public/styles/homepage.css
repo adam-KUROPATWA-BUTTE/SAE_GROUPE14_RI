@@ -876,42 +876,82 @@ body.tritanopie .mobilite-filter__badge::before {
 .dept-dropdown-content a:last-child {
     border-radius: 0 0 8px 8px;
 }
+.stat-item--link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stat-item--link:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
 /* ================================================================
    Responsive
 ================================================================ */
 @media (max-width: 1024px) {
-    .stats-carousel { padding: 2rem; }
-    .stat-slide h2  { font-size: 2rem; }
-    .carousel-btn.prev { left: 1rem; }
-    .carousel-btn.next { right: 1rem; }
-}
+    .stats-carousel { padding: 1.5rem 4rem; }
+    .carousel-btn.prev { left: 0.5rem; }
+    .carousel-btn.next { right: 0.5rem; }
 
-@media (max-width: 768px) {
-    .stats-section       { padding: 2rem 0; min-height: 550px; }
-    .stats-carousel      { padding: 1rem; }
-    .carousel-container  { min-height: 450px; }
-    .stat-content        { flex-direction: column; gap: 1.5rem; }
-    .stat-item           { flex: 1 1 100%; }
-    .stat-number         { font-size: 3rem; }
-    .stat-slide h2       { font-size: 1.5rem; margin-bottom: 2rem; }
-    .carousel-btn        { width: 45px; height: 45px; font-size: 2rem; }
-    .carousel-btn.prev   { left: 0.5rem; }
-    .carousel-btn.next   { right: 0.5rem; }
-    .dept-item           { grid-template-columns: 120px 1fr 60px; gap: 1rem; padding: 1rem; }
-    .ranking-item        { padding: 1rem; }
-    .rank                { width: 40px; height: 40px; font-size: 1.1rem; margin-right: 1rem; }
-    .mobilite-filter     { padding: 1.5rem 1rem 0.75rem; }
-    .mobilite-btn        { padding: 0.6rem 1.25rem; font-size: 0.95rem; }
-    .mobilite-filter__label { font-size: 0.95rem; }
-}
+    .pub-section {
+        width: 100vw;
+        height: 175px;
+        position: relative;
+        overflow: hidden;
+    }
 
-@media (max-width: 810px) {
-    .menu-toggle {
-        display: block;
-        font-size: 28px;
-        color: var(--primary-color);
-        background: none;
-        border: none;
-        cursor: pointer;
+    .pub-section img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .pub-text {
+        font-size: 22px;
+        bottom: 5px;
+        left: 15px;
     }
 }
+
+@media (max-width: 480px) {
+    .stats-section       { padding: 1rem 0; min-height: 0; }
+    .stats-carousel      { padding: 1rem 3.5rem; }
+    .carousel-container  { min-height: 350px; }
+    .stat-content        { flex-direction: column; gap: 1rem; }
+    .stat-item           { flex: 1 1 100%; padding: 1rem; }
+    .stat-number         { font-size: 2rem; }
+    .stat-slide h2       { font-size: 1.1rem; margin-bottom: 1rem; }
+    .carousel-btn        { width: 36px; height: 36px; font-size: 1rem; }
+    .carousel-btn.prev   { left: 0.25rem; }
+    .carousel-btn.next   { right: 0.25rem; }
+    .dept-item           { grid-template-columns: 100px 1fr 45px; gap: 0.5rem; padding: 0.6rem; }
+    .ranking-item        { padding: 0.6rem 0.75rem; }
+    .rank                { width: 30px; height: 30px; font-size: 0.85rem; margin-right: 0.75rem; }
+    .mobilite-filter     { padding: 1rem 0.75rem 0.5rem; }
+    .mobilite-btn        { padding: 0.5rem 1rem; font-size: 0.85rem; }
+    .mobilite-filter__label { font-size: 0.85rem; }
+
+    .pub-section {
+        width: 100vw;
+        height: 175px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .pub-section img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .pub-text {
+        font-size: 15px;
+        bottom: 5px;
+        left: 15px;
+        color: white;
+    }
+}
+

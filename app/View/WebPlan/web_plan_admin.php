@@ -1,12 +1,36 @@
 <?php
 /**
- * WebPlan Admin - Contenu uniquement
+ * View: Admin Site Map
  *
- * @var string $lang
- * @var Closure(array<string, string>): string $t
- * @var Closure(string, array<string, mixed>=): string $buildUrl
- * @var array<int, array{url: string, label: string}> $links
- * @var Closure(string): string $translateLabel
+ * Renders a simple unordered list of all pages accessible to the admin role,
+ * with each item as a translated, URL-built anchor.
+ *
+ * ── LINK LIST ────────────────────────────────────────────────────────────────
+ * $links is an indexed array of records, each with two keys:
+ * - 'url'   : the raw URL string (e.g. 'index.php?page=home-admin') passed
+ *             to $buildUrl() which appends the current lang parameter.
+ * - 'label' : the French label string, used as the 'fr' key for $t().
+ *             The English translation is obtained by passing the same label
+ *             string through $translateLabel(), which the controller provides
+ *             as a lookup closure mapping French labels to their English
+ *             equivalents. The result is then passed as the 'en' key to $t().
+ *             Both the resolved URL and translated label are escaped with
+ *             htmlspecialchars() before output.
+ *
+ * A hidden #app-config div carries data-lang and data-role="admin".
+ *
+ * The rendered HTML is passed to base_minimal.php (logo-only header, standard
+ * <main> wrapper) with styles (web_plan.css), no scripts.
+ * $activeMenu = 'web_plan', $userRole = 'admin'.
+ *
+ * This view is structurally identical to web_plan_student.php; the only
+ * differences are data-role="admin" and $userRole = 'admin'.
+ *
+ * @var string                                            $lang           Current language code (e.g. 'fr' or 'en')
+ * @var Closure(array<string, string>): string            $t              Translation callable — accepts ['fr' => '...', 'en' => '...']
+ * @var Closure(string, array<string, mixed>=): string    $buildUrl       URL builder callable — appends lang parameter to the given URL
+ * @var array<int, array{url: string, label: string}>     $links          Ordered list of site map entries; each entry has a raw URL and a French label string
+ * @var Closure(string): string                           $translateLabel Label translation closure — accepts a French label string and returns its English equivalent
  */
 
 ob_start();

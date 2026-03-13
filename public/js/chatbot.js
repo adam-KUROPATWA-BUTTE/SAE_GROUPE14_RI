@@ -34,7 +34,7 @@ class Chatbot {
                 'fr': {
                     'intro': "Bonjour, je m'appelle Bob ! Je suis là pour t'aider dans ta mobilité.",
                     'keywords': {
-                        'Déposer': "Va dans 'Mon Dossier' pour téléverser tes fichiers (CV, Lettre...).",
+                        'Déposer': "Va dans 'Mon Folder' pour téléverser tes fichiers (CV, Lettre...).",
                         'Avancé': "Ta progression est indiquée sur ton tableau de bord .",
                         'Partenaire': "Consulte l'onglet 'Partenaires' pour voir les entreprises disponibles.",
                         'Convention': "La convention doit être signée et uploadée dans 'Pièces Justificatives'.",

@@ -56,7 +56,7 @@ Autoloader::register();
 
 // --- 4. Import Controllers ---
 
-use Controllers\site\AuthController;
+use Controllers\AuthController;
 use Controllers\DashboardController;
 use Controllers\NotFoundController;
 use Controllers\SaveStudentController;

@@ -1,12 +1,25 @@
 <?php
 /**
- * Partial : Filtres de la liste des étudiants
+ * Partial: Student list filter bar
  *
- * @var array<string, mixed> $filters
- * @var bool                 $hasActiveFilters
- * @var string               $resetUrl          URL de réinitialisation des filtres
- * @var bool                 $showAccordFilter  true = afficher le filtre Accord (admin only)
- * @var Closure              $t
+ * Renders a set of filter controls used to narrow down the student list:
+ *
+ * - Direction checkboxes: Incoming (entrant) / Outgoing (sortant)
+ * - Zone checkboxes: Europe / Non-Europe (hors_europe)
+ * - Status dropdown: All / Complete / Incomplete
+ * - Component dropdown: All / AMU CIVIS / IUT
+ * - Agreement dropdown (admin only, shown when $showAccordFilter is true):
+ *   All / Erasmus / Bilatéral
+ * - A "Reset filters" link shown only when $hasActiveFilters is true
+ *
+ * Each control is pre-selected based on the corresponding value in the
+ * $filters array. $showAccordFilter defaults to false when not injected.
+ *
+ * @var array<string, mixed> $filters           Current active filter values keyed by filter name (e.g. 'type', 'zone', 'complet', 'composante', 'accord')
+ * @var bool                 $hasActiveFilters  Whether at least one filter is currently active; controls visibility of the reset link
+ * @var string               $resetUrl          URL to navigate to in order to clear all active filters
+ * @var bool                 $showAccordFilter  Whether to display the Agreement filter (intended for admin use only); defaults to false
+ * @var Closure              $t                 Translation callable — accepts ['fr' => '...', 'en' => '...']
  */
 
 $showAccordFilter = $showAccordFilter ?? false;

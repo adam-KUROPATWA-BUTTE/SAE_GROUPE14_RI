@@ -1,11 +1,29 @@
 <?php
 /**
- * Partial : Revue des pièces justificatives
+ * Partial: Supporting document review panel
  *
- * @var callable $t
- * @var string $numEtu
- * @var array<string, array{file?: string, status?: string, comment?: string}> $pieces
- * @var array<string, string> $statuts
+ * Renders a review card for each of the five expected document types:
+ * photo, CV, internship agreement (convention), motivation letter, and
+ * language certificate (langues). For each document the partial shows:
+ *
+ * - A download link when a file is present (base64 data URI), or a
+ *   "Not provided" notice otherwise.
+ * - An optional file upload input, shown when $languesEditable is true
+ *   (language certificate only) or when $allFilesEditable is true (all types).
+ *   Accepted inputs are disabled for already-accepted documents.
+ * - Accept / Refuse radio buttons and a comment textarea, both disabled
+ *   when no file has been submitted.
+ * - A per-document "Save" button that calls
+ *   window.folderManager.confirmDocument() via JavaScript, with an
+ *   indicator span for async feedback.
+ *
+ * Documents whose status is 'accepted' display a badge and an undo button
+ * that re-enables editing by adding the 'editing' CSS class to the card.
+ *
+ * @var callable                                                          $t              Translation callable — accepts ['fr' => '...', 'en' => '...']
+ * @var string                                                            $numEtu         Student number used in download filenames and JavaScript calls
+ * @var array<string, array{file?: string, status?: string, comment?: string}> $pieces   Map of document type key to its stored file (base64), status, and admin comment
+ * @var array<string, string>                                             $statuts        Map of document type key to its current validation status (overrides $pieces status when present)
  */
 $languesEditable = $languesEditable ?? false;
 
@@ -96,7 +114,7 @@ $docTypes = [
                             data-doctype="<?= $key ?>"
                             onclick="window.folderManager.confirmDocument('<?= $numEtu ?>', '<?= $key ?>')"
                         <?= !$hasDoc ? 'disabled' : '' ?>>
-                        <?= $t(['fr' => 'Confirmer la pièce', 'en' => 'Confirm Document']) ?>
+                        <?= $t(['fr' => 'Enregistrer', 'en' => 'Save']) ?>
                     </button>
                     <span class="doc-save-indicator" id="indicator_<?= $key ?>"></span>
                 </div>
@@ -104,4 +122,3 @@ $docTypes = [
         </div>
     <?php endforeach; ?>
 </div>
-

@@ -1,13 +1,25 @@
 <?php
 /**
- * Partial : Tableau des étudiants groupé par composante
+ * Partial: Student list table grouped by component (composante)
  *
- * @var array<int, array<string, mixed>> $paginatedData
- * @var int                              $totalCount
- * @var string                           $viewPage      ex: 'coordinateur-stage'
- * @var string                           $lang
- * @var Closure                          $t
- * @var Closure                          $buildUrl
+ * Groups the paginated student records by their Composante value and renders
+ * one collapsible accordion section per group. Students whose Composante is
+ * empty or '-' are grouped under a fallback "Other / Unassigned" label.
+ *
+ * Each group header shows the component name and student count. Each student
+ * row is clickable and navigates to the folder detail view for that student,
+ * with the URL built by the $buildUrl closure.
+ *
+ * Each row displays: last name, first name, mobility direction (incoming/outgoing),
+ * component, department, mobility type (stage/études), reminder badge count,
+ * and a colour-coded status badge (depot / instruction / accepte / refuse).
+ *
+ * @var array<int, array<string, mixed>> $paginatedData  Current page of student records from the repository
+ * @var int                              $totalCount     Total number of matching students (across all pages)
+ * @var string                           $viewPage       Page identifier used when building row click URLs (e.g. 'coordinateur-stage')
+ * @var string                           $lang           Current language code, passed to $buildUrl
+ * @var Closure                          $t              Translation callable — accepts ['fr' => '...', 'en' => '...']
+ * @var Closure                          $buildUrl       URL builder callable — accepts a base URL string and an array of query parameters
  */
 ?>
 <p class="results-count">
@@ -43,6 +55,7 @@ foreach ($paginatedData as $etudiant) {
                         <th><?= $t(['fr' => 'Composante / Accord', 'en' => 'Component / Agreement']) ?></th>
                         <th><?= $t(['fr' => 'Département',         'en' => 'Department'])            ?></th>
                         <th><?= $t(['fr' => 'Mobilité',            'en' => 'Mobility'])              ?></th>
+                        <th><?= $t(['fr' => 'Relances',            'en' => 'Reminders'])             ?></th>
                         <th><?= $t(['fr' => 'Statut',              'en' => 'Status'])                ?></th>
                     </tr></thead>
                     <tbody>
@@ -51,11 +64,13 @@ foreach ($paginatedData as $etudiant) {
                         $rawPieces    = strval($etudiant['PiecesJustificatives'] ?? '{}');
                         $decoded      = json_decode($rawPieces, true);
                         $ePieces      = is_array($decoded) ? $decoded : [];
-                        $mobilityType = '-';
-                        if (!empty($ePieces['convention']['file']) || !empty($ePieces['convention'])) {
-                            $mobilityType = $t(['fr' => 'Stage',  'en' => 'Internship']);
-                        } elseif (!empty($ePieces['lettre_motivation']['file']) || !empty($ePieces['lettre_motivation'])) {
+                        $dbMobilite = strtolower(trim(strval($etudiant['Mobilite'] ?? '')));
+                        if ($dbMobilite === 'stage') {
+                            $mobilityType = $t(['fr' => 'Stage', 'en' => 'Internship']);
+                        } elseif ($dbMobilite === 'etude' || $dbMobilite === 'etudes') {
                             $mobilityType = $t(['fr' => 'Études', 'en' => 'Studies']);
+                        } else {
+                            $mobilityType = '-';
                         }
                         $eNumEtu      = strval($etudiant['NumEtu']          ?? '');
                         $eNom         = strval($etudiant['Nom']             ?? '');
@@ -63,8 +78,11 @@ foreach ($paginatedData as $etudiant) {
                         $eType        = strval($etudiant['Type']            ?? '');
                         $eComposante  = strval($etudiant['Composante']      ?? '-');
                         $eDepartement = strval($etudiant['CodeDepartement'] ?? '-');
+                        $nbRelances = isset($etudiant['nb_relances']) && is_numeric($etudiant['nb_relances']) 
+                                    ? (int)$etudiant['nb_relances'] 
+                                    : 0;
                         $eStatus      = strval($etudiant['status']          ?? 'depot');
-                        $rowUrl       = $buildUrl('index.php', ['page' => $viewPage, 'action' => 'view', 'numetu' => $eNumEtu]);
+                        $rowUrl       = $buildUrl('index.php', ['page' => $viewPage, 'action' => 'view', 'numetu' =>$eNumEtu]);
                         ?>
                         <tr class="clickable-row"
                             data-numetu="<?= htmlspecialchars($eNumEtu) ?>"
@@ -75,6 +93,13 @@ foreach ($paginatedData as $etudiant) {
                             <td><?= htmlspecialchars($eComposante  ?: '-') ?></td>
                             <td><?= htmlspecialchars($eDepartement ?: '-') ?></td>
                             <td><?= htmlspecialchars($mobilityType) ?></td>
+                            <td style="text-align: center;">
+                                <?php if ($nbRelances > 0) : ?>
+                                    <span class="badge-relance"><?= $nbRelances ?></span>
+                                <?php else : ?>
+                                    -
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <?php if ($eStatus === 'accepte') : ?>
                                     <span class="status-badge accepte">Accepté</span>

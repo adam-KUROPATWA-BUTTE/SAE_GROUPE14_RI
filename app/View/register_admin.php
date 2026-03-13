@@ -1,7 +1,14 @@
 <?php
 /**
- * @var string $message
- * @var string $messageType
+ * View: Create Administrator Account
+ *
+ * Restricted form that allows the creation of a new administrator account.
+ * Displays a feedback message styled with the CSS class provided by
+ * $messageType when $message is non-empty. The form posts last name, first
+ * name, email, and password to index.php?page=register_admin.
+ *
+ * @var string $message     Feedback message to display (may be empty)
+ * @var string $messageType CSS class applied to the feedback message element (e.g. 'success', 'error')
  */
 ?>
 <!DOCTYPE html><!DOCTYPE html>

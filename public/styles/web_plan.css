@@ -51,9 +51,12 @@ ul {
     gap: 1em;
 }
 
+
+
 li a {
     display: block;
     padding: 1em;
+    text-align: center;
     background: #f0f4ff;
     color: var(--accent-color);
     text-decoration: none;
@@ -83,4 +86,14 @@ footer::before {
 
 footer p {
     margin: 0;
+}
+
+@media (max-width: 1024px) {
+    ul{
+        font-size: 20px;
+    }
+    ul li a{
+        font-size: 25px;
+    }
+
 }

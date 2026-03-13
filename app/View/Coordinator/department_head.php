@@ -1,20 +1,62 @@
 <?php
 /**
- * Page Chef de département
+ * View: Department Head — Student List / Folder Detail
  *
- * @var string $lang
- * @var Closure $t
- * @var Closure $buildUrl
- * @var array<string, mixed> $filters
- * @var array<int, array<string, mixed>> $paginatedData
- * @var int $totalCount
- * @var array<string, mixed>|null $studentData
- * @var string $action
- * @var string $message
+ * Dual-mode view for the chef_departement role, controlled by $action:
+ *
+ * ── LIST MODE ($action !== 'view') ──────────────────────────────────────────
+ * Displays all students assigned to the department head's scope (both study
+ * and internship mobility). Provides a text search toolbar (name, first name,
+ * email) and a filter bar via _filters.php ($showAccordFilter = false).
+ * The student table is rendered by _table_etudiants.php, grouped by component,
+ * with clickable rows navigating to the detail view.
+ * $hasActiveFilters is computed locally from the $filters array (type, zone,
+ * complet, composante, search).
+ *
+ * ── DETAIL MODE ($action === 'view') ────────────────────────────────────────
+ * Renders a partially editable folder form for a single student.
+ * When $studentData is null, a "Student not found" notice is shown.
+ * Otherwise the following sections are composed:
+ *
+ * - _banniere_decision.php  : quick accept/refuse decision banner.
+ *   $currentStatus is set to avis_chef_departement (the department head's
+ *   own opinion column) for the active-button highlight in this partial.
+ * - _banniere_date_limite.php : submission deadline banner (read-only for
+ *   this role; $redirectPage = $PAGE).
+ * - _form_fields.php        : folder form with only 'niveau_etude' and
+ *   'moyenne_sans_bac' editable ($EDITABLE list, $allEditable = false).
+ * - _doc_review.php         : document review panel with $languesEditable = true
+ *   (language certificate can be updated by the department head).
+ * - _global_status.php      : global workflow status dropdown.
+ *   Note: $currentStatus is reassigned to $globalStatus (the folder's global
+ *   status column) before including this partial, since _global_status.php
+ *   uses $currentStatus for its own pre-selection.
+ * - _modal_validation.php   : confirmation modal for save-and-notify.
+ *
+ * The form posts to index.php?page=update_student with a hidden redirect_to
+ * field set to $PAGE so the controller redirects back here after saving.
+ * Mobility type is detected from the presence of convention vs. motivation-
+ * letter files in $pieces.
+ *
+ * The user role is read from $_SESSION['role'] (defaults to 'chef_departement').
+ * The rendered HTML is captured into $content and passed to the base layout
+ * with styles (index.css, folders.css, chatbot.css) and scripts (folders.js).
+ *
+ * @var string                           $lang          Current language code (e.g. 'fr' or 'en')
+ * @var Closure                          $t             Translation callable — accepts ['fr' => '...', 'en' => '...']
+ * @var Closure                          $buildUrl      URL builder callable — accepts a base URL and an optional query-parameter array
+ * @var array<string, mixed>             $filters       Current active filter values (type, zone, complet, composante, search)
+ * @var array<int, array<string, mixed>> $paginatedData Current page of student records for the table partial
+ * @var int                              $totalCount    Total number of matching students across all pages
+ * @var array<string, mixed>|null        $studentData   Full folder data from the repository (including 'pieces', 'statuts', metadata); null when not found
+ * @var string                           $action        View mode: 'view' for the detail form, any other value for the list
+ * @var string                           $message       Optional feedback message displayed at the top of either mode (may be empty)
  */
 
 $PAGE     = 'chef-departement';
 $EDITABLE = ['niveau_etude', 'moyenne_sans_bac'];
+
+$userRole = $_SESSION['role'] ?? 'chef_departement';
 
 $hasActiveFilters = (strval($filters['type']       ?? 'all')) !== 'all'
     || (strval($filters['zone']       ?? 'all')) !== 'all'
@@ -36,10 +78,14 @@ ob_start();
         $detectedType  = !empty($pieces['convention']['file']) ? 'stage' : (!empty($pieces['lettre_motivation']['file']) ? 'etudes' : '');
         $numEtu        = htmlspecialchars(strval($studentData['NumEtu'] ?? ''));
         $dateLimite    = $studentData['DateLimite'] ?? null;
-        $currentStatus = $studentData['status'] ?? 'depot';
+
+        // Pour _banniere_decision : avis du chef (casse exacte de la colonne BDD)
+        $currentStatus = strval($studentData['avis_chef_departement'] ?? '');
+        // Pour _global_status : statut global du dossier
+        $globalStatus  = strval($studentData['status'] ?? 'depot');
         ?>
 
-        <h1><?= $t(['fr' => 'Dossier étudiant', 'en' => 'Student Folder']) ?></h1>
+        <h1><?= $t(['fr' => 'Dossier étudiant', 'en' => 'Student Profile']) ?></h1>
         <div class="form-back-button">
             <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => $PAGE]) ?>'" class="btn-secondary">
                 <?= $t(['fr' => 'Retour à la liste', 'en' => 'Back to List']) ?>
@@ -50,7 +96,7 @@ ob_start();
             <div class="message"><?= htmlspecialchars($message) ?></div>
         <?php endif; ?>
 
-        <!-- Spécifique chef de département : boutons Accepter / Refuser -->
+        <!-- Bannière décision : reçoit $currentStatus = avis_chef_departement -->
         <?php include __DIR__ . '/../Partials/_banniere_decision.php'; ?>
 
         <?php
@@ -59,6 +105,7 @@ ob_start();
         ?>
 
         <form method="post" action="index.php?page=update_student&lang=<?= htmlspecialchars($lang) ?>" enctype="multipart/form-data" class="creation-form">
+            <input type="hidden" name="redirect_to" value="<?= htmlspecialchars($PAGE) ?>">
             <div class="form-section">
                 <?php
                 $editableFields = $EDITABLE;
@@ -75,6 +122,11 @@ ob_start();
                 ?>
             </div>
 
+            <?php
+            $currentStatus = $globalStatus;
+            include __DIR__ . '/../Partials/_global_status.php';
+            ?>
+
             <div class="form-actions">
                 <button type="submit" class="btn-secondary">
                     <?= $t(['fr' => 'Enregistrer les modifications', 'en' => 'Save Changes']) ?>
@@ -88,51 +140,11 @@ ob_start();
 
         <?php include __DIR__ . '/../Partials/_modal_validation.php'; ?>
 
-        <script>
-            <?php
-            $repoTemp    = new \Model\Persistence\DossierRepositoryPDO();
-            $analyseData = $repoTemp->analyserDocuments($numEtu);
-            ?>
-            window.analyseDocumentsData = <?= json_encode($analyseData) ?>;
-
-            // setDecision : spécifique chef de département
-            document.addEventListener('DOMContentLoaded', function () {
-                if (window.folderManager) {
-                    window.folderManager.setDecision = function (numetu, decision, btn) {
-                        fetch('index.php?page=update_global_status&lang=<?= htmlspecialchars($lang) ?>', {
-                            method : 'POST',
-                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                            body   : 'numetu=' + encodeURIComponent(numetu) + '&status=' + encodeURIComponent(decision),
-                        })
-                            .then(r => r.json())
-                            .then(data => {
-                                const ind = document.getElementById('decision_indicator');
-                                if (data.success) {
-                                    document.querySelectorAll('.btn-decision').forEach(b => b.classList.remove('btn-decision-active'));
-                                    btn.classList.add('btn-decision-active');
-                                    ind.textContent = '✓ <?= $t(['fr' => 'Enregistré', 'en' => 'Saved']) ?>';
-                                    ind.className   = 'status-indicator status-ok';
-                                } else {
-                                    ind.textContent = '✗ <?= $t(['fr' => 'Erreur', 'en' => 'Error']) ?>';
-                                    ind.className   = 'status-indicator status-error';
-                                }
-                                setTimeout(() => { ind.textContent = ''; ind.className = 'status-indicator'; }, 3000);
-                            })
-                            .catch(() => {
-                                const ind = document.getElementById('decision_indicator');
-                                ind.textContent = '✗ <?= $t(['fr' => 'Erreur réseau', 'en' => 'Network error']) ?>';
-                                ind.className   = 'status-indicator status-error';
-                            });
-                    };
-                }
-            });
-        </script>
-
     <?php endif; ?>
 
 <?php else : ?>
 
-    <h1><?= $t(['fr' => 'Étudiants en mobilité d\'étude et de stage', 'en' => 'Study and Internship Mobility Students']) ?></h1>
+    <h1><?= $t(['fr' => 'Étudiants en mobilité d\'étude et de stage', 'en' => 'Students on study and internship mobility programs']) ?></h1>
 
     <?php if (!empty($message)) : ?>
         <div class="message"><?= htmlspecialchars($message) ?></div>
@@ -169,7 +181,6 @@ $title           = $t(['fr' => 'Chef de département - Relations Internationales
 $styles          = ['styles/index.css', 'styles/folders.css', 'styles/chatbot.css'];
 $scripts         = ['js/folders.js'];
 $activeMenu      = $PAGE;
-$userRole        = $_SESSION['role'] ?? 'chef_departement';
 $metaDescription = $t(['fr' => 'Espace chef de département — gestion des mobilités étudiantes.', 'en' => 'Department head space — student mobility management.']);
 
 include __DIR__ . '/../Layout/base.php';

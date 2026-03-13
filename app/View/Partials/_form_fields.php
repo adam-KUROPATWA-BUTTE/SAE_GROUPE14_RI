@@ -1,26 +1,41 @@
 <?php
 /**
- * Partial : Champs du formulaire étudiant
+ * Partial: Student folder form fields
  *
- * @var array<string, mixed> $studentData
- * @var string               $numEtu          NumEtu déjà htmlspecialchars-é
- * @var string               $detectedType    'stage' | 'etudes' | ''
- * @var string               $redirectPage    valeur du champ caché redirect_to
- * @var array<string>|null        $editableFields  liste des noms de champs éditables
- *                                            ex: ['niveau_etude', 'moyenne_sans_bac']
- *                                            si vide → tous readonly (vue admin avec btn Modifier)
- * @var bool|null              $allEditable     true = admin en mode édition (tous les champs actifs)
- * @var Closure              $t
+ * Renders all editable fields for a student folder. Each field can be in one
+ * of three states depending on the combination of $allEditable and $editableFields:
+ *
+ * - Fully editable ($allEditable = true): all inputs are active (admin edit mode).
+ * - Selectively editable ($editableFields non-empty): only the listed field names
+ *   receive the 'input-editable' class; all others are readonly.
+ * - All readonly (default / view mode): every input carries readonly and
+ *   'input-disabled'; used when the admin is viewing without editing.
+ *
+ * Because HTML <select> elements submit no value when disabled, every disabled
+ * select is paired with a hidden mirror input (controlled by the $needsHidden
+ * closure) so that existing values are preserved on POST.
+ *
+ * The partial emits two hidden inputs (numetu, redirect_to) that must be
+ * present in the surrounding <form> for POST submissions to work correctly.
+ *
+ * @var array<string, mixed> $studentData     Associative array of raw folder data from the repository (PascalCase keys)
+ * @var string               $numEtu          Already htmlspecialchars-encoded student number
+ * @var string               $detectedType    Detected mobility type used to pre-select the mobilite_type dropdown: 'stage' | 'etude' | ''
+ * @var string               $redirectPage    Value for the hidden redirect_to field; controls where the form posts back to
+ * @var array<string>|null   $editableFields  List of field names that should be editable when $allEditable is false; empty array means all fields are readonly
+ * @var bool|null            $allEditable     When true, all fields are active (admin full-edit mode); defaults to false
+ * @var Closure              $t               Translation callable — accepts ['fr' => '...', 'en' => '...']
  */
 
 $activeFields = $editableFields ?? [];
 $isEditable   = $allEditable    ?? false;
 
 /**
- * Génère les attributs readonly + class pour un champ input.
- * readonly permet au champ d'être soumis dans le POST (contrairement à disabled).
- * Si $isEditable est true, rien n'est readonly.
- * Sinon, le champ est éditable uniquement si son nom est dans $activeFields.
+ * Returns the readonly attribute and CSS class for an input field.
+ *
+ * readonly keeps the value in the POST payload (unlike disabled).
+ * If $isEditable is true, no attributes are added (field is fully active).
+ * Otherwise, the field is editable only if its name appears in $activeFields.
  */
 $fieldAttrs = function(string $name) use ($activeFields, $isEditable): string {
     if ($isEditable) {
@@ -33,9 +48,11 @@ $fieldAttrs = function(string $name) use ($activeFields, $isEditable): string {
 };
 
 /**
- * Pour les <select>, disabled empêche la soumission.
- * On garde disabled visuellement mais on ajoute un <input type="hidden"> miroir.
- * $selectAttrs retourne les attributs du select.
+ * Returns the disabled attribute and CSS class for a select element.
+ *
+ * disabled prevents the value from being submitted, so every disabled select
+ * must be paired with a hidden mirror input (see $needsHidden).
+ * Returns the appropriate attributes based on editability of the field.
  */
 $selectAttrs = function(string $name) use ($activeFields, $isEditable): string {
     if ($isEditable) {
@@ -48,8 +65,10 @@ $selectAttrs = function(string $name) use ($activeFields, $isEditable): string {
 };
 
 /**
- * Retourne true si le select doit avoir un hidden miroir
- * (i.e. il est disabled et donc non soumis dans le POST).
+ * Returns true when a select field needs a hidden mirror input.
+ *
+ * A mirror input is needed when the select is disabled (and therefore excluded
+ * from the POST payload) so that the existing database value is preserved.
  */
 $needsHidden = function(string $name) use ($activeFields, $isEditable): bool {
     if ($isEditable) return false;
@@ -168,8 +187,8 @@ $labelClass = function(string $name) use ($activeFields, $isEditable): string {
     <select name="mobilite_type" <?= $selectAttrs('mobilite_type') ?>>
         <option value=""><?= $t(['fr' => '-- Choisir --', 'en' => '-- Choose --']) ?></option>
         <option value="stage"  <?= $detectedType === 'stage'  ? 'selected' : '' ?>><?= $t(['fr' => 'Stage',  'en' => 'Internship']) ?></option>
-        <option value="etudes" <?= $detectedType === 'etudes' ? 'selected' : '' ?>><?= $t(['fr' => 'Études', 'en' => 'Studies'])    ?></option>
+        <option value="etude" <?= $detectedType === 'etude' ? 'selected' : '' ?>><?= $t(['fr' => 'Études', 'en' => 'Studies'])    ?></option>
     </select>
 <?php if ($needsHidden('mobilite_type')) : ?>
-    <input type="hidden" name="mobilite_type" value="<?= htmlspecialchars($detectedType) ?>">
+    <input type="hidden" name="mobilite_type" id="hidden_mobilite_type" value="<?= htmlspecialchars($detectedType) ?>">
 <?php endif; ?>

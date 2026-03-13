@@ -7,44 +7,95 @@ use Service\SuperAdminService;
 use Model\Persistence\UserRepositoryPDO;
 use Core\View;
 
+/**
+ * Controller responsible for the Super Admin dashboard.
+ * Handles management of users, departments, and sites.
+ * Ensures authentication, language selection, accessibility,
+ * and executes actions like creating/deleting accounts and adding departments/sites.
+ */
 class SuperAdminController implements ControllerInterface
 {
+    /**
+     * Checks if this controller supports the given page.
+     */
     public static function support(string $page, string $method): bool
     {
         return $page === 'super-admin';
     }
 
-    public function control(): void
+    /**
+     * Starts the session if it is not already active.
+     */
+    protected function startSession(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
+    }
 
+    /**
+     * Redirects the user to a specific URL.
+     * Protected to allow mocking during testing.
+     */
+    protected function redirect(string $url): never
+    {
+        header('Location: ' . $url);
+        exit;
+    }
+
+    /**
+     * Renders a view with provided data.
+     *
+     * @param array<string, mixed> $data Data passed to the view
+     */
+    protected function renderView(string $view, array $data = []): void
+    {
+        View::render($view, $data);
+    }
+
+    /**
+     * Instantiates the SuperAdmin service.
+     * Can be overridden for testing.
+     */
+    protected function makeService(): SuperAdminService
+    {
+        return new SuperAdminService(new UserRepositoryPDO());
+    }
+
+    /**
+     * Main controller logic for the Super Admin dashboard.
+     * Handles authentication, language and accessibility options,
+     * account creation/deletion, and department/site management.
+     */
+    public function control(): void
+    {
+        $this->startSession();
+
+        // Ensure the user is a Super Admin
         if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'super_admin') {
-            header('Location: index.php?page=login');
-            exit;
+            $this->redirect('index.php?page=login');
         }
 
+        // Handle language selection
         if (isset($_GET['lang']) && in_array($_GET['lang'], ['fr', 'en'], true)) {
             $_SESSION['lang'] = $_GET['lang'];
         }
-
         $lang = $_SESSION['lang'] ?? 'fr';
 
+        // Handle accessibility option (tritanopia mode)
         if (isset($_GET['tritanopia'])) {
             $_SESSION['tritanopia'] = $_GET['tritanopia'] === '1';
         }
-
         $isTritanopia = $_SESSION['tritanopia'] ?? false;
 
-        $service = new SuperAdminService(new UserRepositoryPDO());
-
+        $service = $this->makeService();
         $success = null;
         $error   = null;
 
         $departments = $service->getAvailableDepartments();
         $sites       = $service->getAvailableSites();
 
+        // ── Handle adding a department ─────────────────────────────
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'add_department') {
             $newDept = strtoupper(trim((string) ($_POST['new_department'] ?? '')));
             if ($newDept !== '' && !in_array($newDept, $departments, true)) {
@@ -57,7 +108,7 @@ class SuperAdminController implements ControllerInterface
             }
         }
 
-        // ── Ajout d'un nouveau site ──
+        // ── Handle adding a site ───────────────────────────────────
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'add_site') {
             $newSite = trim((string) ($_POST['new_site'] ?? ''));
             if ($newSite !== '' && !in_array($newSite, $sites, true)) {
@@ -70,7 +121,7 @@ class SuperAdminController implements ControllerInterface
             }
         }
 
-        // ── Suppression d'un compte ──
+        // ── Handle account deletion ───────────────────────────────
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
             $loginToDelete = trim((string) ($_POST['login'] ?? ''));
             if ($loginToDelete !== '') {
@@ -81,7 +132,7 @@ class SuperAdminController implements ControllerInterface
             }
         }
 
-        // ── Création d'un compte ──
+        // ── Handle account creation ───────────────────────────────
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'create') {
             $login       = trim((string) ($_POST['login']       ?? ''));
             $password    = trim((string) ($_POST['password']    ?? ''));
@@ -140,10 +191,12 @@ class SuperAdminController implements ControllerInterface
             }
         }
 
+        // Translation helper
         $t = function (array $translations) use ($lang): string {
             return $lang === 'en' ? ($translations['en'] ?? '') : ($translations['fr'] ?? '');
         };
 
+        // URL builder helper
         $buildUrl = function (string $path, array $params = []) use ($lang): string {
             $params['lang'] = $lang;
             $separator = (strpos($path, '?') === false) ? '?' : '&';
@@ -152,7 +205,8 @@ class SuperAdminController implements ControllerInterface
 
         $accounts = $service->getAllAccounts();
 
-        View::render('HomePage/super_admin', [
+        // Render the Super Admin dashboard
+        $this->renderView('HomePage/super_admin', [
             'lang'        => $lang,
             't'           => $t,
             'buildUrl'    => $buildUrl,

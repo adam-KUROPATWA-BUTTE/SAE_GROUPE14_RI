@@ -196,13 +196,14 @@ body.tritanopie button:hover {
 
 main {
     flex: 1;
-    max-width: 1000px;
+    width: 1000px;
     margin: 2em auto;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     padding: 2em;
 }
+
 
 
 h1 {
@@ -328,8 +329,6 @@ li a:hover {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-
-
 /* Séparateur entre les liens */
 .footer-separator {
     color: var(--primary-color);
@@ -342,139 +341,21 @@ li a:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 30px;
+    gap: 1rem;
     flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+
+header .menu-toggle {
+    display: none;
 }
 
 /* Responsive */
-@media (max-width: 768px) {
-    .footer-sitemap-btn {
-        width: 100%;
-        max-width: 300px;
-        justify-content: center;
-    }
-
-    .footer-separator {
-        display: none;
-    }
-}
-
-
-@media (max-width: 810px) {
+@media (max-width: 1024px) {
 
     header {
         padding: 10px;
-    }
-
-    .logo_amu {
-        width: 200px;
-        height: 100px;
-    }
-
-    .top-bar {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-
-    nav.menu {
-        display: none;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0;
-        margin-top: 10px;
-        border-radius: 6px;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-    }
-
-    nav.menu.active {
-        display: flex;
-    }
-
-    nav.menu button {
-        border: none;
-        padding: 12px;
-        text-align: center;
-        width: 100%;
-        border-bottom: 1px solid rgba(255,255,255,0.3);
-    }
-
-    nav.menu button:last-child {
-        border-bottom: none;
-    }
-
-    nav.menu button:hover {
-        background-color: var(--primary-color);
-    }
-
-    .right-buttons {
-        display: flex;
-        gap: 10px;
-    }
-
-    .menu-right-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        padding: 10px;
-    }
-
-    main {
-        margin: 1em;
-        padding: 1.5em;
-    }
-
-    table {
-        font-size: 0.85em;
-    }
-
-    th, td {
-        padding: 8px 6px;
-    }
-
-    .progress-bar {
-        height: 14px;
-    }
-
-    .progress {
-        font-size: 0.7em;
-    }
-
-    .pub-section {
-        width: 100vw;
-        height: 175px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .pub-section img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .pub-text {
-        font-size: 22px;
-        bottom: 5px;
-        left: 15px;
-    }
-
-    .card h2 {
-        margin-top: 60px;
-    }
-
-    footer {
-        width: 100%;
-    }
-}
-
-
-
-@media (max-width: 500px) {
-    header {
-        padding: 5px;
     }
 
     .logo_amu {
@@ -487,12 +368,80 @@ li a:hover {
         justify-content: space-between;
         align-items: center;
     }
-    .menu-toggle {
-        display: none;
-        font-size: 28px;
+
+    nav.menu button {
+        border: none;
+        padding: 12px;
+        text-align: center;
+        width: 100%;
+        border-bottom: 1px solid rgba(255,255,255,0.3);
+    }
+
+
+
+    main {
+        margin: 1em;
+        padding: 1.5em;
+        width: 90%;
+    }
+
+    table {
+        font-size: 0.85em;
+    }
+
+    th, td {
+        padding: 8px 6px;
+    }
+
+    .progress-bar {
+        height: 14px;
+    }
+
+    .progress {
+        font-size: 0.7em;
+    }
+
+
+    .card h2 {
+        margin-top: 60px;
+    }
+
+    footer {
+        width: 100%;
+    }
+
+}
+
+
+
+@media (max-width: 700px) {
+    header {
+        padding: 5px;
+    }
+
+    .logo_amu {
+        width: 100px;
+        height: auto;
+    }
+
+    .top-bar {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+
+    }
+
+    .right-buttons button {
+        padding : 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    header .menu-toggle {
+        display: flex;
+        font-size: 1.8rem;
         background: none;
         border: none;
-        cursor: pointer;
+        color: var(--primary-color);
     }
 
     nav.menu {
@@ -536,12 +485,29 @@ li a:hover {
     }
 
     main {
-        margin: 1em;
-        padding: 1.5em;
+        margin: 0.5em;
+        padding: 1em;
+        width: 90%;
+    }
+
+    h1{
+        font-size: 1rem;
+        text-align: center;
+    }
+
+    h2{
+        font-size: 1.2rem;
+    }
+
+    p, ul li, li a{
+        font-size: 0.9rem;
     }
 
     table {
-        font-size: 0.85em;
+        font-size: 0.72rem;
+        display: block;
+        overflow-x: auto;
+        width: 100%;
     }
 
     th, td {
@@ -556,24 +522,6 @@ li a:hover {
         font-size: 0.7em;
     }
 
-    .pub-section {
-        width: 100vw;
-        height: 175px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .pub-section img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .pub-text {
-        font-size: 22px;
-        bottom: 5px;
-        left: 15px;
-    }
 
     .card h2 {
         margin-top: 60px;

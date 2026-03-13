@@ -1,16 +1,48 @@
 <?php
 /**
- * Super Admin - Gestion des comptes
+ * View: Super Admin — Account Management
  *
- * @var string $lang
- * @var Closure(array<string, string>): string $t
- * @var Closure(string, array<string, mixed>=): string $buildUrl
- * @var array<int, array{login: string, role: string, departement: string|null, site: string|null, nom: string|null, prenom: string|null, created_at: string}> $accounts
- * @var array<int, string> $departments
- * @var array<int, string> $sites
- * @var string|null $success
- * @var string|null $error
- * @var bool $tritanopia
+ * Restricted page accessible only to the super_admin role. Provides a
+ * two-column layout:
+ *
+ * LEFT — Account creation form:
+ * Collects email (login), optional first/last name, a temporary password
+ * (min 12 characters, requires at least one uppercase letter and one special
+ * character), and a role. Roles are split into two top-level types via radio
+ * buttons whose onchange handler (SuperAdmin.toggleRoleFields()) shows or hides
+ * the relevant secondary fields:
+ * - 'admin' (Secretary): no additional fields required.
+ * - 'coordinateur': reveals a coordinator sub-type grid (study, internship,
+ *   study & internship, department head) and conditionally shows department
+ *   and/or site selects with inline "add new" inputs.
+ *   SuperAdmin.addDepartment() / addSite() submit the hidden add_department /
+ *   add_site forms and refresh the select options via AJAX.
+ * Submitting posts action=create. A password generator button calls
+ * SuperAdmin.generatePassword().
+ *
+ * RIGHT — Existing accounts list:
+ * Displays all accounts with avatar initial, full name, email, role badge,
+ * optional department and site badges, and creation date. Each entry has a
+ * delete button that calls SuperAdmin.confirmDelete() for confirmation before
+ * posting action=delete with the login.
+ *
+ * The delete confirmation label is passed to JavaScript via
+ * window.SA_DELETE_LABEL (JSON-encoded). Two hidden utility forms
+ * (#addDeptForm, #addSiteForm) handle department and site creation.
+ *
+ * The rendered HTML is captured via output buffering into $content and passed
+ * to the base_superadmin layout along with the page title, styles
+ * (super_admin.css, homepage.css), and scripts (super_admin.js).
+ *
+ * @var string                                                                                                                                         $lang        Current language code (e.g. 'fr' or 'en')
+ * @var Closure(array<string, string>): string                                                                                                         $t           Translation callable — accepts ['fr' => '...', 'en' => '...']
+ * @var Closure(string, array<string, mixed>=): string                                                                                                 $buildUrl    URL builder callable — accepts a base URL and an optional query-parameter array
+ * @var array<int, array{login: string, role: string, departement: string|null, site: string|null, nom: string|null, prenom: string|null, created_at: string}> $accounts List of existing staff/coordinator accounts
+ * @var array<int, string>                                                                                                                             $departments Available department codes for the department select
+ * @var array<int, string>                                                                                                                             $sites       Available site names for the site select
+ * @var string|null                                                                                                                                    $success     Success message to display after a create/delete action, or null
+ * @var string|null                                                                                                                                    $error       Error message to display after a failed action, or null
+ * @var bool                                                                                                                                           $tritanopia  Whether the tritanopia colour-blindness mode is active (used by the layout)
  */
 
 ob_start();
@@ -278,13 +310,12 @@ ob_start();
         <input type="hidden" name="new_site" id="hiddenSiteValue">
     </form>
 
-<?php
-$deleteLabel = $t(['fr' => 'Supprimer le compte', 'en' => 'Delete account']);
-?>
-    <script>
-        window.SA_DELETE_LABEL = <?= json_encode($deleteLabel) ?>;
-    </script>
-
+<div id="app-config"
+     data-lang="<?= htmlspecialchars($lang) ?>"
+     data-role="admin"
+     data-delete-label="<?= htmlspecialchars($t(['fr' => 'Supprimer le compte', 'en' => 'Delete account'])) ?>"
+     style="display:none;">
+</div>
 <?php
 $content = ob_get_clean();
 $title      = 'Super Admin — AMU';

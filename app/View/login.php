@@ -1,12 +1,26 @@
 <?php
 /**
- * @var string $message
- * @var bool $isTokenReset
- * @var string|null $token
- * @var bool $isReset
- * @var bool $isLogin
+ * View: Login / Password Reset
+ *
+ * Multi-mode authentication view that renders one of three forms depending on
+ * the boolean flags provided by the controller:
+ *
+ * - $isTokenReset: password reset form using a one-time token (token-based reset flow)
+ * - $isReset:      email form to request a password-reset link
+ * - $isLogin:      standard login form (identifier + password)
+ *
+ * Displays a feedback message when $message is non-empty, styled as 'success'
+ * when the message contains the word "succès", otherwise as 'error'.
+ * Applies the tritanopia accessibility CSS class when the corresponding
+ * session preference is active.
+ *
+ * @var string      $message      Feedback message to display (may be empty)
+ * @var bool        $isTokenReset Whether the token-based password reset form should be shown
+ * @var string|null $token        One-time reset token to embed in the token-reset form, or null
+ * @var bool        $isReset      Whether the email-based reset request form should be shown
+ * @var bool        $isLogin      Whether the standard login form should be shown
  */
-// On récupère juste l'état du mode daltonien depuis la session
+
 $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
 ?>
 <!DOCTYPE html>

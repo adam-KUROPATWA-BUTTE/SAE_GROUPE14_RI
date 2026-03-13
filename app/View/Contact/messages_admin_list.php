@@ -1,10 +1,51 @@
 <?php
 /**
- * Liste des conversations admin — layout style Outlook
- * @var string $lang
- * @var array<int, \Model\Entity\Conversation> $conversations
- * @var string $filter
- * @var Closure $t
+ * View: Admin Message Inbox — Outlook-style Split Layout
+ *
+ * Renders a two-pane Outlook-style shell (.outlook-shell) for browsing all
+ * student support conversations.
+ *
+ * ── TOOLBAR ──────────────────────────────────────────────────────────────────
+ * Displays a heading and two filter links:
+ * - "All" → index.php?page=messages-admin&filter=all   (total count badge)
+ * - "Unread" → index.php?page=messages-admin&filter=unread
+ * The active link receives the 'active' CSS class based on $filter.
+ *
+ * ── LIST PANE (.outlook-list-pane) ───────────────────────────────────────────
+ * When $conversations is empty, a "No conversations" notice is shown.
+ * Otherwise each conversation is rendered as an <a> (.message-item) linking to
+ * the detail view (messages-admin&action=view&id={id}).
+ *
+ * Item anatomy:
+ * - Unread dot (.unread-dot): rendered only when hasUnreadMessagesFor('admin') is true;
+ *   the item also gets the 'unread' CSS class.
+ * - Selected state: the 'selected' CSS class is added when $conv->getId() matches
+ *   the ?id= query parameter ($currentId), which is resolved once at the top.
+ * - Top row: sender name (left) + conversation creation date in d/m H:i (right).
+ * - Subject: translated label from the $subjects map, falling back to the raw key.
+ * - Preview: first 80 characters of the last message content (getLastMessage()),
+ *   followed by an ellipsis; empty string when the conversation has no messages.
+ *
+ * ── READING PANE (.outlook-reading-pane) ─────────────────────────────────────
+ * Rendered as a static placeholder ("Select a conversation") in this view.
+ * The actual conversation detail is loaded in messages_admin_view.php.
+ * The JS on the page (if any) may inject the detail view into this pane via AJAX,
+ * but no inline JS or script tags are emitted here.
+ *
+ * $subjects is built once at the top using $t() for translation consistency.
+ * $currentId is read from $_GET['id'] (cast to int) to highlight the selected item
+ * when navigating back from the detail view.
+ *
+ * A hidden #app-config div carries data-lang and data-role="admin".
+ *
+ * The rendered HTML is passed to the base layout with styles (messages_admin.css),
+ * no scripts, $activeMenu = 'messages', $userRole = 'admin', $noMain = true
+ * (the layout omits the <main> wrapper so the shell fills the viewport).
+ *
+ * @var string                             $lang          Current language code (e.g. 'fr' or 'en')
+ * @var array<int, \Model\Entity\Conversation> $conversations All conversations to display (already filtered by $filter before being passed in)
+ * @var string                             $filter        Active filter key: 'all' or 'unread'
+ * @var Closure                            $t             Translation callable — accepts ['fr' => '...', 'en' => '...']
  */
 
 ob_start();
@@ -79,6 +120,12 @@ $currentId = isset($_GET['id']) ? (int)$_GET['id'] : null;
     </div>
 </div>
 
+<div id="app-config"
+     data-lang="<?= htmlspecialchars($lang) ?>"
+     data-role="admin"
+     style="display:none;">
+</div>
+
 <?php
 $content    = ob_get_clean();
 $title      = $t(['fr' => 'Messages', 'en' => 'Messages']);
@@ -86,5 +133,6 @@ $styles     = ['styles/messages_admin.css'];
 $scripts    = []; 
 $activeMenu = 'messages';
 $userRole   = 'admin';
+$noMain     = true;
 
 include __DIR__ . '/../Layout/base.php';

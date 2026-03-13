@@ -1,11 +1,64 @@
 <?php
 /**
- * Header commun
+ * Partial: Site Header — Top Bar and Navigation
  *
- * @var string|null $lang
- * @var string|null $activeMenu
- * @var string|null $userRole - 'admin', 'student', 'coordinateur_etude', 'coordinateur_stage', 'chef_departement'
- * @var callable|null $t
+ * Renders the AMU logo, language switcher, login/logout button, optional
+ * tritanopia toggle, and a role-aware navigation menu.
+ *
+ * ── PRE-RENDER SETUP ─────────────────────────────────────────────────────────
+ * Three defensive initialisations run before any HTML is emitted:
+ * 1. $userRole is filled from $_SESSION['role'] when the including layout
+ *    has not already set it.
+ * 2. $t is created as a simple closure if not already injected (or not
+ *    callable). The fallback reads $lang from $_SESSION['lang'] (default 'fr')
+ *    so the header can translate strings independently.
+ * 3. $lang is set from $_SESSION['lang'] if not already set.
+ *
+ * $isCoordinateur is true for the roles: 'coordinateur_etude',
+ * 'coordinateur_stage', 'chef_departement', and 'coordinateur'.
+ *
+ * $currentPage is determined from $_GET['page'], falling back to a
+ * role-appropriate default: 'home-admin', 'home-coordinateur', or
+ * 'home-student'. This is used for the language-switcher hrefs so the
+ * language toggle lands back on the correct page.
+ *
+ * ── TOP BAR ──────────────────────────────────────────────────────────────────
+ * - AMU logo (img/logo.png).
+ * - Language dropdown: links to ?page={currentPage}&lang=fr / en.
+ * - Login / logout button: shown only on home pages ($isHomePage is true when
+ *   $activeMenu is 'home' or 'home-coordinateur'). Checks $_SESSION['role']
+ *   to decide between "Se connecter" and "Se déconnecter".
+ * - Tritanopia toggle button (#theme-toggle): shown only on home pages.
+ *
+ * ── NAVIGATION (<nav class="menu">) ──────────────────────────────────────────
+ * Five distinct nav configurations based on $userRole:
+ *
+ * 'coordinateur' (super-coordinator):
+ *   Home | Study Coordinator | Internship Coordinator
+ *
+ * 'coordinateur_etude':
+ *   Home | Study Coordinator
+ *
+ * 'coordinateur_stage':
+ *   Home | Internship Coordinator
+ *
+ * 'chef_departement':
+ *   Home | Department Head
+ *
+ * All other roles ('admin', 'student', null):
+ *   A $menus array is built dynamically. Base items: Home, Dashboard,
+ *   Destinations, Folders/Profile.
+ *   - 'admin' adds a Messages item.
+ *   - 'student' adds a Contact item.
+ *   Page URLs use a $suffix ('-admin' or '-student') appended to the menu key.
+ *   The active state is true when $activeMenu equals the key or key+suffix.
+ *   The 'partners' item for students is rendered as a drop-down (.dropdown)
+ *   with two sub-links: ?partner=amu and ?partner=iut.
+ *
+ * @var string|null   $lang        Current language code; falls back to $_SESSION['lang'] or 'fr'
+ * @var string|null   $activeMenu  Identifier of the current active nav item for highlighting
+ * @var string|null   $userRole    Role of the current user: 'admin' | 'student' | 'coordinateur' | 'coordinateur_etude' | 'coordinateur_stage' | 'chef_departement' | null
+ * @var callable|null $t           Translation callable; a fallback closure is created if not injected or not callable
  */
 
 if (empty($userRole) && !empty($_SESSION['role'])) {
@@ -143,7 +196,7 @@ $userRole === 'admin'        ? 'home-admin'        :
                 ],
                 'folders' => [
                     'fr' => ($userRole === 'admin' ? 'Dossiers' : 'Mon Dossier'),
-                    'en' => ($userRole === 'admin' ? 'Folders' : 'My Folder'),
+                    'en' => ($userRole === 'admin' ? 'Profiles' : 'My Profile'),
                 ],
             ];
 

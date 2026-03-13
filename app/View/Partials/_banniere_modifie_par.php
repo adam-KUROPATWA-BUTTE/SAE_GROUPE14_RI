@@ -1,10 +1,15 @@
 <?php
 /**
- * Partial : Bannière "Modifié par … le …"
+ * Partial: "Last modified by … on …" banner
  *
- * @var string|null $modifiePar   Nom de l'admin ayant fait la dernière modif
- * @var string|null $modifieLe    Date/heure de la dernière modif (format Y-m-d H:i:s)
- * @var Closure     $t
+ * Displays the name of the administrator who last modified the folder and the
+ * date/time of that modification, formatted as DD/MM/YYYY at HH:MM.
+ * When both $modifiePar and $modifieLe are empty, a fallback message indicating
+ * that the folder has never been modified is shown instead.
+ *
+ * @var string|null $modifiePar Name of the administrator who made the last modification, or null if unknown
+ * @var string|null $modifieLe  Timestamp of the last modification in Y-m-d H:i:s format, or null if never modified
+ * @var Closure     $t          Translation callable — accepts ['fr' => '...', 'en' => '...']
  */
 ?>
 <div class="banniere-modifie-par">
@@ -12,8 +17,7 @@
     <span class="banniere-modifie-par__texte">
         <?php if (!empty($modifiePar) || !empty($modifieLe)) : ?>
             <?= $t(['fr' => 'Dernière modification par', 'en' => 'Last modified by']) ?>
-            <strong><?= htmlspecialchars($modifiePar ?? 'Administrateur') ?></strong>
-            <?php if (!empty($modifieLe)) : ?>
+            <strong><?= htmlspecialchars($modifiePar ?? '') ?></strong>            <?php if (!empty($modifieLe)) : ?>
                 <?= $t(['fr' => 'le', 'en' => 'on']) ?>
                 <strong><?= htmlspecialchars(date('d/m/Y', (int) strtotime($modifieLe))) ?></strong>
                 <?= $t(['fr' => 'à', 'en' => 'at']) ?>
@@ -24,4 +28,3 @@
         <?php endif; ?>
     </span>
 </div>
-

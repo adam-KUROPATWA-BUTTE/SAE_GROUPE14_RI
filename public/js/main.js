@@ -1,6 +1,9 @@
 /**
- * Main application class handling global UI features:
- * responsive menu, language switching, theme toggling, and notifications.
+ * Main application class managing global UI features:
+ * - Responsive menu
+ * - Language switching
+ * - Accessibility theme toggle (tritanopia)
+ * - Auto-dismissable toast messages
  */
 class MainApp {
     constructor() {
@@ -13,17 +16,19 @@ class MainApp {
 
     /**
      * Parses and stores global app configuration from the DOM.
+     * Sets default language ('fr') and role ('student') if missing.
      */
     initConfig() {
         const configEl = document.getElementById('app-config');
         window.AppConfig = {
-            lang: configEl ? configEl.dataset.lang : 'fr',
-            role: configEl ? configEl.dataset.role : 'student'
+            lang: configEl?.dataset.lang || 'fr',
+            role: configEl?.dataset.role || 'student'
         };
     }
 
     /**
-     * Initializes the responsive hamburger menu for mobile views.
+     * Initializes the responsive hamburger menu for mobile.
+     * Toggles the navigation menu visibility.
      */
     initMenu() {
         const menuToggle = document.createElement('button');
@@ -31,71 +36,63 @@ class MainApp {
         menuToggle.innerHTML = '☰';
 
         const rightBtn = document.querySelector('.right-buttons');
-        if (rightBtn) {
-            rightBtn.appendChild(menuToggle);
-        }
+        if (rightBtn) rightBtn.appendChild(menuToggle);
 
         const navMenu = document.querySelector('nav.menu');
         if (menuToggle && navMenu) {
-            menuToggle.addEventListener('click', () => {
-                navMenu.classList.toggle('active');
-            });
+            menuToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
         }
     }
 
     /**
-     * Initializes the language selector dropdown behavior.
+     * Initializes the language selector dropdown.
+     * Clicking outside closes the dropdown.
      */
     initLanguageDropdown() {
         const langBtn = document.querySelector('.dropbtn');
         if (langBtn) {
             langBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const dropdown = langBtn.parentElement;
-                if(dropdown) dropdown.classList.toggle('show');
+                langBtn.parentElement?.classList.toggle('show');
             });
         }
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', () => {
             const dropdown = document.querySelector('.lang-dropdown');
-            if (dropdown) dropdown.classList.remove('show');
+            dropdown?.classList.remove('show');
         });
     }
 
     /**
      * Initializes the tritanopia accessibility theme toggle.
+     * Updates URL parameter to persist state.
      */
     initThemeToggle() {
         const themeToggle = document.getElementById('theme-toggle');
-        if (themeToggle) {
-            // Apply initial state
-            if (document.body.classList.contains('tritanopie')) {
-                themeToggle.classList.add('active');
-            }
+        if (!themeToggle) return;
 
-            themeToggle.addEventListener('click', (e) => {
-                document.body.classList.toggle('tritanopie');
-                e.currentTarget.classList.toggle('active');
+        // Apply initial state
+        if (document.body.classList.contains('tritanopie')) themeToggle.classList.add('active');
 
-                // Persist state via URL parameters (or session in backend)
-                const isTritanopia = document.body.classList.contains('tritanopie') ? '1' : '0';
-                const url = new URL(window.location.href);
-                url.searchParams.set('tritanopia', isTritanopia);
-                window.location.href = url.toString();
-            });
-        }
+        themeToggle.addEventListener('click', (e) => {
+            document.body.classList.toggle('tritanopie');
+            e.currentTarget.classList.toggle('active');
+
+            const isTritanopia = document.body.classList.contains('tritanopie') ? '1' : '0';
+            const url = new URL(window.location.href);
+            url.searchParams.set('tritanopia', isTritanopia);
+            window.location.href = url.toString();
+        });
     }
 
     /**
-     * Automatically dismisses success/error toast messages after 5 seconds.
+     * Automatically dismisses toast messages (success/error) after 5 seconds.
+     * Chatbot messages are excluded from auto-dismissal.
      */
     initAutoDismissMessages() {
         const messages = document.querySelectorAll('.message, .success-message, .error-message');
-        
         messages.forEach(msg => {
-            // Exclude chatbot messages from auto-dismissal
-            if(!msg.classList.contains('user-message') && !msg.classList.contains('bot-message')) {
+            if (!msg.classList.contains('user-message') && !msg.classList.contains('bot-message')) {
                 setTimeout(() => {
                     msg.style.transition = 'opacity 0.5s ease';
                     msg.style.opacity = '0';
@@ -107,7 +104,7 @@ class MainApp {
 
     /**
      * Changes the application language and reloads the page.
-     * @param {string} lang - The language code (e.g., 'fr', 'en').
+     * @param {string} lang - Language code (e.g., 'fr', 'en').
      */
     changeLang(lang) {
         const url = new URL(window.location.href);
@@ -116,10 +113,8 @@ class MainApp {
     }
 }
 
-// Instantiate and provide a fallback for generic onclick calls in HTML
+// Initialize MainApp on DOM ready and provide fallback for inline onclick
 document.addEventListener('DOMContentLoaded', () => {
     window.mainApp = new MainApp();
-    
-    // Fallback if some HTML still uses onclick="changeLang('en')" directly
     window.changeLang = (lang) => window.mainApp.changeLang(lang);
 });

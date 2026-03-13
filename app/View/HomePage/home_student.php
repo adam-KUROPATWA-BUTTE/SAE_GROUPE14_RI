@@ -1,11 +1,25 @@
 <?php
 /**
- * Home Student - Header personnalisé + Layout Home
+ * View: Student Home Page
  *
- * @var string $lang
- * @var Closure(array<string, string>): string $t
- * @var Closure(string, array<string, mixed>=): string $buildUrl
- * @var bool $isLoggedIn
+ * Landing page for authenticated (and anonymous) student users. Renders a
+ * custom header with a language switcher, a login/logout button depending on
+ * $isLoggedIn, and a tritanopia accessibility toggle. The navigation bar links
+ * to the student dashboard, partner destination pages (AMU / IUT), the student
+ * folder, and the contact page.
+ *
+ * Below the header, a hero section displays the AMU logo followed by a
+ * promotional banner whose image switches to the tritanopia-friendly version
+ * when the corresponding session preference is active.
+ *
+ * The rendered HTML is captured via output buffering into $content and passed
+ * to the base_home layout along with the page title, active menu key, styles,
+ * scripts, user role, and meta description.
+ *
+ * @var string                                        $lang        Current language code (e.g. 'fr' or 'en')
+ * @var Closure(array<string, string>): string        $t           Translation callable — accepts ['fr' => '...', 'en' => '...']
+ * @var Closure(string, array<string, mixed>=): string $buildUrl   URL builder callable — accepts a base URL and an optional query-parameter array
+ * @var bool                                          $isLoggedIn  Whether the current user is authenticated; controls the login/logout button
  */
 
 $isTritanopia = !empty($_SESSION['tritanopia']) && ((bool)$_SESSION['tritanopia'] === true);
@@ -45,8 +59,14 @@ ob_start();
         <nav class="menu">
             <button class="active" onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'home-student']) ?>'"><?= $t(['fr' => 'Accueil','en' => 'Home']) ?></button>
             <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'dashboard-student']) ?>'"><?= $t(['fr' => 'Mon Tableau de bord','en' => 'My Dashboard']) ?></button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'partners-student']) ?>'"><?= $t(['fr' => 'Destinations','en' => 'Destinations']) ?></button>
-            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'folders-student']) ?>'"><?= $t(['fr' => 'Mon Dossier','en' => 'My Folder']) ?></button>
+            <div class="dropdown">
+                <button><?= $t(['fr' => 'Destinations','en' => 'Destinations']) ?></button>
+                <div class="dropdown-content">
+                    <a href="<?= $buildUrl('index.php', ['page' => 'partners-student', 'partner' => 'amu']) ?>">AMU</a>
+                    <a href="<?= $buildUrl('index.php', ['page' => 'partners-student', 'partner' => 'iut']) ?>">IUT</a>
+                </div>
+            </div>
+            <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'folders-student']) ?>'"><?= $t(['fr' => 'Mon Dossier','en' => 'My Profil']) ?></button>
             <button onclick="window.location.href='<?= $buildUrl('index.php', ['page' => 'contact-student']) ?>'"><?= $t(['fr' => 'Contact','en' => 'Contact']) ?></button>
 
         </nav>

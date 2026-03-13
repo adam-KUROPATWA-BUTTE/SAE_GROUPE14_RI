@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit
-    bootstrap="vendor/autoload.php"
-    colors="true"
-    executionOrder="depends,defects"
+        bootstrap="Tests/bootstrap.php"
+        colors="true"
+        executionOrder="depends,defects"
+        stderr="true"
 >
     <php>
         <ini name="error_reporting" value="E_ALL &amp; ~E_DEPRECATED &amp; ~E_STRICT"/>
@@ -10,7 +11,7 @@
 
     <testsuites>
         <testsuite name="unit">
-            <directory suffix=".php">tests/Unit</directory>
+            <directory suffix=".php">Tests</directory>
         </testsuite>
     </testsuites>
 </phpunit>

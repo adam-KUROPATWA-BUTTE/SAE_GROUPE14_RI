@@ -1,18 +1,45 @@
 <?php
 
-// phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
+/**
+ * Database
+ *
+ * Singleton class responsible for managing the PDO database connection.
+ * Reads connection parameters from environment variables and provides
+ * a single shared PDO instance throughout the application lifecycle.
+ */
 class Database
 {
+    /** @var Database|null The single instance of this class */
     private static ?Database $instance = null;
+
+    /** @var PDO|null The underlying PDO connection */
     private ?PDO $conn = null;
 
+    /** @var string Database host address */
     private string $host;
+
+    /** @var string Database port */
     private string $port;
+
+    /** @var string Database name */
     private string $dbname;
+
+    /** @var string Database username */
     private string $username;
+
+    /** @var string Database password */
     private string $password;
+
+    /** @var string Connection character set */
     private string $charset;
 
+    /**
+     * Private constructor — initializes the PDO connection using environment variables.
+     *
+     * Reads DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD, and DB_CHARSET
+     * from $_ENV, falling back to safe defaults. Sets the PHP and MySQL
+     * timezone to Europe/Paris. Terminates execution on connection failure.
+     */
     private function __construct()
     {
         try {
@@ -46,6 +73,11 @@ class Database
         }
     }
 
+    /**
+     * Returns the single instance of the Database class, creating it if necessary.
+     *
+     * @return Database The shared Database instance
+     */
     public static function getInstance(): Database
     {
         if (self::$instance === null) {
@@ -55,8 +87,10 @@ class Database
     }
 
     /**
-     * Garantit le retour d'un objet PDO valide.
-     * @return PDO
+     * Returns the active PDO connection.
+     *
+     * @return PDO The initialized PDO connection
+     * @throws \RuntimeException If the connection has not been initialized
      */
     public function getConnection(): PDO
     {
@@ -66,8 +100,16 @@ class Database
         return $this->conn;
     }
 
+    /**
+     * Prevents cloning of the singleton instance.
+     */
     private function __clone() {}
 
+    /**
+     * Prevents unserialization of the singleton instance.
+     *
+     * @throws Exception Always thrown to prevent unserialization
+     */
     public function __wakeup()
     {
         throw new Exception("Cannot unserialize singleton");
